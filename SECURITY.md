@@ -34,11 +34,12 @@ Ce n’est **pas** « tout Internet lit notre Grist » ; c’est « un attaquant
 2. **Contrôle d’embed** (`src/security/embedTrust.ts`) : refuse `grist.ready` si l’iframe a un parent non Grist ; en prod hors iframe / embed non fiable → `NothingHerePage` (pas de nav).
 3. **Allowlist** des `fetchTable` : uniquement via `fetchAllowlistedTable` (`src/security/fetchTableAllowlist.ts`) — refus runtime hors liste, pas d’ID libre côté UI.
 4. **Lecture seule métier** V1 : pas d’API d’écriture dans les hooks.
-5. **CSP** injectée au build (meta) + script API depuis `grist.numerique.gouv.fr` (sans `eval` ; `docs.getgrist.com` est en mode eval et casse sous CSP).
-6. **Pas de source maps** en production.
-7. **Repo** : revue PR / protection de `main` recommandées (org).
-8. **Dependabot / `npm audit`** dans la CI Pages.
-9. **Auto-bust cache** (`version.json` + `ensureFreshBuild`) : après un déploiement Pages, l’iframe se recharge seule si le HTML/JS en cache est périmé — URL Grist stable, sans `?v=` manuel.
+5. **Téléchargement attachments** : `docApi.getAccessToken({ readOnly: true })` → REST `?auth=` (jeton court, scoped doc / utilisateur). **Pas** de `VITE_GRIST_API_KEY`.
+6. **CSP** injectée au build (meta) + script API depuis `grist.numerique.gouv.fr` (sans `eval` ; `docs.getgrist.com` est en mode eval et casse sous CSP).
+7. **Pas de source maps** en production.
+8. **Repo** : revue PR / protection de `main` recommandées (org).
+9. **Dependabot / `npm audit`** dans la CI Pages.
+10. **Auto-bust cache** (`version.json` + `ensureFreshBuild`) : après un déploiement Pages, l’iframe se recharge seule si le HTML/JS en cache est périmé — URL Grist stable, sans `?v=` manuel.
 
 ## Limites GitHub Pages
 

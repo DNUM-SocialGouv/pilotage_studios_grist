@@ -2,6 +2,10 @@ import { Link, useParams } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { BdcFinanceRecap } from "../components/BdcFinanceRecap";
 import { EquipeBadges } from "../components/EquipeBadges";
+import {
+  GristAttachmentDownloadLink,
+  sofianeBdcCell,
+} from "../components/GristAttachmentDownloadLink";
 import { useGristPa } from "../GristPaContext";
 import { NothingHerePage } from "../security/NothingHerePage";
 import { formatMontantEur } from "../utils/formatMontant";
@@ -174,6 +178,16 @@ export function BdcDetailView() {
             </p>
           </div>
         ) : null}
+        <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
+          <p className="bdc-detail-info-field__label">Sofiane</p>
+          <p className="bdc-detail-info-field__value">{sofianeBdcCell(bdc.SOFIANE)}</p>
+        </div>
+        <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
+          <p className="bdc-detail-info-field__label">Devis</p>
+          <div className="bdc-detail-info-field__value">
+            <GristAttachmentDownloadLink value={bdc.Devis} label="Télécharger le devis" />
+          </div>
+        </div>
       </div>
     </div>
   );

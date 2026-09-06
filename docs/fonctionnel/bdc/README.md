@@ -8,7 +8,7 @@
 
 ## Objet métier
 
-Consultation **lecture seule** des bons de commande Grist dans l’iframe : récap financier (KPI + barre % consommé), rattachement PA.
+Consultation **lecture seule** des bons de commande Grist dans l’iframe : récap financier (KPI + barre % consommé), informations (Sofiane, devis), rattachement PA.
 
 | Outil | Rôle |
 |-------|------|

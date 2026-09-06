@@ -52,8 +52,10 @@ Grille définition (labels au-dessus des valeurs, 4 colonnes ≥ lg / 2 ≥ sm) 
 | Engagement | `Engagement` |
 | Équipe | `Equipe2` (badges couleur) |
 | Reste à consommer du PA | calculé si PA lié |
+| Sofiane | `SOFIANE` — lien externe « Ouvrir dans Sofiane » si URL HTTP(S), sinon texte |
+| Devis | `Devis` (Attachments) — `fr-link--download` via `getAccessToken` ; `—` si absent |
 
-Hors scope widget (présents dans l’app sœur) : Sofiane, devis (attachments), onglets suivi CRA / PV.
+Hors scope widget (présents dans l’app sœur) : onglets suivi CRA / PV, upload devis.
 
 ## Liens croisés
 
