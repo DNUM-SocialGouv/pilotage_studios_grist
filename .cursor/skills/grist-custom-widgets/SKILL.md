@@ -24,7 +24,7 @@ grist.ready({ requiredAccess: 'full' }); // 2. puis ready
 | `onRecords` | **Uniquement** les champs du *view section* du widget (« Colonnes visibles » dans Grist) |
 | `docApi.fetchTable(tableId)` | **Toutes** les colonnes (accès `full`) |
 
-Dans ce projet : hydratation PA via `fetchTable('Plan_activite')` + `onRecords` pour le live. Tables liées : allowlist `src/security/fetchTableAllowlist.ts`.
+Dans ce projet : hydratation PA via `fetchAllowlistedTable('Plan_activite')` + `onRecords` pour le live. Tables liées : allowlist + garde runtime `src/security/fetchTableAllowlist.ts`.
 
 ## Accès
 

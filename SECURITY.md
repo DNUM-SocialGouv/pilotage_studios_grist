@@ -25,7 +25,7 @@ Ce n’est **pas** « tout Internet lit notre Grist » ; c’est « un attaquant
 
 1. **Aucun secret** dans le dépôt / bundle (`VITE_GRIST_API_KEY`, clés LLM interdits).
 2. **Contrôle d’embed** (`src/security/embedTrust.ts`) : refuse `grist.ready` si l’iframe a un parent non Grist.
-3. **Allowlist** des `fetchTable` (`src/security/fetchTableAllowlist.ts` — pas d’ID de table libre côté UI).
+3. **Allowlist** des `fetchTable` : uniquement via `fetchAllowlistedTable` (`src/security/fetchTableAllowlist.ts`) — refus runtime hors liste, pas d’ID libre côté UI.
 4. **Lecture seule métier** V1 : pas d’API d’écriture dans les hooks.
 5. **CSP** injectée au build (meta) + script API depuis `grist.numerique.gouv.fr` (sans `eval` ; `docs.getgrist.com` est en mode eval et casse sous CSP).
 6. **Pas de source maps** en production.

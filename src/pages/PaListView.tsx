@@ -6,6 +6,7 @@ import { Select } from "@codegouvfr/react-dsfr/Select";
 import { FinanceRecap, TableShell } from "../components/FinanceRecap";
 import { useGristPa } from "../GristPaContext";
 import { formatMontantEur } from "../utils/formatMontant";
+import { montantReste } from "../utils/montantReste";
 import {
   bdcPaRefId,
   financeForPlanActivite,
@@ -14,14 +15,6 @@ import {
 } from "../utils/paFinance";
 
 const PAGE_SIZE = 10;
-
-function montantReste(value: number) {
-  const formatted = formatMontantEur(value);
-  if (value < 0) {
-    return <span style={{ color: "var(--text-default-error)" }}>{formatted}</span>;
-  }
-  return formatted;
-}
 
 export function PaListView() {
   const data = useGristPa();

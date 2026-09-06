@@ -26,7 +26,7 @@ Repo sœur de [pilotage_studios](https://github.com/DNUM-SocialGouv/pilotage_stu
 | Path | Statut V1 |
 |------|-----------|
 | `/pa`, `/pa/:id` | Implémenté (liste + fiche) |
-| `/bdc`, `/bdc/:id` | Implémenté (liste + fiche) |
+| `/bdc`, `/bdc/:id` | En PR (#2) — liste + fiche |
 | `/produits`, `/missions`, `/intervenants`, `/cra`, `/pv`, `/evaluations` | Stub « À venir » |
 | `/analyse` | Stub — réservé à l’app (secrets LLM) |
 
@@ -36,8 +36,8 @@ Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait
 
 1 PR par entrée de nav (liste + fiche + liens croisés vers routes déjà livrées) :
 
-1. ~~PA~~ · ~~BDC~~
-2. **Produits** (prochaine)
+1. PA (livré sur `main`) · BDC (PR ouverte, pas encore sur `main`)
+2. **Produits** (prochaine — [#3](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3))
 3. Missions → Intervenants → CRA → PV → Évaluations (priorité métier)
 4. Analyse : rester stub (hors scope widget)
 

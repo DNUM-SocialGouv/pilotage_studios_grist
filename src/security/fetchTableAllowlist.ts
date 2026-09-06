@@ -1,6 +1,8 @@
+import type { GristFetchTableResult } from "../gristTypes";
+
 /**
  * Allowlist des tableIds passés à `docApi.fetchTable`.
- * Ne jamais accepter un id libre depuis l’UI.
+ * Ne jamais accepter un id libre depuis l’UI — passer uniquement par `fetchAllowlistedTable`.
  */
 export const PA_TABLE_ID = "Plan_activite";
 
@@ -9,3 +11,25 @@ export const RELATED_TABLE_IDS = ["BDC", "Constatations", "Commandes_Sofiane"] a
 export type RelatedTableId = (typeof RELATED_TABLE_IDS)[number];
 
 export const FETCH_TABLE_ALLOWLIST = [PA_TABLE_ID, ...RELATED_TABLE_IDS] as const;
+
+export type AllowlistedTableId = (typeof FETCH_TABLE_ALLOWLIST)[number];
+
+export function isAllowlistedTableId(tableId: string): tableId is AllowlistedTableId {
+  return (FETCH_TABLE_ALLOWLIST as readonly string[]).includes(tableId);
+}
+
+/**
+ * `fetchTable` avec garde runtime : refuse tout id hors allowlist.
+ */
+export async function fetchAllowlistedTable(
+  tableId: AllowlistedTableId,
+): Promise<GristFetchTableResult> {
+  if (!isAllowlistedTableId(tableId)) {
+    throw new Error(`Table Grist non autorisée pour fetchTable : ${tableId}`);
+  }
+  const grist = window.grist;
+  if (!grist?.docApi?.fetchTable) {
+    throw new Error("docApi.fetchTable indisponible");
+  }
+  return grist.docApi.fetchTable(tableId);
+}

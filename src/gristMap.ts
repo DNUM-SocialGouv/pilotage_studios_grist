@@ -1,5 +1,6 @@
 import type { GristFetchTableResult, GristRecord } from "./gristTypes";
 import type { BDC, CommandeSofiane, Constatation, PlanActivite } from "./types";
+import { asGristChoice } from "./utils/gristReferences";
 
 export function recordsFromFetchTable(raw: GristFetchTableResult): GristRecord[] {
   const ids = raw.id ?? [];
@@ -57,13 +58,13 @@ export function toPlanActivite(record: GristRecord): PlanActivite {
 export function toBdc(record: GristRecord): BDC {
   return {
     id: record.id,
-    Nom_BdC: asString(record.Nom_BdC),
-    Statut: asString(record.Statut),
+    Nom_BdC: asString(record.Nom_BdC) ?? asGristChoice(record.Nom_BdC),
+    Statut: asGristChoice(record.Statut),
     Montant_TTC: asNumber(record.Montant_TTC),
-    Financeur: asString(record.Financeur),
-    BdC_Chorus: asString(record.BdC_Chorus),
-    Plateforme: asString(record.Plateforme),
-    Engagement: asString(record.Engagement),
+    Financeur: asGristChoice(record.Financeur),
+    BdC_Chorus: asString(record.BdC_Chorus) ?? asGristChoice(record.BdC_Chorus),
+    Plateforme: asGristChoice(record.Plateforme),
+    Engagement: asGristChoice(record.Engagement) ?? asString(record.Engagement),
     Solde_TTC_CRA: asNumber(record.Solde_TTC_CRA),
     Total_TTC_CRA: asNumber(record.Total_TTC_CRA),
     Equipe2: record.Equipe2,

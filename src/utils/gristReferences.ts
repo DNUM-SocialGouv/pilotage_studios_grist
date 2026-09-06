@@ -55,6 +55,45 @@ export function extractGristStringTokens(value: unknown): string[] {
   return [];
 }
 
+function normalizeGristChoiceString(s: string): string {
+  return s.replace(/\u00a0/g, " ").trim();
+}
+
+/**
+ * Libellé d’une colonne Grist Choice / ChoiceList (string, objet `{choice|label}`, liste `["L", …]`).
+ */
+export function normalizeGristChoice(value: unknown): string {
+  if (value == null || value === "") {
+    return "";
+  }
+  if (typeof value === "string") {
+    return normalizeGristChoiceString(value);
+  }
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return String(value);
+  }
+  if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+    const o = value as Record<string, unknown>;
+    if (typeof o.choice === "string") {
+      return normalizeGristChoiceString(o.choice);
+    }
+    if (typeof o.label === "string") {
+      return normalizeGristChoiceString(o.label);
+    }
+  }
+  const tokens = extractGristStringTokens(value);
+  if (tokens.length > 0) {
+    return normalizeGristChoiceString(tokens[0]!);
+  }
+  return normalizeGristChoiceString(String(value));
+}
+
+/** Comme `normalizeGristChoice`, mais `undefined` si vide. */
+export function asGristChoice(value: unknown): string | undefined {
+  const s = normalizeGristChoice(value);
+  return s.length > 0 ? s : undefined;
+}
+
 /**
  * Extrait l’id de ligne cible d’une valeur « référence » Grist (nombre, chaîne, tuple, etc.).
  */

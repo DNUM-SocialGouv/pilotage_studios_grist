@@ -9,7 +9,11 @@ import {
   toPlanActivite,
 } from "../gristMap";
 import { getEmbedTrust, type EmbedTrust } from "../security/embedTrust";
-import { PA_TABLE_ID, RELATED_TABLE_IDS } from "../security/fetchTableAllowlist";
+import {
+  fetchAllowlistedTable,
+  PA_TABLE_ID,
+  RELATED_TABLE_IDS,
+} from "../security/fetchTableAllowlist";
 
 export type RelatedTablesStatus = "idle" | "loading" | "ok" | "denied" | "error";
 
@@ -48,12 +52,8 @@ async function fetchRelatedTables(): Promise<{
   constatations: Constatation[];
   commandes: CommandeSofiane[];
 }> {
-  const grist = window.grist;
-  if (!grist?.docApi?.fetchTable) {
-    throw new Error("docApi.fetchTable indisponible");
-  }
   const [bdcRaw, pvRaw, cmdRaw] = await Promise.all(
-    RELATED_TABLE_IDS.map((id) => grist.docApi.fetchTable(id)),
+    RELATED_TABLE_IDS.map((id) => fetchAllowlistedTable(id)),
   );
   return {
     bdcList: recordsFromFetchTable(bdcRaw).map(toBdc),
@@ -63,11 +63,7 @@ async function fetchRelatedTables(): Promise<{
 }
 
 async function fetchPlansFromDocApi(): Promise<PlanActivite[]> {
-  const grist = window.grist;
-  if (!grist?.docApi?.fetchTable) {
-    throw new Error("docApi.fetchTable indisponible");
-  }
-  const raw = await grist.docApi.fetchTable(PA_TABLE_ID);
+  const raw = await fetchAllowlistedTable(PA_TABLE_ID);
   return recordsFromFetchTable(raw).map(toPlanActivite);
 }
 

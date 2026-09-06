@@ -4,23 +4,13 @@ import { TableShell } from "../components/FinanceRecap";
 import { useGristPa } from "../GristPaContext";
 import { formatMontantEur } from "../utils/formatMontant";
 import { extractGristStringTokens } from "../utils/gristReferences";
+import { montantReste } from "../utils/montantReste";
 import {
   bdcPaRefId,
   financeForPlanActivite,
   financePaOnly,
   libellePlanActivite,
 } from "../utils/paFinance";
-
-function montantReste(value: number | undefined) {
-  if (value == null || !Number.isFinite(value)) {
-    return "—";
-  }
-  const formatted = formatMontantEur(value);
-  if (value < 0) {
-    return <span style={{ color: "var(--text-default-error)" }}>{formatted}</span>;
-  }
-  return formatted;
-}
 
 export function BdcDetailView() {
   const { id } = useParams();
@@ -29,16 +19,69 @@ export function BdcDetailView() {
   const bdc = data.bdcList.find((b) => b.id === bdcId);
   const useFullFinance = data.relatedStatus === "ok";
 
-  if (data.loading || data.relatedStatus === "loading" || data.relatedStatus === "idle") {
+  if (data.untrustedEmbed) {
+    return (
+      <div className="fr-py-1w">
+        <p className="fr-mb-2w">
+          <Link className="fr-link" to="/bdc">
+            ← Retour à la liste
+          </Link>
+        </p>
+        <Alert
+          severity="error"
+          title="Embed non autorisé"
+          description={
+            data.error ??
+            "Ce widget ne s’active que dans une page Grist (grist.numerique.gouv.fr)."
+          }
+        />
+      </div>
+    );
+  }
+
+  if (data.outsideGrist) {
+    return (
+      <div className="fr-py-1w">
+        <p className="fr-mb-2w">
+          <Link className="fr-link" to="/bdc">
+            ← Retour à la liste
+          </Link>
+        </p>
+        <Alert
+          severity="info"
+          title="Hors Grist / API indisponible"
+          description={
+            data.error ??
+            "Ce widget doit tourner dans une iframe Grist. Accès full, Select Data = Plan_activite."
+          }
+        />
+      </div>
+    );
+  }
+
+  if (data.loading) {
     return (
       <div className="fr-py-1w">
         <Alert
           severity="info"
           small
           title="Chargement"
-          description="Chargement du bon de commande…"
+          description="Connexion à Grist…"
           role="status"
         />
+      </div>
+    );
+  }
+
+  if (data.error) {
+    return (
+      <div className="fr-py-1w">
+        <p className="fr-mb-2w">
+          <Link className="fr-link" to="/bdc">
+            ← Retour à la liste
+          </Link>
+        </p>
+        <Alert severity="error" title="Erreur" description={data.error} />
       </div>
     );
   }
@@ -58,6 +101,20 @@ export function BdcDetailView() {
             data.relatedError ??
             "Accordez l’accès « full » au widget pour afficher la fiche BDC."
           }
+        />
+      </div>
+    );
+  }
+
+  if (data.relatedStatus === "loading" || data.relatedStatus === "idle") {
+    return (
+      <div className="fr-py-1w">
+        <Alert
+          severity="info"
+          small
+          title="Chargement"
+          description="Chargement du bon de commande…"
+          role="status"
         />
       </div>
     );
@@ -106,7 +163,9 @@ export function BdcDetailView() {
           <caption className="fr-sr-only">Montants du bon de commande</caption>
           <thead>
             <tr>
-              <th scope="col">Budget TTC</th>
+              <th scope="col" className="fr-cell--right">
+                Budget TTC
+              </th>
               <th scope="col" className="fr-cell--right">
                 Consommé CRA
               </th>
@@ -117,7 +176,7 @@ export function BdcDetailView() {
           </thead>
           <tbody>
             <tr>
-              <td>{formatMontantEur(bdc.Montant_TTC)}</td>
+              <td className="fr-cell--right">{formatMontantEur(bdc.Montant_TTC)}</td>
               <td className="fr-cell--right">{formatMontantEur(bdc.Total_TTC_CRA)}</td>
               <td className="fr-cell--right">{montantReste(bdc.Solde_TTC_CRA)}</td>
             </tr>
