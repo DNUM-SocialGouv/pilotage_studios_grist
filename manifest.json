@@ -1,0 +1,8 @@
+{
+  "name": "Pilotage studios (widget Grist)",
+  "description": "Custom Widget — navigation Pilotage studios SDPC (PA + stubs)",
+  "url": "./index.html",
+  "widgetId": "@dnum-socialgouv/pilotage-studios-grist",
+  "authors": [{ "name": "Studio DNUM" }],
+  "isPublished": false
+}

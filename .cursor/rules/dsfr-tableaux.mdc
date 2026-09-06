@@ -1,0 +1,17 @@
+---
+description: Conventions tableaux DSFR pour le widget Pilotage Grist.
+globs:
+  - src/**/*.tsx
+  - src/**/*.css
+alwaysApply: false
+---
+
+# Tableaux DSFR (pilotage_studios_grist)
+
+- Référence : MCP **`user-dsfr`** → `get_component_doc` (`table`).
+- Markup : `fr-table` → `__wrapper` → `__container` → `__content` → `<table>`.
+- Composant local V1 : `src/components/FinanceRecap.tsx` (`TableShell`). Si un shell partagé plus riche est ajouté, l’utiliser pour tout nouveau tableau.
+- `<caption>` obligatoire (`fr-sr-only` ou titre visible).
+- Montants : `formatMontantEur()` ; vide → `—`.
+- Colonnes monétaires : `fr-cell--right`.
+- Pagination DSFR sous le tableau si plus de 10 lignes.

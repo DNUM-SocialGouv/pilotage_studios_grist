@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "grist": {
+      "command": "/opt/homebrew/bin/node",
+      "args": ["/chemin/vers/grist-mcp-server/dist/index.js"],
+      "cwd": "/chemin/vers/grist-mcp-server",
+      "env": {
+        "GRIST_API_KEY": "votre_clé_api_grist"
+      }
+    },
+    "dsfr": {
+      "command": "npx",
+      "args": ["dsfr-mcp"]
+    }
+  }
+}

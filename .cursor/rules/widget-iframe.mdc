@@ -1,0 +1,18 @@
+---
+description: Contraintes Custom Widget Grist (iframe) — navigation, secrets, router.
+globs:
+  - src/**/*.tsx
+  - src/**/*.ts
+alwaysApply: true
+---
+
+# Widget iframe Grist
+
+- Router : **`MemoryRouter` uniquement** (pas de `BrowserRouter` — l’URL parent est Grist).
+- Layout : **`WidgetNav` + `main`** — pas de `DsfrHeader` Marianne, pas de `Footer` app.
+- Données : `window.grist` (`ready`, `onRecords`, `docApi.fetchTable`). **Jamais** de `VITE_GRIST_API_KEY` ni clé LLM dans le code / bundle.
+- Embed : passer par `getEmbedTrust()` ; **ne pas** appeler `grist.ready` si `untrusted`.
+- Accès Grist : **full** seulement si tables liées nécessaires ; aucune écriture sans demande explicite + revue sécu.
+- `/analyse` et toute feature IA : stub ou hors scope (besoin d’un backend).
+- Lire [SECURITY.md](../../SECURITY.md) avant d’élargir les surfaces d’API.
+- Tableaux : préférer le shell DSFR du projet ; exception spike documentée OK pour `TableShell` local.

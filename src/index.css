@@ -1,0 +1,62 @@
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  background: var(--background-default-grey);
+}
+
+body {
+  font-family: Marianne, arial, sans-serif;
+}
+
+.widget-shell {
+  min-height: 100%;
+}
+
+.widget-nav {
+  border-bottom: 1px solid var(--border-default-grey);
+  background: var(--background-default-grey);
+  padding: 0 0.5rem;
+}
+
+.widget-nav .fr-nav__list {
+  flex-wrap: wrap;
+}
+
+.widget-kpi {
+  padding: 0.75rem 1rem;
+  background: var(--background-alt-grey);
+  border: 1px solid var(--border-default-grey);
+}
+
+.widget-finance-bar {
+  display: flex;
+  height: 0.5rem;
+  background: var(--background-contrast-grey);
+  overflow: hidden;
+}
+
+.widget-finance-bar__paye {
+  display: block;
+  height: 100%;
+  background: var(--background-action-high-blue-france);
+}
+
+.widget-finance-bar__engage {
+  display: block;
+  height: 100%;
+  background: var(--background-action-low-blue-france);
+}
+
+.fr-table {
+  overflow-x: auto;
+}
+
+button.fr-link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+}
