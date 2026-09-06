@@ -17,6 +17,7 @@ Repo sœur de [pilotage_studios](https://github.com/DNUM-SocialGouv/pilotage_stu
 
 - **Document Grist** : `nei9DeARs5Eo` (pilotage V2).
 - **Installation Grist** : widget Custom → URL personnalisée → accès **full** → Select Data = `Plan_activite` (table ancre V1).
+- **Config figée** : ne pas changer Select Data pour chaque nouvel écran. Une iframe + `MemoryRouter` = toute l’app ; tables hors ancre via `docApi.fetchTable` (allowlist).
 
 ---
 
@@ -25,10 +26,20 @@ Repo sœur de [pilotage_studios](https://github.com/DNUM-SocialGouv/pilotage_stu
 | Path | Statut V1 |
 |------|-----------|
 | `/pa`, `/pa/:id` | Implémenté (liste + fiche) |
-| `/bdc`, `/produits`, `/missions`, `/intervenants`, `/cra`, `/pv`, `/evaluations` | Stub « À venir » |
+| `/bdc`, `/bdc/:id` | Implémenté (liste + fiche) |
+| `/produits`, `/missions`, `/intervenants`, `/cra`, `/pv`, `/evaluations` | Stub « À venir » |
 | `/analyse` | Stub — réservé à l’app (secrets LLM) |
 
 Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
+
+### Feuille de route pages
+
+1 PR par entrée de nav (liste + fiche + liens croisés vers routes déjà livrées) :
+
+1. ~~PA~~ · ~~BDC~~
+2. **Produits** (prochaine)
+3. Missions → Intervenants → CRA → PV → Évaluations (priorité métier)
+4. Analyse : rester stub (hors scope widget)
 
 ---
 
@@ -48,7 +59,7 @@ Sécurité : voir [SECURITY.md](SECURITY.md) — URL Pages publique ≠ données
 | Usage | tableId |
 |-------|---------|
 | Ancre widget + liste PA | `Plan_activite` |
-| Finance PA (si accès full) | `BDC`, `Constatations`, `Commandes_Sofiane` |
+| Finance PA + écrans BDC (si accès full) | `BDC`, `Constatations`, `Commandes_Sofiane` |
 
 ---
 

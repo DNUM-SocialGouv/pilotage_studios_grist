@@ -19,8 +19,17 @@ export interface PlanActivite {
 export interface BDC {
   id: number;
   Nom_BdC?: string;
+  Statut?: string;
   Montant_TTC?: number;
+  Financeur?: string;
+  BdC_Chorus?: string;
+  Plateforme?: string;
+  Engagement?: string;
+  Solde_TTC_CRA?: number;
   Total_TTC_CRA?: number;
+  /** ChoiceList Grist — tokens via `extractGristStringTokens`. */
+  Equipe2?: unknown;
+  /** Réf. → `Plan_activite`. */
   PA?: unknown;
 }
 

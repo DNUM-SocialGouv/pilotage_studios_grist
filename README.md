@@ -18,8 +18,10 @@ Détail et garde-fous : **[SECURITY.md](SECURITY.md)**.
    ou URL Pages (ajoutez un cache-bust après déploiement) :  
    `https://dnum-socialgouv.github.io/pilotage_studios_grist/?v=4`
 2. Widget **Custom** → **URL personnalisée**
-3. Accès **full** (lecture tables liées)
-4. Select Data = `Plan_activite`
+3. Accès **full** (lecture tables liées via `docApi.fetchTable`)
+4. Select Data = `Plan_activite` (**table ancre** — à ne pas changer pour les autres pages)
+
+**Une seule iframe = toute l’app.** La nav interne (`MemoryRouter` : PA, BDC, Produits…) ne nécessite **pas** de reconfigurer Select Data ni d’ajouter un widget par écran. `onRecords` suit l’ancre PA ; les autres tables passent par `fetchTable` (allowlist dans le code).
 
 ## Dev
 
@@ -32,5 +34,6 @@ npm run lint
 
 ## V1
 
-- Navigation (sans Header/Footer) + **PA** liste/fiche
+- Navigation (sans Header/Footer) + **PA** et **BDC** (liste + fiche, liens croisés)
 - Autres entrées de nav = stubs (Analyse IA = hors scope widget)
+- Feuille de route : 1 PR par entrée de nav (liste + fiche), ensuite Produits puis le reste

@@ -58,8 +58,15 @@ export function toBdc(record: GristRecord): BDC {
   return {
     id: record.id,
     Nom_BdC: asString(record.Nom_BdC),
+    Statut: asString(record.Statut),
     Montant_TTC: asNumber(record.Montant_TTC),
+    Financeur: asString(record.Financeur),
+    BdC_Chorus: asString(record.BdC_Chorus),
+    Plateforme: asString(record.Plateforme),
+    Engagement: asString(record.Engagement),
+    Solde_TTC_CRA: asNumber(record.Solde_TTC_CRA),
     Total_TTC_CRA: asNumber(record.Total_TTC_CRA),
+    Equipe2: record.Equipe2,
     PA: record.PA,
   };
 }

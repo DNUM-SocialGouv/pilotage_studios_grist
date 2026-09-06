@@ -1,3 +1,60 @@
+/** Liste multi-valeurs Grist : souvent `["L", ...valeurs]`. */
+export function parseGristList(value: unknown): string[] {
+  if (value == null) {
+    return [];
+  }
+  if (Array.isArray(value) && value[0] === "L") {
+    return value.slice(1).map(String);
+  }
+  if (
+    Array.isArray(value) &&
+    value[0] === "l" &&
+    value.length >= 2 &&
+    typeof value[1] === "string"
+  ) {
+    return [value[1]];
+  }
+  if (Array.isArray(value)) {
+    return value.map(String);
+  }
+  return [String(value)];
+}
+
+/** Tokens texte d’une Choice / ChoiceList (équipe, etc.). */
+export function extractGristStringTokens(value: unknown): string[] {
+  if (value == null) {
+    return [];
+  }
+  if (Array.isArray(value)) {
+    return parseGristList(value)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+  }
+  if (typeof value === "string") {
+    const t = value.trim();
+    if (t.length === 0) {
+      return [];
+    }
+    if (t.startsWith("[")) {
+      try {
+        const parsed: unknown = JSON.parse(t);
+        if (Array.isArray(parsed)) {
+          return parseGristList(parsed)
+            .map((s) => s.trim())
+            .filter((s) => s.length > 0);
+        }
+      } catch {
+        /* chaîne non JSON */
+      }
+    }
+    return [t];
+  }
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return [String(value)];
+  }
+  return [];
+}
+
 /**
  * Extrait l’id de ligne cible d’une valeur « référence » Grist (nombre, chaîne, tuple, etc.).
  */

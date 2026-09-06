@@ -9,6 +9,7 @@ import {
   toPlanActivite,
 } from "../gristMap";
 import { getEmbedTrust, type EmbedTrust } from "../security/embedTrust";
+import { PA_TABLE_ID, RELATED_TABLE_IDS } from "../security/fetchTableAllowlist";
 
 export type RelatedTablesStatus = "idle" | "loading" | "ok" | "denied" | "error";
 
@@ -41,9 +42,6 @@ const EMPTY: GristPaData = {
   relatedStatus: "idle",
   relatedError: null,
 };
-
-const PA_TABLE_ID = "Plan_activite";
-const RELATED_TABLE_IDS = ["BDC", "Constatations", "Commandes_Sofiane"] as const;
 
 async function fetchRelatedTables(): Promise<{
   bdcList: BDC[];
