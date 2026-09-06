@@ -5,6 +5,7 @@ import { Pagination } from "@codegouvfr/react-dsfr/Pagination";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { TableShell } from "../components/FinanceRecap";
 import { useGristPa } from "../GristPaContext";
+import { NothingHerePage } from "../security/NothingHerePage";
 import { formatMontantEur } from "../utils/formatMontant";
 import { extractGristStringTokens } from "../utils/gristReferences";
 import { montantReste } from "../utils/montantReste";
@@ -92,36 +93,8 @@ export function BdcListView() {
     setPage(1);
   };
 
-  if (data.untrustedEmbed) {
-    return (
-      <div className="fr-py-1w">
-        <h1 className="fr-h3">Bons de commande</h1>
-        <Alert
-          severity="error"
-          title="Embed non autorisé"
-          description={
-            data.error ??
-            "Ce widget ne s’active que dans une page Grist (grist.numerique.gouv.fr)."
-          }
-        />
-      </div>
-    );
-  }
-
-  if (data.outsideGrist) {
-    return (
-      <div className="fr-py-1w">
-        <h1 className="fr-h3">Bons de commande</h1>
-        <Alert
-          severity="info"
-          title="Hors Grist / API indisponible"
-          description={
-            data.error ??
-            "Ce widget doit tourner dans une iframe Grist. Accès full, Select Data = Plan_activite."
-          }
-        />
-      </div>
-    );
+  if (data.untrustedEmbed || data.outsideGrist) {
+    return <NothingHerePage />;
   }
 
   if (data.loading) {

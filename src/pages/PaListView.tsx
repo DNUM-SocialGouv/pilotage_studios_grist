@@ -5,6 +5,7 @@ import { Pagination } from "@codegouvfr/react-dsfr/Pagination";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { FinanceRecap, TableShell } from "../components/FinanceRecap";
 import { useGristPa } from "../GristPaContext";
+import { NothingHerePage } from "../security/NothingHerePage";
 import { formatMontantEur } from "../utils/formatMontant";
 import { montantReste } from "../utils/montantReste";
 import {
@@ -137,36 +138,8 @@ export function PaListView() {
     setPage(1);
   };
 
-  if (data.untrustedEmbed) {
-    return (
-      <div className="fr-py-1w">
-        <h1 className="fr-h3">Plans d’activité</h1>
-        <Alert
-          severity="error"
-          title="Embed non autorisé"
-          description={
-            data.error ??
-            "Ce widget ne s’active que dans une page Grist (grist.numerique.gouv.fr). L’URL publique seule ne donne accès à aucune donnée."
-          }
-        />
-      </div>
-    );
-  }
-
-  if (data.outsideGrist) {
-    return (
-      <div className="fr-py-1w">
-        <h1 className="fr-h3">Plans d’activité</h1>
-        <Alert
-          severity="info"
-          title="Hors Grist / API indisponible"
-          description={
-            data.error ??
-            "Ce widget doit tourner dans une iframe Grist (Custom URL). Si vous êtes dans Grist : forcez le rechargement avec ?v=4 sur l’URL Pages, accès full, Select Data = Plan_activite."
-          }
-        />
-      </div>
-    );
+  if (data.untrustedEmbed || data.outsideGrist) {
+    return <NothingHerePage />;
   }
 
   if (data.loading) {

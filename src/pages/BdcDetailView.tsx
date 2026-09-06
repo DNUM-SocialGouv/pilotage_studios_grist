@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { TableShell } from "../components/FinanceRecap";
 import { useGristPa } from "../GristPaContext";
+import { NothingHerePage } from "../security/NothingHerePage";
 import { formatMontantEur } from "../utils/formatMontant";
 import { extractGristStringTokens } from "../utils/gristReferences";
 import { montantReste } from "../utils/montantReste";
@@ -19,44 +20,8 @@ export function BdcDetailView() {
   const bdc = data.bdcList.find((b) => b.id === bdcId);
   const useFullFinance = data.relatedStatus === "ok";
 
-  if (data.untrustedEmbed) {
-    return (
-      <div className="fr-py-1w">
-        <p className="fr-mb-2w">
-          <Link className="fr-link" to="/bdc">
-            ← Retour à la liste
-          </Link>
-        </p>
-        <Alert
-          severity="error"
-          title="Embed non autorisé"
-          description={
-            data.error ??
-            "Ce widget ne s’active que dans une page Grist (grist.numerique.gouv.fr)."
-          }
-        />
-      </div>
-    );
-  }
-
-  if (data.outsideGrist) {
-    return (
-      <div className="fr-py-1w">
-        <p className="fr-mb-2w">
-          <Link className="fr-link" to="/bdc">
-            ← Retour à la liste
-          </Link>
-        </p>
-        <Alert
-          severity="info"
-          title="Hors Grist / API indisponible"
-          description={
-            data.error ??
-            "Ce widget doit tourner dans une iframe Grist. Accès full, Select Data = Plan_activite."
-          }
-        />
-      </div>
-    );
+  if (data.untrustedEmbed || data.outsideGrist) {
+    return <NothingHerePage />;
   }
 
   if (data.loading) {
