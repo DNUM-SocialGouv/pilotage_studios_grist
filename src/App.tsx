@@ -6,8 +6,22 @@ import { BdcListView } from "./pages/BdcListView";
 import { PaDetailView } from "./pages/PaDetailView";
 import { PaListView } from "./pages/PaListView";
 import { StubPage } from "./pages/StubPage";
+import { getEmbedTrust } from "./security/embedTrust";
+import { NothingHerePage } from "./security/NothingHerePage";
+
+function shouldShowDeadPage(): boolean {
+  if (import.meta.env.DEV) {
+    return false;
+  }
+  const trust = getEmbedTrust();
+  return trust === "standalone" || trust === "untrusted";
+}
 
 export default function App() {
+  if (shouldShowDeadPage()) {
+    return <NothingHerePage />;
+  }
+
   return (
     <GristPaProvider>
       <MemoryRouter initialEntries={["/pa"]}>

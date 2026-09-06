@@ -61,7 +61,7 @@ Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait
 | Nav | `src/layout/WidgetNav.tsx` (`WIDGET_NAV_LINKS`) |
 | Pages | `src/pages/Pa*.tsx`, `Bdc*.tsx`, `StubPage.tsx` |
 | Données | `src/hooks/useGristPaData.ts`, `GristPaContext.tsx`, `gristMap.ts` |
-| Sécu | `src/security/embedTrust.ts`, `src/security/fetchTableAllowlist.ts` |
+| Sécu | `src/security/embedTrust.ts`, `NothingHerePage.tsx`, `fetchTableAllowlist.ts` |
 | Finance / refs | `src/utils/paFinance.ts`, `montantReste.tsx`, `gristReferences.ts` |
 
 ---
@@ -144,7 +144,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 | PA / finance | `docs/fonctionnel/pa/`, `paFinance.ts`, `PaListView` / `PaDetailView` |
 | BDC | `docs/fonctionnel/bdc/`, `BdcListView` / `BdcDetailView` |
 | Tableau DSFR | rule `dsfr-tableaux.mdc`, MCP `user-dsfr` |
-| Embed / secrets | `embedTrust.ts`, SECURITY |
+| Embed / secrets | `embedTrust.ts`, `NothingHerePage`, SECURITY |
 | Exploration Grist | MCP `user-grist` (lecture) — **pas** de clé dans le bundle |
 
 ### Validation
