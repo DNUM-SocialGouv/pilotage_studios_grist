@@ -1,6 +1,10 @@
-import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { extractGristAttachmentIds } from "../utils/gristAttachments";
-import { getGristAccessToken, gristAuthedUrl } from "../utils/gristAccessToken";
+import {
+  getGristAccessToken,
+  gristAuthedUrl,
+  type GristAccessToken,
+} from "../utils/gristAccessToken";
 
 type GristAttachmentDownloadLinkProps = {
   value: unknown;
@@ -62,8 +66,9 @@ function parseContentDispositionFileName(header: string | null): string | undefi
 
 async function fetchAttachmentMeta(
   attachmentId: number,
+  access?: GristAccessToken,
 ): Promise<{ fileName: string; fileSize: number }> {
-  const { token, baseUrl } = await getGristAccessToken(true);
+  const { token, baseUrl } = access ?? (await getGristAccessToken(true));
   const response = await fetch(gristAuthedUrl(baseUrl, `/attachments/${attachmentId}`, token));
   if (!response.ok) {
     throw new Error(`Métadonnées indisponibles (${response.status}).`);
@@ -81,13 +86,13 @@ async function fetchAttachmentMeta(
 async function downloadAttachment(
   attachmentId: number,
 ): Promise<{ blob: Blob; fileName: string }> {
-  const { token, baseUrl } = await getGristAccessToken(true);
+  const access = await getGristAccessToken(true);
   const [meta, response] = await Promise.all([
-    fetchAttachmentMeta(attachmentId).catch(() => ({
+    fetchAttachmentMeta(attachmentId, access).catch(() => ({
       fileName: `piece-jointe-${attachmentId}`,
       fileSize: 0,
     })),
-    fetch(gristAuthedUrl(baseUrl, `/attachments/${attachmentId}/download`, token)),
+    fetch(gristAuthedUrl(access.baseUrl, `/attachments/${attachmentId}/download`, access.token)),
   ]);
   if (!response.ok) {
     throw new Error(`Téléchargement impossible (${response.status}).`);
@@ -151,8 +156,7 @@ function SingleAttachmentDownloadLink({
       : fileName
     : displayLabel;
 
-  const onDownload = async (e: MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
+  const onDownload = async () => {
     if (downloading) {
       return;
     }
@@ -170,20 +174,19 @@ function SingleAttachmentDownloadLink({
 
   return (
     <div>
-      <a
+      <button
+        type="button"
         className="fr-link fr-link--download"
-        href="#"
-        download={fileName ?? true}
-        onClick={(e) => {
-          void onDownload(e);
+        onClick={() => {
+          void onDownload();
         }}
+        disabled={downloading}
         aria-busy={downloading || undefined}
-        aria-disabled={downloading || undefined}
         title={hoverTitle}
       >
         {downloading ? "Téléchargement…" : displayLabel}
         {detail ? <span className="fr-link__detail">{detail}</span> : null}
-      </a>
+      </button>
       {error ? (
         <span className="fr-error-text fr-mt-1v fr-mb-0" role="alert">
           {error}

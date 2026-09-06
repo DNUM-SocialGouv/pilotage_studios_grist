@@ -118,4 +118,10 @@ button.fr-link {
   padding: 0;
   cursor: pointer;
   font: inherit;
+  text-align: left;
+}
+
+button.fr-link:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }

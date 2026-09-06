@@ -52,7 +52,7 @@ Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait
 
 - React 19, TypeScript, Vite 8, React Router 6 (`MemoryRouter`)
 - DSFR `@codegouvfr/react-dsfr`
-- Données : `window.grist.ready` / `onRecords` / `fetchAllowlistedTable`
+- Données : `window.grist.ready` / `onRecords` / `fetchAllowlistedTable` ; table **BDC** via REST `getAccessToken` + [`gristRest.ts`](src/utils/gristRest.ts) (Sofiane / Attachments)
 - **Interdit** : embarquer `VITE_GRIST_API_KEY` ou clés LLM dans le bundle
 
 | Zone | Fichiers |
@@ -60,9 +60,9 @@ Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait
 | Routes | `src/App.tsx` |
 | Nav | `src/layout/WidgetNav.tsx` (`WIDGET_NAV_LINKS`) |
 | Pages | `src/pages/Pa*.tsx`, `Bdc*.tsx`, `StubPage.tsx` |
-| Données | `src/hooks/useGristPaData.ts`, `GristPaContext.tsx`, `gristMap.ts` |
+| Données | `src/hooks/useGristPaData.ts`, `GristPaContext.tsx`, `gristMap.ts`, `gristRest.ts`, `gristAccessToken.ts` |
 | Sécu | `src/security/embedTrust.ts`, `NothingHerePage.tsx`, `ensureFreshBuild.ts`, `fetchTableAllowlist.ts` |
-| Finance / refs | `src/utils/paFinance.ts`, `montantReste.tsx`, `gristReferences.ts` |
+| Finance / refs | `src/utils/paFinance.ts`, `montantReste.tsx`, `gristReferences.ts`, `equipeBadge.ts` |
 
 ---
 
@@ -73,7 +73,9 @@ Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait
 | Ancre widget + liste PA | `Plan_activite` |
 | Finance PA + écrans BDC (accès full) | `BDC`, `Constatations`, `Commandes_Sofiane` |
 
-**Allowlist** : uniquement via [`src/security/fetchTableAllowlist.ts`](src/security/fetchTableAllowlist.ts) (`FETCH_TABLE_ALLOWLIST`, `fetchAllowlistedTable`). Pas d’ID libre depuis l’UI. Nouvelle table = MAJ ce fichier + §4 + docs + [`SECURITY.md`](SECURITY.md).
+**Allowlist** : uniquement via [`src/security/fetchTableAllowlist.ts`](src/security/fetchTableAllowlist.ts) (`FETCH_TABLE_ALLOWLIST`, `fetchAllowlistedTable`) **et** REST `fetchGristRecordsViaToken` (même allowlist). Pas d’ID libre depuis l’UI. Nouvelle table = MAJ ce fichier + §4 + docs + [`SECURITY.md`](SECURITY.md).
+
+**BDC** : chargée via `docApi.getAccessToken({ readOnly: true })` → REST `/tables/BDC/records?auth=…` (jeton court, droits utilisateur) — pas de clé API dans le bundle. Attachments devis idem.
 
 ---
 
@@ -83,6 +85,7 @@ Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait
 npm ci
 npm run dev          # http://localhost:5175 — coller dans Grist
 npm run lint         # = tsc --noEmit
+npm run test         # node:test (helpers purs)
 npm run build        # tsc + vite build (dist/ pour Pages)
 ```
 
