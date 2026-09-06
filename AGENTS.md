@@ -30,12 +30,13 @@ Les **skills projet** (`.cursor/skills/`) priment sur les user rules générique
 
 | Path | Statut V1 |
 |------|-----------|
+| `/` | Accueil (welcome) — entrée par défaut |
 | `/pa`, `/pa/:id` | Implémenté (liste + fiche) |
 | `/bdc`, `/bdc/:id` | Implémenté (liste + fiche) |
-| `/produits`, `/missions`, `/intervenants`, `/cra`, `/pv`, `/evaluations` | Stub « À venir » |
-| `/analyse` | Stub — réservé à l’app (secrets LLM) |
+| `/produits`, `/missions`, `/intervenants`, `/cra`, `/pv` | Stub « À venir » (nav) |
+| `/evaluations`, `/analyse` | Stub hors nav |
 
-Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
+Entrée MemoryRouter : `/` (`WelcomePage`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
 
 ### Feuille de route pages
 
@@ -59,7 +60,7 @@ Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait
 |------|----------|
 | Routes | `src/App.tsx` |
 | Nav | `src/layout/WidgetNav.tsx` (`WIDGET_NAV_LINKS`) |
-| Pages | `src/pages/Pa*.tsx`, `Bdc*.tsx`, `StubPage.tsx` |
+| Pages | `src/pages/WelcomePage.tsx`, `Pa*.tsx`, `Bdc*.tsx`, `StubPage.tsx` |
 | Données | `src/hooks/useGristPaData.ts`, `GristPaContext.tsx`, `gristMap.ts`, `gristRest.ts`, `gristAccessToken.ts` |
 | Sécu | `src/security/embedTrust.ts`, `NothingHerePage.tsx`, `ensureFreshBuild.ts`, `fetchTableAllowlist.ts` |
 | Finance / refs | `src/utils/paFinance.ts`, `montantReste.tsx`, `gristReferences.ts`, `equipeBadge.ts` |
