@@ -20,6 +20,7 @@ Repérer si le module est **documenté**, **stub** ou **à documenter**.
 
 | Indices | Dossier `docs/fonctionnel/` |
 |---------|----------------------------|
+| `/` | `accueil/` |
 | `/pa`, `/pa/:id` | `pa/` |
 | `/bdc`, `/bdc/:id` | `bdc/` |
 | `/produits`… (stubs) | À créer au livrable |

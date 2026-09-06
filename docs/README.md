@@ -15,6 +15,7 @@ App sœur (hors iframe) : [pilotage_studios](https://github.com/DNUM-SocialGouv/
 
 | Module | Documentation | Statut |
 |--------|---------------|--------|
+| **Accueil** | [fonctionnel/accueil/](fonctionnel/accueil/) | Documenté (entrée `/`) |
 | **Plan d’activité** | [fonctionnel/pa/](fonctionnel/pa/) — [liste](fonctionnel/pa/liste.md) · [fiche](fonctionnel/pa/fiche.md) | Documenté |
 | **Bons de commande** | [fonctionnel/bdc/](fonctionnel/bdc/) — [liste](fonctionnel/bdc/liste.md) · [fiche](fonctionnel/bdc/fiche.md) | Documenté |
 | Produits, Missions, Intervenants, CRA, PV, Évaluations | — | Stub « À venir » (pas de dossier) |

@@ -6,6 +6,7 @@ import { BdcListView } from "./pages/BdcListView";
 import { PaDetailView } from "./pages/PaDetailView";
 import { PaListView } from "./pages/PaListView";
 import { StubPage } from "./pages/StubPage";
+import { WelcomePage } from "./pages/WelcomePage";
 import { getEmbedTrust } from "./security/embedTrust";
 import { NothingHerePage } from "./security/NothingHerePage";
 
@@ -24,10 +25,10 @@ export default function App() {
 
   return (
     <GristPaProvider>
-      <MemoryRouter initialEntries={["/pa"]}>
+      <MemoryRouter initialEntries={["/"]}>
         <Routes>
           <Route element={<WidgetLayout />}>
-            <Route index element={<Navigate to="/pa" replace />} />
+            <Route index element={<WelcomePage />} />
             <Route path="pa" element={<PaListView />} />
             <Route path="pa/:id" element={<PaDetailView />} />
             <Route path="bdc" element={<BdcListView />} />
@@ -39,7 +40,7 @@ export default function App() {
             <Route path="pv" element={<StubPage slug="pv" />} />
             <Route path="evaluations" element={<StubPage slug="evaluations" />} />
             <Route path="analyse" element={<StubPage slug="analyse" />} />
-            <Route path="*" element={<Navigate to="/pa" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
       </MemoryRouter>
