@@ -3,9 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache" />
     <title>Pilotage studios — Widget Grist</title>
-    <!-- Instance DINUM : build prod sans eval() (compatible CSP Pages) -->
-    <script src="https://grist.numerique.gouv.fr/grist-plugin-api.js"></script>
+    <!-- API vendored (build DINUM, sans eval) — évite blocage CSP / cache CDN tiers -->
+    <script src="./grist-plugin-api.js"></script>
+    <script>
+      // Signal précoce à Grist avant le boot React
+      (function () {
+        try {
+          if (window.parent !== window && window.grist && typeof window.grist.ready === "function") {
+            window.grist.ready({ requiredAccess: "full" });
+            window.__pilotageGristEarlyReady = true;
+          }
+        } catch (e) {
+          /* ignore */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

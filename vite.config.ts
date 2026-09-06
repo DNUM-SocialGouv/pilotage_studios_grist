@@ -2,13 +2,12 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 /**
- * CSP production. Pas de 'unsafe-eval' : utiliser
- * https://grist.numerique.gouv.fr/grist-plugin-api.js (build prod),
- * pas docs.getgrist.com (devtool eval → bloqué → « Hors Grist »).
+ * CSP stricte : scripts uniquement same-origin (API Grist vendored dans /grist-plugin-api.js).
+ * 'unsafe-inline' pour le bootstrap ready dans index.html.
  */
 const PROD_CSP = [
   "default-src 'self'",
-  "script-src 'self' https://grist.numerique.gouv.fr",
+  "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self'",
   "img-src 'self' data:",

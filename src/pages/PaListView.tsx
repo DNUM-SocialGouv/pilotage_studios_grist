@@ -166,8 +166,11 @@ export function PaListView() {
         <h1 className="fr-h3">Plans d’activité</h1>
         <Alert
           severity="info"
-          title="Hors Grist"
-          description="Ce widget attend l’API Custom Widget Grist. Dans Grist : widget Custom + URL Pages (ou http://localhost:5175) + Select Data = Plan_activite + accès full."
+          title="Hors Grist / API indisponible"
+          description={
+            data.error ??
+            "Ce widget doit tourner dans une iframe Grist (Custom URL). Si vous êtes dans Grist : forcez le rechargement avec ?v=3 sur l’URL Pages, accès full, Select Data = Plan_activite."
+          }
         />
       </div>
     );
