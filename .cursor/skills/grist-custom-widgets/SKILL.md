@@ -24,13 +24,13 @@ grist.ready({ requiredAccess: 'full' }); // 2. puis ready
 | `onRecords` | **Uniquement** les champs du *view section* du widget (« Colonnes visibles » dans Grist) |
 | `docApi.fetchTable(tableId)` | **Toutes** les colonnes (accès `full`) |
 
-Dans ce projet : hydratation PA via `fetchTable('Plan_activite')` + `onRecords` pour le live.
+Dans ce projet : hydratation PA via `fetchAllowlistedTable('Plan_activite')` + `onRecords` pour le live. Tables liées : allowlist + garde runtime `src/security/fetchTableAllowlist.ts`.
 
 ## Accès
 
 - `none` | `read table` | `full`
 - V1 Pilotage : `full` pour BDC / Constatations / Commandes_Sofiane
-
+- Select Data reste **`Plan_activite`** (ancre) même après ajout des écrans BDC / Produits, etc.
 ## Script API
 
 - Préférer **`./grist-plugin-api.js` vendored** (build `grist.numerique.gouv.fr`, sans `eval`)

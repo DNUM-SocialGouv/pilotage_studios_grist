@@ -4,10 +4,6 @@ const STUB_COPY: Record<
   string,
   { title: string; description: string; severity?: "info" | "warning" }
 > = {
-  bdc: {
-    title: "Bons de commande",
-    description: "Écran à venir dans le widget Grist. Disponible dans l’app Pilotage studios (`/bdc`).",
-  },
   produits: {
     title: "Produits SDPC",
     description: "Écran à venir. Disponible dans l’app Pilotage studios (`/produits`).",

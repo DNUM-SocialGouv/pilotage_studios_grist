@@ -21,7 +21,7 @@ export function PaDetailView() {
     return (
       <div className="fr-py-1w">
         <p className="fr-mb-2w">
-          <Link className="fr-link" to="/">
+          <Link className="fr-link" to="/pa">
             ← Retour à la liste
           </Link>
         </p>
@@ -44,7 +44,7 @@ export function PaDetailView() {
   return (
     <div className="fr-py-1w">
       <p className="fr-mb-2w">
-        <Link className="fr-link" to="/">
+        <Link className="fr-link" to="/pa">
           ← Retour à la liste
         </Link>
       </p>
@@ -113,7 +113,11 @@ export function PaDetailView() {
               ) : (
                 paBdcs.map((bdc) => (
                   <tr key={bdc.id}>
-                    <th scope="row">{bdc.Nom_BdC?.trim() || `BDC #${bdc.id}`}</th>
+                    <th scope="row">
+                      <Link className="fr-link" to={`/bdc/${bdc.id}`}>
+                        {bdc.Nom_BdC?.trim() || `BDC #${bdc.id}`}
+                      </Link>
+                    </th>
                     <td className="fr-cell--right">{formatMontantEur(bdc.Montant_TTC)}</td>
                     <td className="fr-cell--right">{formatMontantEur(bdc.Total_TTC_CRA)}</td>
                   </tr>

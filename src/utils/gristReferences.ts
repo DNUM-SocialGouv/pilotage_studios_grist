@@ -1,3 +1,99 @@
+/** Liste multi-valeurs Grist : souvent `["L", ...valeurs]`. */
+export function parseGristList(value: unknown): string[] {
+  if (value == null) {
+    return [];
+  }
+  if (Array.isArray(value) && value[0] === "L") {
+    return value.slice(1).map(String);
+  }
+  if (
+    Array.isArray(value) &&
+    value[0] === "l" &&
+    value.length >= 2 &&
+    typeof value[1] === "string"
+  ) {
+    return [value[1]];
+  }
+  if (Array.isArray(value)) {
+    return value.map(String);
+  }
+  return [String(value)];
+}
+
+/** Tokens texte d’une Choice / ChoiceList (équipe, etc.). */
+export function extractGristStringTokens(value: unknown): string[] {
+  if (value == null) {
+    return [];
+  }
+  if (Array.isArray(value)) {
+    return parseGristList(value)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+  }
+  if (typeof value === "string") {
+    const t = value.trim();
+    if (t.length === 0) {
+      return [];
+    }
+    if (t.startsWith("[")) {
+      try {
+        const parsed: unknown = JSON.parse(t);
+        if (Array.isArray(parsed)) {
+          return parseGristList(parsed)
+            .map((s) => s.trim())
+            .filter((s) => s.length > 0);
+        }
+      } catch {
+        /* chaîne non JSON */
+      }
+    }
+    return [t];
+  }
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return [String(value)];
+  }
+  return [];
+}
+
+function normalizeGristChoiceString(s: string): string {
+  return s.replace(/\u00a0/g, " ").trim();
+}
+
+/**
+ * Libellé d’une colonne Grist Choice / ChoiceList (string, objet `{choice|label}`, liste `["L", …]`).
+ */
+export function normalizeGristChoice(value: unknown): string {
+  if (value == null || value === "") {
+    return "";
+  }
+  if (typeof value === "string") {
+    return normalizeGristChoiceString(value);
+  }
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return String(value);
+  }
+  if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+    const o = value as Record<string, unknown>;
+    if (typeof o.choice === "string") {
+      return normalizeGristChoiceString(o.choice);
+    }
+    if (typeof o.label === "string") {
+      return normalizeGristChoiceString(o.label);
+    }
+  }
+  const tokens = extractGristStringTokens(value);
+  if (tokens.length > 0) {
+    return normalizeGristChoiceString(tokens[0]!);
+  }
+  return normalizeGristChoiceString(String(value));
+}
+
+/** Comme `normalizeGristChoice`, mais `undefined` si vide. */
+export function asGristChoice(value: unknown): string | undefined {
+  const s = normalizeGristChoice(value);
+  return s.length > 0 ? s : undefined;
+}
+
 /**
  * Extrait l’id de ligne cible d’une valeur « référence » Grist (nombre, chaîne, tuple, etc.).
  */
