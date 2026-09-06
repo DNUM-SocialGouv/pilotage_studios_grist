@@ -38,6 +38,7 @@ Ce n’est **pas** « tout Internet lit notre Grist » ; c’est « un attaquant
 6. **Pas de source maps** en production.
 7. **Repo** : revue PR / protection de `main` recommandées (org).
 8. **Dependabot / `npm audit`** dans la CI Pages.
+9. **Auto-bust cache** (`version.json` + `ensureFreshBuild`) : après un déploiement Pages, l’iframe se recharge seule si le HTML/JS en cache est périmé — URL Grist stable, sans `?v=` manuel.
 
 ## Limites GitHub Pages
 

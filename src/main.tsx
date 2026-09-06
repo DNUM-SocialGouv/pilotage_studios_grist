@@ -5,13 +5,20 @@ import "@codegouvfr/react-dsfr/dsfr/dsfr.min.css";
 import "@codegouvfr/react-dsfr/dsfr/utility/icons/icons.min.css";
 import "./index.css";
 import App from "./App";
+import { ensureFreshBuild } from "./security/ensureFreshBuild";
 
-startReactDsfr({
-  defaultColorScheme: "light",
-});
+async function boot() {
+  await ensureFreshBuild();
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+  startReactDsfr({
+    defaultColorScheme: "light",
+  });
+
+  createRoot(document.getElementById("root")!).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+}
+
+void boot();

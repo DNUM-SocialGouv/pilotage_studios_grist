@@ -143,7 +143,7 @@ export function useGristPaData(): GristPaData {
           embedTrust: trust,
           connected: false,
           error:
-            "API Grist indisponible (script bloqué ou hors iframe). Vérifiez la CSP et l’URL du widget (?v=4).",
+            "API Grist indisponible (script bloqué ou hors iframe). Vérifiez la CSP et l’URL du widget.",
         });
         return;
       }

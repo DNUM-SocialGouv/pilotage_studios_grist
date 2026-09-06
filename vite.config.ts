@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 
 /**
@@ -18,22 +18,48 @@ const PROD_CSP = [
   "frame-src 'none'",
 ].join("; ");
 
-export default defineConfig(({ command }) => ({
-  plugins: [
-    react(),
-    {
-      name: "inject-prod-csp",
-      transformIndexHtml(html) {
-        if (command !== "build") {
-          return html;
-        }
-        return html.replace(
-          "<head>",
-          `<head>\n    <meta http-equiv="Content-Security-Policy" content="${PROD_CSP}" />`,
-        );
-      },
+/** SHA court en CI, sinon timestamp — partagé HTML / bundle / version.json. */
+const BUILD_ID =
+  (process.env.GITHUB_SHA && process.env.GITHUB_SHA.slice(0, 12)) ||
+  Date.now().toString(36);
+
+function emitVersionJson(): Plugin {
+  return {
+    name: "emit-version-json",
+    generateBundle() {
+      this.emitFile({
+        type: "asset",
+        fileName: "version.json",
+        source: JSON.stringify({ buildId: BUILD_ID }, null, 0),
+      });
     },
-  ],
+  };
+}
+
+function injectProdHtml(): Plugin {
+  return {
+    name: "inject-prod-html",
+    transformIndexHtml(html) {
+      let out = html;
+      out = out.replace(
+        "<head>",
+        `<head>\n    <meta http-equiv="Content-Security-Policy" content="${PROD_CSP}" />`,
+      );
+      out = out.replace(
+        'src="./grist-plugin-api.js"',
+        `src="./grist-plugin-api.js?b=${BUILD_ID}"`,
+      );
+      return out;
+    },
+    apply: "build",
+  };
+}
+
+export default defineConfig({
+  define: {
+    __BUILD_ID__: JSON.stringify(BUILD_ID),
+  },
+  plugins: [react(), injectProdHtml(), emitVersionJson()],
   base: "./",
   build: {
     sourcemap: false,
@@ -50,4 +76,4 @@ export default defineConfig(({ command }) => ({
   resolve: {
     dedupe: ["react", "react-dom"],
   },
-}));
+});

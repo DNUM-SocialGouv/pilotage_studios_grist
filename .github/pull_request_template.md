@@ -11,7 +11,7 @@
 ## Test manuel
 
 - [ ] `npm run lint && npm run build`
-- [ ] Widget dans Grist (URL Pages avec `?v=` ou `http://localhost:5175`)
+- [ ] Widget dans Grist (URL Pages stable ou `http://localhost:5175`)
 - [ ] Accès **full** + Select Data = table attendue
 - [ ] Navigation MemoryRouter OK
 

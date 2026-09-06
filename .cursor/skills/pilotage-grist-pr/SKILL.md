@@ -32,7 +32,7 @@ gh pr create --repo DNUM-SocialGouv/pilotage_studios_grist \
 …
 
 ## Test
-- [ ] Widget dans Grist (URL Pages `?v=` ou localhost:5175)
+- [ ] Widget dans Grist (URL Pages stable ou localhost:5175)
 - [ ] Accès full + table Plan_activite
 - [ ] Navigation MemoryRouter OK
 
