@@ -167,7 +167,7 @@ export function PaListView() {
         <Alert
           severity="info"
           title="Hors Grist"
-          description="Ce widget attend l’API Custom Widget. Lancez-le via un widget Custom dans Grist (URL http://localhost:5175) avec Select Data = Plan_activite."
+          description="Ce widget attend l’API Custom Widget Grist. Dans Grist : widget Custom + URL Pages (ou http://localhost:5175) + Select Data = Plan_activite + accès full."
         />
       </div>
     );

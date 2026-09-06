@@ -85,73 +85,98 @@ export function useGristPaData(): GristPaData {
       return;
     }
 
-    const grist = window.grist;
-    if (trust === "standalone" || !grist?.ready || !grist.onRecords) {
-      setState({
-        ...EMPTY,
-        loading: false,
-        outsideGrist: true,
-        embedTrust: trust,
-        connected: false,
-        error: null,
-      });
-      return;
-    }
-
     let cancelled = false;
+    let attempts = 0;
+    const maxAttempts = 40; // ~4s si script encore en chargement
 
-    const loadRelated = async () => {
-      setState((prev) => ({
-        ...prev,
-        relatedStatus: "loading",
-        relatedError: null,
-      }));
-      try {
-        const related = await fetchRelatedTables();
-        if (cancelled) {
-          return;
-        }
-        setState((prev) => ({
-          ...prev,
-          ...related,
-          relatedStatus: "ok",
-          relatedError: null,
-        }));
-      } catch (err) {
-        if (cancelled) {
-          return;
-        }
-        const message = err instanceof Error ? err.message : String(err);
-        setState((prev) => ({
-          ...prev,
-          bdcList: [],
-          constatations: [],
-          commandes: [],
-          relatedStatus: "denied",
-          relatedError: message,
-        }));
-      }
-    };
-
-    // full = lecture tables liées ; aucune écriture dans ce widget V1
-    grist.ready({ requiredAccess: "full" });
-    grist.onRecords((records) => {
+    const tryConnect = () => {
       if (cancelled) {
         return;
       }
-      const plans = records.map(toPlanActivite);
-      setState((prev) => ({
-        ...prev,
-        connected: true,
-        outsideGrist: false,
-        untrustedEmbed: false,
-        embedTrust: trust,
-        loading: false,
-        error: null,
-        plans,
-      }));
-      void loadRelated();
-    });
+      const grist = window.grist;
+      if (trust === "standalone") {
+        setState({
+          ...EMPTY,
+          loading: false,
+          outsideGrist: true,
+          embedTrust: trust,
+          connected: false,
+          error: null,
+        });
+        return;
+      }
+      if (!grist?.ready || !grist.onRecords) {
+        attempts += 1;
+        if (attempts < maxAttempts) {
+          window.setTimeout(tryConnect, 100);
+          return;
+        }
+        setState({
+          ...EMPTY,
+          loading: false,
+          outsideGrist: true,
+          embedTrust: trust,
+          connected: false,
+          error:
+            "API Grist indisponible (script bloqué ou hors iframe). Vérifiez la CSP et l’URL du widget.",
+        });
+        return;
+      }
+
+      const loadRelated = async () => {
+        setState((prev) => ({
+          ...prev,
+          relatedStatus: "loading",
+          relatedError: null,
+        }));
+        try {
+          const related = await fetchRelatedTables();
+          if (cancelled) {
+            return;
+          }
+          setState((prev) => ({
+            ...prev,
+            ...related,
+            relatedStatus: "ok",
+            relatedError: null,
+          }));
+        } catch (err) {
+          if (cancelled) {
+            return;
+          }
+          const message = err instanceof Error ? err.message : String(err);
+          setState((prev) => ({
+            ...prev,
+            bdcList: [],
+            constatations: [],
+            commandes: [],
+            relatedStatus: "denied",
+            relatedError: message,
+          }));
+        }
+      };
+
+      grist.ready({ requiredAccess: "full" });
+      grist.onRecords((records) => {
+        if (cancelled) {
+          return;
+        }
+        const plans = records.map(toPlanActivite);
+        setState((prev) => ({
+          ...prev,
+          connected: true,
+          outsideGrist: false,
+          untrustedEmbed: false,
+          embedTrust: trust,
+          loading: false,
+          error: null,
+          plans,
+        }));
+        void loadRelated();
+      });
+    };
+
+    tryConnect();
 
     return () => {
       cancelled = true;

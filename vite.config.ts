@@ -1,14 +1,18 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-/** CSP production (meta) — renforce le navigateur ; frame-ancestors nécessite un header HTTP (hors Pages). */
+/**
+ * CSP production. Pas de 'unsafe-eval' : utiliser
+ * https://grist.numerique.gouv.fr/grist-plugin-api.js (build prod),
+ * pas docs.getgrist.com (devtool eval → bloqué → « Hors Grist »).
+ */
 const PROD_CSP = [
   "default-src 'self'",
-  "script-src 'self' https://docs.getgrist.com",
+  "script-src 'self' https://grist.numerique.gouv.fr",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self'",
   "img-src 'self' data:",
-  "connect-src 'self' https://grist.numerique.gouv.fr https://docs.getgrist.com",
+  "connect-src 'self' https://grist.numerique.gouv.fr",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'none'",
