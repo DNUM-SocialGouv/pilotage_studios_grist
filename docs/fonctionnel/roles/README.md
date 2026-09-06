@@ -19,7 +19,7 @@ Documentation **métier / ACL** du document Grist `nei9DeARs5Eo` (Pilotage studi
 | Fichier | Contenu |
 |---------|---------|
 | [inventaire-partage.md](inventaire-partage.md) | Synthèse anonymisée (versionnée) |
-| [`private/`](private/) *(gitignoré)* | Inventaire nominatif local — supprimer à la fin du chantier |
+| `docs/fonctionnel/roles/private/` *(gitignoré, hors git)* | Inventaire nominatif local — `rm -rf` en fin de chantier |
 | [matrice-droits.md](matrice-droits.md) | Brouillon tables × 4 rôles (à valider) |
 | [prep-equipe.md](prep-equipe.md) | Colonne `Role` + backlog emails |
 | [access-rules.md](access-rules.md) | ACL actuelles + procédure User Attributes / View As |

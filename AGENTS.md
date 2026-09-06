@@ -150,7 +150,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 | BDC | `docs/fonctionnel/bdc/`, `BdcListView` / `BdcDetailView` |
 | Tableau DSFR | rule `dsfr-tableaux.mdc`, MCP `user-dsfr` |
 | Embed / secrets | `embedTrust.ts`, `NothingHerePage`, `ensureFreshBuild`, SECURITY |
-| Rôles / ACL document | `docs/fonctionnel/roles/`, MCP `grist_list_doc_access` / `grist_access_gap_report` |
+| Rôles / ACL document | `docs/fonctionnel/roles/` ; inventaire via MCP **local** `grist-mcp-server` (`grist_list_doc_access` / `grist_access_gap_report`) — hors bundle widget |
 | Exploration Grist | MCP `user-grist` (lecture) — **pas** de clé dans le bundle |
 
 ### Validation

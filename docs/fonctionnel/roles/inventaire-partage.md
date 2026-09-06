@@ -3,10 +3,12 @@
 **Repo public** : ce fichier ne contient **aucune** donnée nominative (noms, emails).
 
 Listes détaillées (prénoms, emails) : dossier local gitignoré  
-[`private/inventaire-partage-nominatif.md`](private/inventaire-partage-nominatif.md)  
-(à supprimer plus tard : `rm -rf docs/fonctionnel/roles/private`).
+`docs/fonctionnel/roles/private/` (ex. `inventaire-partage-nominatif.md`) — absent du dépôt GitHub.  
+Suppression en fin de chantier : `rm -rf docs/fonctionnel/roles/private`.
 
 ## Comment regenerer l’inventaire nominatif
+
+Via le **MCP Grist local** (`grist-mcp-server`, hors de ce dépôt) :
 
 ```text
 grist_list_doc_access(docId)
@@ -16,7 +18,7 @@ grist_access_gap_report(docId)
 Écrire le résultat sous `docs/fonctionnel/roles/private/` (déjà dans `.gitignore`).  
 Ne jamais coller emails / noms dans une PR ni dans les docs versionnées.
 
-## Synthèse anonymisée (snapshot 2026-09-06)
+## Synthèse anonymisée (indicatif — snapshot 2026-09-06, à rafraîchir via MCP)
 
 | Indicateur | Valeur |
 |------------|--------|
@@ -51,11 +53,11 @@ Présents dans `Equipe.E_mail` et/ou sur le partage :
 
 Répartition indicative des Actifs sans email (comptages par département `Equipe`) : Access. 5 · Design 1 · Product 1 · RU 3 · Tech 5.
 
-Détail nominatif : [`private/inventaire-partage-nominatif.md`](private/inventaire-partage-nominatif.md).
+Détail nominatif : fichier local sous `docs/fonctionnel/roles/private/` (non versionné).
 
 ## MCP
 
-Outils utiles (serveur local `grist-mcp-server`) :
+Outils utiles du serveur **local** `grist-mcp-server` (pas le bundle widget, pas ce repo) :
 
 - `grist_list_doc_access`
 - `grist_users_for_view_as`

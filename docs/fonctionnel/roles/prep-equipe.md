@@ -15,12 +15,12 @@ Remplissage des valeurs : **manuel / HITL** après validation de [matrice-droits
 ## Emails Actifs à compléter
 
 Compteur anonymisé : **15** Actifs sans `E_mail` (voir [inventaire-partage.md](inventaire-partage.md)).  
-Liste nominative (local, gitignoré) : [`private/inventaire-partage-nominatif.md`](private/inventaire-partage-nominatif.md).
+Liste nominative : dossier local gitignoré `docs/fonctionnel/roles/private/` (hors git).
 
 ## Alias email
 
 Règle : stocker dans `E_mail` **exactement** l’adresse du compte Grist.  
-Cas concrets (local) : section « Alias » du fichier nominatif sous `private/`.
+Cas concrets : section « Alias » du fichier nominatif local sous `private/` (si présent).
 
 ## Repo public
 
