@@ -8,7 +8,7 @@
 
 ## Objet métier
 
-Consultation **lecture seule** des bons de commande Grist dans l’iframe : budget TTC, consommé CRA, solde CRA, rattachement PA.
+Consultation **lecture seule** des bons de commande Grist dans l’iframe : récap financier (KPI + barre % consommé), rattachement PA.
 
 | Outil | Rôle |
 |-------|------|
@@ -29,7 +29,8 @@ Consultation **lecture seule** des bons de commande Grist dans l’iframe : budg
 ## Règles d’affichage
 
 - Montants EUR (`formatMontantEur`) ; vide → `—`
-- Solde CRA / restes négatifs en rouge (`montantReste`)
+- Fiche : récap `BdcFinanceRecap` (Budget / Consommé CRA / Solde CRA + barre %) ; solde négatif en rouge
+- Liste : soldes négatifs en rouge (`montantReste`)
 - Équipe : tokens via `extractGristStringTokens(Equipe2)` ; badges couleur stables (`EquipeBadges` / `equipeBadgeClass`)
 - Ref PA : `bdcPaRefId` / `extractGristReferenceId`
 

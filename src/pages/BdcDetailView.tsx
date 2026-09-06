@@ -1,11 +1,10 @@
 import { Link, useParams } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
-import { TableShell } from "../components/FinanceRecap";
+import { BdcFinanceRecap } from "../components/BdcFinanceRecap";
+import { EquipeBadges } from "../components/EquipeBadges";
 import { useGristPa } from "../GristPaContext";
 import { NothingHerePage } from "../security/NothingHerePage";
-import { EquipeBadges } from "../components/EquipeBadges";
 import { formatMontantEur } from "../utils/formatMontant";
-import { montantReste } from "../utils/montantReste";
 import {
   bdcPaRefId,
   financeForPlanActivite,
@@ -110,6 +109,7 @@ export function BdcDetailView() {
         ? financeForPlanActivite(linkedPa, data.bdcList, data.constatations, data.commandes)
         : financePaOnly(linkedPa)
       : null;
+
   return (
     <div className="fr-py-1w">
       <p className="fr-mb-2w">
@@ -120,58 +120,29 @@ export function BdcDetailView() {
       <p className="fr-text--sm fr-mb-1v">{bdc.Statut?.trim() || "Sans statut"}</p>
       <h1 className="fr-h3">{bdc.Nom_BdC?.trim() || `BDC #${bdc.id}`}</h1>
 
-      <h2 className="fr-h5">Synthèse financière</h2>
-      <TableShell className="fr-mb-3w">
-        <table>
-          <caption className="fr-sr-only">Montants du bon de commande</caption>
-          <thead>
-            <tr>
-              <th scope="col" className="fr-cell--right">
-                Budget TTC
-              </th>
-              <th scope="col" className="fr-cell--right">
-                Consommé CRA
-              </th>
-              <th scope="col" className="fr-cell--right">
-                Solde CRA
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="fr-cell--right">{formatMontantEur(bdc.Montant_TTC)}</td>
-              <td className="fr-cell--right">{formatMontantEur(bdc.Total_TTC_CRA)}</td>
-              <td className="fr-cell--right">{montantReste(bdc.Solde_TTC_CRA)}</td>
-            </tr>
-          </tbody>
-        </table>
-      </TableShell>
+      <BdcFinanceRecap
+        budgetTtc={bdc.Montant_TTC}
+        consommeCra={bdc.Total_TTC_CRA}
+        soldeCra={bdc.Solde_TTC_CRA}
+      />
 
       <h2 className="fr-h5">Informations</h2>
-      <dl className="fr-grid-row fr-grid-row--gutters fr-mb-3w">
-        <div className="fr-col-6 fr-col-md-4">
-          <dt className="fr-text--sm">Financeur</dt>
-          <dd className="fr-mb-0">{bdc.Financeur?.trim() || "—"}</dd>
+      <div className="fr-grid-row fr-grid-row--gutters fr-mb-3w">
+        <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
+          <p className="bdc-detail-info-field__label">Financeur</p>
+          <p className="bdc-detail-info-field__value">{bdc.Financeur?.trim() || "—"}</p>
         </div>
-        <div className="fr-col-6 fr-col-md-4">
-          <dt className="fr-text--sm">Chorus</dt>
-          <dd className="fr-mb-0">{bdc.BdC_Chorus?.trim() || "—"}</dd>
+        <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
+          <p className="bdc-detail-info-field__label">Chorus</p>
+          <p className="bdc-detail-info-field__value">{bdc.BdC_Chorus?.trim() || "—"}</p>
         </div>
-        <div className="fr-col-6 fr-col-md-4">
-          <dt className="fr-text--sm">Plan d’activité</dt>
-          <dd className="fr-mb-0">
+        <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
+          <p className="bdc-detail-info-field__label">Plan d’activité</p>
+          <p className="bdc-detail-info-field__value">
             {linkedPa ? (
-              <>
-                <Link className="fr-link" to={`/pa/${linkedPa.id}`}>
-                  {libellePlanActivite(linkedPa)}
-                </Link>
-                {paFinance ? (
-                  <span className="fr-text--sm">
-                    {" "}
-                    · reste à consommer {formatMontantEur(paFinance.resteAConsommer)}
-                  </span>
-                ) : null}
-              </>
+              <Link className="fr-link" to={`/pa/${linkedPa.id}`}>
+                {libellePlanActivite(linkedPa)}
+              </Link>
             ) : paId != null ? (
               <Link className="fr-link" to={`/pa/${paId}`}>
                 PA #{paId}
@@ -179,23 +150,31 @@ export function BdcDetailView() {
             ) : (
               "—"
             )}
-          </dd>
+          </p>
         </div>
-        <div className="fr-col-6 fr-col-md-4">
-          <dt className="fr-text--sm">Plateforme</dt>
-          <dd className="fr-mb-0">{bdc.Plateforme?.trim() || "—"}</dd>
+        <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
+          <p className="bdc-detail-info-field__label">Plateforme</p>
+          <p className="bdc-detail-info-field__value">{bdc.Plateforme?.trim() || "—"}</p>
         </div>
-        <div className="fr-col-6 fr-col-md-4">
-          <dt className="fr-text--sm">Engagement</dt>
-          <dd className="fr-mb-0">{bdc.Engagement?.trim() || "—"}</dd>
+        <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
+          <p className="bdc-detail-info-field__label">Engagement</p>
+          <p className="bdc-detail-info-field__value">{bdc.Engagement?.trim() || "—"}</p>
         </div>
-        <div className="fr-col-6 fr-col-md-4">
-          <dt className="fr-text--sm">Équipe</dt>
-          <dd className="fr-mb-0">
+        <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
+          <p className="bdc-detail-info-field__label">Équipe</p>
+          <div className="bdc-detail-info-field__value">
             <EquipeBadges value={bdc.Equipe2} />
-          </dd>
+          </div>
         </div>
-      </dl>
+        {paFinance ? (
+          <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
+            <p className="bdc-detail-info-field__label">Reste à consommer du PA</p>
+            <p className="bdc-detail-info-field__value">
+              {formatMontantEur(paFinance.resteAConsommer)}
+            </p>
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }

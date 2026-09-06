@@ -4,7 +4,7 @@
 
 ## Objet
 
-Détail d’un BDC : synthèse financière, informations, lien vers le PA et reste à consommer du PA.
+Détail d’un BDC : récap financier (KPI + barre), informations, lien vers le PA.
 
 ## Parcours
 
@@ -25,13 +25,35 @@ Détail d’un BDC : synthèse financière, informations, lien vers le PA et res
 | Accès multi-tables denied / error | Alerte warning (full requis) |
 | Chargement BDC | « Chargement du bon de commande… » |
 | BDC introuvable | Alerte warning |
-| OK | Synthèse + informations |
+| OK | Récap + informations |
 
-## Contenu
+## Récap financier
 
-- Statut (sous-titre) + titre (`Nom_BdC` ou `BDC #id`)
-- Synthèse : budget TTC, consommé CRA, solde CRA
-- Informations : financeur, Chorus, **plan d’activité** (lien `/pa/:id` + reste à consommer si calculable), plateforme, engagement, équipe (badges couleur — même mapping que la liste)
+Sous le titre, pattern aligné sur l’app sœur (`BdcFinanceRecap`, PR pilotage_studios #198) :
+
+| Bloc | Source |
+|------|--------|
+| Budget TTC | `Montant_TTC` |
+| Total consommé (CRA) | `Total_TTC_CRA` |
+| Solde CRA | `Solde_TTC_CRA` (rouge si négatif) |
+
+Barre « % consommé » vs budget (`Total_TTC_CRA / Montant_TTC`) ; segment plafonné à 100 % en cas de dépassement.
+
+## Informations
+
+Grille définition (labels au-dessus des valeurs, 4 colonnes ≥ lg / 2 ≥ sm) :
+
+| Champ | Source |
+|-------|--------|
+| Financeur | `Financeur` |
+| Chorus | `BdC_Chorus` |
+| Plan d’activité | `PA` → lien `/pa/:id` |
+| Plateforme | `Plateforme` |
+| Engagement | `Engagement` |
+| Équipe | `Equipe2` (badges couleur) |
+| Reste à consommer du PA | calculé si PA lié |
+
+Hors scope widget (présents dans l’app sœur) : Sofiane, devis (attachments), onglets suivi CRA / PV.
 
 ## Liens croisés
 
