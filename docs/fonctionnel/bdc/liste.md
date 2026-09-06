@@ -29,10 +29,10 @@ Parcourir les BDC, filtrer, ouvrir une fiche ; lien vers le PA rattaché.
 
 ## Filtres
 
-Recherche (nom, financeur, n° Chorus, statut, plateforme, libellé PA, équipe), **statut**, **financeur**. Réinitialiser. Combinables.
+Recherche (placeholder : nom, financeur, n° Chorus, PA, équipe…), **statut**, **financeur**, **équipe**. Réinitialiser. Combinables.
 
-Options statut / financeur dérivées des valeurs présentes dans les lignes chargées.
+Options statut / financeur / équipe dérivées des valeurs présentes dans les lignes chargées. Filtre équipe : le BDC est conservé s’il contient au moins le token sélectionné (`Equipe2`).
 
 ## Colonnes
 
-Nom (lien `/bdc/:id`), PA (lien `/pa/:id` ou `—`), statut, financeur, budget TTC, consommé CRA, solde CRA (`montantReste`).
+Nom (lien `/bdc/:id`), PA (lien `/pa/:id` ou `—`), plateforme, statut, équipe (badges couleur via `EquipeBadges` / `equipeBadgeClass`), financeur, budget TTC, consommé CRA, solde CRA (`montantReste`).

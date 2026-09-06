@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination";
 import { Select } from "@codegouvfr/react-dsfr/Select";
+import { EquipeBadges } from "../components/EquipeBadges";
 import { TableShell } from "../components/FinanceRecap";
 import { useGristPa } from "../GristPaContext";
 import { NothingHerePage } from "../security/NothingHerePage";
@@ -23,6 +24,7 @@ export function BdcListView() {
   const [searchDraft, setSearchDraft] = useState("");
   const [statutFilter, setStatutFilter] = useState("");
   const [financeurFilter, setFinanceurFilter] = useState("");
+  const [equipeFilter, setEquipeFilter] = useState("");
   const [page, setPage] = useState(1);
 
   const paById = useMemo(() => {
@@ -55,11 +57,23 @@ export function BdcListView() {
     return Array.from(set).sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
   }, [data.bdcList]);
 
+  const equipeOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const bdc of data.bdcList) {
+      for (const equipe of extractGristStringTokens(bdc.Equipe2)) {
+        set.add(equipe);
+      }
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
+  }, [data.bdcList]);
+
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
     return data.bdcList.filter((bdc) => {
+      const equipes = extractGristStringTokens(bdc.Equipe2);
       const okStatut = !statutFilter || bdc.Statut?.trim() === statutFilter;
       const okFinanceur = !financeurFilter || bdc.Financeur?.trim() === financeurFilter;
+      const okEquipe = !equipeFilter || equipes.includes(equipeFilter);
       const paId = bdcPaRefId(bdc);
       const paLabel = paId != null ? (paById.get(paId) ?? `PA #${paId}`) : "";
       const hay = [
@@ -69,27 +83,30 @@ export function BdcListView() {
         bdc.Statut,
         bdc.Plateforme,
         paLabel,
-        extractGristStringTokens(bdc.Equipe2).join(" "),
+        equipes.join(" "),
       ]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
       const okSearch = !q || hay.includes(q);
-      return okStatut && okFinanceur && okSearch;
+      return okStatut && okFinanceur && okEquipe && okSearch;
     });
-  }, [data.bdcList, financeurFilter, paById, search, statutFilter]);
+  }, [data.bdcList, equipeFilter, financeurFilter, paById, search, statutFilter]);
 
   const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   const safePage = Math.min(page, pageCount);
   const paginated = rows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
-  const filtersActive = Boolean(search.trim() || statutFilter || financeurFilter);
+  const filtersActive = Boolean(
+    search.trim() || statutFilter || financeurFilter || equipeFilter,
+  );
 
   const resetFilters = () => {
     setSearch("");
     setSearchDraft("");
     setStatutFilter("");
     setFinanceurFilter("");
+    setEquipeFilter("");
     setPage(1);
   };
 
@@ -160,12 +177,13 @@ export function BdcListView() {
         <div className="fr-col-12">
           <div className="fr-search-bar" role="search">
             <label className="fr-label" htmlFor="bdc-widget-search">
-              Rechercher un BDC (nom, financeur, n° Chorus, PA…)
+              Rechercher un BDC
             </label>
             <input
               className="fr-input"
               type="search"
               id="bdc-widget-search"
+              placeholder="Nom, financeur, n° Chorus, PA, équipe…"
               value={searchDraft}
               onChange={(e) => setSearchDraft(e.currentTarget.value)}
               onKeyDown={(e) => {
@@ -189,7 +207,7 @@ export function BdcListView() {
             </button>
           </div>
         </div>
-        <div className="fr-col-12 fr-col-md-6">
+        <div className="fr-col-12 fr-col-md-4">
           <Select
             label="Statut"
             nativeSelectProps={{
@@ -208,7 +226,7 @@ export function BdcListView() {
             ))}
           </Select>
         </div>
-        <div className="fr-col-12 fr-col-md-6">
+        <div className="fr-col-12 fr-col-md-4">
           <Select
             label="Financeur"
             nativeSelectProps={{
@@ -223,6 +241,25 @@ export function BdcListView() {
             {financeurOptions.map((financeur) => (
               <option key={financeur} value={financeur}>
                 {financeur}
+              </option>
+            ))}
+          </Select>
+        </div>
+        <div className="fr-col-12 fr-col-md-4">
+          <Select
+            label="Équipe"
+            nativeSelectProps={{
+              value: equipeFilter,
+              onChange: (e) => {
+                setEquipeFilter(e.currentTarget.value);
+                setPage(1);
+              },
+            }}
+          >
+            <option value="">Toutes les équipes</option>
+            {equipeOptions.map((equipe) => (
+              <option key={equipe} value={equipe}>
+                {equipe}
               </option>
             ))}
           </Select>
@@ -250,7 +287,9 @@ export function BdcListView() {
             <tr>
               <th scope="col">Nom</th>
               <th scope="col">PA</th>
+              <th scope="col">Plateforme</th>
               <th scope="col">Statut</th>
+              <th scope="col">Équipe</th>
               <th scope="col">Financeur</th>
               <th scope="col" className="fr-cell--right">
                 Budget TTC
@@ -266,7 +305,7 @@ export function BdcListView() {
           <tbody>
             {paginated.length === 0 ? (
               <tr>
-                <td colSpan={7}>—</td>
+                <td colSpan={9}>—</td>
               </tr>
             ) : (
               paginated.map((bdc) => {
@@ -287,7 +326,11 @@ export function BdcListView() {
                         "—"
                       )}
                     </td>
+                    <td>{bdc.Plateforme?.trim() || "—"}</td>
                     <td>{bdc.Statut?.trim() || "—"}</td>
+                    <td>
+                      <EquipeBadges value={bdc.Equipe2} />
+                    </td>
                     <td>{bdc.Financeur?.trim() || "—"}</td>
                     <td className="fr-cell--right">{formatMontantEur(bdc.Montant_TTC)}</td>
                     <td className="fr-cell--right">{formatMontantEur(bdc.Total_TTC_CRA)}</td>

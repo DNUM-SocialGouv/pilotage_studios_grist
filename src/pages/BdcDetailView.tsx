@@ -3,8 +3,8 @@ import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { TableShell } from "../components/FinanceRecap";
 import { useGristPa } from "../GristPaContext";
 import { NothingHerePage } from "../security/NothingHerePage";
+import { EquipeBadges } from "../components/EquipeBadges";
 import { formatMontantEur } from "../utils/formatMontant";
-import { extractGristStringTokens } from "../utils/gristReferences";
 import { montantReste } from "../utils/montantReste";
 import {
   bdcPaRefId,
@@ -110,8 +110,6 @@ export function BdcDetailView() {
         ? financeForPlanActivite(linkedPa, data.bdcList, data.constatations, data.commandes)
         : financePaOnly(linkedPa)
       : null;
-  const equipes = extractGristStringTokens(bdc.Equipe2).join(", ");
-
   return (
     <div className="fr-py-1w">
       <p className="fr-mb-2w">
@@ -193,7 +191,9 @@ export function BdcDetailView() {
         </div>
         <div className="fr-col-6 fr-col-md-4">
           <dt className="fr-text--sm">Équipe</dt>
-          <dd className="fr-mb-0">{equipes || "—"}</dd>
+          <dd className="fr-mb-0">
+            <EquipeBadges value={bdc.Equipe2} />
+          </dd>
         </div>
       </dl>
     </div>

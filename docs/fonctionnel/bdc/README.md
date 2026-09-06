@@ -30,7 +30,7 @@ Consultation **lecture seule** des bons de commande Grist dans l’iframe : budg
 
 - Montants EUR (`formatMontantEur`) ; vide → `—`
 - Solde CRA / restes négatifs en rouge (`montantReste`)
-- Équipe : tokens texte via `extractGristStringTokens(Equipe2)`
+- Équipe : tokens via `extractGristStringTokens(Equipe2)` ; badges couleur stables (`EquipeBadges` / `equipeBadgeClass`)
 - Ref PA : `bdcPaRefId` / `extractGristReferenceId`
 
 ## Parcours

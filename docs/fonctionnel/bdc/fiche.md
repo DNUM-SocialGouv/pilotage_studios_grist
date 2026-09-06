@@ -31,7 +31,7 @@ Détail d’un BDC : synthèse financière, informations, lien vers le PA et res
 
 - Statut (sous-titre) + titre (`Nom_BdC` ou `BDC #id`)
 - Synthèse : budget TTC, consommé CRA, solde CRA
-- Informations : financeur, Chorus, **plan d’activité** (lien `/pa/:id` + reste à consommer si calculable), plateforme, engagement, équipe
+- Informations : financeur, Chorus, **plan d’activité** (lien `/pa/:id` + reste à consommer si calculable), plateforme, engagement, équipe (badges couleur — même mapping que la liste)
 
 ## Liens croisés
 
