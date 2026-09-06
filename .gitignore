@@ -5,3 +5,9 @@ dist
 .env
 .env.*
 !.env.example
+
+# Inventaires nominatifs Grist (PII) — ne jamais committer
+docs/fonctionnel/roles/**/*-nominatif*
+docs/fonctionnel/roles/**/private/
+*.access-inventory.json
+grist-access-inventory.json
