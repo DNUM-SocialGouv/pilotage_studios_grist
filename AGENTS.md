@@ -118,6 +118,7 @@ Workspace Cursor : ouvrir **uniquement** ce dépôt pour le widget — ne pas d�
 | Fichier | Usage |
 |---------|--------|
 | [`docs/README.md`](docs/README.md) | Doc fonctionnelle (parcours métier) |
+| [`docs/fonctionnel/roles/`](docs/fonctionnel/roles/) | Rôles / partage / Access Rules (HITL) |
 | [`SECURITY.md`](SECURITY.md) | Menace iframe, secrets, allowlist |
 | [`.cursor/skills/pilotage-grist-issue/`](.cursor/skills/pilotage-grist-issue/) | Traiter / créer une issue (+ [`DOC-FONCTIONNEL.md`](.cursor/skills/pilotage-grist-issue/DOC-FONCTIONNEL.md)) |
 | [`.cursor/skills/pilotage-grist-pr/`](.cursor/skills/pilotage-grist-pr/) | Ouvrir / merger une PR (+ [`CHECKLIST.md`](.cursor/skills/pilotage-grist-pr/CHECKLIST.md)) |
@@ -149,6 +150,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 | BDC | `docs/fonctionnel/bdc/`, `BdcListView` / `BdcDetailView` |
 | Tableau DSFR | rule `dsfr-tableaux.mdc`, MCP `user-dsfr` |
 | Embed / secrets | `embedTrust.ts`, `NothingHerePage`, `ensureFreshBuild`, SECURITY |
+| Rôles / ACL document | `docs/fonctionnel/roles/` ; inventaire via MCP **local** `grist-mcp-server` (`grist_list_doc_access` / `grist_access_gap_report`) — hors bundle widget |
 | Exploration Grist | MCP `user-grist` (lecture) — **pas** de clé dans le bundle |
 
 ### Validation

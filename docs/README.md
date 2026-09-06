@@ -18,6 +18,7 @@ App sœur (hors iframe) : [pilotage_studios](https://github.com/DNUM-SocialGouv/
 | **Accueil** | [fonctionnel/accueil/](fonctionnel/accueil/) | Documenté (entrée `/`) |
 | **Plan d’activité** | [fonctionnel/pa/](fonctionnel/pa/) — [liste](fonctionnel/pa/liste.md) · [fiche](fonctionnel/pa/fiche.md) | Documenté |
 | **Bons de commande** | [fonctionnel/bdc/](fonctionnel/bdc/) — [liste](fonctionnel/bdc/liste.md) · [fiche](fonctionnel/bdc/fiche.md) | Documenté |
+| **Rôles & droits Grist** | [fonctionnel/roles/](fonctionnel/roles/) — [inventaire](fonctionnel/roles/inventaire-partage.md) · [matrice](fonctionnel/roles/matrice-droits.md) · [ACL](fonctionnel/roles/access-rules.md) | Inventaire + brouillon HITL |
 | Produits, Missions, Intervenants, CRA, PV | — | Stub « À venir » (nav) |
 | Évaluations, Analyse | — | Stub hors nav |
 

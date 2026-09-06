@@ -55,6 +55,7 @@ Ce n’est **pas** « tout Internet lit notre Grist » ; c’est « un attaquant
 - Restreindre qui peut modifier le workflow Pages.
 - Surveiller les releases / commits sur `main`.
 - Moyen terme : upgrade org **Team** → repo privé (source moins exposée) + gate UI inchangé sur l’URL Pages.
+- **Données personnelles** : le dépôt est **public**. Ne pas committer d’inventaires nominatifs Grist (emails, noms, rosters `/access`). Docs rôles = agrégats uniquement ; listes détaillées via MCP en local (hors git).
 
 ## Si incident (JS compromis)
 
