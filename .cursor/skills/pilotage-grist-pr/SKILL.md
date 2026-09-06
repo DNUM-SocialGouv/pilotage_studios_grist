@@ -36,6 +36,9 @@ gh pr create --repo DNUM-SocialGouv/pilotage_studios_grist \
 - [ ] Accès full + table Plan_activite
 - [ ] Navigation MemoryRouter OK
 
+## Documentation
+- [ ] `docs/fonctionnel/` à jour ou N/A
+
 ## Impact
 - [ ] UI widget seule
 - [ ] Schéma Grist (confirmation explicite requise)
@@ -51,4 +54,4 @@ Après CI **build** verte (+ revue `pilotage-grist-code-review` si besoin) :
 gh pr merge --delete-branch
 ```
 
-Checklist : [CHECKLIST.md](CHECKLIST.md).
+Checklist : [CHECKLIST.md](CHECKLIST.md). Doc : [../pilotage-grist-issue/DOC-FONCTIONNEL.md](../pilotage-grist-issue/DOC-FONCTIONNEL.md).

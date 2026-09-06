@@ -27,4 +27,5 @@
 
 ## Documentation
 
-- [ ] `AGENTS.md` / skills / docs mis à jour (ou N/A)
+- [ ] `docs/fonctionnel/` mis à jour (parcours) ou **N/A**
+- [ ] `AGENTS.md` / skills mis à jour (ou N/A)

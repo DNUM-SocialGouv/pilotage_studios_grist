@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "grist": {
-      "command": "/opt/homebrew/bin/node",
+      "command": "node",
       "args": ["/chemin/vers/grist-mcp-server/dist/index.js"],
       "cwd": "/chemin/vers/grist-mcp-server",
       "env": {

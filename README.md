@@ -12,6 +12,11 @@ Les données ne sont accessibles que via le canal widget **pour un utilisateur d
 
 Détail et garde-fous : **[SECURITY.md](SECURITY.md)**.
 
+Documentation :
+
+- Technique agents : **[AGENTS.md](AGENTS.md)**
+- Parcours métier (PA, BDC) : **[docs/README.md](docs/README.md)**
+
 ## Brancher dans Grist
 
 1. `npm ci && npm run dev` → `http://localhost:5175` (test)  
@@ -35,5 +40,6 @@ npm run lint
 ## V1
 
 - Navigation (sans Header/Footer) + **PA** et **BDC** (liste + fiche, liens croisés)
+- Doc parcours : [docs/fonctionnel/pa/](docs/fonctionnel/pa/), [docs/fonctionnel/bdc/](docs/fonctionnel/bdc/)
 - Autres entrées de nav = stubs (Analyse IA = hors scope widget)
-- Feuille de route : 1 PR par entrée de nav (liste + fiche), ensuite Produits puis le reste
+- Feuille de route : 1 PR par entrée de nav (liste + fiche + docs), ensuite [Produits #3](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3)
