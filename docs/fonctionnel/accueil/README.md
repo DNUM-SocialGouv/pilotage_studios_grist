@@ -8,17 +8,17 @@
 
 ## Objet
 
-Première page affichée à l’ouverture du Custom Widget dans Grist. Présente le produit comme **en cours de réalisation** et liste les écrans accessibles avec leur statut.
+Première page affichée à l’ouverture du Custom Widget dans Grist. Liste les écrans accessibles avec leur statut.
 
 ## Comportement
 
 | Élément | Détail |
 |---------|--------|
 | Entrée | `MemoryRouter` démarre sur `/` (`initialEntries`) |
-| Message | Alert DSFR info « Produit en cours de réalisation » |
 | Liste | Liens vers chaque module de `WIDGET_MODULE_LINKS` (nav hors Accueil) |
-| Statuts | Disponible (PA, BDC) · À venir (stubs) · Hors scope widget (Analyse) |
-| Nav | Entrée **Accueil** en tête de `WIDGET_NAV_LINKS` |
+| Statuts | En cours (PA, BDC) · À venir (stubs) |
+| Nav | Icône home (`fr-icon-home-4-line`) + libellé `fr-sr-only` « Accueil » ; hors nav : Analyse, Évaluations |
+| Layout | Bloc centré (`max-width` ~42rem) : texte + pictogramme `Factory` |
 | Fallback | Route `*` → redirection vers `/` |
 
 ## Données Grist

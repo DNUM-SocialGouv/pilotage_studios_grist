@@ -33,8 +33,8 @@ Les **skills projet** (`.cursor/skills/`) priment sur les user rules générique
 | `/` | Accueil (welcome) — entrée par défaut |
 | `/pa`, `/pa/:id` | Implémenté (liste + fiche) |
 | `/bdc`, `/bdc/:id` | Implémenté (liste + fiche) |
-| `/produits`, `/missions`, `/intervenants`, `/cra`, `/pv`, `/evaluations` | Stub « À venir » |
-| `/analyse` | Stub — réservé à l’app (secrets LLM) |
+| `/produits`, `/missions`, `/intervenants`, `/cra`, `/pv` | Stub « À venir » (nav) |
+| `/evaluations`, `/analyse` | Stub hors nav |
 
 Entrée MemoryRouter : `/` (`WelcomePage`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
 
