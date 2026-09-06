@@ -20,8 +20,9 @@ Documentation :
 ## Brancher dans Grist
 
 1. `npm ci && npm run dev` → `http://localhost:5175` (test)  
-   ou URL Pages (ajoutez un cache-bust après déploiement) :  
-   `https://dnum-socialgouv.github.io/pilotage_studios_grist/?v=4`
+   ou URL Pages (stable, sans `?v=`) :  
+   `https://dnum-socialgouv.github.io/pilotage_studios_grist/`  
+   Après un déploiement, un auto-bust (`version.json`) recharge l’iframe si le cache est périmé.
 2. Widget **Custom** → **URL personnalisée**
 3. Accès **full** (lecture tables liées via `docApi.fetchTable`)
 4. Select Data = `Plan_activite` (**table ancre** — à ne pas changer pour les autres pages)
