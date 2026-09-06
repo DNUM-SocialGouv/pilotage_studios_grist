@@ -1,8 +1,7 @@
 /**
- * Helpers lecture colonnes Grist Attachments (`["L", id1, …]`, tableau d’ids, id seul).
+ * Ids de pièces jointes référencés par une cellule Attachments.
+ * Accepte `["L", id…]`, `[id…]` (déjà décodé), `"[44]"` (SQL/texte), id seul.
  */
-
-/** Ids de pièces jointes référencés par une cellule Attachments. */
 export function extractGristAttachmentIds(value: unknown): number[] {
   const out = new Set<number>();
   const walk = (v: unknown): void => {
@@ -18,7 +17,7 @@ export function extractGristAttachmentIds(value: unknown): number[] {
     }
     if (typeof v === "string") {
       const trimmed = v.trim();
-      if (!trimmed) {
+      if (!trimmed || trimmed === "CENSORED") {
         return;
       }
       const asInt = Number.parseInt(trimmed, 10);
@@ -39,6 +38,11 @@ export function extractGristAttachmentIds(value: unknown): number[] {
         return;
       }
       v.forEach(walk);
+      return;
+    }
+    // Objet `{ id: n }` parfois renvoyé par certaines APIs
+    if (typeof v === "object" && v !== null && "id" in v) {
+      walk((v as { id: unknown }).id);
     }
   };
   walk(value);

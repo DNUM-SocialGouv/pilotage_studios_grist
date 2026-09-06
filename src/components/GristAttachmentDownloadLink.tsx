@@ -231,8 +231,13 @@ export function GristAttachmentDownloadLink({
 }
 
 /** Lien externe Sofiane si URL HTTP(S), sinon texte. */
-export function sofianeBdcCell(value: string | undefined): ReactNode {
-  const url = value?.trim();
+export function sofianeBdcCell(value: unknown): ReactNode {
+  const url =
+    typeof value === "string"
+      ? value.trim()
+      : typeof value === "number" && Number.isFinite(value)
+        ? String(value)
+        : "";
   if (!url) {
     return "—";
   }

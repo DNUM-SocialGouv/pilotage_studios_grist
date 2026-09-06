@@ -55,6 +55,8 @@ Grille définition (labels au-dessus des valeurs, 4 colonnes ≥ lg / 2 ≥ sm) 
 | Sofiane | `SOFIANE` — lien externe « Ouvrir dans Sofiane » si URL HTTP(S), sinon texte |
 | Devis | `Devis` (Attachments) — `fr-link--download` via `getAccessToken` ; `—` si absent |
 
+Les champs Sofiane / Devis sont chargés via REST (`getAccessToken`) plutôt que seuls via `docApi.fetchTable`, pour rester alignés sur l’app sœur.
+
 Hors scope widget (présents dans l’app sœur) : onglets suivi CRA / PV, upload devis.
 
 ## Liens croisés

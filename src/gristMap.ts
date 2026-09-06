@@ -32,6 +32,13 @@ function asString(value: unknown): string | undefined {
   if (typeof value === "number" && Number.isFinite(value)) {
     return String(value);
   }
+  // Valeurs plugin décodées (CensoredValue, etc.) — pas de faux positifs URL.
+  if (value != null && typeof value === "object" && "toString" in value) {
+    const label = String(value);
+    if (label === "CENSORED" || label === "..." || label.startsWith("[Pending")) {
+      return undefined;
+    }
+  }
   return undefined;
 }
 
