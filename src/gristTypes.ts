@@ -12,11 +12,13 @@ export interface GristApi {
   onRecord: (callback: (record: GristRecord | null) => void) => void;
   docApi: {
     fetchTable: (tableId: string) => Promise<GristFetchTableResult>;
+    fetchSelectedTable?: () => Promise<GristFetchTableResult>;
   };
 }
 
 declare global {
   interface Window {
     grist?: GristApi;
+    __pilotageGristEarlyReady?: boolean;
   }
 }

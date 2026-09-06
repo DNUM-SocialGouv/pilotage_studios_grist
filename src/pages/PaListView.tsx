@@ -169,7 +169,7 @@ export function PaListView() {
           title="Hors Grist / API indisponible"
           description={
             data.error ??
-            "Ce widget doit tourner dans une iframe Grist (Custom URL). Si vous êtes dans Grist : forcez le rechargement avec ?v=3 sur l’URL Pages, accès full, Select Data = Plan_activite."
+            "Ce widget doit tourner dans une iframe Grist (Custom URL). Si vous êtes dans Grist : forcez le rechargement avec ?v=4 sur l’URL Pages, accès full, Select Data = Plan_activite."
           }
         />
       </div>

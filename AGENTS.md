@@ -72,7 +72,7 @@ URL attendue : `https://dnum-socialgouv.github.io/pilotage_studios_grist/`
 |---------|--------|
 | `.cursor/skills/pilotage-grist-issue/` | Traiter / créer une issue |
 | `.cursor/skills/pilotage-grist-pr/` | Ouvrir / merger une PR |
-| `.cursor/skills/pilotage-grist-code-review/` | Revue avant merge |
+| `.cursor/skills/grist-custom-widgets/` | Réf. API Custom Widget (ready / onRecords / fetchTable) |
 | `.cursor/rules/dsfr-tableaux.mdc` | Tableaux DSFR |
 | `.cursor/rules/widget-iframe.mdc` | Contraintes iframe Custom Widget |
 

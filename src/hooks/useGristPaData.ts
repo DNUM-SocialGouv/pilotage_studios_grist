@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import type { BDC, CommandeSofiane, Constatation, PlanActivite } from "../types";
+import type { GristRecord } from "../gristTypes";
 import {
   recordsFromFetchTable,
   toBdc,
@@ -14,7 +15,6 @@ export type RelatedTablesStatus = "idle" | "loading" | "ok" | "denied" | "error"
 export type GristPaData = {
   connected: boolean;
   outsideGrist: boolean;
-  /** Iframe sous un parent non autorisé. */
   untrustedEmbed: boolean;
   embedTrust: EmbedTrust;
   loading: boolean;
@@ -42,7 +42,7 @@ const EMPTY: GristPaData = {
   relatedError: null,
 };
 
-/** Tables liées autorisées en lecture (allowlist — pas de fetchTable arbitraire). */
+const PA_TABLE_ID = "Plan_activite";
 const RELATED_TABLE_IDS = ["BDC", "Constatations", "Commandes_Sofiane"] as const;
 
 async function fetchRelatedTables(): Promise<{
@@ -64,9 +64,39 @@ async function fetchRelatedTables(): Promise<{
   };
 }
 
+async function fetchPlansFromDocApi(): Promise<PlanActivite[]> {
+  const grist = window.grist;
+  if (!grist?.docApi?.fetchTable) {
+    throw new Error("docApi.fetchTable indisponible");
+  }
+  const raw = await grist.docApi.fetchTable(PA_TABLE_ID);
+  return recordsFromFetchTable(raw).map(toPlanActivite);
+}
+
+function applyPlans(
+  records: GristRecord[],
+  trust: EmbedTrust,
+  setState: Dispatch<SetStateAction<GristPaData>>,
+  loadRelated: () => Promise<void>,
+) {
+  const plans = records.map(toPlanActivite);
+  setState((prev) => ({
+    ...prev,
+    connected: true,
+    outsideGrist: false,
+    untrustedEmbed: false,
+    embedTrust: trust,
+    loading: false,
+    error: null,
+    plans,
+  }));
+  void loadRelated();
+}
+
 /**
- * Branche `grist.ready` + `onRecords` uniquement si l’embed est de confiance.
- * Lecture seule métier : pas d’API d’écriture exposée dans ce module.
+ * Ordre Grist critique : `onRecords` puis `ready` (jamais ready trop tôt).
+ * `onRecords` ne renvoie que les colonnes du view section — on hydrate aussi via
+ * `docApi.fetchTable('Plan_activite')` (accès full, toutes les colonnes).
  */
 export function useGristPaData(): GristPaData {
   const [state, setState] = useState<GristPaData>(EMPTY);
@@ -85,27 +115,28 @@ export function useGristPaData(): GristPaData {
       return;
     }
 
+    if (trust === "standalone") {
+      setState({
+        ...EMPTY,
+        loading: false,
+        outsideGrist: true,
+        embedTrust: trust,
+        connected: false,
+        error: null,
+      });
+      return;
+    }
+
     let cancelled = false;
     let attempts = 0;
-    const maxAttempts = 40; // ~4s si script encore en chargement
+    const maxAttempts = 50;
 
     const tryConnect = () => {
       if (cancelled) {
         return;
       }
       const grist = window.grist;
-      if (trust === "standalone") {
-        setState({
-          ...EMPTY,
-          loading: false,
-          outsideGrist: true,
-          embedTrust: trust,
-          connected: false,
-          error: null,
-        });
-        return;
-      }
-      if (!grist?.ready || !grist.onRecords) {
+      if (!grist?.ready || !grist.onRecords || !grist.docApi?.fetchTable) {
         attempts += 1;
         if (attempts < maxAttempts) {
           window.setTimeout(tryConnect, 100);
@@ -118,7 +149,7 @@ export function useGristPaData(): GristPaData {
           embedTrust: trust,
           connected: false,
           error:
-            "API Grist indisponible (script bloqué ou hors iframe). Vérifiez la CSP et l’URL du widget.",
+            "API Grist indisponible (script bloqué ou hors iframe). Vérifiez la CSP et l’URL du widget (?v=4).",
         });
         return;
       }
@@ -156,24 +187,59 @@ export function useGristPaData(): GristPaData {
         }
       };
 
-      grist.ready({ requiredAccess: "full" });
+      // 1) S’abonner AVANT ready
       grist.onRecords((records) => {
         if (cancelled) {
           return;
         }
-        const plans = records.map(toPlanActivite);
-        setState((prev) => ({
-          ...prev,
-          connected: true,
-          outsideGrist: false,
-          untrustedEmbed: false,
-          embedTrust: trust,
-          loading: false,
-          error: null,
-          plans,
-        }));
-        void loadRelated();
+        applyPlans(records, trust, setState, loadRelated);
       });
+
+      // 2) Puis signaler prêt
+      grist.ready({ requiredAccess: "full" });
+
+      // 3) Hydratation forcée (toutes colonnes) — ne dépend pas des « Colonnes visibles »
+      void (async () => {
+        try {
+          const plans = await fetchPlansFromDocApi();
+          if (cancelled) {
+            return;
+          }
+          setState((prev) => ({
+            ...prev,
+            connected: true,
+            outsideGrist: false,
+            untrustedEmbed: false,
+            embedTrust: trust,
+            loading: false,
+            error: null,
+            plans,
+          }));
+          await loadRelated();
+        } catch (err) {
+          if (cancelled) {
+            return;
+          }
+          // Si fetchTable échoue, on attend encore onRecords ; timeout UI
+          window.setTimeout(() => {
+            if (cancelled) {
+              return;
+            }
+            setState((prev) => {
+              if (!prev.loading) {
+                return prev;
+              }
+              const message = err instanceof Error ? err.message : String(err);
+              return {
+                ...prev,
+                loading: false,
+                error: `Chargement PA échoué (${message}). Cochez des colonnes visibles ou vérifiez l’accès full.`,
+                connected: false,
+              };
+            });
+          }, 3000);
+        }
+      })();
     };
 
     tryConnect();
