@@ -60,7 +60,7 @@ npm run dev          # http://localhost:5175 — coller dans Grist
 npm run build        # dist/ pour Pages
 ```
 
-CI : `.github/workflows/pages.yml` → GitHub Pages.
+CI : `.github/workflows/pages.yml` — job `build` sur PR et `main` ; deploy Pages uniquement sur push `main`.
 
 URL attendue : `https://dnum-socialgouv.github.io/pilotage_studios_grist/`
 
