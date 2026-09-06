@@ -12,7 +12,7 @@ const STATUS_LABEL: Record<WidgetNavStatus, string> = {
 };
 
 const STATUS_BADGE_CLASS: Record<WidgetNavStatus, string> = {
-  in_progress: "fr-badge--new",
+  in_progress: "",
   coming: "fr-badge--info",
 };
 

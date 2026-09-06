@@ -15,7 +15,7 @@ export type WidgetNavLink = {
   iconOnly?: "home";
 };
 
-/** Aligné sur NAV_LINKS de pilotage_studios (Header), sans brand Marianne. */
+/** Liens de navigation du widget (sous-ensemble métier + Accueil). */
 export const WIDGET_NAV_LINKS: WidgetNavLink[] = [
   { text: "Accueil", href: "/", iconOnly: "home" },
   { text: "BDC", href: "/bdc", status: "in_progress" },
