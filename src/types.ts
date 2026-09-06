@@ -25,6 +25,10 @@ export interface BDC {
   BdC_Chorus?: string;
   Plateforme?: string;
   Engagement?: string;
+  /** URL ou libellé Sofiane. */
+  SOFIANE?: string;
+  /** Pièce(s) jointe(s) devis — colonne Grist Attachments. */
+  Devis?: unknown;
   Solde_TTC_CRA?: number;
   Total_TTC_CRA?: number;
   /** ChoiceList Grist — tokens via `extractGristStringTokens`. */

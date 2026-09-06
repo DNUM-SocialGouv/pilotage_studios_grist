@@ -13,7 +13,18 @@ export interface GristApi {
   docApi: {
     fetchTable: (tableId: string) => Promise<GristFetchTableResult>;
     fetchSelectedTable?: () => Promise<GristFetchTableResult>;
+    /** Jeton court pour appels REST doc (ex. téléchargement attachments). */
+    getAccessToken?: (options?: { readOnly?: boolean }) => Promise<{
+      token: string;
+      baseUrl: string;
+      ttlMsecs: number;
+    }>;
   };
+  getAccessToken?: (options?: { readOnly?: boolean }) => Promise<{
+    token: string;
+    baseUrl: string;
+    ttlMsecs: number;
+  }>;
 }
 
 declare global {

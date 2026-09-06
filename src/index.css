@@ -49,6 +49,65 @@ body {
   background: var(--background-action-low-blue-france);
 }
 
+/* Fiche BDC — barre % consommé (alignée app sœur PR #198). */
+.widget-usage-bar__header {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+}
+
+.widget-usage-bar__label,
+.widget-usage-bar__amounts {
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.widget-usage-bar__label {
+  color: var(--text-mention-grey);
+}
+
+.widget-usage-bar__amounts {
+  font-weight: 700;
+}
+
+.widget-usage-bar__track {
+  background: var(--background-contrast-grey);
+  border-radius: 0.25rem;
+  display: flex;
+  height: 0.5rem;
+  overflow: hidden;
+  width: 100%;
+}
+
+.widget-usage-bar__seg {
+  background: var(--background-action-high-blue-france);
+  display: block;
+  flex: 0 0 auto;
+  height: 100%;
+}
+
+/* Fiche BDC — grille définition Informations. */
+.bdc-detail-info-field__label {
+  color: var(--text-mention-grey);
+  font-size: 0.875rem;
+  font-weight: 400;
+  margin: 0 0 0.25rem;
+}
+
+.bdc-detail-info-field__value {
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 0;
+  word-break: break-word;
+}
+
+.bdc-detail-info-field__value .fr-link {
+  font-weight: 700;
+}
+
 .fr-table {
   overflow-x: auto;
 }
@@ -59,4 +118,10 @@ button.fr-link {
   padding: 0;
   cursor: pointer;
   font: inherit;
+  text-align: left;
+}
+
+button.fr-link:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }

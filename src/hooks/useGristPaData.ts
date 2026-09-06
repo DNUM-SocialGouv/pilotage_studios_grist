@@ -12,8 +12,8 @@ import { getEmbedTrust, type EmbedTrust } from "../security/embedTrust";
 import {
   fetchAllowlistedTable,
   PA_TABLE_ID,
-  RELATED_TABLE_IDS,
 } from "../security/fetchTableAllowlist";
+import { fetchGristRecordsViaToken } from "../utils/gristRest";
 
 export type RelatedTablesStatus = "idle" | "loading" | "ok" | "denied" | "error";
 
@@ -47,16 +47,28 @@ const EMPTY: GristPaData = {
   relatedError: null,
 };
 
+/**
+ * BDC via REST + getAccessToken (même forme que l’app sœur) pour ne pas perdre
+ * Attachments / URLs parfois absents via `docApi.fetchTable`.
+ * Pas de repli silencieux sur fetchTable (masquerait Sofiane/Devis).
+ */
+async function fetchBdcList(): Promise<BDC[]> {
+  const rows = await fetchGristRecordsViaToken("BDC");
+  return rows.map((row) => toBdc(row as GristRecord));
+}
+
 async function fetchRelatedTables(): Promise<{
   bdcList: BDC[];
   constatations: Constatation[];
   commandes: CommandeSofiane[];
 }> {
-  const [bdcRaw, pvRaw, cmdRaw] = await Promise.all(
-    RELATED_TABLE_IDS.map((id) => fetchAllowlistedTable(id)),
-  );
+  const [bdcList, pvRaw, cmdRaw] = await Promise.all([
+    fetchBdcList(),
+    fetchAllowlistedTable("Constatations"),
+    fetchAllowlistedTable("Commandes_Sofiane"),
+  ]);
   return {
-    bdcList: recordsFromFetchTable(bdcRaw).map(toBdc),
+    bdcList,
     constatations: recordsFromFetchTable(pvRaw).map(toConstatation),
     commandes: recordsFromFetchTable(cmdRaw).map(toCommandeSofiane),
   };

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { WidgetKpi } from "./WidgetKpi";
 import { formatMontantEur } from "../utils/formatMontant";
 
 type FinanceRecapProps = {
@@ -7,20 +8,6 @@ type FinanceRecapProps = {
   payeSofiane: number;
   resteAConsommer: number;
 };
-
-function Kpi({ title, value, error }: { title: string; value: string; error?: boolean }) {
-  return (
-    <div className="widget-kpi">
-      <p className="fr-text--sm fr-mb-0">{title}</p>
-      <p
-        className="fr-text--lg fr-mb-0 fr-text--bold"
-        style={error ? { color: "var(--text-default-error)" } : undefined}
-      >
-        {value}
-      </p>
-    </div>
-  );
-}
 
 export function FinanceRecap({
   enveloppe,
@@ -50,16 +37,16 @@ export function FinanceRecap({
     <div className="fr-mb-3w">
       <div className="fr-grid-row fr-grid-row--gutters fr-mb-2w">
         <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
-          <Kpi title="Enveloppe" value={formatMontantEur(enveloppe)} />
+          <WidgetKpi title="Enveloppe" value={formatMontantEur(enveloppe)} />
         </div>
         <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
-          <Kpi title="Engagé" value={formatMontantEur(engage)} />
+          <WidgetKpi title="Engagé" value={formatMontantEur(engage)} />
         </div>
         <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
-          <Kpi title="Payé Sofiane" value={formatMontantEur(payeSofiane)} />
+          <WidgetKpi title="Payé Sofiane" value={formatMontantEur(payeSofiane)} />
         </div>
         <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
-          <Kpi
+          <WidgetKpi
             title="Reste à consommer"
             value={formatMontantEur(resteAConsommer)}
             error={resteAConsommer < 0}

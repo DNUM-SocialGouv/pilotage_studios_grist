@@ -32,6 +32,13 @@ function asString(value: unknown): string | undefined {
   if (typeof value === "number" && Number.isFinite(value)) {
     return String(value);
   }
+  // Valeurs plugin décodées (CensoredValue, etc.) — pas de faux positifs URL.
+  if (value != null && typeof value === "object" && "toString" in value) {
+    const label = String(value);
+    if (label === "CENSORED" || label === "..." || label.startsWith("[Pending")) {
+      return undefined;
+    }
+  }
   return undefined;
 }
 
@@ -65,6 +72,8 @@ export function toBdc(record: GristRecord): BDC {
     BdC_Chorus: asString(record.BdC_Chorus) ?? asGristChoice(record.BdC_Chorus),
     Plateforme: asGristChoice(record.Plateforme),
     Engagement: asGristChoice(record.Engagement) ?? asString(record.Engagement),
+    SOFIANE: asString(record.SOFIANE),
+    Devis: record.Devis,
     Solde_TTC_CRA: asNumber(record.Solde_TTC_CRA),
     Total_TTC_CRA: asNumber(record.Total_TTC_CRA),
     Equipe2: record.Equipe2,
