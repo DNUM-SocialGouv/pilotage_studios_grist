@@ -66,7 +66,26 @@ URL attendue : `https://dnum-socialgouv.github.io/pilotage_studios_grist/`
 
 ---
 
-## 6. Skills & rules Cursor
+## 6. Git — branches et PR (obligatoire)
+
+**Interdit** : commit / push directs sur `main` (branche protégée : PR + check CI `build`).
+
+| Convention | Exemple |
+|------------|---------|
+| Issue | `issue-12-liste-bdc` |
+| Feature | `feat/missions-list` |
+| Fix | `fix/embed-trust` |
+| Chore | `chore/git-workflow` |
+
+Flux : branche → `npm run lint && npm run build` → push → `gh pr create` → CI verte → merge (`gh pr merge --delete-branch`).
+
+Skills : [`pilotage-grist-pr`](.cursor/skills/pilotage-grist-pr/SKILL.md), [`pilotage-grist-code-review`](.cursor/skills/pilotage-grist-code-review/SKILL.md).
+
+Workspace Cursor : ouvrir **uniquement** ce dépôt pour le widget — ne pas développer le widget depuis `pilotage_studios` / `.tmp-pilotage_studios_grist`.
+
+---
+
+## 7. Skills & rules Cursor
 
 | Fichier | Usage |
 |---------|--------|
@@ -80,7 +99,7 @@ MCP : `.cursor/mcp.json.example` (Grist + DSFR).
 
 ---
 
-## 7. Hors scope (ne pas recréer sans demande)
+## 8. Hors scope (ne pas recréer sans demande)
 
 - Features IA / assistant
 - Écriture Grist (édition cellules)
