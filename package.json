@@ -13,7 +13,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --port 5175 --strictPort",
     "lint": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test src/utils/gristAttachments.test.ts"
+    "test": "node --experimental-strip-types --test src/**/*.test.ts"
   },
   "dependencies": {
     "@codegouvfr/react-dsfr": "^1.32.0",

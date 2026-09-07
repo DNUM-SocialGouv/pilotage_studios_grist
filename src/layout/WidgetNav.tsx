@@ -2,42 +2,25 @@ import type { MouseEvent, ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MainNavigation } from "@codegouvfr/react-dsfr/MainNavigation";
 import type { MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation";
+import {
+  WIDGET_NAV_ITEMS,
+  isGroupActive,
+  isNavActive,
+  isWidgetNavGroup,
+  type WidgetNavLink,
+} from "./widgetNavItems";
 
-/** Statut d’un écran pour la welcome page (et doc). */
-export type WidgetNavStatus = "in_progress" | "coming";
-
-export type WidgetNavLink = {
-  text: string;
-  href: string;
-  /** Absent pour Accueil (pas listé comme module métier). */
-  status?: WidgetNavStatus;
-  /** Lien icône seule (libellé via `text` en `fr-sr-only`). */
-  iconOnly?: "home";
-};
-
-/** Liens de navigation du widget (sous-ensemble métier + Accueil). */
-export const WIDGET_NAV_LINKS: WidgetNavLink[] = [
-  { text: "Accueil", href: "/", iconOnly: "home" },
-  { text: "BDC", href: "/bdc", status: "in_progress" },
-  { text: "PA", href: "/pa", status: "in_progress" },
-  { text: "Produits", href: "/produits", status: "coming" },
-  { text: "Missions", href: "/missions", status: "coming" },
-  { text: "Intervenants", href: "/intervenants", status: "coming" },
-  { text: "CRA", href: "/cra", status: "coming" },
-  { text: "PV", href: "/pv", status: "coming" },
-];
-
-/** Modules métier listés sur la welcome (hors Accueil). */
-export const WIDGET_MODULE_LINKS = WIDGET_NAV_LINKS.filter(
-  (link): link is WidgetNavLink & { status: WidgetNavStatus } => link.status != null,
-);
-
-function isNavActive(pathname: string, href: string): boolean {
-  if (href === "/") {
-    return pathname === "/";
-  }
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
+export type {
+  WidgetNavGroup,
+  WidgetNavItem,
+  WidgetNavLink,
+  WidgetNavStatus,
+} from "./widgetNavItems";
+export {
+  WIDGET_MODULE_LINKS,
+  WIDGET_NAV_ITEMS,
+  WIDGET_NAV_LINKS,
+} from "./widgetNavItems";
 
 function navItemText(link: WidgetNavLink): ReactNode {
   if (link.iconOnly === "home") {
@@ -55,18 +38,37 @@ export function WidgetNav() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  const items: MainNavigationProps.Item[] = WIDGET_NAV_LINKS.map((link) => ({
-    text: navItemText(link),
-    isActive: isNavActive(pathname, link.href),
-    linkProps: {
-      href: link.href,
-      title: link.iconOnly ? link.text : undefined,
-      onClick: (e: MouseEvent<HTMLAnchorElement>) => {
-        e.preventDefault();
-        navigate(link.href);
+  const onNavClick = (href: string) => (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    navigate(href);
+  };
+
+  const items: MainNavigationProps.Item[] = WIDGET_NAV_ITEMS.map((item) => {
+    if (isWidgetNavGroup(item)) {
+      return {
+        text: item.text,
+        isActive: isGroupActive(pathname, item),
+        menuLinks: item.children.map((child) => ({
+          text: child.text,
+          isActive: isNavActive(pathname, child.href),
+          linkProps: {
+            href: child.href,
+            onClick: onNavClick(child.href),
+          },
+        })),
+      };
+    }
+
+    return {
+      text: navItemText(item),
+      isActive: isNavActive(pathname, item.href),
+      linkProps: {
+        href: item.href,
+        title: item.iconOnly ? item.text : undefined,
+        onClick: onNavClick(item.href),
       },
-    },
-  }));
+    };
+  });
 
   return (
     <div className="widget-nav fr-mb-2w">

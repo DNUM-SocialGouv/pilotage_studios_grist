@@ -17,11 +17,11 @@ const STUB_COPY: Record<
     description: "Écran à venir. Disponible dans l’app Pilotage studios (`/intervenants`).",
   },
   cra: {
-    title: "CRA / Réalisé",
+    title: "Prestation / CRA",
     description: "Écran à venir. Disponible dans l’app Pilotage studios (`/cra`).",
   },
   pv: {
-    title: "PV / Constatations",
+    title: "Procès-verbaux",
     description: "Écran à venir. Disponible dans l’app Pilotage studios (`/pv`).",
   },
   evaluations: {
