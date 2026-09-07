@@ -3,6 +3,8 @@
  */
 .root {
   position: relative;
+  overflow: visible;
+  z-index: 1;
 }
 
 /**
@@ -39,7 +41,7 @@
   top: 100%;
   left: 0;
   right: 0;
-  z-index: 20;
+  z-index: 100;
   margin-top: 0.25rem;
   padding: 1rem;
   background-color: var(--background-alt-grey);

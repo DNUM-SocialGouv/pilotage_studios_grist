@@ -227,7 +227,7 @@ export function DsfrSelectRichMulti(props: DsfrSelectRichMultiProps) {
         id={`${baseId}-trigger`}
         type="button"
         className={cx(fr.cx("fr-select"), styles.trigger)}
-        aria-haspopup="true"
+        aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listboxId}
         aria-describedby={hintText !== undefined ? hintId : undefined}
@@ -286,7 +286,13 @@ export function DsfrSelectRichMulti(props: DsfrSelectRichMultiProps) {
             </div>
           ) : null}
 
-          <ul id={listboxId} role="group" aria-label={label} className={styles.optionList}>
+          <ul
+            id={listboxId}
+            role="listbox"
+            aria-label={label}
+            aria-multiselectable="true"
+            className={styles.optionList}
+          >
             {filteredOptions.length === 0 ? (
               <li className={styles.optionEmpty}>
                 <span className="fr-text--sm fr-text-mention--grey">Aucun résultat.</span>
@@ -295,7 +301,7 @@ export function DsfrSelectRichMulti(props: DsfrSelectRichMultiProps) {
               filteredOptions.map((o) => {
                 const sel = selectedValues.includes(o.value);
                 return (
-                  <li key={o.value} className={styles.optionRow}>
+                  <li key={o.value} className={styles.optionRow} role="option" aria-selected={sel}>
                     <Checkbox
                       small
                       disabled={disabled}

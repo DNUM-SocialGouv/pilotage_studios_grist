@@ -96,6 +96,12 @@ describe("missionMatchesFilters", () => {
     assert.equal(matches(missions[1]!, { produitIds: ["10", "20"] }), true);
     assert.equal(matches(missions[0]!, { statut: ["A instruire"] }), false);
   });
+
+  it("filtre intervenant en OR (intersection avec enfants / legacy)", () => {
+    assert.equal(matches(missions[0]!, { intervenantIds: ["201", "202"] }), true);
+    assert.equal(matches(missions[1]!, { intervenantIds: ["201", "202"] }), true);
+    assert.equal(matches(missions[0]!, { intervenantIds: ["202"] }), false);
+  });
 });
 
 describe("missionLibelle / options", () => {
