@@ -69,11 +69,31 @@ export interface SuiviMensuel {
   TTC?: number;
   BDC_cible?: unknown;
   Bdc_Chorus2?: unknown;
+  Taches_realisees?: string;
+  Nom_BdC?: string;
 }
 
 export interface Mission {
   id: number;
   Nom_de_la_mission?: string;
+  Statut?: string;
+  Intervenants?: unknown;
+  Resp_?: unknown;
+  Date_de_debut?: number;
+  Produit_SDPC?: unknown;
+  Equipe2?: unknown;
+  Departement?: unknown;
+  Demande?: string;
+  Enjeux?: string;
+  Historique?: string;
+  Fonctionnalites_produit?: string;
+  Cible_profils_utilisateurs?: string;
+  Pb_utilisateurs_identifies?: string;
+  Liens_FIGMA_Notion?: string;
+  Suivi_resp_studio?: string;
+  Docs?: unknown;
+  Volumes_d_usages_utilisateurs_utilisations_?: string;
+  Derniere_mise_a_jour?: number;
 }
 
 export interface MissionEnfant {
@@ -82,11 +102,14 @@ export interface MissionEnfant {
   Libelle?: string;
   Intervenant?: unknown;
   Specialite?: string;
+  Type_prestation?: string;
+  Statut?: string;
 }
 
 export interface Intervenant {
   id: number;
   Prenom_Nom?: string;
+  Equipe?: string;
 }
 
 /** Ligne catalogue produits (libellé = colonne Grist `Produit`). */

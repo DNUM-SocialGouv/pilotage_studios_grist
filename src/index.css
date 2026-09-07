@@ -236,6 +236,11 @@ body {
   overflow-x: auto;
 }
 
+.mission-fiche-prose {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 button.fr-link {
   background: none;
   border: none;

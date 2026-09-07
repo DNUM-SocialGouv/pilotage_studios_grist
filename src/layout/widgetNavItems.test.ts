@@ -72,7 +72,7 @@ describe("WIDGET_MODULE_LINKS", () => {
         { text: "Prestation / CRA", href: "/cra", status: "coming" },
         { text: "Procès-verbaux", href: "/pv", status: "coming" },
         { text: "Produits", href: "/produits", status: "coming" },
-        { text: "Missions", href: "/missions", status: "coming" },
+        { text: "Missions", href: "/missions", status: "in_progress" },
         { text: "Intervenants", href: "/intervenants", status: "coming" },
       ],
     );

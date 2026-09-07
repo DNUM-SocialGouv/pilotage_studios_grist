@@ -132,6 +132,44 @@ export function extractGristReferenceId(value: unknown): number | undefined {
   return undefined;
 }
 
+/** Tous les ids d’une Ref / RefList Grist (`["L", …]`, `["R", table, id]`, nombre). */
+export function extractGristReferenceIds(value: unknown): number[] {
+  const out = new Set<number>();
+  const walk = (v: unknown): void => {
+    if (v == null) {
+      return;
+    }
+    if (typeof v === "number" && Number.isFinite(v)) {
+      out.add(Math.trunc(v));
+      return;
+    }
+    if (typeof v === "string") {
+      const n = Number.parseInt(v.trim(), 10);
+      if (Number.isFinite(n)) {
+        out.add(n);
+      }
+      return;
+    }
+    if (Array.isArray(v)) {
+      if (v[0] === "L" && v.length >= 2) {
+        v.slice(1).forEach(walk);
+        return;
+      }
+      if (v[0] === "R" && v.length >= 3 && typeof v[2] === "number") {
+        out.add(Math.trunc(v[2]));
+        return;
+      }
+      v.forEach(walk);
+      return;
+    }
+    if (typeof v === "object" && v !== null && "id" in v) {
+      walk((v as { id: unknown }).id);
+    }
+  };
+  walk(value);
+  return [...out];
+}
+
 const PRODUIT_REF_KEY = "Produit";
 
 /** Id de ligne produit référencé par une ligne `Realise`. */
