@@ -56,6 +56,7 @@ Lignes `Realise` liées au BDC (`BDC_cible` ou `Bdc_Chorus2`), chargées **uniqu
 | Totaux | Jours + TTC des lignes **filtrées** + TJM moyen (TTC ÷ jours) |
 | Vide | « Aucune ligne de suivi mensuel liée à ce BDC. » |
 | Filtres sans résultat | « Aucune ligne ne correspond à ces filtres. » |
+| Référentiels partiels | Alerte warning + tableau / camembert quand même (regroupement éventuellement incomplet) |
 
 Pas de bouton **Ajouter une dépense**, pas d’actions Dupliquer / Modifier (écriture Grist hors scope V1). Libellés produit en texte (pas de lien `/produits/:id` tant que l’écran Produits n’est pas livré).
 

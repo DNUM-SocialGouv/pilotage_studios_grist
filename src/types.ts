@@ -89,5 +89,8 @@ export interface Intervenant {
   Prenom_Nom?: string;
 }
 
-/** Ligne catalogue produits — garder les colonnes Grist (libellé = `Produit`). */
-export type ProduitSdpc = { id: number } & Record<string, unknown>;
+/** Ligne catalogue produits (libellé = colonne Grist `Produit`). */
+export type ProduitSdpc = {
+  id: number;
+  Produit?: unknown;
+};

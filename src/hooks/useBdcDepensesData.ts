@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Intervenant, Mission, MissionEnfant, ProduitSdpc, SuiviMensuel } from "../types";
-import type { GristRecord } from "../gristTypes";
+import type { GristFetchTableResult, GristRecord } from "../gristTypes";
 import {
   recordsFromFetchTable,
   toIntervenant,
@@ -77,18 +77,38 @@ async function loadReferentials(): Promise<{
   missionEnfants: MissionEnfant[];
   intervenants: Intervenant[];
   produits: ProduitSdpc[];
+  refsError: string | null;
 }> {
-  const [missionsRaw, enfantsRaw, equipeRaw, produitsRaw] = await Promise.all([
+  const labels = ["Missions", "Missions_enfants", "Equipe", "produits"] as const;
+  const settled = await Promise.allSettled([
     fetchAllowlistedTable("Missions"),
     fetchAllowlistedTable("Missions_enfants"),
     fetchAllowlistedTable("Equipe"),
     fetchAllowlistedTable("Tableau_de_pilotage_SDPC_Produits_SDPC"),
   ]);
+
+  const failed: string[] = [];
+  const pick = <T>(
+    index: number,
+    map: (raw: GristFetchTableResult) => T[],
+  ): T[] => {
+    const result = settled[index];
+    if (result?.status === "fulfilled") {
+      return map(result.value);
+    }
+    failed.push(labels[index]!);
+    return [];
+  };
+
   return {
-    missions: recordsFromFetchTable(missionsRaw).map(toMission),
-    missionEnfants: recordsFromFetchTable(enfantsRaw).map(toMissionEnfant),
-    intervenants: recordsFromFetchTable(equipeRaw).map(toIntervenant),
-    produits: recordsFromFetchTable(produitsRaw).map(toProduitSdpc),
+    missions: pick(0, (raw) => recordsFromFetchTable(raw).map(toMission)),
+    missionEnfants: pick(1, (raw) => recordsFromFetchTable(raw).map(toMissionEnfant)),
+    intervenants: pick(2, (raw) => recordsFromFetchTable(raw).map(toIntervenant)),
+    produits: pick(3, (raw) => recordsFromFetchTable(raw).map(toProduitSdpc)),
+    refsError:
+      failed.length > 0
+        ? `Référentiels partiels indisponibles : ${failed.join(", ")}. Le regroupement des dépenses peut être incomplet.`
+        : null,
   };
 }
 
@@ -114,36 +134,20 @@ export function useBdcDepensesData(bdcId: number | undefined): BdcDepensesData {
         if (cancelled) {
           return;
         }
-        try {
-          const refs = await loadReferentials();
-          if (cancelled) {
-            return;
-          }
-          setState({
-            status: "ok",
-            error: null,
-            refsError: null,
-            suivi,
-            ...refs,
-          });
-        } catch (refErr) {
-          if (cancelled) {
-            return;
-          }
-          setState({
-            status: "ok",
-            error: null,
-            refsError:
-              refErr instanceof Error
-                ? refErr.message
-                : "Les missions / prestations n’ont pas pu être chargées.",
-            suivi,
-            missions: [],
-            missionEnfants: [],
-            intervenants: [],
-            produits: [],
-          });
+        const refs = await loadReferentials();
+        if (cancelled) {
+          return;
         }
+        setState({
+          status: "ok",
+          error: null,
+          refsError: refs.refsError,
+          suivi,
+          missions: refs.missions,
+          missionEnfants: refs.missionEnfants,
+          intervenants: refs.intervenants,
+          produits: refs.produits,
+        });
       } catch (err) {
         if (cancelled) {
           return;

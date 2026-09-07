@@ -74,7 +74,7 @@ export function BdcDepensesPanel({ data }: BdcDepensesPanelProps) {
   const produitsById = useMemo(() => {
     const m = new Map<number, string>();
     for (const p of data.produits) {
-      m.set(p.id, libelleProduitGrist(p as unknown as Record<string, unknown>, p.id));
+      m.set(p.id, libelleProduitGrist({ Produit: p.Produit }, p.id));
     }
     return m;
   }, [data.produits]);
@@ -187,19 +187,18 @@ export function BdcDepensesPanel({ data }: BdcDepensesPanelProps) {
     );
   }
 
-  if (data.refsError) {
-    return (
-      <Alert
-        severity="warning"
-        small
-        title="Référentiels missions indisponibles"
-        description="Les missions / prestations n’ont pas pu être chargées ; le regroupement des dépenses serait incomplet."
-      />
-    );
-  }
-
   return (
     <>
+      {data.refsError ? (
+        <div className="fr-mb-2w">
+          <Alert
+            severity="warning"
+            small
+            title="Référentiels partiels"
+            description={data.refsError}
+          />
+        </div>
+      ) : null}
       {depensesMensuelles.length > 0 ? (
         <div className="fr-grid-row fr-grid-row--gutters mission-equipe-recap fr-mb-3w">
           <div className="fr-col-12 fr-col-lg-7">
@@ -323,7 +322,7 @@ export function BdcDepensesPanel({ data }: BdcDepensesPanelProps) {
                   facturés).
                 </>
               ) : (
-                <>— (ajoutez des jours et un montant TTC sur les lignes filtrées).</>
+                <>— (aucun jour facturé sur les lignes filtrées).</>
               )}
             </p>
           </div>

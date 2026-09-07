@@ -158,5 +158,5 @@ export function toIntervenant(record: GristRecord): Intervenant {
 }
 
 export function toProduitSdpc(record: GristRecord): ProduitSdpc {
-  return { ...record, id: record.id };
+  return { id: record.id, Produit: record.Produit };
 }

@@ -23,8 +23,6 @@ export const BDC_DEPENSES_TABLE_IDS = [
   "Tableau_de_pilotage_SDPC_Produits_SDPC",
 ] as const;
 
-export type BdcDepensesTableId = (typeof BDC_DEPENSES_TABLE_IDS)[number];
-
 export const FETCH_TABLE_ALLOWLIST = [
   PA_TABLE_ID,
   ...RELATED_TABLE_IDS,

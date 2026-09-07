@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export type ExpandableRowId = string | number;
 
@@ -15,16 +15,14 @@ export function useExpandableRowIds<T extends ExpandableRowId = number>(
   resetKey?: unknown,
 ) {
   const [expandedIds, setExpandedIds] = useState<Set<T>>(() => new Set(initial));
-
   const resetKeySerialized = resetKey === undefined ? null : resetKeyToString(resetKey);
-  const [storedResetKey, setStoredResetKey] = useState(resetKeySerialized);
 
-  if (resetKeySerialized != null && resetKeySerialized !== storedResetKey) {
-    setStoredResetKey(resetKeySerialized);
-    if (expandedIds.size > 0) {
-      setExpandedIds(new Set());
+  useEffect(() => {
+    if (resetKeySerialized == null) {
+      return;
     }
-  }
+    setExpandedIds(new Set());
+  }, [resetKeySerialized]);
 
   const isExpanded = useCallback((id: T) => expandedIds.has(id), [expandedIds]);
 
