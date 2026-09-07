@@ -1,20 +1,16 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
+import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
+import { BdcDepensesPanel } from "../components/BdcDepensesPanel";
 import { BdcFinanceRecap } from "../components/BdcFinanceRecap";
-import { EquipeBadges } from "../components/EquipeBadges";
-import {
-  GristAttachmentDownloadLink,
-  sofianeBdcCell,
-} from "../components/GristAttachmentDownloadLink";
+import { BdcInformationsPanel } from "../components/BdcInformationsPanel";
 import { useGristPa } from "../GristPaContext";
+import { useBdcDepensesData } from "../hooks/useBdcDepensesData";
 import { NothingHerePage } from "../security/NothingHerePage";
-import { formatMontantEur } from "../utils/formatMontant";
-import {
-  bdcPaRefId,
-  financeForPlanActivite,
-  financePaOnly,
-  libellePlanActivite,
-} from "../utils/paFinance";
+import { bdcPaRefId, financeForPlanActivite, financePaOnly } from "../utils/paFinance";
+
+type BdcTabId = "depenses" | "informations" | "pv";
 
 export function BdcDetailView() {
   const { id } = useParams();
@@ -22,6 +18,8 @@ export function BdcDetailView() {
   const bdcId = id ? Number.parseInt(id, 10) : NaN;
   const bdc = data.bdcList.find((b) => b.id === bdcId);
   const useFullFinance = data.relatedStatus === "ok";
+  const [suiviTabId, setSuiviTabId] = useState<BdcTabId>("depenses");
+  const depenses = useBdcDepensesData(bdc?.id);
 
   if (data.untrustedEmbed || data.outsideGrist) {
     return <NothingHerePage />;
@@ -130,65 +128,54 @@ export function BdcDetailView() {
         soldeCra={bdc.Solde_TTC_CRA}
       />
 
-      <h2 className="fr-h5">Informations</h2>
-      <div className="fr-grid-row fr-grid-row--gutters fr-mb-3w">
-        <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
-          <p className="bdc-detail-info-field__label">Financeur</p>
-          <p className="bdc-detail-info-field__value">{bdc.Financeur?.trim() || "—"}</p>
-        </div>
-        <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
-          <p className="bdc-detail-info-field__label">Chorus</p>
-          <p className="bdc-detail-info-field__value">{bdc.BdC_Chorus?.trim() || "—"}</p>
-        </div>
-        <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
-          <p className="bdc-detail-info-field__label">Plan d’activité</p>
-          <p className="bdc-detail-info-field__value">
-            {linkedPa ? (
-              <Link className="fr-link" to={`/pa/${linkedPa.id}`}>
-                {libellePlanActivite(linkedPa)}
-              </Link>
-            ) : paId != null ? (
-              <Link className="fr-link" to={`/pa/${paId}`}>
-                PA #{paId}
-              </Link>
-            ) : (
-              "—"
-            )}
-          </p>
-        </div>
-        <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
-          <p className="bdc-detail-info-field__label">Plateforme</p>
-          <p className="bdc-detail-info-field__value">{bdc.Plateforme?.trim() || "—"}</p>
-        </div>
-        <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
-          <p className="bdc-detail-info-field__label">Engagement</p>
-          <p className="bdc-detail-info-field__value">{bdc.Engagement?.trim() || "—"}</p>
-        </div>
-        <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
-          <p className="bdc-detail-info-field__label">Équipe</p>
-          <div className="bdc-detail-info-field__value">
-            <EquipeBadges value={bdc.Equipe2} />
-          </div>
-        </div>
-        {paFinance ? (
-          <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
-            <p className="bdc-detail-info-field__label">Reste à consommer du PA</p>
-            <p className="bdc-detail-info-field__value">
-              {formatMontantEur(paFinance.resteAConsommer)}
-            </p>
-          </div>
-        ) : null}
-        <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
-          <p className="bdc-detail-info-field__label">Sofiane</p>
-          <p className="bdc-detail-info-field__value">{sofianeBdcCell(bdc.SOFIANE)}</p>
-        </div>
-        <div className="fr-col-12 fr-col-sm-6 fr-col-lg-3">
-          <p className="bdc-detail-info-field__label">Devis</p>
-          <div className="bdc-detail-info-field__value">
-            <GristAttachmentDownloadLink value={bdc.Devis} label="Télécharger le devis" />
-          </div>
-        </div>
-      </div>
+      <Tabs
+        label="Sections du bon de commande"
+        className="fr-mb-2w"
+        selectedTabId={suiviTabId}
+        onTabChange={(tabId) => {
+          if (tabId === "pv") {
+            setSuiviTabId("pv");
+          } else if (tabId === "informations") {
+            setSuiviTabId("informations");
+          } else {
+            setSuiviTabId("depenses");
+          }
+        }}
+        tabs={[
+          {
+            tabId: "depenses",
+            label: "Dépenses",
+            iconId: "fr-icon-table-line",
+          },
+          {
+            tabId: "informations",
+            label: "Informations",
+            iconId: "fr-icon-information-line",
+          },
+          {
+            tabId: "pv",
+            label: "PV",
+            iconId: "fr-icon-file-line",
+          },
+        ]}
+      >
+        {suiviTabId === "depenses" ? (
+          <BdcDepensesPanel data={depenses} />
+        ) : suiviTabId === "informations" ? (
+          <BdcInformationsPanel
+            bdc={bdc}
+            linkedPa={linkedPa}
+            paId={paId}
+            resteAConsommer={paFinance?.resteAConsommer}
+          />
+        ) : (
+          <Alert
+            severity="info"
+            title="À venir"
+            description="Les procès-verbaux seront affichés ici une fois l’écran PV livré."
+          />
+        )}
+      </Tabs>
     </div>
   );
 }

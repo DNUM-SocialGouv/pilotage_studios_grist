@@ -14,4 +14,4 @@ alwaysApply: false
 - `<caption>` obligatoire (`fr-sr-only` ou titre visible).
 - Montants : `formatMontantEur()` ; vide → `—`.
 - Colonnes monétaires : `fr-cell--right`.
-- Pagination DSFR sous le tableau si plus de 10 lignes.
+- Pagination DSFR sous le tableau si plus de 10 lignes. **Exception ISO** : tableau hiérarchique dépenses BDC (`BdcDepensesByPrestationTable`) — expansible, sans pagination.

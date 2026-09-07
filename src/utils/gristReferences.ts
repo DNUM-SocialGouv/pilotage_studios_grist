@@ -131,3 +131,66 @@ export function extractGristReferenceId(value: unknown): number | undefined {
   }
   return undefined;
 }
+
+const PRODUIT_REF_KEY = "Produit";
+
+/** Id de ligne produit référencé par une ligne `Realise`. */
+export function extractProduitRefFromSuivi(record: Record<string, unknown>): number | undefined {
+  if (PRODUIT_REF_KEY in record) {
+    const id = extractGristReferenceId(record[PRODUIT_REF_KEY]);
+    if (id !== undefined && id !== 0) {
+      return id;
+    }
+  }
+  return undefined;
+}
+
+/** Libellé produit déjà matérialisé sur la ligne suivi (colonnes lookup / formule Grist). */
+export function extractProduitLibelleFromSuivi(record: Record<string, unknown>): string | undefined {
+  const preferred = [
+    "Produit_Libelle",
+    "Libelle_Produit",
+    "Libelle_du_Produit",
+    "Nom_Produit",
+    "Nom_du_Produit",
+    "Intitule_Produit",
+    "Produit_nom",
+    "Produit_Nom",
+  ];
+  for (const k of preferred) {
+    const v = record[k];
+    if (typeof v === "string") {
+      const t = v.trim();
+      if (t) {
+        return t;
+      }
+    }
+  }
+  for (const [k, v] of Object.entries(record)) {
+    if (typeof v !== "string") {
+      continue;
+    }
+    const t = v.trim();
+    if (!t) {
+      continue;
+    }
+    const kl = k.toLowerCase();
+    if (kl.includes("produit") && (kl.includes("nom") || kl.includes("libel") || kl.includes("intitul"))) {
+      return t;
+    }
+  }
+  return undefined;
+}
+
+const BDC_CIBLE_KEY = "BDC_cible";
+const SUIVI_BDC_CHORUS_REF_KEY = "Bdc_Chorus2";
+
+/** La ligne de suivi est rattachée à ce BDC (`BDC_cible` ou `Bdc_Chorus2`). */
+export function suiviRowLinksToBdc(record: Record<string, unknown>, bdcId: number): boolean {
+  const cible = extractGristReferenceId(record[BDC_CIBLE_KEY]);
+  const chorus = extractGristReferenceId(record[SUIVI_BDC_CHORUS_REF_KEY]);
+  return (
+    (cible !== undefined && cible !== 0 && cible === bdcId) ||
+    (chorus !== undefined && chorus !== 0 && chorus === bdcId)
+  );
+}
