@@ -33,7 +33,8 @@ Les **skills projet** (`.cursor/skills/`) priment sur les user rules générique
 | `/` | Accueil (welcome) — entrée par défaut |
 | `/pa`, `/pa/:id` | Implémenté (liste + fiche) |
 | `/bdc`, `/bdc/:id` | Implémenté (liste + fiche) |
-| `/produits`, `/missions`, `/intervenants`, `/cra`, `/pv` | Stub « À venir » (nav) |
+| `/missions`, `/missions/:id` | Implémenté (liste + fiche, lecture) |
+| `/produits`, `/intervenants`, `/cra`, `/pv` | Stub « À venir » (nav) |
 | `/evaluations`, `/analyse` | Stub hors nav |
 
 Nav principale : Accueil, **Budget** (sous-menu Bons de commande · Plans d’activité · Prestation / CRA · Procès-verbaux), Produits, Missions, Intervenants. Pas de route `/budget`.
@@ -45,9 +46,10 @@ Entrée MemoryRouter : `/` (`WelcomePage`). Pas de Header / Footer DSFR app. Pas
 1 PR par entrée de nav (liste + fiche + liens croisés + **docs/**) :
 
 1. PA + BDC (livrés sur `main`)
-2. **Produits** (prochaine — [#3](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3))
-3. Missions → Intervenants → CRA → PV → Évaluations (priorité métier)
-4. Analyse : rester stub (hors scope widget)
+2. **Missions** (liste + fiche lecture — cette livraison)
+3. **Produits** ([#3](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3))
+4. Intervenants → CRA → PV → Évaluations (priorité métier)
+5. Analyse : rester stub (hors scope widget)
 
 ---
 
@@ -62,11 +64,12 @@ Entrée MemoryRouter : `/` (`WelcomePage`). Pas de Header / Footer DSFR app. Pas
 |------|----------|
 | Routes | `src/App.tsx` |
 | Nav | `src/layout/WidgetNav.tsx` + [`widgetNavItems.ts`](src/layout/widgetNavItems.ts) (`WIDGET_NAV_ITEMS`, groupe Budget) |
-| Pages | `src/pages/WelcomePage.tsx`, `Pa*.tsx`, `Bdc*.tsx`, `StubPage.tsx` |
-| Données | `src/hooks/useGristPaData.ts`, `useBdcDepensesData.ts`, `GristPaContext.tsx`, `gristMap.ts`, `gristRest.ts`, `gristAccessToken.ts` |
+| Pages | `src/pages/WelcomePage.tsx`, `Pa*.tsx`, `Bdc*.tsx`, `Missions*.tsx`, `StubPage.tsx` |
+| Données | `src/hooks/useGristPaData.ts`, `useBdcDepensesData.ts`, `useMissionsData.ts`, `GristPaContext.tsx`, `gristMap.ts`, `gristRest.ts`, `gristAccessToken.ts` |
 | Sécu | `src/security/embedTrust.ts`, `NothingHerePage.tsx`, `ensureFreshBuild.ts`, `fetchTableAllowlist.ts` |
 | Finance / refs | `src/utils/paFinance.ts`, `montantReste.tsx`, `gristReferences.ts`, `equipeBadge.ts` |
 | Dépenses BDC | `BdcDepensesPanel`, `BdcDepensesByPrestationTable`, `groupSuiviByMissionEnfant.ts`, `CraTtcPiePanel` |
+| Missions | `MissionsListView`, `MissionsDetailView`, `useMissionsData`, `craByMission.ts` |
 
 ---
 
@@ -76,7 +79,7 @@ Entrée MemoryRouter : `/` (`WelcomePage`). Pas de Header / Footer DSFR app. Pas
 |-------|---------|
 | Ancre widget + liste PA | `Plan_activite` |
 | Finance PA + écrans BDC (accès full) | `BDC`, `Constatations`, `Commandes_Sofiane` |
-| Onglet Dépenses fiche BDC (lazy, lecture) | `Realise`, `Missions`, `Missions_enfants`, `Equipe`, `Tableau_de_pilotage_SDPC_Produits_SDPC` |
+| Onglet Dépenses fiche BDC **ou** écrans `/missions` (lazy, lecture) | `Realise`, `Missions`, `Missions_enfants`, `Equipe`, `Tableau_de_pilotage_SDPC_Produits_SDPC` |
 
 **Allowlist** : uniquement via [`src/security/fetchTableAllowlist.ts`](src/security/fetchTableAllowlist.ts) (`FETCH_TABLE_ALLOWLIST`, `fetchAllowlistedTable`) **et** REST `fetchGristRecordsViaToken` (même allowlist). Pas d’ID libre depuis l’UI. Nouvelle table = MAJ ce fichier + §4 + docs + [`SECURITY.md`](SECURITY.md).
 
@@ -152,6 +155,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 | Nouvelle table `fetchTable` | `fetchTableAllowlist.ts`, §4, SECURITY |
 | PA / finance | `docs/fonctionnel/pa/`, `paFinance.ts`, `PaListView` / `PaDetailView` |
 | BDC | `docs/fonctionnel/bdc/`, `BdcListView` / `BdcDetailView` |
+| Missions | `docs/fonctionnel/missions/`, `useMissionsData`, `MissionsListView` / `MissionsDetailView` |
 | Tableau DSFR | rule `dsfr-tableaux.mdc`, MCP `user-dsfr` |
 | Embed / secrets | `embedTrust.ts`, `NothingHerePage`, `ensureFreshBuild`, SECURITY |
 | Rôles / ACL document | `docs/fonctionnel/roles/` ; inventaire via MCP **local** `grist-mcp-server` (`grist_list_doc_access` / `grist_access_gap_report`) — hors bundle widget |

@@ -130,13 +130,39 @@ export function toSuiviMensuel(record: GristRecord): SuiviMensuel {
     TTC: asNumber(record.TTC),
     BDC_cible: record.BDC_cible,
     Bdc_Chorus2: record.Bdc_Chorus2,
+    Taches_realisees: asString(record.Taches_realisees),
+    Nom_BdC: asString(record.Nom_BdC) ?? asGristChoice(record.Nom_BdC),
   };
+}
+
+function asMultilineText(value: unknown): string | undefined {
+  return asString(value) ?? asGristChoice(value);
 }
 
 export function toMission(record: GristRecord): Mission {
   return {
     id: record.id,
     Nom_de_la_mission: asString(record.Nom_de_la_mission) ?? asGristChoice(record.Nom_de_la_mission),
+    Statut: asGristChoice(record.Statut) ?? asString(record.Statut),
+    Intervenants: record.Intervenants,
+    Resp_: record.Resp_,
+    Date_de_debut: asNumber(record.Date_de_debut),
+    Produit_SDPC: record.Produit_SDPC,
+    Equipe2: record.Equipe2,
+    Departement: record.Departement ?? record["$Departement"],
+    Demande: asMultilineText(record.Demande),
+    Enjeux: asMultilineText(record.Enjeux),
+    Historique: asMultilineText(record.Historique),
+    Fonctionnalites_produit: asMultilineText(record.Fonctionnalites_produit),
+    Cible_profils_utilisateurs: asMultilineText(record.Cible_profils_utilisateurs),
+    Pb_utilisateurs_identifies: asMultilineText(record.Pb_utilisateurs_identifies),
+    Liens_FIGMA_Notion: asMultilineText(record.Liens_FIGMA_Notion),
+    Suivi_resp_studio: asMultilineText(record.Suivi_resp_studio),
+    Docs: record.Docs,
+    Volumes_d_usages_utilisateurs_utilisations_: asMultilineText(
+      record.Volumes_d_usages_utilisateurs_utilisations_,
+    ),
+    Derniere_mise_a_jour: asNumber(record.Derniere_mise_a_jour),
   };
 }
 
@@ -147,6 +173,8 @@ export function toMissionEnfant(record: GristRecord): MissionEnfant {
     Libelle: asString(record.Libelle) ?? asGristChoice(record.Libelle),
     Intervenant: record.Intervenant,
     Specialite: asGristChoice(record.Specialite) ?? asString(record.Specialite),
+    Type_prestation: asGristChoice(record.Type_prestation) ?? asString(record.Type_prestation),
+    Statut: asGristChoice(record.Statut) ?? asString(record.Statut),
   };
 }
 
@@ -154,6 +182,7 @@ export function toIntervenant(record: GristRecord): Intervenant {
   return {
     id: record.id,
     Prenom_Nom: asString(record.Prenom_Nom) ?? asGristChoice(record.Prenom_Nom),
+    Equipe: asGristChoice(record.Equipe) ?? asString(record.Equipe),
   };
 }
 

@@ -31,7 +31,7 @@ Filtre Freelance (à affiner) : lignes où l’intervenant = `user.Equipe` (ref 
 | `Previsionnel` / TTC | CRUD / RU | — | — | — | **Déjà** TTC Owner-only |
 | Summaries `*_summary_*` montants | RU | — | — | — | **Déjà** Owner-only |
 | `MARS_26_Export_Factures_Malt_` | RU | — | — | — | **Déjà** Owner-only |
-| `Missions` / `Missions_enfants` | CRUD | R/U département | R ses missions | R / — | Stub widget |
+| `Missions` / `Missions_enfants` | CRUD | R/U département | R ses missions | R / — | Liste + fiche lecture |
 | `Demandes` | CRUD | R/U | R / — | — | |
 | Structure tables (S) | Admin/Owner | — | — | — | ACL actuelle : `-S` si non-Owner |
 
