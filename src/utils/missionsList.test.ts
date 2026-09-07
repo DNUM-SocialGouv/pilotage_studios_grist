@@ -50,64 +50,39 @@ function filters(partial: Partial<MissionsListFilters> = {}): MissionsListFilter
 
 describe("missionMatchesFilters", () => {
   const produitsById = new Map([[10, "VAO"]]);
+  const matches = (m: Mission, partial: Partial<MissionsListFilters>): boolean =>
+    missionMatchesFilters(m, filters(partial), produitsById, enfants);
 
   it("filtre par statut et équipe", () => {
-    assert.equal(
-      missionMatchesFilters(missions[0]!, filters({ equipe: "Design", statut: "En cours" }), produitsById),
-      true,
-    );
-    assert.equal(
-      missionMatchesFilters(missions[0]!, filters({ equipe: "RU" }), produitsById),
-      false,
-    );
+    assert.equal(matches(missions[0]!, { equipe: "Design", statut: "En cours" }), true);
+    assert.equal(matches(missions[0]!, { equipe: "RU" }), false);
   });
 
   it("recherche sur nom et produit", () => {
-    assert.equal(
-      missionMatchesFilters(missions[0]!, filters({ search: "vao" }), produitsById),
-      true,
-    );
-    assert.equal(
-      missionMatchesFilters(missions[1]!, filters({ search: "vao" }), produitsById),
-      false,
-    );
+    assert.equal(matches(missions[0]!, { search: "vao" }), true);
+    assert.equal(matches(missions[1]!, { search: "vao" }), false);
   });
 
   it("filtre par département", () => {
-    assert.equal(
-      missionMatchesFilters(missions[0]!, filters({ departement: "DNUM" }), produitsById),
-      true,
-    );
-    assert.equal(
-      missionMatchesFilters(missions[0]!, filters({ departement: "DSS" }), produitsById),
-      false,
-    );
+    assert.equal(matches(missions[0]!, { departement: "DNUM" }), true);
+    assert.equal(matches(missions[0]!, { departement: "DSS" }), false);
   });
 
   it("filtre par produit", () => {
-    assert.equal(
-      missionMatchesFilters(missions[0]!, filters({ produitId: "10" }), produitsById),
-      true,
-    );
-    assert.equal(
-      missionMatchesFilters(missions[1]!, filters({ produitId: "10" }), produitsById),
-      false,
-    );
+    assert.equal(matches(missions[0]!, { produitId: "10" }), true);
+    assert.equal(matches(missions[1]!, { produitId: "10" }), false);
   });
 
   it("filtre par intervenant (enfants + legacy)", () => {
-    assert.equal(
-      missionMatchesFilters(missions[0]!, filters({ intervenantId: "201" }), produitsById, enfants),
-      true,
-    );
-    assert.equal(
-      missionMatchesFilters(missions[0]!, filters({ intervenantId: "101" }), produitsById, enfants),
-      true,
-    );
-    assert.equal(
-      missionMatchesFilters(missions[0]!, filters({ intervenantId: "202" }), produitsById, enfants),
-      false,
-    );
+    assert.equal(matches(missions[0]!, { intervenantId: "201" }), true);
+    assert.equal(matches(missions[0]!, { intervenantId: "101" }), true);
+    assert.equal(matches(missions[0]!, { intervenantId: "202" }), false);
+  });
+
+  it("combine département et produit (AND)", () => {
+    assert.equal(matches(missions[0]!, { departement: "DNUM", produitId: "10" }), true);
+    assert.equal(matches(missions[0]!, { departement: "DSS", produitId: "10" }), false);
+    assert.equal(matches(missions[1]!, { departement: "DSS", produitId: "10" }), false);
   });
 });
 

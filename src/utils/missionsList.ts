@@ -47,42 +47,42 @@ export function missionMatchesFilters(
   m: Mission,
   filters: MissionsListFilters,
   produitsById: Map<number, string>,
-  missionEnfants: MissionEnfant[] = [],
+  missionEnfants: MissionEnfant[],
 ): boolean {
-  const okStatut = !filters.statut || m.Statut?.trim() === filters.statut;
-  const equipes = extractGristStringTokens(m.Equipe2);
-  const okEquipe = !filters.equipe || equipes.includes(filters.equipe);
-  const okDepartement =
-    !filters.departement || missionDepartementTokens(m).includes(filters.departement);
-  const okProduit = (() => {
-    if (!filters.produitId) {
-      return true;
-    }
+  if (filters.statut && m.Statut?.trim() !== filters.statut) {
+    return false;
+  }
+  if (filters.equipe && !extractGristStringTokens(m.Equipe2).includes(filters.equipe)) {
+    return false;
+  }
+  if (filters.departement && !missionDepartementTokens(m).includes(filters.departement)) {
+    return false;
+  }
+  if (filters.produitId) {
     const ref = extractGristReferenceId(m.Produit_SDPC);
-    return ref != null && String(ref) === filters.produitId;
-  })();
-  const okIntervenant = (() => {
-    if (!filters.intervenantId) {
-      return true;
+    if (ref == null || String(ref) !== filters.produitId) {
+      return false;
     }
+  }
+  if (filters.intervenantId) {
     const wanted = Number.parseInt(filters.intervenantId, 10);
     if (!Number.isFinite(wanted)) {
       return false;
     }
-    return intervenantIdsForMaster(missionEnfants, m.id, m.Intervenants).includes(wanted);
-  })();
-  const q = filters.search.trim().toLowerCase();
-  const okSearch = (() => {
-    if (!q) {
-      return true;
+    if (!intervenantIdsForMaster(missionEnfants, m.id, m.Intervenants).includes(wanted)) {
+      return false;
     }
+  }
+  const q = filters.search.trim().toLowerCase();
+  if (q) {
     const words = q.split(/\s+/).filter(Boolean);
     const title = (m.Nom_de_la_mission ?? "").trim().toLowerCase();
     const produit = libelleProduitMission(m, produitsById).toLowerCase();
-    const hay = `${title} ${produit}`;
-    return words.every((w) => hay.includes(w));
-  })();
-  return okStatut && okEquipe && okDepartement && okProduit && okIntervenant && okSearch;
+    if (!words.every((w) => `${title} ${produit}`.includes(w))) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function uniqueSorted(values: Iterable<string>): string[] {
