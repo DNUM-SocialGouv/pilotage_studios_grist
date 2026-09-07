@@ -32,9 +32,9 @@ Ce n’est **pas** « tout Internet lit notre Grist » ; c’est « un attaquant
 
 1. **Aucun secret** dans le dépôt / bundle (`VITE_GRIST_API_KEY`, clés LLM interdits).
 2. **Contrôle d’embed** (`src/security/embedTrust.ts`) : refuse `grist.ready` si l’iframe a un parent non Grist ; en prod hors iframe / embed non fiable → `NothingHerePage` (pas de nav).
-3. **Allowlist** des `fetchTable` : uniquement via `fetchAllowlistedTable` (`src/security/fetchTableAllowlist.ts`) — refus runtime hors liste, pas d’ID libre côté UI.
-4. **Lecture seule métier** V1 : pas d’API d’écriture dans les hooks.
-5. **Téléchargement attachments / lecture BDC** : `docApi.getAccessToken({ readOnly: true })` → REST `?auth=` (jeton **court**, scoped **document + utilisateur** connecté). **Pas** de `VITE_GRIST_API_KEY`. Le jeton n’existe que pendant une session iframe Grist authentifiée — il n’est **pas** publié sur Pages ni utilisable hors session.
+3. **Allowlist** des `fetchTable` : uniquement via `fetchAllowlistedTable` (`src/security/fetchTableAllowlist.ts`) — refus runtime hors liste, pas d’ID libre côté UI. Tables Dépenses (`Realise`, missions, équipe, produits) : allowlist **et** fetch lazy sur `/bdc/:id` seulement (pas au boot).
+4. **Lecture seule métier** V1 : pas d’API d’écriture dans les hooks. L’onglet Dépenses n’expose pas de création / édition de lignes `Realise`.
+5. **Téléchargement attachments / lecture BDC / Realise** : `docApi.getAccessToken({ readOnly: true })` → REST `?auth=` (jeton **court**, scoped **document + utilisateur** connecté). **Pas** de `VITE_GRIST_API_KEY`. Le jeton n’existe que pendant une session iframe Grist authentifiée — il n’est **pas** publié sur Pages ni utilisable hors session.
 6. **CSP** injectée au build (meta) + script API depuis `grist.numerique.gouv.fr` (sans `eval` ; `docs.getgrist.com` est en mode eval et casse sous CSP).
 7. **Pas de source maps** en production.
 8. **Repo** : revue PR / protection de `main` recommandées (org).

@@ -52,3 +52,45 @@ export interface CommandeSofiane {
   Objet?: string;
   Chorus?: string;
 }
+
+/** Ligne CRA / suivi mensuel (table Grist `Realise`). */
+export interface SuiviMensuel {
+  id: number;
+  Annee?: string;
+  Mois?: string;
+  Periode?: string | number;
+  Intervenants?: unknown;
+  Missions?: unknown;
+  Mission_enfant?: unknown;
+  Nb_jours?: number;
+  Equipe?: string;
+  Produit?: unknown;
+  Calcul_TTC?: number;
+  TTC?: number;
+  BDC_cible?: unknown;
+  Bdc_Chorus2?: unknown;
+}
+
+export interface Mission {
+  id: number;
+  Nom_de_la_mission?: string;
+}
+
+export interface MissionEnfant {
+  id: number;
+  Mission?: unknown;
+  Libelle?: string;
+  Intervenant?: unknown;
+  Specialite?: string;
+}
+
+export interface Intervenant {
+  id: number;
+  Prenom_Nom?: string;
+}
+
+/** Ligne catalogue produits (libellé = colonne Grist `Produit`). */
+export type ProduitSdpc = {
+  id: number;
+  Produit?: unknown;
+};

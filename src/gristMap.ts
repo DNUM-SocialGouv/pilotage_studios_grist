@@ -1,5 +1,15 @@
 import type { GristFetchTableResult, GristRecord } from "./gristTypes";
-import type { BDC, CommandeSofiane, Constatation, PlanActivite } from "./types";
+import type {
+  BDC,
+  CommandeSofiane,
+  Constatation,
+  Intervenant,
+  Mission,
+  MissionEnfant,
+  PlanActivite,
+  ProduitSdpc,
+  SuiviMensuel,
+} from "./types";
 import { asGristChoice } from "./utils/gristReferences";
 
 export function recordsFromFetchTable(raw: GristFetchTableResult): GristRecord[] {
@@ -99,4 +109,54 @@ export function toCommandeSofiane(record: GristRecord): CommandeSofiane {
     Objet: asString(record.Objet),
     Chorus: asString(record.Chorus),
   };
+}
+
+export function toSuiviMensuel(record: GristRecord): SuiviMensuel {
+  return {
+    id: record.id,
+    Annee: asString(record.Annee),
+    Mois: asString(record.Mois),
+    Periode:
+      typeof record.Periode === "number" || typeof record.Periode === "string"
+        ? record.Periode
+        : asNumber(record.Periode) ?? asString(record.Periode),
+    Intervenants: record.Intervenants,
+    Missions: record.Missions,
+    Mission_enfant: record.Mission_enfant,
+    Nb_jours: asNumber(record.Nb_jours),
+    Equipe: asGristChoice(record.Equipe) ?? asString(record.Equipe),
+    Produit: record.Produit,
+    Calcul_TTC: asNumber(record.Calcul_TTC),
+    TTC: asNumber(record.TTC),
+    BDC_cible: record.BDC_cible,
+    Bdc_Chorus2: record.Bdc_Chorus2,
+  };
+}
+
+export function toMission(record: GristRecord): Mission {
+  return {
+    id: record.id,
+    Nom_de_la_mission: asString(record.Nom_de_la_mission) ?? asGristChoice(record.Nom_de_la_mission),
+  };
+}
+
+export function toMissionEnfant(record: GristRecord): MissionEnfant {
+  return {
+    id: record.id,
+    Mission: record.Mission,
+    Libelle: asString(record.Libelle) ?? asGristChoice(record.Libelle),
+    Intervenant: record.Intervenant,
+    Specialite: asGristChoice(record.Specialite) ?? asString(record.Specialite),
+  };
+}
+
+export function toIntervenant(record: GristRecord): Intervenant {
+  return {
+    id: record.id,
+    Prenom_Nom: asString(record.Prenom_Nom) ?? asGristChoice(record.Prenom_Nom),
+  };
+}
+
+export function toProduitSdpc(record: GristRecord): ProduitSdpc {
+  return { id: record.id, Produit: record.Produit };
 }

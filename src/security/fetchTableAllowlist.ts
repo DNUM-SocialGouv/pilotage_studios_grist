@@ -6,11 +6,28 @@ import type { GristFetchTableResult } from "../gristTypes";
  */
 export const PA_TABLE_ID = "Plan_activite";
 
+/** Tables liées chargées au boot widget (PA / liste BDC / cascade finance). */
 export const RELATED_TABLE_IDS = ["BDC", "Constatations", "Commandes_Sofiane"] as const;
 
 export type RelatedTableId = (typeof RELATED_TABLE_IDS)[number];
 
-export const FETCH_TABLE_ALLOWLIST = [PA_TABLE_ID, ...RELATED_TABLE_IDS] as const;
+/**
+ * Tables de l’onglet Dépenses (fiche BDC uniquement — pas au boot).
+ * Lecture seule ; jeton REST `readOnly: true`.
+ */
+export const BDC_DEPENSES_TABLE_IDS = [
+  "Realise",
+  "Missions",
+  "Missions_enfants",
+  "Equipe",
+  "Tableau_de_pilotage_SDPC_Produits_SDPC",
+] as const;
+
+export const FETCH_TABLE_ALLOWLIST = [
+  PA_TABLE_ID,
+  ...RELATED_TABLE_IDS,
+  ...BDC_DEPENSES_TABLE_IDS,
+] as const;
 
 export type AllowlistedTableId = (typeof FETCH_TABLE_ALLOWLIST)[number];
 
