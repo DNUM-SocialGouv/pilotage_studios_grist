@@ -12,7 +12,7 @@ Consulter les PA, filtrer, lire le récap financier filtré et ouvrir une fiche.
 |---------|--------|
 | Route | `/pa` |
 | Page | `src/pages/PaListView.tsx` |
-| Navigation | Entrée **PA** de `WidgetNav` |
+| Navigation | Sous-menu **Budget** → **Plans d’activité** (`WidgetNav`) |
 | Pagination | 10 lignes |
 
 ## États

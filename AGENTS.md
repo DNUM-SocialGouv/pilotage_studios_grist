@@ -36,6 +36,8 @@ Les **skills projet** (`.cursor/skills/`) priment sur les user rules générique
 | `/produits`, `/missions`, `/intervenants`, `/cra`, `/pv` | Stub « À venir » (nav) |
 | `/evaluations`, `/analyse` | Stub hors nav |
 
+Nav principale : Accueil, **Budget** (sous-menu Bons de commande · Plans d’activité · Prestation / CRA · Procès-verbaux), Produits, Missions, Intervenants. Pas de route `/budget`.
+
 Entrée MemoryRouter : `/` (`WelcomePage`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
 
 ### Feuille de route pages
@@ -59,7 +61,7 @@ Entrée MemoryRouter : `/` (`WelcomePage`). Pas de Header / Footer DSFR app. Pas
 | Zone | Fichiers |
 |------|----------|
 | Routes | `src/App.tsx` |
-| Nav | `src/layout/WidgetNav.tsx` (`WIDGET_NAV_LINKS`) |
+| Nav | `src/layout/WidgetNav.tsx` + [`widgetNavItems.ts`](src/layout/widgetNavItems.ts) (`WIDGET_NAV_ITEMS`, groupe Budget) |
 | Pages | `src/pages/WelcomePage.tsx`, `Pa*.tsx`, `Bdc*.tsx`, `StubPage.tsx` |
 | Données | `src/hooks/useGristPaData.ts`, `GristPaContext.tsx`, `gristMap.ts`, `gristRest.ts`, `gristAccessToken.ts` |
 | Sécu | `src/security/embedTrust.ts`, `NothingHerePage.tsx`, `ensureFreshBuild.ts`, `fetchTableAllowlist.ts` |
@@ -144,7 +146,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 
 | Tâche | Lire en priorité |
 |-------|------------------|
-| Nouvel écran nav | §2, `App.tsx`, `WIDGET_NAV_LINKS`, stub → playbook skill issue |
+| Nouvel écran nav | §2, `App.tsx`, `WIDGET_NAV_ITEMS`, stub → playbook skill issue |
 | Nouvelle table `fetchTable` | `fetchTableAllowlist.ts`, §4, SECURITY |
 | PA / finance | `docs/fonctionnel/pa/`, `paFinance.ts`, `PaListView` / `PaDetailView` |
 | BDC | `docs/fonctionnel/bdc/`, `BdcListView` / `BdcDetailView` |

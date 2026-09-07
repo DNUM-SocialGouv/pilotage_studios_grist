@@ -12,7 +12,7 @@ Parcourir les BDC, filtrer, ouvrir une fiche ; lien vers le PA rattaché.
 |---------|--------|
 | Route | `/bdc` |
 | Page | `src/pages/BdcListView.tsx` |
-| Navigation | Entrée **BDC** de `WidgetNav` |
+| Navigation | Sous-menu **Budget** → **Bons de commande** (`WidgetNav`) |
 | Pagination | 10 lignes |
 
 ## États

@@ -24,6 +24,13 @@ body {
   flex-wrap: wrap;
 }
 
+/* MainNavigation hors Header : au breakpoint lg, DSFR met .fr-nav__item en
+   position: initial (mega-menu pleine largeur). Sans Header, top: 100% du
+   .fr-menu se calcule sur le viewport et le sous-menu sort de l’écran. */
+.widget-nav .fr-nav__item {
+  position: relative;
+}
+
 .widget-kpi {
   padding: 0.75rem 1rem;
   background: var(--background-alt-grey);
