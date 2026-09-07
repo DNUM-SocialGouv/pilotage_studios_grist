@@ -29,9 +29,12 @@ Parcourir les missions **master**, filtrer, déplier les prestations, ouvrir une
 
 ## Filtres
 
-Recherche (nom de mission, libellé produit), **statut**, **équipe**. Réinitialiser. Combinables.
+Grille ISO app sœur, 2 lignes desktop (`fr-col-lg-4`) :
 
-Options statut / équipe dérivées des valeurs présentes dans les lignes chargées.
+1. Recherche (nom de mission, libellé produit) · **équipe** · **département**
+2. **produit** · **statut** · **intervenant**
+
+Réinitialiser. Combinables. Select simple (pas de multi-select). Options dérivées des valeurs présentes dans les lignes chargées (produits / intervenants staffés uniquement).
 
 ## Colonnes
 

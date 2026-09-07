@@ -20,9 +20,12 @@ import {
   enfantsByMasterId,
   libelleParRefsIds,
   libelleProduitMission,
+  missionDepartementOptions,
   missionEquipeOptions,
+  missionIntervenantOptions,
   missionLibelle,
   missionMatchesFilters,
+  missionProduitOptions,
   missionStatutOptions,
   produitsByIdFromRows,
 } from "../utils/missionsList";
@@ -36,6 +39,9 @@ export function MissionsListView() {
   const [searchDraft, setSearchDraft] = useState("");
   const [statutFilter, setStatutFilter] = useState("");
   const [equipeFilter, setEquipeFilter] = useState("");
+  const [departementFilter, setDepartementFilter] = useState("");
+  const [produitFilter, setProduitFilter] = useState("");
+  const [intervenantFilter, setIntervenantFilter] = useState("");
   const [page, setPage] = useState(1);
 
   const produitsById = useMemo(
@@ -63,16 +69,46 @@ export function MissionsListView() {
 
   const statutOptions = useMemo(() => missionStatutOptions(data.missions), [data.missions]);
   const equipeOptions = useMemo(() => missionEquipeOptions(data.missions), [data.missions]);
+  const departementOptions = useMemo(
+    () => missionDepartementOptions(data.missions),
+    [data.missions],
+  );
+  const produitOptions = useMemo(
+    () => missionProduitOptions(data.missions, produitsById),
+    [data.missions, produitsById],
+  );
+  const intervenantOptions = useMemo(
+    () => missionIntervenantOptions(data.missions, data.missionEnfants, intervenantsById),
+    [data.missions, data.missionEnfants, intervenantsById],
+  );
 
   const rows = useMemo(() => {
     return data.missions.filter((m) =>
       missionMatchesFilters(
         m,
-        { search, equipe: equipeFilter, statut: statutFilter },
+        {
+          search,
+          equipe: equipeFilter,
+          statut: statutFilter,
+          departement: departementFilter,
+          produitId: produitFilter,
+          intervenantId: intervenantFilter,
+        },
         produitsById,
+        data.missionEnfants,
       ),
     );
-  }, [data.missions, equipeFilter, produitsById, search, statutFilter]);
+  }, [
+    data.missionEnfants,
+    data.missions,
+    departementFilter,
+    equipeFilter,
+    intervenantFilter,
+    produitsById,
+    produitFilter,
+    search,
+    statutFilter,
+  ]);
 
   const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   const safePage = Math.min(page, pageCount);
@@ -81,15 +117,28 @@ export function MissionsListView() {
   const {
     isExpanded: isMasterExpanded,
     toggle: toggleMasterExpanded,
-  } = useExpandableRowIds<number>(undefined, `${search}|${equipeFilter}|${statutFilter}|${safePage}`);
+  } = useExpandableRowIds<number>(
+    undefined,
+    `${search}|${equipeFilter}|${statutFilter}|${departementFilter}|${produitFilter}|${intervenantFilter}|${safePage}`,
+  );
 
-  const filtersActive = Boolean(search.trim() || statutFilter || equipeFilter);
+  const filtersActive = Boolean(
+    search.trim() ||
+      statutFilter ||
+      equipeFilter ||
+      departementFilter ||
+      produitFilter ||
+      intervenantFilter,
+  );
 
   const resetFilters = () => {
     setSearch("");
     setSearchDraft("");
     setStatutFilter("");
     setEquipeFilter("");
+    setDepartementFilter("");
+    setProduitFilter("");
+    setIntervenantFilter("");
     setPage(1);
   };
 
@@ -108,7 +157,7 @@ export function MissionsListView() {
       ) : null}
 
       <div className="fr-grid-row fr-grid-row--gutters fr-grid-row--bottom fr-mb-1w">
-        <div className="fr-col-12">
+        <div className="fr-col-12 fr-col-md-6 fr-col-lg-4">
           <div className="fr-search-bar" role="search">
             <label className="fr-label" htmlFor="missions-widget-search">
               Rechercher une mission
@@ -141,7 +190,67 @@ export function MissionsListView() {
             </button>
           </div>
         </div>
-        <div className="fr-col-12 fr-col-md-6">
+        <div className="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <Select
+            label="Équipe"
+            nativeSelectProps={{
+              value: equipeFilter,
+              onChange: (e) => {
+                setEquipeFilter(e.currentTarget.value);
+                setPage(1);
+              },
+            }}
+          >
+            <option value="">Toutes les équipes</option>
+            {equipeOptions.map((equipe) => (
+              <option key={equipe} value={equipe}>
+                {equipe}
+              </option>
+            ))}
+          </Select>
+        </div>
+        <div className="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <Select
+            label="Département"
+            nativeSelectProps={{
+              value: departementFilter,
+              onChange: (e) => {
+                setDepartementFilter(e.currentTarget.value);
+                setPage(1);
+              },
+            }}
+          >
+            <option value="">Tous les départements</option>
+            {departementOptions.map((departement) => (
+              <option key={departement} value={departement}>
+                {departement}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </div>
+
+      <div className="fr-grid-row fr-grid-row--gutters fr-grid-row--top fr-mb-1w">
+        <div className="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <Select
+            label="Produit"
+            nativeSelectProps={{
+              value: produitFilter,
+              onChange: (e) => {
+                setProduitFilter(e.currentTarget.value);
+                setPage(1);
+              },
+            }}
+          >
+            <option value="">Tous les produits</option>
+            {produitOptions.map((produit) => (
+              <option key={produit.id} value={String(produit.id)}>
+                {produit.label}
+              </option>
+            ))}
+          </Select>
+        </div>
+        <div className="fr-col-12 fr-col-md-6 fr-col-lg-4">
           <Select
             label="Statut"
             nativeSelectProps={{
@@ -160,21 +269,21 @@ export function MissionsListView() {
             ))}
           </Select>
         </div>
-        <div className="fr-col-12 fr-col-md-6">
+        <div className="fr-col-12 fr-col-md-6 fr-col-lg-4">
           <Select
-            label="Équipe"
+            label="Intervenant"
             nativeSelectProps={{
-              value: equipeFilter,
+              value: intervenantFilter,
               onChange: (e) => {
-                setEquipeFilter(e.currentTarget.value);
+                setIntervenantFilter(e.currentTarget.value);
                 setPage(1);
               },
             }}
           >
-            <option value="">Toutes les équipes</option>
-            {equipeOptions.map((equipe) => (
-              <option key={equipe} value={equipe}>
-                {equipe}
+            <option value="">Tous les intervenants</option>
+            {intervenantOptions.map((intervenant) => (
+              <option key={intervenant.id} value={String(intervenant.id)}>
+                {intervenant.label}
               </option>
             ))}
           </Select>
