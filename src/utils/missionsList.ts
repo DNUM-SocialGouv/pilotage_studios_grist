@@ -33,10 +33,10 @@ export function produitsByIdFromRows(produits: ProduitSdpc[]): Map<number, strin
 export type MissionsListFilters = {
   search: string;
   equipe: string;
-  statut: string;
+  statut: string[];
   departement: string;
-  produitId: string;
-  intervenantId: string;
+  produitIds: string[];
+  intervenantIds: string[];
 };
 
 export function missionDepartementTokens(m: Mission): string[] {
@@ -49,8 +49,11 @@ export function missionMatchesFilters(
   produitsById: Map<number, string>,
   missionEnfants: MissionEnfant[],
 ): boolean {
-  if (filters.statut && m.Statut?.trim() !== filters.statut) {
-    return false;
+  if (filters.statut.length > 0) {
+    const st = m.Statut?.trim() ?? "";
+    if (!filters.statut.includes(st)) {
+      return false;
+    }
   }
   if (filters.equipe && !extractGristStringTokens(m.Equipe2).includes(filters.equipe)) {
     return false;
@@ -58,18 +61,22 @@ export function missionMatchesFilters(
   if (filters.departement && !missionDepartementTokens(m).includes(filters.departement)) {
     return false;
   }
-  if (filters.produitId) {
+  if (filters.produitIds.length > 0) {
     const ref = extractGristReferenceId(m.Produit_SDPC);
-    if (ref == null || String(ref) !== filters.produitId) {
+    if (ref == null || !filters.produitIds.includes(String(ref))) {
       return false;
     }
   }
-  if (filters.intervenantId) {
-    const wanted = Number.parseInt(filters.intervenantId, 10);
-    if (!Number.isFinite(wanted)) {
-      return false;
-    }
-    if (!intervenantIdsForMaster(missionEnfants, m.id, m.Intervenants).includes(wanted)) {
+  if (filters.intervenantIds.length > 0) {
+    const missionIntervenantIds = intervenantIdsForMaster(
+      missionEnfants,
+      m.id,
+      m.Intervenants,
+    );
+    const selectedIds = filters.intervenantIds
+      .map((s) => Number.parseInt(s, 10))
+      .filter((n) => Number.isFinite(n));
+    if (!selectedIds.some((id) => missionIntervenantIds.includes(id))) {
       return false;
     }
   }

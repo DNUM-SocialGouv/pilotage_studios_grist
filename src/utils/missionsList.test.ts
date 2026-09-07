@@ -28,6 +28,7 @@ const missions: Mission[] = [
     Statut: "A instruire",
     Equipe2: "RU",
     Departement: "DSS",
+    Produit_SDPC: 20,
   },
 ];
 
@@ -40,21 +41,24 @@ function filters(partial: Partial<MissionsListFilters> = {}): MissionsListFilter
   return {
     search: "",
     equipe: "",
-    statut: "",
+    statut: [],
     departement: "",
-    produitId: "",
-    intervenantId: "",
+    produitIds: [],
+    intervenantIds: [],
     ...partial,
   };
 }
 
 describe("missionMatchesFilters", () => {
-  const produitsById = new Map([[10, "VAO"]]);
+  const produitsById = new Map([
+    [10, "VAO"],
+    [20, "Score"],
+  ]);
   const matches = (m: Mission, partial: Partial<MissionsListFilters>): boolean =>
     missionMatchesFilters(m, filters(partial), produitsById, enfants);
 
   it("filtre par statut et équipe", () => {
-    assert.equal(matches(missions[0]!, { equipe: "Design", statut: "En cours" }), true);
+    assert.equal(matches(missions[0]!, { equipe: "Design", statut: ["En cours"] }), true);
     assert.equal(matches(missions[0]!, { equipe: "RU" }), false);
   });
 
@@ -69,20 +73,28 @@ describe("missionMatchesFilters", () => {
   });
 
   it("filtre par produit", () => {
-    assert.equal(matches(missions[0]!, { produitId: "10" }), true);
-    assert.equal(matches(missions[1]!, { produitId: "10" }), false);
+    assert.equal(matches(missions[0]!, { produitIds: ["10"] }), true);
+    assert.equal(matches(missions[1]!, { produitIds: ["10"] }), false);
   });
 
   it("filtre par intervenant (enfants + legacy)", () => {
-    assert.equal(matches(missions[0]!, { intervenantId: "201" }), true);
-    assert.equal(matches(missions[0]!, { intervenantId: "101" }), true);
-    assert.equal(matches(missions[0]!, { intervenantId: "202" }), false);
+    assert.equal(matches(missions[0]!, { intervenantIds: ["201"] }), true);
+    assert.equal(matches(missions[0]!, { intervenantIds: ["101"] }), true);
+    assert.equal(matches(missions[0]!, { intervenantIds: ["202"] }), false);
   });
 
   it("combine département et produit (AND)", () => {
-    assert.equal(matches(missions[0]!, { departement: "DNUM", produitId: "10" }), true);
-    assert.equal(matches(missions[0]!, { departement: "DSS", produitId: "10" }), false);
-    assert.equal(matches(missions[1]!, { departement: "DSS", produitId: "10" }), false);
+    assert.equal(matches(missions[0]!, { departement: "DNUM", produitIds: ["10"] }), true);
+    assert.equal(matches(missions[0]!, { departement: "DSS", produitIds: ["10"] }), false);
+    assert.equal(matches(missions[1]!, { departement: "DSS", produitIds: ["10"] }), false);
+  });
+
+  it("filtre statut et produit en OR (plusieurs valeurs)", () => {
+    assert.equal(matches(missions[0]!, { statut: ["En cours", "A instruire"] }), true);
+    assert.equal(matches(missions[1]!, { statut: ["En cours", "A instruire"] }), true);
+    assert.equal(matches(missions[0]!, { produitIds: ["10", "20"] }), true);
+    assert.equal(matches(missions[1]!, { produitIds: ["10", "20"] }), true);
+    assert.equal(matches(missions[0]!, { statut: ["A instruire"] }), false);
   });
 });
 
@@ -100,8 +112,14 @@ describe("missionLibelle / options", () => {
   });
 
   it("liste les produits présents sur les missions", () => {
-    const produitsById = new Map([[10, "VAO"]]);
-    assert.deepEqual(missionProduitOptions(missions, produitsById), [{ id: 10, label: "VAO" }]);
+    const produitsById = new Map([
+      [10, "VAO"],
+      [20, "Score"],
+    ]);
+    assert.deepEqual(missionProduitOptions(missions, produitsById), [
+      { id: 20, label: "Score" },
+      { id: 10, label: "VAO" },
+    ]);
   });
 
   it("liste les intervenants staffés", () => {

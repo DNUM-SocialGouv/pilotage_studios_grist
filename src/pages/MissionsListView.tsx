@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination";
 import { Select } from "@codegouvfr/react-dsfr/Select";
+import { DsfrSelectRichMulti } from "../components/dsfr/DsfrSelectRichMulti";
 import { EquipeBadges } from "../components/EquipeBadges";
 import {
   ExpandToggle,
@@ -37,11 +38,11 @@ export function MissionsListView() {
   const { data } = useMissionsOutlet();
   const [search, setSearch] = useState("");
   const [searchDraft, setSearchDraft] = useState("");
-  const [statutFilter, setStatutFilter] = useState("");
+  const [statutFilter, setStatutFilter] = useState<string[]>([]);
   const [equipeFilter, setEquipeFilter] = useState("");
   const [departementFilter, setDepartementFilter] = useState("");
-  const [produitFilter, setProduitFilter] = useState("");
-  const [intervenantFilter, setIntervenantFilter] = useState("");
+  const [produitFilter, setProduitFilter] = useState<string[]>([]);
+  const [intervenantFilter, setIntervenantFilter] = useState<string[]>([]);
   const [page, setPage] = useState(1);
 
   const produitsById = useMemo(
@@ -91,8 +92,8 @@ export function MissionsListView() {
           equipe: equipeFilter,
           statut: statutFilter,
           departement: departementFilter,
-          produitId: produitFilter,
-          intervenantId: intervenantFilter,
+          produitIds: produitFilter,
+          intervenantIds: intervenantFilter,
         },
         produitsById,
         data.missionEnfants,
@@ -119,26 +120,26 @@ export function MissionsListView() {
     toggle: toggleMasterExpanded,
   } = useExpandableRowIds<number>(
     undefined,
-    `${search}|${equipeFilter}|${statutFilter}|${departementFilter}|${produitFilter}|${intervenantFilter}|${safePage}`,
+    `${search}|${equipeFilter}|${statutFilter.join(",")}|${departementFilter}|${produitFilter.join(",")}|${intervenantFilter.join(",")}|${safePage}`,
   );
 
   const filtersActive = Boolean(
     search.trim() ||
-      statutFilter ||
+      statutFilter.length > 0 ||
       equipeFilter ||
       departementFilter ||
-      produitFilter ||
-      intervenantFilter,
+      produitFilter.length > 0 ||
+      intervenantFilter.length > 0,
   );
 
   const resetFilters = () => {
     setSearch("");
     setSearchDraft("");
-    setStatutFilter("");
+    setStatutFilter([]);
     setEquipeFilter("");
     setDepartementFilter("");
-    setProduitFilter("");
-    setIntervenantFilter("");
+    setProduitFilter([]);
+    setIntervenantFilter([]);
     setPage(1);
   };
 
@@ -232,61 +233,52 @@ export function MissionsListView() {
 
       <div className="fr-grid-row fr-grid-row--gutters fr-grid-row--top fr-mb-1w">
         <div className="fr-col-12 fr-col-md-6 fr-col-lg-4">
-          <Select
-            label="Produit"
-            nativeSelectProps={{
-              value: produitFilter,
-              onChange: (e) => {
-                setProduitFilter(e.currentTarget.value);
-                setPage(1);
-              },
+          <DsfrSelectRichMulti
+            label="Produits"
+            placeholderWhenEmpty="Tous les produits"
+            pluralEntityLabel="produits"
+            maxInlineSize="100%"
+            options={produitOptions.map((p) => ({
+              value: String(p.id),
+              label: p.label,
+            }))}
+            selectedValues={produitFilter}
+            onSelectedValuesChange={(values) => {
+              setProduitFilter(values);
+              setPage(1);
             }}
-          >
-            <option value="">Tous les produits</option>
-            {produitOptions.map((produit) => (
-              <option key={produit.id} value={String(produit.id)}>
-                {produit.label}
-              </option>
-            ))}
-          </Select>
+          />
         </div>
         <div className="fr-col-12 fr-col-md-6 fr-col-lg-4">
-          <Select
+          <DsfrSelectRichMulti
             label="Statut"
-            nativeSelectProps={{
-              value: statutFilter,
-              onChange: (e) => {
-                setStatutFilter(e.currentTarget.value);
-                setPage(1);
-              },
+            placeholderWhenEmpty="Tous les statuts"
+            pluralEntityLabel="statuts"
+            maxInlineSize="100%"
+            options={statutOptions.map((s) => ({ value: s, label: s }))}
+            selectedValues={statutFilter}
+            onSelectedValuesChange={(values) => {
+              setStatutFilter(values);
+              setPage(1);
             }}
-          >
-            <option value="">Tous les statuts</option>
-            {statutOptions.map((statut) => (
-              <option key={statut} value={statut}>
-                {statut}
-              </option>
-            ))}
-          </Select>
+          />
         </div>
         <div className="fr-col-12 fr-col-md-6 fr-col-lg-4">
-          <Select
+          <DsfrSelectRichMulti
             label="Intervenant"
-            nativeSelectProps={{
-              value: intervenantFilter,
-              onChange: (e) => {
-                setIntervenantFilter(e.currentTarget.value);
-                setPage(1);
-              },
+            placeholderWhenEmpty="Tous les intervenants"
+            pluralEntityLabel="intervenants"
+            maxInlineSize="100%"
+            options={intervenantOptions.map((i) => ({
+              value: String(i.id),
+              label: i.label,
+            }))}
+            selectedValues={intervenantFilter}
+            onSelectedValuesChange={(values) => {
+              setIntervenantFilter(values);
+              setPage(1);
             }}
-          >
-            <option value="">Tous les intervenants</option>
-            {intervenantOptions.map((intervenant) => (
-              <option key={intervenant.id} value={String(intervenant.id)}>
-                {intervenant.label}
-              </option>
-            ))}
-          </Select>
+          />
         </div>
       </div>
 
