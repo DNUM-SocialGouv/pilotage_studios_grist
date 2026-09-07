@@ -19,9 +19,10 @@ describe("suiviRowLinksToBdc", () => {
 });
 
 describe("extractGristReferenceIds", () => {
-  it("lit un id, une RefList et ignore 0", () => {
+  it("lit un id, une RefList et déduplique", () => {
     assert.deepEqual(extractGristReferenceIds(7), [7]);
     assert.deepEqual(extractGristReferenceIds(["L", 1, 2, 1]), [1, 2]);
     assert.deepEqual(extractGristReferenceIds(["R", "Equipe", 4]), [4]);
+    assert.deepEqual(extractGristReferenceIds(0), [0]);
   });
 });

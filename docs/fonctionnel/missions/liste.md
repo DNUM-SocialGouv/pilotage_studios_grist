@@ -22,9 +22,8 @@ Parcourir les missions **master**, filtrer, déplier les prestations, ouvrir une
 | Embed non autorisé | `NothingHerePage` |
 | Hors Grist / API indisponible | `NothingHerePage` / alerte |
 | Chargement connexion | « Connexion à Grist… » |
-| Accès multi-tables denied / error | Alerte warning (besoin **full**) |
 | Chargement missions | « Chargement des missions… » |
-| Erreur | Alerte erreur |
+| Erreur fetch Missions | Alerte erreur (indépendant du chargement BDC) |
 | Référentiels partiels | Alerte warning + tableau quand même |
 | OK | Filtres + tableau |
 

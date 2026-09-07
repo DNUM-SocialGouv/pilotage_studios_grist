@@ -26,7 +26,7 @@ Une **mission master** (`Missions`) est un lot d’accompagnement (contexte, pro
 | `Realise` | Agrégats jours / TTC + réalisations fiche |
 | `BDC` | Liens BDC sur l’onglet CRA (déjà chargé au boot) |
 
-Chargement **lazy** sur `/missions` uniquement (`useMissionsData`) — pas au boot widget. Allowlist : `src/security/fetchTableAllowlist.ts`. Accès **full** obligatoire.
+Chargement **lazy** sur `/missions` uniquement (`useMissionsData`) — pas au boot widget, **indépendant** du chargement REST BDC. Allowlist : `src/security/fetchTableAllowlist.ts`. Accès **full** obligatoire pour `fetchTable`.
 
 ## Parcours
 
