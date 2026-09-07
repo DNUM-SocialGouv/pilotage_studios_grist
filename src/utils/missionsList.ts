@@ -1,5 +1,6 @@
 import type { Mission, MissionEnfant, ProduitSdpc } from "../types.ts";
 import { extractGristReferenceId, extractGristStringTokens } from "./gristReferences.ts";
+import { intervenantIdsForMaster } from "./missionEnfants.ts";
 import { libelleProduitGrist } from "./pilotageProduits.ts";
 
 export function missionLibelle(m: Mission): string {
@@ -32,27 +33,63 @@ export function produitsByIdFromRows(produits: ProduitSdpc[]): Map<number, strin
 export type MissionsListFilters = {
   search: string;
   equipe: string;
-  statut: string;
+  statut: string[];
+  departement: string;
+  produitIds: string[];
+  intervenantIds: string[];
 };
+
+export function missionDepartementTokens(m: Mission): string[] {
+  return extractGristStringTokens(m.Departement);
+}
 
 export function missionMatchesFilters(
   m: Mission,
   filters: MissionsListFilters,
   produitsById: Map<number, string>,
+  missionEnfants: MissionEnfant[],
 ): boolean {
-  const okStatut = !filters.statut || m.Statut?.trim() === filters.statut;
-  const equipes = extractGristStringTokens(m.Equipe2);
-  const okEquipe = !filters.equipe || equipes.includes(filters.equipe);
-  const q = filters.search.trim().toLowerCase();
-  if (!q) {
-    return okStatut && okEquipe;
+  if (filters.statut.length > 0) {
+    const st = m.Statut?.trim() ?? "";
+    if (!filters.statut.includes(st)) {
+      return false;
+    }
   }
-  const words = q.split(/\s+/).filter(Boolean);
-  const title = (m.Nom_de_la_mission ?? "").trim().toLowerCase();
-  const produit = libelleProduitMission(m, produitsById).toLowerCase();
-  const hay = `${title} ${produit}`;
-  const okSearch = words.every((w) => hay.includes(w));
-  return okStatut && okEquipe && okSearch;
+  if (filters.equipe && !extractGristStringTokens(m.Equipe2).includes(filters.equipe)) {
+    return false;
+  }
+  if (filters.departement && !missionDepartementTokens(m).includes(filters.departement)) {
+    return false;
+  }
+  if (filters.produitIds.length > 0) {
+    const ref = extractGristReferenceId(m.Produit_SDPC);
+    if (ref == null || !filters.produitIds.includes(String(ref))) {
+      return false;
+    }
+  }
+  if (filters.intervenantIds.length > 0) {
+    const missionIntervenantIds = intervenantIdsForMaster(
+      missionEnfants,
+      m.id,
+      m.Intervenants,
+    );
+    const selectedIds = filters.intervenantIds
+      .map((s) => Number.parseInt(s, 10))
+      .filter((n) => Number.isFinite(n));
+    if (!selectedIds.some((id) => missionIntervenantIds.includes(id))) {
+      return false;
+    }
+  }
+  const q = filters.search.trim().toLowerCase();
+  if (q) {
+    const words = q.split(/\s+/).filter(Boolean);
+    const title = (m.Nom_de_la_mission ?? "").trim().toLowerCase();
+    const produit = libelleProduitMission(m, produitsById).toLowerCase();
+    if (!words.every((w) => `${title} ${produit}`.includes(w))) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function uniqueSorted(values: Iterable<string>): string[] {
@@ -75,6 +112,56 @@ export function missionEquipeOptions(missions: Mission[]): string[] {
     }
   }
   return uniqueSorted(set);
+}
+
+export function missionDepartementOptions(missions: Mission[]): string[] {
+  const set = new Set<string>();
+  for (const m of missions) {
+    for (const token of missionDepartementTokens(m)) {
+      set.add(token);
+    }
+  }
+  return uniqueSorted(set);
+}
+
+export type MissionFilterOption = { id: number; label: string };
+
+export function missionProduitOptions(
+  missions: Mission[],
+  produitsById: Map<number, string>,
+): MissionFilterOption[] {
+  const ids = new Set<number>();
+  for (const m of missions) {
+    const ref = extractGristReferenceId(m.Produit_SDPC);
+    if (ref != null && ref !== 0) {
+      ids.add(ref);
+    }
+  }
+  return [...ids]
+    .map((id) => ({
+      id,
+      label: produitsById.get(id) ?? libelleProduitGrist({}, id),
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label, "fr", { sensitivity: "base" }));
+}
+
+export function missionIntervenantOptions(
+  missions: Mission[],
+  enfants: MissionEnfant[],
+  intervenantsById: Map<number, string>,
+): MissionFilterOption[] {
+  const ids = new Set<number>();
+  for (const m of missions) {
+    for (const id of intervenantIdsForMaster(enfants, m.id, m.Intervenants)) {
+      ids.add(id);
+    }
+  }
+  return [...ids]
+    .map((id) => ({
+      id,
+      label: intervenantsById.get(id) ?? `Intervenant #${id}`,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label, "fr", { sensitivity: "base" }));
 }
 
 export function enfantsByMasterId(

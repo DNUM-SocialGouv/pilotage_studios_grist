@@ -39,6 +39,6 @@ Chargement **lazy** sur `/missions` uniquement (`useMissionsData`) — pas au bo
 
 - Pas d’écriture (drawers, CRUD enfants, édition inline, upload PJ)
 - Pas d’IA (rapport d’investissement, CR, estimation)
-- Pas d’export CSV, pas de multi-select, pas de `?vue=nouvelles-demandes`
+- Pas d’export CSV, pas de `?vue=nouvelles-demandes`
 - Produits et intervenants en **texte** (écrans encore stub)
 - Contexte en texte préformaté (pas de rendu Markdown)

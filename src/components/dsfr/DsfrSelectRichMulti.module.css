@@ -1,0 +1,106 @@
+/**
+ * Liste déroulante riche (combobox multi) — couleurs en variables DSFR (clair + dark via :root[data-fr-theme="dark"]).
+ */
+.root {
+  position: relative;
+  overflow: visible;
+  z-index: 1;
+}
+
+/**
+ * Groupe « Tout sélectionner / Tout désélectionner » : marges natives du DSFR
+ * (jusqu’à 1rem entre boutons empilés) remplacées par gap 1V (0,25rem) + typo xs
+ * (0,75rem / 1,25rem, aligné sur la classe utilitaire .fr-text--xs).
+ */
+.bulkActionsGroup {
+  gap: 0.25rem 0.5rem;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.bulkActionsGroup :global(.fr-btn) {
+  margin: 0 !important;
+  /* Même nuancier que .fr-text--xs (surcharge des sélecteurs .fr-btns-group--sm .fr-btn) */
+  font-size: 0.75rem !important;
+  line-height: 1.25rem !important;
+}
+
+.trigger {
+  /* Le style visuel principal vient de .fr-select (liste déroulante simple DSFR). */
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/*
+ * Hors flux : évite d’agrandir la ligne (ex. grille DSFR avec align-items)
+ * et ouvre le panneau systématiquement sous le levier, comme une liste déroulante.
+ */
+.panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  margin-top: 0.25rem;
+  padding: 1rem;
+  background-color: var(--background-alt-grey);
+  color: var(--text-default-grey);
+  border: 1px solid var(--border-default-grey);
+  border-radius: 0;
+  box-shadow: var(--lifted-shadow);
+}
+
+.optionList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 14rem;
+  overflow: auto;
+}
+
+.optionEmpty {
+  list-style: none;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  background-color: var(--background-default-grey);
+  border: 1px solid var(--border-default-grey);
+  border-radius: 0.25rem;
+}
+
+.optionRow {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/**
+ * Checkbox DSFR (une ligne = une case) : carte sur fond défaut (« blanche » en thème clair,
+ * valeur adaptée automatiquement en thème sombre).
+ */
+.optionCheckboxWrap {
+  width: 100%;
+  margin: 0 !important;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--border-default-grey);
+  background-color: var(--background-default-grey);
+  box-sizing: border-box;
+}
+
+.optionCheckboxWrap:hover:not(:has(input:disabled)) {
+  background-color: var(--background-default-grey-hover);
+}
+
+.optionCheckboxChecked {
+  border-color: var(--border-plain-blue-france);
+  background-color: var(--background-contrast-grey);
+  box-shadow: inset 4px 0 0 0 var(--border-plain-blue-france);
+}
+
+.optionCheckboxChecked:hover:not(:has(input:disabled)) {
+  background-color: var(--background-contrast-grey-hover);
+}

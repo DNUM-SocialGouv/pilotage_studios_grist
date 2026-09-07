@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination";
 import { Select } from "@codegouvfr/react-dsfr/Select";
+import { DsfrSelectRichMulti } from "../components/dsfr/DsfrSelectRichMulti";
 import { EquipeBadges } from "../components/EquipeBadges";
 import {
   ExpandToggle,
@@ -20,9 +21,12 @@ import {
   enfantsByMasterId,
   libelleParRefsIds,
   libelleProduitMission,
+  missionDepartementOptions,
   missionEquipeOptions,
+  missionIntervenantOptions,
   missionLibelle,
   missionMatchesFilters,
+  missionProduitOptions,
   missionStatutOptions,
   produitsByIdFromRows,
 } from "../utils/missionsList";
@@ -34,8 +38,11 @@ export function MissionsListView() {
   const { data } = useMissionsOutlet();
   const [search, setSearch] = useState("");
   const [searchDraft, setSearchDraft] = useState("");
-  const [statutFilter, setStatutFilter] = useState("");
+  const [statutFilter, setStatutFilter] = useState<string[]>([]);
   const [equipeFilter, setEquipeFilter] = useState("");
+  const [departementFilter, setDepartementFilter] = useState("");
+  const [produitFilter, setProduitFilter] = useState<string[]>([]);
+  const [intervenantFilter, setIntervenantFilter] = useState<string[]>([]);
   const [page, setPage] = useState(1);
 
   const produitsById = useMemo(
@@ -63,16 +70,46 @@ export function MissionsListView() {
 
   const statutOptions = useMemo(() => missionStatutOptions(data.missions), [data.missions]);
   const equipeOptions = useMemo(() => missionEquipeOptions(data.missions), [data.missions]);
+  const departementOptions = useMemo(
+    () => missionDepartementOptions(data.missions),
+    [data.missions],
+  );
+  const produitOptions = useMemo(
+    () => missionProduitOptions(data.missions, produitsById),
+    [data.missions, produitsById],
+  );
+  const intervenantOptions = useMemo(
+    () => missionIntervenantOptions(data.missions, data.missionEnfants, intervenantsById),
+    [data.missions, data.missionEnfants, intervenantsById],
+  );
 
   const rows = useMemo(() => {
     return data.missions.filter((m) =>
       missionMatchesFilters(
         m,
-        { search, equipe: equipeFilter, statut: statutFilter },
+        {
+          search,
+          equipe: equipeFilter,
+          statut: statutFilter,
+          departement: departementFilter,
+          produitIds: produitFilter,
+          intervenantIds: intervenantFilter,
+        },
         produitsById,
+        data.missionEnfants,
       ),
     );
-  }, [data.missions, equipeFilter, produitsById, search, statutFilter]);
+  }, [
+    data.missionEnfants,
+    data.missions,
+    departementFilter,
+    equipeFilter,
+    intervenantFilter,
+    produitsById,
+    produitFilter,
+    search,
+    statutFilter,
+  ]);
 
   const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   const safePage = Math.min(page, pageCount);
@@ -81,15 +118,28 @@ export function MissionsListView() {
   const {
     isExpanded: isMasterExpanded,
     toggle: toggleMasterExpanded,
-  } = useExpandableRowIds<number>(undefined, `${search}|${equipeFilter}|${statutFilter}|${safePage}`);
+  } = useExpandableRowIds<number>(
+    undefined,
+    `${search}|${equipeFilter}|${statutFilter.join(",")}|${departementFilter}|${produitFilter.join(",")}|${intervenantFilter.join(",")}|${safePage}`,
+  );
 
-  const filtersActive = Boolean(search.trim() || statutFilter || equipeFilter);
+  const filtersActive = Boolean(
+    search.trim() ||
+      statutFilter.length > 0 ||
+      equipeFilter ||
+      departementFilter ||
+      produitFilter.length > 0 ||
+      intervenantFilter.length > 0,
+  );
 
   const resetFilters = () => {
     setSearch("");
     setSearchDraft("");
-    setStatutFilter("");
+    setStatutFilter([]);
     setEquipeFilter("");
+    setDepartementFilter("");
+    setProduitFilter([]);
+    setIntervenantFilter([]);
     setPage(1);
   };
 
@@ -108,7 +158,7 @@ export function MissionsListView() {
       ) : null}
 
       <div className="fr-grid-row fr-grid-row--gutters fr-grid-row--bottom fr-mb-1w">
-        <div className="fr-col-12">
+        <div className="fr-col-12 fr-col-md-6 fr-col-lg-4">
           <div className="fr-search-bar" role="search">
             <label className="fr-label" htmlFor="missions-widget-search">
               Rechercher une mission
@@ -141,26 +191,7 @@ export function MissionsListView() {
             </button>
           </div>
         </div>
-        <div className="fr-col-12 fr-col-md-6">
-          <Select
-            label="Statut"
-            nativeSelectProps={{
-              value: statutFilter,
-              onChange: (e) => {
-                setStatutFilter(e.currentTarget.value);
-                setPage(1);
-              },
-            }}
-          >
-            <option value="">Tous les statuts</option>
-            {statutOptions.map((statut) => (
-              <option key={statut} value={statut}>
-                {statut}
-              </option>
-            ))}
-          </Select>
-        </div>
-        <div className="fr-col-12 fr-col-md-6">
+        <div className="fr-col-12 fr-col-md-6 fr-col-lg-4">
           <Select
             label="Équipe"
             nativeSelectProps={{
@@ -178,6 +209,76 @@ export function MissionsListView() {
               </option>
             ))}
           </Select>
+        </div>
+        <div className="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <Select
+            label="Département"
+            nativeSelectProps={{
+              value: departementFilter,
+              onChange: (e) => {
+                setDepartementFilter(e.currentTarget.value);
+                setPage(1);
+              },
+            }}
+          >
+            <option value="">Tous les départements</option>
+            {departementOptions.map((departement) => (
+              <option key={departement} value={departement}>
+                {departement}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </div>
+
+      <div className="fr-grid-row fr-grid-row--gutters fr-grid-row--top fr-mb-1w">
+        <div className="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <DsfrSelectRichMulti
+            label="Produits"
+            placeholderWhenEmpty="Tous les produits"
+            pluralEntityLabel="produits"
+            maxInlineSize="100%"
+            options={produitOptions.map((p) => ({
+              value: String(p.id),
+              label: p.label,
+            }))}
+            selectedValues={produitFilter}
+            onSelectedValuesChange={(values) => {
+              setProduitFilter(values);
+              setPage(1);
+            }}
+          />
+        </div>
+        <div className="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <DsfrSelectRichMulti
+            label="Statut"
+            placeholderWhenEmpty="Tous les statuts"
+            pluralEntityLabel="statuts"
+            maxInlineSize="100%"
+            options={statutOptions.map((s) => ({ value: s, label: s }))}
+            selectedValues={statutFilter}
+            onSelectedValuesChange={(values) => {
+              setStatutFilter(values);
+              setPage(1);
+            }}
+          />
+        </div>
+        <div className="fr-col-12 fr-col-md-6 fr-col-lg-4">
+          <DsfrSelectRichMulti
+            label="Intervenant"
+            placeholderWhenEmpty="Tous les intervenants"
+            pluralEntityLabel="intervenants"
+            maxInlineSize="100%"
+            options={intervenantOptions.map((i) => ({
+              value: String(i.id),
+              label: i.label,
+            }))}
+            selectedValues={intervenantFilter}
+            onSelectedValuesChange={(values) => {
+              setIntervenantFilter(values);
+              setPage(1);
+            }}
+          />
         </div>
       </div>
 
