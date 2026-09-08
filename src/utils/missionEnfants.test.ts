@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { missionEnfantFromGrist } from "./missionEnfants.ts";
+import type { MissionEnfant } from "../types.ts";
+import {
+  enfantExpandPrimary,
+  enfantsOfMaster,
+  missionEnfantFromGrist,
+  typePrestationLabel,
+} from "./missionEnfants.ts";
 
 describe("missionEnfantFromGrist", () => {
   it("mappe Mission_parent et Mission_enfant (texte Grist actuel)", () => {
@@ -53,5 +59,58 @@ describe("missionEnfantFromGrist", () => {
       Libelle: "Alice — Design",
     });
     assert.equal(mapped.Libelle, "Alice — Design");
+  });
+});
+
+describe("typePrestationLabel", () => {
+  it("mappe Freelance_jours et vide vers Freelance", () => {
+    assert.equal(typePrestationLabel("Freelance_jours"), "Freelance");
+    assert.equal(typePrestationLabel(""), "Freelance");
+    assert.equal(typePrestationLabel(undefined), "Freelance");
+  });
+
+  it("mappe Entreprise_forfait vers un libellé lisible", () => {
+    assert.equal(typePrestationLabel("Entreprise_forfait"), "Entreprise (forfait)");
+  });
+
+  it("laisse une clé inconnue inchangée", () => {
+    assert.equal(typePrestationLabel("Autre_type"), "Autre_type");
+  });
+});
+
+describe("enfantExpandPrimary", () => {
+  it("affiche le libellé et le hint si l’intervenant est distinct", () => {
+    const e: MissionEnfant = { id: 1, Libelle: "Coaching Produit" };
+    assert.deepEqual(enfantExpandPrimary(e, "David Koss"), {
+      primary: "Coaching Produit",
+      hint: "David Koss",
+    });
+  });
+
+  it("n’affiche pas le hint si l’intervenant égale le libellé", () => {
+    const e: MissionEnfant = { id: 1, Libelle: "David Koss" };
+    assert.deepEqual(enfantExpandPrimary(e, "David Koss"), { primary: "David Koss" });
+  });
+
+  it("retombe sur un tiret si le libellé est vide", () => {
+    const e: MissionEnfant = { id: 1 };
+    assert.deepEqual(enfantExpandPrimary(e, "Alice"), { primary: "—", hint: "Alice" });
+    assert.deepEqual(enfantExpandPrimary(e), { primary: "—" });
+  });
+});
+
+describe("enfantsOfMaster", () => {
+  it("filtre via Mission déjà mappé (ingest Mission_parent)", () => {
+    const fromLive = missionEnfantFromGrist({
+      Mission_parent: 51,
+      Mission_enfant: "Coaching",
+    });
+    const enfants: MissionEnfant[] = [
+      { id: 10, ...fromLive, Intervenant: 201 },
+      { id: 11, Mission: 99, Intervenant: 202 },
+    ];
+    const ofMaster = enfantsOfMaster(enfants, 51);
+    assert.equal(ofMaster.length, 1);
+    assert.equal(ofMaster[0]?.id, 10);
   });
 });

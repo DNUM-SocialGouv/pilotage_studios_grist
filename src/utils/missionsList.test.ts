@@ -1,8 +1,14 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { Mission, MissionEnfant, SuiviMensuel } from "../types.ts";
-import { aggregateCraByMissionId, totauxCraForEnfant } from "./craByMission.ts";
 import {
+  aggregateCraByEnfantId,
+  aggregateCraByMissionId,
+  totauxCraForEnfant,
+} from "./craByMission.ts";
+import { missionEnfantFromGrist } from "./missionEnfants.ts";
+import {
+  enfantsByMasterId,
   missionDepartementOptions,
   missionIntervenantOptions,
   missionLibelle,
@@ -102,6 +108,33 @@ describe("missionMatchesFilters", () => {
     assert.equal(matches(missions[1]!, { intervenantIds: ["201", "202"] }), true);
     assert.equal(matches(missions[0]!, { intervenantIds: ["202"] }), false);
   });
+
+  it("filtre par intervenant sur enfants mappés depuis Mission_parent", () => {
+    const mapped = missionEnfantFromGrist({
+      Mission_parent: 1,
+      Mission_enfant: "Coaching",
+    });
+    const liveEnfants: MissionEnfant[] = [{ id: 30, ...mapped, Intervenant: 301 }];
+    const liveMission: Mission = { id: 1, Nom_de_la_mission: "Lot VAO" };
+    assert.equal(
+      missionMatchesFilters(
+        liveMission,
+        filters({ intervenantIds: ["301"] }),
+        produitsById,
+        liveEnfants,
+      ),
+      true,
+    );
+    assert.equal(
+      missionMatchesFilters(
+        liveMission,
+        filters({ intervenantIds: ["201"] }),
+        produitsById,
+        liveEnfants,
+      ),
+      false,
+    );
+  });
 });
 
 describe("missionLibelle / options", () => {
@@ -140,6 +173,21 @@ describe("missionLibelle / options", () => {
       { id: 202, label: "Chloé" },
     ]);
   });
+
+  it("groupe les enfants via Mission déjà mappé (ingest Mission_parent)", () => {
+    const mapped = missionEnfantFromGrist({
+      Mission_parent: 1,
+      Mission_enfant: "Coaching",
+    });
+    const liveEnfants: MissionEnfant[] = [
+      { id: 30, ...mapped, Intervenant: 301 },
+      { id: 31, Mission: 2, Intervenant: 202 },
+    ];
+    const byMaster = enfantsByMasterId(liveEnfants);
+    assert.equal(byMaster.get(1)?.length, 1);
+    assert.equal(byMaster.get(1)?.[0]?.id, 30);
+    assert.equal(byMaster.get(2)?.[0]?.id, 31);
+  });
 });
 
 describe("aggregateCraByMissionId", () => {
@@ -164,5 +212,28 @@ describe("totauxCraForEnfant", () => {
       { id: 2, Mission_enfant: 11, Nb_jours: 9, Calcul_TTC: 90 },
     ];
     assert.deepEqual(totauxCraForEnfant(rows, 10), { jours: 2, ttc: 20, count: 1 });
+  });
+});
+
+describe("aggregateCraByEnfantId", () => {
+  it("agrège par ref Realise.Mission_enfant et ignore un autre enfant", () => {
+    const rows: SuiviMensuel[] = [
+      { id: 1, Mission_enfant: 10, Nb_jours: 2, Calcul_TTC: 20 },
+      { id: 2, Mission_enfant: 10, Nb_jours: 1, Calcul_TTC: 10 },
+      { id: 3, Mission_enfant: 11, Nb_jours: 9, Calcul_TTC: 90 },
+      { id: 4, Missions: 1, Nb_jours: 4, Calcul_TTC: 40 },
+    ];
+    const map = aggregateCraByEnfantId(rows);
+    assert.deepEqual(map.get(10), { jours: 3, ttc: 30, count: 2 });
+    assert.deepEqual(map.get(11), { jours: 9, ttc: 90, count: 1 });
+    assert.equal(map.has(1), false);
+  });
+
+  it("n’utilise pas un id texte comme rattachement (homonyme libellé)", () => {
+    const rows: SuiviMensuel[] = [
+      { id: 1, Mission_enfant: "Coaching Produit", Nb_jours: 2, Calcul_TTC: 20 },
+    ];
+    const map = aggregateCraByEnfantId(rows);
+    assert.equal(map.size, 0);
   });
 });
