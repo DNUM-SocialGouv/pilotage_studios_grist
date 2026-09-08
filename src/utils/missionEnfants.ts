@@ -1,5 +1,24 @@
 import type { MissionEnfant, SuiviMensuel } from "../types.ts";
-import { extractGristReferenceId, extractGristReferenceIds } from "./gristReferences.ts";
+import { asGristChoice, extractGristReferenceId, extractGristReferenceIds } from "./gristReferences.ts";
+
+/**
+ * Colonnes Grist `Missions_enfants` → champs internes.
+ * Actuel : `Mission_parent` / `Mission_enfant` (texte). Legacy : `Mission` / `Libelle`.
+ */
+export function missionEnfantFromGrist(record: Record<string, unknown>): Pick<
+  MissionEnfant,
+  "Mission" | "Libelle"
+> {
+  const libelleRaw = record.Mission_enfant ?? record.Libelle;
+  const libelle =
+    (typeof libelleRaw === "string" ? libelleRaw : undefined) ??
+    (typeof libelleRaw === "number" && Number.isFinite(libelleRaw) ? String(libelleRaw) : undefined) ??
+    asGristChoice(libelleRaw);
+  return {
+    Mission: record.Mission_parent ?? record.Mission,
+    Libelle: libelle,
+  };
+}
 
 export function missionEnfantLibelle(enfant: MissionEnfant, intervenantLabel?: string): string {
   const lib = enfant.Libelle?.trim();
