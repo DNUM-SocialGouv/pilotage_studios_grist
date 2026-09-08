@@ -30,20 +30,29 @@ export function aggregateCraByMissionId(
   return map;
 }
 
-export function totauxCraForEnfant(suiviRows: SuiviMensuel[], enfantId: number): CraTotaux {
-  let jours = 0;
-  let ttc = 0;
-  let count = 0;
+/**
+ * Totaux jours + TTC + nb de lignes CRA par id de prestation
+ * (`Realise.Mission_enfant` = ref, pas le texte `Missions_enfants.Mission_enfant`).
+ */
+export function aggregateCraByEnfantId(suiviRows: SuiviMensuel[]): Map<number, CraTotaux> {
+  const map = new Map<number, CraTotaux>();
   for (const row of suiviRows) {
-    const id = extractGristReferenceId(row.Mission_enfant);
-    if (id !== enfantId) {
+    const enfantId = extractGristReferenceId(row.Mission_enfant);
+    if (enfantId == null || enfantId === 0) {
       continue;
     }
-    count += 1;
-    if (typeof row.Nb_jours === "number" && Number.isFinite(row.Nb_jours)) {
-      jours += row.Nb_jours;
-    }
-    ttc += montantTtcLigneSuivi(row);
+    const prev = map.get(enfantId) ?? { jours: 0, ttc: 0, count: 0 };
+    const j =
+      typeof row.Nb_jours === "number" && Number.isFinite(row.Nb_jours) ? row.Nb_jours : 0;
+    map.set(enfantId, {
+      jours: prev.jours + j,
+      ttc: prev.ttc + montantTtcLigneSuivi(row),
+      count: prev.count + 1,
+    });
   }
-  return { jours, ttc, count };
+  return map;
+}
+
+export function totauxCraForEnfant(suiviRows: SuiviMensuel[], enfantId: number): CraTotaux {
+  return aggregateCraByEnfantId(suiviRows).get(enfantId) ?? { jours: 0, ttc: 0, count: 0 };
 }

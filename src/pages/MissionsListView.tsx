@@ -12,11 +12,11 @@ import {
   useExpandableRowIds,
 } from "../components/expandable";
 import { TableShell } from "../components/FinanceRecap";
-import { aggregateCraByMissionId } from "../utils/craByMission";
+import { aggregateCraByEnfantId, aggregateCraByMissionId } from "../utils/craByMission";
 import { formatGristDate } from "../utils/formatGristDate";
 import { formatMontantEur } from "../utils/formatMontant";
 import { extractGristReferenceId, extractGristReferenceIds } from "../utils/gristReferences";
-import { intervenantIdsForMaster, missionEnfantLibelle } from "../utils/missionEnfants";
+import { enfantExpandPrimary, typePrestationLabel } from "../utils/missionEnfants";
 import {
   enfantsByMasterId,
   libelleParRefsIds,
@@ -66,6 +66,11 @@ export function MissionsListView() {
   const craParMissionId = useMemo(
     () => aggregateCraByMissionId(data.suivi, data.missionEnfants),
     [data.suivi, data.missionEnfants],
+  );
+
+  const craParEnfantId = useMemo(
+    () => aggregateCraByEnfantId(data.suivi),
+    [data.suivi],
   );
 
   const statutOptions = useMemo(() => missionStatutOptions(data.missions), [data.missions]);
@@ -312,7 +317,6 @@ export function MissionsListView() {
                 <th scope="col">Produit</th>
                 <th scope="col">Équipe</th>
                 <th scope="col">Statut</th>
-                <th scope="col">Intervenant</th>
                 <th scope="col">Resp</th>
                 <th scope="col">Début</th>
                 <th scope="col" className="fr-cell--right">
@@ -326,11 +330,6 @@ export function MissionsListView() {
             <tbody>
               {paginated.map((m) => {
                 const enfants = enfantsByMaster.get(m.id) ?? [];
-                const intervenantIds = intervenantIdsForMaster(
-                  data.missionEnfants,
-                  m.id,
-                  m.Intervenants,
-                );
                 const expanded = isMasterExpanded(m.id);
                 const expandControlsId = `mission-expand-${m.id}`;
                 const cra = craParMissionId.get(m.id);
@@ -367,7 +366,6 @@ export function MissionsListView() {
                         <EquipeBadges value={m.Equipe2} />
                       </td>
                       <td>{m.Statut?.trim() || "—"}</td>
-                      <td>{libelleParRefsIds(intervenantIds, intervenantsById)}</td>
                       <td>
                         {libelleParRefsIds(extractGristReferenceIds(m.Resp_), intervenantsById)}
                       </td>
@@ -383,21 +381,48 @@ export function MissionsListView() {
                       ? enfants.map((e, idx) => {
                           const iid = extractGristReferenceId(e.Intervenant);
                           const ivLabel =
-                            iid != null ? intervenantsById.get(iid) : undefined;
+                            iid != null && iid !== 0
+                              ? (intervenantsById.get(iid) ?? `#${iid}`)
+                              : undefined;
+                          const { primary, hint } = enfantExpandPrimary(e, ivLabel);
+                          const craEnfant = craParEnfantId.get(e.id);
+                          const joursCell =
+                            craEnfant == null || craEnfant.count === 0
+                              ? "—"
+                              : craEnfant.jours.toLocaleString("fr-FR", {
+                                  maximumFractionDigits: 4,
+                                });
+                          const ttcCell =
+                            craEnfant == null || craEnfant.count === 0
+                              ? "—"
+                              : formatMontantEur(craEnfant.ttc);
                           return (
                             <ExpandableChildRow
                               key={`enfant-${e.id}`}
                               id={idx === 0 ? expandControlsId : undefined}
                             >
-                              <ExpandableChildCell colSpan={2} indent>
-                                {missionEnfantLibelle(e, ivLabel)}
+                              <ExpandableChildCell indent>
+                                <p className="fr-mb-0 fr-text--bold pilotage-expandable-child-libelle">
+                                  {primary}
+                                </p>
+                                {hint ? (
+                                  <p className="fr-text--xs fr-hint-text fr-mb-0">{hint}</p>
+                                ) : null}
                               </ExpandableChildCell>
-                              <ExpandableChildCell colSpan={2}>
-                                {e.Type_prestation?.trim() || "Freelance_jours"}
-                                {e.Statut?.trim() ? ` · ${e.Statut.trim()}` : ""}
+                              <ExpandableChildCell>
+                                {typePrestationLabel(e.Type_prestation)}
                               </ExpandableChildCell>
-                              <ExpandableChildCell colSpan={5}>
-                                {ivLabel ?? (iid != null ? `#${iid}` : "—")}
+                              <ExpandableChildCell>—</ExpandableChildCell>
+                              <ExpandableChildCell>
+                                {e.Statut?.trim() || "—"}
+                              </ExpandableChildCell>
+                              <ExpandableChildCell>—</ExpandableChildCell>
+                              <ExpandableChildCell>—</ExpandableChildCell>
+                              <ExpandableChildCell className="fr-cell--right">
+                                {joursCell}
+                              </ExpandableChildCell>
+                              <ExpandableChildCell className="fr-cell--right">
+                                {ttcCell}
                               </ExpandableChildCell>
                             </ExpandableChildRow>
                           );

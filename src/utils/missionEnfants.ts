@@ -37,6 +37,33 @@ export function missionEnfantLibelle(enfant: MissionEnfant, intervenantLabel?: s
   return `Prestation #${enfant.id}`;
 }
 
+/** Libellé lisible de `Type_prestation` (clé Grist → texte UI). */
+export function typePrestationLabel(raw: string | undefined): string {
+  const t = raw?.trim();
+  if (t === "Entreprise_forfait") {
+    return "Entreprise (forfait)";
+  }
+  if (t === "Freelance_jours" || !t) {
+    return "Freelance";
+  }
+  return t;
+}
+
+/**
+ * Titre + hint intervenant pour une sous-ligne expand (liste missions).
+ * Hint seulement si l’intervenant est renseigné et distinct du libellé.
+ */
+export function enfantExpandPrimary(
+  enfant: MissionEnfant,
+  intervenantLabel?: string,
+): { primary: string; hint?: string } {
+  const lib = enfant.Libelle?.trim();
+  const primary = lib || "—";
+  const iv = intervenantLabel?.trim();
+  const hint = iv && iv !== primary ? iv : undefined;
+  return hint ? { primary, hint } : { primary };
+}
+
 /** Id master résolu depuis une ligne CRA : `Mission_enfant` prioritaire, sinon `Missions`. */
 export function resolveSuiviMasterMissionId(
   row: SuiviMensuel,
