@@ -11,6 +11,7 @@ import type {
   SuiviMensuel,
 } from "./types";
 import { asGristChoice } from "./utils/gristReferences";
+import { missionEnfantFromGrist } from "./utils/missionEnfants";
 
 export function recordsFromFetchTable(raw: GristFetchTableResult): GristRecord[] {
   const ids = raw.id ?? [];
@@ -167,10 +168,11 @@ export function toMission(record: GristRecord): Mission {
 }
 
 export function toMissionEnfant(record: GristRecord): MissionEnfant {
+  const { Mission, Libelle } = missionEnfantFromGrist(record);
   return {
     id: record.id,
-    Mission: record.Mission,
-    Libelle: asString(record.Libelle) ?? asGristChoice(record.Libelle),
+    Mission,
+    Libelle,
     Intervenant: record.Intervenant,
     Specialite: asGristChoice(record.Specialite) ?? asString(record.Specialite),
     Type_prestation: asGristChoice(record.Type_prestation) ?? asString(record.Type_prestation),

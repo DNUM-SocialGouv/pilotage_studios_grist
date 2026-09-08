@@ -98,7 +98,9 @@ export interface Mission {
 
 export interface MissionEnfant {
   id: number;
+  /** Ref → `Missions` — colonne Grist `Mission_parent` (legacy `Mission`). */
   Mission?: unknown;
+  /** Texte — colonne Grist `Mission_enfant` (legacy `Libelle`). Homonyme de `Realise.Mission_enfant` (ref). */
   Libelle?: string;
   Intervenant?: unknown;
   Specialite?: string;

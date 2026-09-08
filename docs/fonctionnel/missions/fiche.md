@@ -29,7 +29,7 @@ Pas de boutons Modifier / CR / estimation.
 | Onglet | Contenu |
 |--------|---------|
 | **Contexte** | Champs narratifs (demande, enjeux, historique, utilisateurs / périmètre, liens FIGMA/Notion) en texte préformaté |
-| **Équipe / prestations** | Totaux CRA + camembert TTC par équipe + tableau des enfants (libellé, intervenant, équipe, type, nb CRA, TTC, statut) |
+| **Équipe / prestations** | Totaux CRA + camembert TTC par équipe + tableau des enfants (libellé `Mission_enfant`, intervenant, équipe, type, nb CRA, TTC, statut) |
 | **Réalisations (CRA)** | Lignes `Realise` du master, pagination 10 ; lien `/bdc/:id` si `BDC_cible` / `Bdc_Chorus2` |
 | **Note studio** | `Suivi_resp_studio` (lecture) |
 | **Pièces jointes** | Téléchargement `Docs` (`GristAttachmentDownloadLink`) — pas d’ajout / suppression |

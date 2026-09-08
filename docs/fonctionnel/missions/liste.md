@@ -40,8 +40,8 @@ Réinitialiser. Combinables (AND entre filtres, OR dans un multi-select). Liste 
 
 Mission (lien `/missions/:id`, expand si enfants), produit (texte), équipe (`EquipeBadges`), statut, intervenants (enfants + legacy), responsable, date de début, jours CRA, montant TTC CRA.
 
-Lignes enfants : libellé prestation, type / statut, intervenant.
+Lignes enfants : libellé prestation (`Missions_enfants.Mission_enfant`), type / statut, intervenant. Rattachement au master via `Mission_parent`.
 
 ## Récap CRA
 
-Agrégats via `aggregateCraByMissionId` : `Realise.Mission_enfant` → parent, sinon `Realise.Missions`.
+Agrégats via `aggregateCraByMissionId` : `Realise.Mission_enfant` (ref vers la ligne enfant) → parent via `Mission_parent`, sinon `Realise.Missions`. Ne pas confondre avec le **texte** `Missions_enfants.Mission_enfant`.
