@@ -50,7 +50,7 @@ Si la mission a des **prestations** (`Missions_enfants`, rattachement via `Missi
 | Statut | Badge DSFR (même mapping que le master) |
 | Jours / Montant TTC | Agrégat CRA de **cette** prestation ; aucun CRA (`count === 0`) → — |
 
-Écarts vs l’app sœur : pas d’export CSV, pas d’en-tête sticky, pas de colonne Actions, montants avec `€`.
+Tableau : filets **horizontaux** seulement (comme l’app sœur) ; tag équipe teinté (ex. Product beige). Écarts restants : pas d’export CSV, pas d’en-tête sticky, pas de colonne Actions, montants avec `€`.
 
 ## Récap CRA
 

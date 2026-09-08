@@ -373,7 +373,7 @@ export function MissionsListView() {
                       <td>
                         <StatutBadge statut={m.Statut} />
                       </td>
-                      <td>
+                      <td className="pilotage-col-resp-nowrap">
                         {libelleParRefsIds(extractGristReferenceIds(m.Resp_), intervenantsById)}
                       </td>
                       <td>{formatGristDate(m.Date_de_debut)}</td>
