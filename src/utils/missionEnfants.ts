@@ -5,18 +5,24 @@ import { asGristChoice, extractGristReferenceId, extractGristReferenceIds } from
  * Colonnes Grist `Missions_enfants` → champs internes.
  * Actuel : `Mission_parent` / `Mission_enfant` (texte). Legacy : `Mission` / `Libelle`.
  */
+function textLibelleFromGrist(value: unknown): string | undefined {
+  if (typeof value === "string") {
+    return value;
+  }
+  // Un id numérique n’est pas un libellé (homonyme `Realise.Mission_enfant`).
+  if (typeof value === "number") {
+    return undefined;
+  }
+  return asGristChoice(value);
+}
+
 export function missionEnfantFromGrist(record: Record<string, unknown>): Pick<
   MissionEnfant,
   "Mission" | "Libelle"
 > {
-  const libelleRaw = record.Mission_enfant ?? record.Libelle;
-  const libelle =
-    (typeof libelleRaw === "string" ? libelleRaw : undefined) ??
-    (typeof libelleRaw === "number" && Number.isFinite(libelleRaw) ? String(libelleRaw) : undefined) ??
-    asGristChoice(libelleRaw);
   return {
     Mission: record.Mission_parent ?? record.Mission,
-    Libelle: libelle,
+    Libelle: textLibelleFromGrist(record.Mission_enfant) ?? textLibelleFromGrist(record.Libelle),
   };
 }
 
