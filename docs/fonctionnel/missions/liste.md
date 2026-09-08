@@ -54,4 +54,4 @@ Si la mission a des **prestations** (`Missions_enfants`, rattachement via `Missi
 
 ## Récap CRA
 
-Agrégats via `aggregateCraByMissionId` : `Realise.Mission_enfant` (ref vers la ligne enfant) → parent via `Mission_parent`, sinon `Realise.Missions`. Ne pas confondre avec le **texte** `Missions_enfants.Mission_enfant`.
+Agrégats via `aggregateCraByMissionId` : `Realise.Mission_enfant` (ref vers la ligne enfant) → parent via `Mission_parent`, sinon `Realise.Missions`. Ne pas confondre avec le **texte** `Missions_enfants.Mission_enfant` (fallback du libellé `Libelle`).

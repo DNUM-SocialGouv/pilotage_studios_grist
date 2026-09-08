@@ -7,7 +7,7 @@
 
 ## Objet métier
 
-Une **mission master** (`Missions`) est un lot d’accompagnement (contexte, produit, statut). Les **enfants** (`Missions_enfants`) portent le staffing (`Mission_parent` → master, `Mission_enfant` = libellé texte). Les lignes CRA (`Realise`) se rattachent d’abord à l’enfant (`Realise.Mission_enfant`, **référence** — homonyme du texte `Missions_enfants.Mission_enfant`), sinon au master (`Realise.Missions`).
+Une **mission master** (`Missions`) est un lot d’accompagnement (contexte, produit, statut). Les **enfants** (`Missions_enfants`) portent le staffing (`Mission_parent` → master, **`Libelle`** = libellé texte ; fallback lecture : colonne texte `Mission_enfant`). Les lignes CRA (`Realise`) se rattachent d’abord à l’enfant (`Realise.Mission_enfant`, **référence** — homonyme du texte `Missions_enfants.Mission_enfant`), sinon au master (`Realise.Missions`).
 
 | Outil | Rôle |
 |-------|------|
@@ -20,7 +20,7 @@ Une **mission master** (`Missions`) est un lot d’accompagnement (contexte, pro
 | Table | Usage |
 |-------|--------|
 | `Missions` | Lignes liste / fiche (masters) |
-| `Missions_enfants` | Prestations : `Mission_parent` (ref), `Mission_enfant` (texte, ex-`Libelle`) |
+| `Missions_enfants` | Prestations : `Mission_parent` (ref), `Libelle` (texte canonique), `Mission_enfant` (texte fallback) |
 | `Equipe` | Libellés intervenants / équipe |
 | `Tableau_de_pilotage_SDPC_Produits_SDPC` | Libellés produit |
 | `Realise` | Agrégats jours / TTC + réalisations fiche |

@@ -100,7 +100,7 @@ export interface MissionEnfant {
   id: number;
   /** Ref → `Missions` — colonne Grist `Mission_parent` (legacy `Mission`). */
   Mission?: unknown;
-  /** Texte — colonne Grist `Mission_enfant` (legacy `Libelle`). Homonyme de `Realise.Mission_enfant` (ref). */
+  /** Texte — colonne Grist `Libelle` (fallback lecture : texte `Mission_enfant`). Homonyme de `Realise.Mission_enfant` (ref). */
   Libelle?: string;
   Intervenant?: unknown;
   Specialite?: string;

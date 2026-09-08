@@ -3,7 +3,8 @@ import { asGristChoice, extractGristReferenceId, extractGristReferenceIds } from
 
 /**
  * Colonnes Grist `Missions_enfants` → champs internes.
- * Actuel : `Mission_parent` / `Mission_enfant` (texte). Legacy : `Mission` / `Libelle`.
+ * Canonique : `Mission_parent` / `Libelle`. Fallback texte : `Mission_enfant`
+ * (homonyme de `Realise.Mission_enfant` qui est une Ref).
  */
 function textLibelleFromGrist(value: unknown): string | undefined {
   if (typeof value === "string") {
@@ -22,7 +23,7 @@ export function missionEnfantFromGrist(record: Record<string, unknown>): Pick<
 > {
   return {
     Mission: record.Mission_parent ?? record.Mission,
-    Libelle: textLibelleFromGrist(record.Mission_enfant) ?? textLibelleFromGrist(record.Libelle),
+    Libelle: textLibelleFromGrist(record.Libelle) ?? textLibelleFromGrist(record.Mission_enfant),
   };
 }
 
