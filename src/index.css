@@ -184,6 +184,26 @@ body {
   font-size: 0.9rem;
 }
 
+.pilotage-col-mission-libelle {
+  min-width: 26rem;
+  max-width: 40rem;
+  white-space: normal;
+  vertical-align: top;
+}
+
+.pilotage-col-equipe-nowrap {
+  min-width: 10rem;
+  white-space: nowrap;
+}
+
+.pilotage-inline-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 0.375rem;
+  row-gap: 0.25rem;
+}
+
 .pilotage-expandable-child-cell--indent {
   padding-inline-start: 2.5rem !important;
   box-shadow: inset 3px 0 0 0 var(--border-default-grey);

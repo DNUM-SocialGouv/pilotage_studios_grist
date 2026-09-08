@@ -4,7 +4,8 @@ import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { DsfrSelectRichMulti } from "../components/dsfr/DsfrSelectRichMulti";
-import { EquipeBadges } from "../components/EquipeBadges";
+import { EquipeTags } from "../components/EquipeTags";
+import { StatutBadge } from "../components/StatutBadge";
 import {
   ExpandToggle,
   ExpandableChildCell,
@@ -308,14 +309,18 @@ export function MissionsListView() {
       </p>
 
       {rows.length > 0 ? (
-        <TableShell className="fr-mb-3w">
+        <TableShell className="fr-mb-3w" multiline>
           <table>
             <caption className="fr-sr-only">Liste des missions</caption>
             <thead>
               <tr>
-                <th scope="col">Mission</th>
+                <th scope="col" className="pilotage-col-mission-libelle">
+                  Mission
+                </th>
                 <th scope="col">Produit</th>
-                <th scope="col">Équipe</th>
+                <th scope="col" className="pilotage-col-equipe-nowrap">
+                  Équipe
+                </th>
                 <th scope="col">Statut</th>
                 <th scope="col">Resp</th>
                 <th scope="col">Début</th>
@@ -344,7 +349,7 @@ export function MissionsListView() {
                             : undefined
                       }
                     >
-                      <th scope="row">
+                      <td className="pilotage-col-mission-libelle">
                         <div className="pilotage-expandable-parent-label">
                           {enfants.length > 0 ? (
                             <ExpandToggle
@@ -360,12 +365,14 @@ export function MissionsListView() {
                             {missionLibelle(m)}
                           </Link>
                         </div>
-                      </th>
-                      <td>{libelleProduitMission(m, produitsById)}</td>
-                      <td>
-                        <EquipeBadges value={m.Equipe2} />
                       </td>
-                      <td>{m.Statut?.trim() || "—"}</td>
+                      <td>{libelleProduitMission(m, produitsById)}</td>
+                      <td className="pilotage-col-equipe-nowrap">
+                        <EquipeTags value={m.Equipe2} />
+                      </td>
+                      <td>
+                        <StatutBadge statut={m.Statut} />
+                      </td>
                       <td>
                         {libelleParRefsIds(extractGristReferenceIds(m.Resp_), intervenantsById)}
                       </td>
@@ -401,7 +408,7 @@ export function MissionsListView() {
                               key={`enfant-${e.id}`}
                               id={idx === 0 ? expandControlsId : undefined}
                             >
-                              <ExpandableChildCell indent>
+                              <ExpandableChildCell indent className="pilotage-col-mission-libelle">
                                 <p className="fr-mb-0 fr-text--bold pilotage-expandable-child-libelle">
                                   {primary}
                                 </p>
@@ -414,7 +421,7 @@ export function MissionsListView() {
                               </ExpandableChildCell>
                               <ExpandableChildCell>—</ExpandableChildCell>
                               <ExpandableChildCell>
-                                {e.Statut?.trim() || "—"}
+                                <StatutBadge statut={e.Statut} />
                               </ExpandableChildCell>
                               <ExpandableChildCell>—</ExpandableChildCell>
                               <ExpandableChildCell>—</ExpandableChildCell>

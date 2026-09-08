@@ -40,6 +40,6 @@ Chargement **lazy** sur `/missions` uniquement (`useMissionsData`) — pas au bo
 - Pas d’écriture (drawers, CRUD enfants, édition inline, upload PJ)
 - Pas d’IA (rapport d’investissement, CR, estimation)
 - Pas d’export CSV, pas de `?vue=nouvelles-demandes`
-- Liste : pas de colonne Intervenant (filtre conservé), expand aligné, pas de sticky / badge statut
+- Liste : pas de colonne Intervenant (filtre conservé), expand aligné, badges statut, pas de sticky / Actions
 - Produits et intervenants en **texte** (écrans encore stub)
 - Contexte en texte préformaté (pas de rendu Markdown)

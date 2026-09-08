@@ -38,7 +38,7 @@ Réinitialiser. Combinables (AND entre filtres, OR dans un multi-select). Liste 
 
 ## Colonnes
 
-Mission (lien `/missions/:id`, expand si enfants), produit (texte), équipe (`EquipeBadges`), statut, responsable, date de début, jours CRA, montant TTC CRA. **Pas** de colonne Intervenant sur le master (le staffing vit sur les prestations dépliées). Le **filtre** Intervenant reste.
+Mission (lien `/missions/:id`, expand si enfants), produit (texte), équipe (tag DSFR), statut (`StatutBadge`), responsable, date de début, jours CRA, montant TTC CRA. **Pas** de colonne Intervenant sur le master (le staffing vit sur les prestations dépliées). Le **filtre** Intervenant reste.
 
 Si la mission a des **prestations** (`Missions_enfants`, rattachement via `Mission_parent` mappé à l’ingest), le chevron ouvre des **sous-lignes** dans la même grille (8 cellules, pas de mini-tableau, pas d’édition) :
 
@@ -47,10 +47,10 @@ Si la mission a des **prestations** (`Missions_enfants`, rattachement via `Missi
 | Mission | Libellé prestation en gras (0,9rem) ; intervenant en dessous (`fr-hint-text`) s’il est distinct du libellé |
 | Produit | Type de prestation (libellé lisible, ex. `Freelance_jours` → Freelance) |
 | Équipe / Resp / Début | — |
-| Statut | Texte de la prestation (même rendu que le master, pas concaténé avec le type) |
+| Statut | Badge DSFR (même mapping que le master) |
 | Jours / Montant TTC | Agrégat CRA de **cette** prestation ; aucun CRA (`count === 0`) → — |
 
-Écarts vs l’app sœur : pas d’export CSV, pas de badge statut, pas d’en-tête sticky.
+Écarts vs l’app sœur : pas d’export CSV, pas d’en-tête sticky, pas de colonne Actions, montants avec `€`.
 
 ## Récap CRA
 
