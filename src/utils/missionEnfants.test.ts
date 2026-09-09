@@ -9,7 +9,16 @@ import {
 } from "./missionEnfants.ts";
 
 describe("missionEnfantFromGrist", () => {
-  it("mappe Mission_parent et Mission_enfant (texte Grist actuel)", () => {
+  it("mappe Mission_parent et Libelle (schéma canonique)", () => {
+    const mapped = missionEnfantFromGrist({
+      Mission_parent: 51,
+      Libelle: "Coaching Produit — David Koss",
+    });
+    assert.equal(mapped.Mission, 51);
+    assert.equal(mapped.Libelle, "Coaching Produit — David Koss");
+  });
+
+  it("retombe sur le texte Mission_enfant si Libelle est vide", () => {
     const mapped = missionEnfantFromGrist({
       Mission_parent: 51,
       Mission_enfant: "Coaching Produit — David Koss",
@@ -27,15 +36,15 @@ describe("missionEnfantFromGrist", () => {
     assert.equal(mapped.Libelle, "Alice — Design");
   });
 
-  it("préfère les colonnes actuelles si les deux schémas sont présents", () => {
+  it("préfère Mission_parent et Libelle si les deux schémas sont présents", () => {
     const mapped = missionEnfantFromGrist({
       Mission_parent: 51,
       Mission: 99,
-      Mission_enfant: "Libellé actuel",
-      Libelle: "Libellé legacy",
+      Mission_enfant: "Libellé texte legacy",
+      Libelle: "Libellé canonique",
     });
     assert.equal(mapped.Mission, 51);
-    assert.equal(mapped.Libelle, "Libellé actuel");
+    assert.equal(mapped.Libelle, "Libellé canonique");
   });
 
   it("conserve un Mission_parent encodé en tuple Grist", () => {

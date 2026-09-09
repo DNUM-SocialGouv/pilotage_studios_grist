@@ -79,7 +79,7 @@ Entrée MemoryRouter : `/` (`WelcomePage`). Pas de Header / Footer DSFR app. Pas
 |-------|---------|
 | Ancre widget + liste PA | `Plan_activite` |
 | Finance PA + écrans BDC (accès full) | `BDC`, `Constatations`, `Commandes_Sofiane` |
-| Onglet Dépenses fiche BDC **ou** écrans `/missions` (lazy, lecture) | `Realise`, `Missions`, `Missions_enfants`, `Equipe`, `Tableau_de_pilotage_SDPC_Produits_SDPC` |
+| Onglet Dépenses fiche BDC **ou** écrans `/missions` (lazy, lecture) | `Realise`, `Missions`, `Missions_enfants` (`Mission_parent` + `Libelle`, fallback texte `Mission_enfant`), `Equipe`, `Tableau_de_pilotage_SDPC_Produits_SDPC` |
 
 **Allowlist** : uniquement via [`src/security/fetchTableAllowlist.ts`](src/security/fetchTableAllowlist.ts) (`FETCH_TABLE_ALLOWLIST`, `fetchAllowlistedTable`) **et** REST `fetchGristRecordsViaToken` (même allowlist). Pas d’ID libre depuis l’UI. Nouvelle table = MAJ ce fichier + §4 + docs + [`SECURITY.md`](SECURITY.md).
 

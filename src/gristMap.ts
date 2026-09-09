@@ -167,6 +167,7 @@ export function toMission(record: GristRecord): Mission {
   };
 }
 
+/** `Missions_enfants` : `missionEnfantFromGrist` priorise `Libelle` puis texte `Mission_enfant`. */
 export function toMissionEnfant(record: GristRecord): MissionEnfant {
   const { Mission, Libelle } = missionEnfantFromGrist(record);
   return {
