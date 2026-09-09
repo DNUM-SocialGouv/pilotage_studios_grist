@@ -7,5 +7,9 @@ type StatutBadgeProps = {
 
 export function StatutBadge({ statut }: StatutBadgeProps) {
   const label = statut?.trim() || "—";
-  return <Badge severity={severityForStatut(statut)}>{label}</Badge>;
+  return (
+    <Badge small severity={severityForStatut(statut)}>
+      {label}
+    </Badge>
+  );
 }

@@ -265,7 +265,8 @@ span.fr-tag.fr-tag--beige-gris-galet {
   white-space: nowrap;
 }
 
-.pilotage-col-resp-nowrap {
+.pilotage-col-resp-nowrap,
+.pilotage-col-statut-nowrap {
   white-space: nowrap;
 }
 
@@ -336,6 +337,12 @@ span.fr-tag.fr-tag--beige-gris-galet {
 .fr-table.fr-table--multiline .fr-table__content > table th,
 .fr-table.fr-table--multiline .fr-table__content > table td {
   white-space: normal;
+}
+
+.fr-table.fr-table--multiline .fr-table__content > table .pilotage-col-equipe-nowrap,
+.fr-table.fr-table--multiline .fr-table__content > table .pilotage-col-resp-nowrap,
+.fr-table.fr-table--multiline .fr-table__content > table .pilotage-col-statut-nowrap {
+  white-space: nowrap;
 }
 
 /*

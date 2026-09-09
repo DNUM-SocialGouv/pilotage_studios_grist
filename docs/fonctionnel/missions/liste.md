@@ -38,7 +38,7 @@ Réinitialiser. Combinables (AND entre filtres, OR dans un multi-select). Liste 
 
 ## Colonnes
 
-Mission (lien `/missions/:id`, expand si enfants), produit (texte), équipe (tag DSFR), statut (`StatutBadge`), responsable, date de début, jours CRA, montant TTC CRA. **Pas** de colonne Intervenant sur le master (le staffing vit sur les prestations dépliées). Le **filtre** Intervenant reste.
+Mission (lien `/missions/:id`, expand si enfants), produit (texte), équipe (tag DSFR), statut (badge DSFR `sm`), responsable, date de début, jours CRA, montant TTC CRA. **Pas** de colonne Intervenant sur le master (le staffing vit sur les prestations dépliées). Le **filtre** Intervenant reste.
 
 Si la mission a des **prestations** (`Missions_enfants`, rattachement via `Mission_parent` mappé à l’ingest), le chevron ouvre des **sous-lignes** dans la même grille (8 cellules, pas de mini-tableau, pas d’édition) :
 

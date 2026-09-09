@@ -321,7 +321,9 @@ export function MissionsListView() {
                 <th scope="col" className="pilotage-col-equipe-nowrap">
                   Équipe
                 </th>
-                <th scope="col">Statut</th>
+                <th scope="col" className="pilotage-col-statut-nowrap">
+                  Statut
+                </th>
                 <th scope="col">Resp</th>
                 <th scope="col">Début</th>
                 <th scope="col" className="fr-cell--right">
@@ -370,7 +372,7 @@ export function MissionsListView() {
                       <td className="pilotage-col-equipe-nowrap">
                         <EquipeTags value={m.Equipe2} />
                       </td>
-                      <td>
+                      <td className="pilotage-col-statut-nowrap">
                         <StatutBadge statut={m.Statut} />
                       </td>
                       <td className="pilotage-col-resp-nowrap">
@@ -420,7 +422,7 @@ export function MissionsListView() {
                                 {typePrestationLabel(e.Type_prestation)}
                               </ExpandableChildCell>
                               <ExpandableChildCell>—</ExpandableChildCell>
-                              <ExpandableChildCell>
+                              <ExpandableChildCell className="pilotage-col-statut-nowrap">
                                 <StatutBadge statut={e.Statut} />
                               </ExpandableChildCell>
                               <ExpandableChildCell>—</ExpandableChildCell>
