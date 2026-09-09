@@ -10,6 +10,75 @@ body {
   font-family: Marianne, arial, sans-serif;
 }
 
+/*
+ * Teintes « action low » des tags : le DSFR ne les applique qu’aux a/button.
+ * Reproduit pour span.fr-tag (colonne équipe liste missions).
+ */
+span.fr-tag.fr-tag--blue-cumulus {
+  color: var(--text-action-high-blue-cumulus);
+  background-color: var(--background-action-low-blue-cumulus);
+}
+span.fr-tag.fr-tag--green-menthe {
+  color: var(--text-action-high-green-menthe);
+  background-color: var(--background-action-low-green-menthe);
+}
+span.fr-tag.fr-tag--purple-glycine {
+  color: var(--text-action-high-purple-glycine);
+  background-color: var(--background-action-low-purple-glycine);
+}
+span.fr-tag.fr-tag--pink-macaron {
+  color: var(--text-action-high-pink-macaron);
+  background-color: var(--background-action-low-pink-macaron);
+}
+span.fr-tag.fr-tag--yellow-tournesol {
+  color: var(--text-action-high-yellow-tournesol);
+  background-color: var(--background-action-low-yellow-tournesol);
+}
+span.fr-tag.fr-tag--orange-terre-battue {
+  color: var(--text-action-high-orange-terre-battue);
+  background-color: var(--background-action-low-orange-terre-battue);
+}
+span.fr-tag.fr-tag--green-archipel {
+  color: var(--text-action-high-green-archipel);
+  background-color: var(--background-action-low-green-archipel);
+}
+span.fr-tag.fr-tag--blue-ecume {
+  color: var(--text-action-high-blue-ecume);
+  background-color: var(--background-action-low-blue-ecume);
+}
+span.fr-tag.fr-tag--green-emeraude {
+  color: var(--text-action-high-green-emeraude);
+  background-color: var(--background-action-low-green-emeraude);
+}
+span.fr-tag.fr-tag--green-bourgeon {
+  color: var(--text-action-high-green-bourgeon);
+  background-color: var(--background-action-low-green-bourgeon);
+}
+span.fr-tag.fr-tag--green-tilleul-verveine {
+  color: var(--text-action-high-green-tilleul-verveine);
+  background-color: var(--background-action-low-green-tilleul-verveine);
+}
+span.fr-tag.fr-tag--pink-tuile {
+  color: var(--text-action-high-pink-tuile);
+  background-color: var(--background-action-low-pink-tuile);
+}
+span.fr-tag.fr-tag--yellow-moutarde {
+  color: var(--text-action-high-yellow-moutarde);
+  background-color: var(--background-action-low-yellow-moutarde);
+}
+span.fr-tag.fr-tag--brown-caramel {
+  color: var(--text-action-high-brown-caramel);
+  background-color: var(--background-action-low-brown-caramel);
+}
+span.fr-tag.fr-tag--brown-opera {
+  color: var(--text-action-high-brown-opera);
+  background-color: var(--background-action-low-brown-opera);
+}
+span.fr-tag.fr-tag--beige-gris-galet {
+  color: var(--text-action-high-beige-gris-galet);
+  background-color: var(--background-action-low-beige-gris-galet);
+}
+
 .widget-shell {
   min-height: 100%;
 }
@@ -184,6 +253,31 @@ body {
   font-size: 0.9rem;
 }
 
+.pilotage-col-mission-libelle {
+  min-width: 26rem;
+  max-width: 40rem;
+  white-space: normal;
+  vertical-align: top;
+}
+
+.pilotage-col-equipe-nowrap {
+  min-width: 10rem;
+  white-space: nowrap;
+}
+
+.pilotage-col-resp-nowrap,
+.pilotage-col-statut-nowrap {
+  white-space: nowrap;
+}
+
+.pilotage-inline-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 0.375rem;
+  row-gap: 0.25rem;
+}
+
 .pilotage-expandable-child-cell--indent {
   padding-inline-start: 2.5rem !important;
   box-shadow: inset 3px 0 0 0 var(--border-default-grey);
@@ -238,6 +332,38 @@ body {
 
 .fr-table {
   overflow-x: auto;
+}
+
+.fr-table.fr-table--multiline .fr-table__content > table th,
+.fr-table.fr-table--multiline .fr-table__content > table td {
+  white-space: normal;
+}
+
+.fr-table.fr-table--multiline .fr-table__content > table .pilotage-col-equipe-nowrap,
+.fr-table.fr-table--multiline .fr-table__content > table .pilotage-col-resp-nowrap,
+.fr-table.fr-table--multiline .fr-table__content > table .pilotage-col-statut-nowrap {
+  white-space: nowrap;
+}
+
+/*
+ * `fr-table--bordered` : le DSFR trace aussi des filets verticaux (2e couche de background).
+ * Convention ISO app sœur : lignes horizontales uniquement.
+ */
+.fr-table.fr-table--bordered .fr-table__content th,
+.fr-table.fr-table--bordered .fr-table__content td {
+  background-size: 100% 1px !important;
+  background-repeat: no-repeat !important;
+  background-position: left bottom !important;
+}
+
+.fr-table.fr-table--bordered .fr-table__content thead th,
+.fr-table.fr-table--bordered .fr-table__content thead td {
+  background-image: linear-gradient(0deg, var(--border-plain-grey), var(--border-plain-grey)) !important;
+}
+
+.fr-table.fr-table--bordered .fr-table__content tbody th,
+.fr-table.fr-table--bordered .fr-table__content tbody td {
+  background-image: linear-gradient(0deg, var(--border-default-grey), var(--border-default-grey)) !important;
 }
 
 .mission-fiche-prose {

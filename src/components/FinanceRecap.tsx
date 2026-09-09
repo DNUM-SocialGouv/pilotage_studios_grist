@@ -72,12 +72,18 @@ export function FinanceRecap({
 type TableShellProps = {
   children: ReactNode;
   className?: string;
+  /** Classe DSFR `fr-table--multiline` (liste missions). */
+  multiline?: boolean;
 };
 
 /** Enveloppe tableau DSFR minimale (spike — pas le DsfrTableShell de l’app). */
-export function TableShell({ children, className }: TableShellProps) {
+export function TableShell({ children, className, multiline = false }: TableShellProps) {
   return (
-    <div className={["fr-table", "fr-table--bordered", className].filter(Boolean).join(" ")}>
+    <div
+      className={["fr-table", "fr-table--bordered", multiline && "fr-table--multiline", className]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <div className="fr-table__wrapper">
         <div className="fr-table__container">
           <div className="fr-table__content">{children}</div>
