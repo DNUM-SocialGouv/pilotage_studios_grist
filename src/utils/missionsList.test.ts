@@ -4,6 +4,8 @@ import type { Mission, MissionEnfant, SuiviMensuel } from "../types.ts";
 import {
   aggregateCraByEnfantId,
   aggregateCraByMissionId,
+  groupSuiviRowsByEnfantId,
+  sumSuiviTtcHorsPrestationForMission,
   totauxCraForEnfant,
 } from "./craByMission.ts";
 import { missionEnfantFromGrist } from "./missionEnfants.ts";
@@ -135,6 +137,29 @@ describe("missionMatchesFilters", () => {
       false,
     );
   });
+
+  it("filtre staffing avec / sans prestation", () => {
+    const byMaster = enfantsByMasterId(enfants);
+    assert.equal(
+      missionMatchesFilters(missions[0]!, filters({ staffing: "avec-prestation" }), produitsById, enfants, {
+        enfantsByMaster: byMaster,
+      }),
+      true,
+    );
+    assert.equal(
+      missionMatchesFilters(missions[0]!, filters({ staffing: "sans-prestation" }), produitsById, enfants, {
+        enfantsByMaster: byMaster,
+      }),
+      false,
+    );
+    const lonely: Mission = { id: 99, Nom_de_la_mission: "Sans staff" };
+    assert.equal(
+      missionMatchesFilters(lonely, filters({ staffing: "sans-prestation" }), produitsById, enfants, {
+        enfantsByMaster: byMaster,
+      }),
+      true,
+    );
+  });
 });
 
 describe("missionLibelle / options", () => {
@@ -235,5 +260,32 @@ describe("aggregateCraByEnfantId", () => {
     ];
     const map = aggregateCraByEnfantId(rows);
     assert.equal(map.size, 0);
+  });
+});
+
+describe("groupSuiviRowsByEnfantId", () => {
+  it("groupe les lignes CRA par prestation", () => {
+    const rows: SuiviMensuel[] = [
+      { id: 1, Mission_enfant: 10, Nb_jours: 1 },
+      { id: 2, Mission_enfant: 10, Nb_jours: 2 },
+      { id: 3, Mission_enfant: 11, Nb_jours: 3 },
+      { id: 4, Missions: 1, Nb_jours: 4 },
+    ];
+    const map = groupSuiviRowsByEnfantId(rows);
+    assert.equal(map.get(10)?.length, 2);
+    assert.equal(map.get(11)?.length, 1);
+    assert.equal(map.has(1), false);
+  });
+});
+
+describe("sumSuiviTtcHorsPrestationForMission", () => {
+  it("somme le TTC legacy hors enfants connus", () => {
+    const enfants: MissionEnfant[] = [{ id: 10, Mission: 100 }];
+    const rows: SuiviMensuel[] = [
+      { id: 1, Mission_enfant: 10, Missions: 100, Calcul_TTC: 50 },
+      { id: 2, Missions: 100, Calcul_TTC: 75 },
+      { id: 3, Missions: 200, Calcul_TTC: 10 },
+    ];
+    assert.equal(sumSuiviTtcHorsPrestationForMission(rows, 100, enfants), 75);
   });
 });

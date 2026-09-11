@@ -1,0 +1,54 @@
+/**
+ * Menu d’actions contextuel — anatomie DSFR « menu déroulant » (bêta, pas encore de CSS officiel).
+ * @see https://www.systeme-de-design.gouv.fr/version-courante/fr/composants/menu-deroulant
+ */
+.root {
+  position: relative;
+  display: inline-flex;
+  z-index: 1;
+}
+
+.rootOpen {
+  z-index: 40;
+}
+
+.trigger[aria-expanded="true"]::after {
+  transform: rotate(-180deg);
+}
+
+.panel {
+  position: absolute;
+  top: 100%;
+  z-index: 30;
+  margin-top: 0.25rem;
+  min-width: 16rem;
+  padding: 0.5rem 0;
+  background-color: var(--background-default-grey);
+  color: var(--text-default-grey);
+  border: 1px solid var(--border-default-grey);
+  box-shadow: var(--lifted-shadow);
+}
+
+.panelAlignRight {
+  right: 0;
+  left: auto;
+}
+
+.panelAlignLeft {
+  left: 0;
+  right: auto;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.item {
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+  border-radius: 0;
+  margin: 0;
+}

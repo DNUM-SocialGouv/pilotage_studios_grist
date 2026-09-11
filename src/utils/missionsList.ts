@@ -1,4 +1,4 @@
-import type { Mission, MissionEnfant, ProduitSdpc } from "../types.ts";
+import type { Mission, MissionEnfant, ProduitSdpc, SuiviMensuel } from "../types.ts";
 import { extractGristReferenceId, extractGristStringTokens } from "./gristReferences.ts";
 import { intervenantIdsForMaster } from "./missionEnfants.ts";
 import { libelleProduitGrist } from "./pilotageProduits.ts";
@@ -30,6 +30,13 @@ export function produitsByIdFromRows(produits: ProduitSdpc[]): Map<number, strin
   return map;
 }
 
+/** Filtre staffing : lots avec/sans prestation, ou CRA hors prestation. */
+export type MissionsStaffingFilter =
+  | ""
+  | "avec-prestation"
+  | "sans-prestation"
+  | "cra-hors-prestation";
+
 export type MissionsListFilters = {
   search: string;
   equipe: string;
@@ -37,17 +44,32 @@ export type MissionsListFilters = {
   departement: string;
   produitIds: string[];
   intervenantIds: string[];
+  staffing?: MissionsStaffingFilter;
 };
 
 export function missionDepartementTokens(m: Mission): string[] {
   return extractGristStringTokens(m.Departement);
 }
 
+export type MissionMatchesFiltersOptions = {
+  enfantsByMaster?: Map<number, MissionEnfant[]>;
+  /** Requis pour le filtre `cra-hors-prestation`. */
+  suiviRows?: SuiviMensuel[];
+  /** Si true, le filtre CRA hors prestation laisse passer (chargement / erreur). */
+  staffingCraPending?: boolean;
+  sumHorsPrestationTtc?: (
+    suiviRows: SuiviMensuel[],
+    missionId: number,
+    enfants: MissionEnfant[],
+  ) => number;
+};
+
 export function missionMatchesFilters(
   m: Mission,
   filters: MissionsListFilters,
   produitsById: Map<number, string>,
   missionEnfants: MissionEnfant[],
+  options: MissionMatchesFiltersOptions = {},
 ): boolean {
   if (filters.statut.length > 0) {
     const st = m.Statut?.trim() ?? "";
@@ -78,6 +100,35 @@ export function missionMatchesFilters(
       .filter((n) => Number.isFinite(n));
     if (!selectedIds.some((id) => missionIntervenantIds.includes(id))) {
       return false;
+    }
+  }
+  const staffing = filters.staffing ?? "";
+  if (staffing === "avec-prestation") {
+    const n =
+      options.enfantsByMaster?.get(m.id)?.length ??
+      missionEnfants.filter((e) => extractGristReferenceId(e.Mission) === m.id).length;
+    if (n === 0) {
+      return false;
+    }
+  }
+  if (staffing === "sans-prestation") {
+    const n =
+      options.enfantsByMaster?.get(m.id)?.length ??
+      missionEnfants.filter((e) => extractGristReferenceId(e.Mission) === m.id).length;
+    if (n > 0) {
+      return false;
+    }
+  }
+  if (staffing === "cra-hors-prestation") {
+    if (options.staffingCraPending) {
+      return true;
+    }
+    const suivi = options.suiviRows;
+    const sumFn = options.sumHorsPrestationTtc;
+    if (suivi && sumFn) {
+      if (sumFn(suivi, m.id, missionEnfants) <= 0) {
+        return false;
+      }
     }
   }
   const q = filters.search.trim().toLowerCase();

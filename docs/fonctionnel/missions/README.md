@@ -39,7 +39,7 @@ Chargement **lazy** sur `/missions` uniquement (`useMissionsData`) — pas au bo
 
 - Pas d’écriture (drawers, CRUD enfants, édition inline, upload PJ)
 - Pas d’IA (rapport d’investissement, CR, estimation)
-- Pas d’export CSV, pas de `?vue=nouvelles-demandes`
-- Liste : pas de colonne Intervenant (filtre conservé), expand aligné, badges statut, tags équipe teintés, filets horizontaux, pas de sticky / Actions
-- Produits et intervenants en **texte** (écrans encore stub)
-- Contexte en texte préformaté (pas de rendu Markdown)
+- Pas d’export CSV
+- Liste ISO #216/#218/#219 : deux vues (détaillée / par lot), hiérarchie lot → prestation → CRA, accordéon filtres + Staffing, Actions **Ouvrir la fiche** seulement
+- Produits et intervenants en **texte** / stubs (écrans catalogue encore stub)
+- Contexte fiche en texte préformaté (pas de rendu Markdown)

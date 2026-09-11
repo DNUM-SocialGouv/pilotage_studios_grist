@@ -28,7 +28,7 @@ export function missionEnfantFromGrist(record: Record<string, unknown>): Pick<
 }
 
 export function missionEnfantLibelle(enfant: MissionEnfant, intervenantLabel?: string): string {
-  const lib = enfant.Libelle?.trim();
+  const lib = enfantLibelleOptionnel(enfant);
   if (lib) {
     return lib;
   }
@@ -36,6 +36,15 @@ export function missionEnfantLibelle(enfant: MissionEnfant, intervenantLabel?: s
     return intervenantLabel.trim();
   }
   return `Prestation #${enfant.id}`;
+}
+
+/** Libellé prestation optionnel (`Libelle` / fallback texte). */
+export function enfantLibelleOptionnel(e: MissionEnfant): string | undefined {
+  const lib = e.Libelle?.trim();
+  if (lib) {
+    return lib;
+  }
+  return undefined;
 }
 
 /** Libellé lisible de `Type_prestation` (clé Grist → texte UI). */

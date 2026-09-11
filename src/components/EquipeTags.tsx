@@ -1,19 +1,32 @@
 import { Fragment, type ReactNode } from "react";
 import { Tag } from "@codegouvfr/react-dsfr/Tag";
+import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import { extractGristStringTokens } from "../utils/gristReferences";
 import { equipeTagDsfrModifierForLabel } from "../utils/equipeTagColors";
 
-function equipeTag(label: string): ReactNode {
+/** Tag équipe : teinte DSFR stable par libellé (HITL #216). */
+export function tdEquipeTag(
+  label: string,
+  options?: { small?: boolean },
+): ReactNode {
   const t = label.trim();
   if (!t || t === "—") {
     return "—";
   }
   const mod = equipeTagDsfrModifierForLabel(t);
   return (
-    <Tag as="span" nativeSpanProps={{}} className={`fr-tag--${mod}`}>
+    <Tag
+      as="span"
+      nativeSpanProps={{}}
+      className={cx(`fr-tag--${mod}`, options?.small && "fr-tag--sm")}
+    >
       {t}
     </Tag>
   );
+}
+
+function equipeTag(label: string): ReactNode {
+  return tdEquipeTag(label);
 }
 
 type EquipeTagsProps = {
