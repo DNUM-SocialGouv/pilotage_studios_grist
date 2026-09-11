@@ -3,12 +3,13 @@ import { severityForStatut } from "../utils/statutBadge";
 
 type StatutBadgeProps = {
   statut: string | undefined;
+  small?: boolean;
 };
 
-export function StatutBadge({ statut }: StatutBadgeProps) {
+export function StatutBadge({ statut, small = true }: StatutBadgeProps) {
   const label = statut?.trim() || "—";
   return (
-    <Badge small severity={severityForStatut(statut)}>
+    <Badge small={small} severity={severityForStatut(statut)} noIcon>
       {label}
     </Badge>
   );

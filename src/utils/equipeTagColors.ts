@@ -23,7 +23,11 @@ export const EQUIPE_TAG_DSFR_MODIFIERS = [
 
 export type EquipeTagDsfrModifier = (typeof EQUIPE_TAG_DSFR_MODIFIERS)[number];
 
-/** Teinte stable par libellé (même équipe → même couleur). */
+/**
+ * Teinte stable par libellé (même équipe → même couleur sur toutes les lignes).
+ * Mélange FNV-1a + DJB2 + finalisation pour limiter les collisions modulo
+ * (ex. « Design » et « Access. » avec l’ancien seul FNV).
+ */
 export function equipeTagDsfrModifierForLabel(label: string): EquipeTagDsfrModifier {
   const key = label.trim().toLowerCase();
   if (!key) {
@@ -41,6 +45,16 @@ export function equipeTagDsfrModifierForLabel(label: string): EquipeTagDsfrModif
   h ^= h >>> 16;
   h = Math.imul(h, 0x85ebca6b) >>> 0;
   h ^= h >>> 13;
-  const idx = h % EQUIPE_TAG_DSFR_MODIFIERS.length;
+  const idx = (h >>> 0) % EQUIPE_TAG_DSFR_MODIFIERS.length;
   return EQUIPE_TAG_DSFR_MODIFIERS[idx]!;
+}
+
+/** Token CSS `background-action-low` (fond tag / barre timeline). */
+export function equipeTagBackgroundVar(label: string): string {
+  return `var(--background-action-low-${equipeTagDsfrModifierForLabel(label)})`;
+}
+
+/** Token CSS `text-action-high` (texte tag). */
+export function equipeTagTextVar(label: string): string {
+  return `var(--text-action-high-${equipeTagDsfrModifierForLabel(label)})`;
 }

@@ -10,6 +10,11 @@ export type ExpandToggleProps = {
   titleExpand?: string;
   titleCollapse?: string;
   children?: ButtonProps["children"];
+  /**
+   * Affiche le compteur sur le bouton (à côté du chevron).
+   * `false` : chevron seul — placer un badge à côté du libellé.
+   */
+  showCount?: boolean;
   className?: string;
   disabled?: boolean;
 };
@@ -23,6 +28,7 @@ export function ExpandToggle({
   titleExpand = "Afficher le détail",
   titleCollapse = "Masquer le détail",
   children,
+  showCount = true,
   className,
   disabled = false,
 }: ExpandToggleProps) {
@@ -32,18 +38,26 @@ export function ExpandToggle({
       type="button"
       size="small"
       priority="tertiary no outline"
-      className={cx("pilotage-expand-toggle", expanded && "pilotage-expand-toggle--open", className)}
+      className={cx(
+        "pilotage-expand-toggle",
+        expanded && "pilotage-expand-toggle--open",
+        !showCount && "pilotage-expand-toggle--icon-only",
+        className,
+      )}
       disabled={disabled || childCount === 0}
       iconId="fr-icon-arrow-right-s-line"
       title={title}
-      aria-expanded={expanded}
-      aria-controls={controlsId}
+      nativeButtonProps={{
+        "aria-label": `${title} (${childCount})`,
+        "aria-expanded": expanded,
+        "aria-controls": controlsId,
+      }}
       onClick={(e) => {
         e.stopPropagation();
         onClick();
       }}
     >
-      {children ?? childCount}
+      {showCount ? (children ?? childCount) : null}
     </Button>
   );
 }

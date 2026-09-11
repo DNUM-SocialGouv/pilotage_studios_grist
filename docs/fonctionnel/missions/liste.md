@@ -4,7 +4,7 @@
 
 ## Objet
 
-Parcourir les missions **master**, filtrer, déplier les prestations, ouvrir une fiche.
+Parcourir les missions **master** (lots), filtrer, basculer entre deux lectures de la hiérarchie lot → prestation → CRA, ouvrir une fiche.
 
 ## Parcours
 
@@ -13,7 +13,7 @@ Parcourir les missions **master**, filtrer, déplier les prestations, ouvrir une
 | Route | `/missions` |
 | Page | `src/pages/MissionsListView.tsx` |
 | Navigation | **Missions** (`WidgetNav`) |
-| Pagination | 10 lignes |
+| Pagination | 10 lots par page |
 
 ## États
 
@@ -25,33 +25,55 @@ Parcourir les missions **master**, filtrer, déplier les prestations, ouvrir une
 | Chargement missions | « Chargement des missions… » |
 | Erreur fetch Missions | Alerte erreur (indépendant du chargement BDC) |
 | Référentiels partiels | Alerte warning + tableau quand même |
-| OK | Filtres + tableau |
+| OK | Filtres (accordéon) + toggle de vue + liste |
 
 ## Filtres
 
-Grille ISO app sœur, 2 lignes desktop (`fr-col-lg-4`) :
+Accordéon **Filtres** (ouvert par défaut ; le titre indique le nombre de filtres actifs). Desktop : **deux lignes** de quatre colonnes (`fr-col-lg-3`) :
 
-1. Recherche (nom de mission, libellé produit) · **équipe** · **département** (select simple)
-2. **produits** · **statut** · **intervenant** (liste déroulante riche : multi-select, recherche interne, tout sélectionner / désélectionner)
+1. Recherche (mission ou produit) · **équipe** · **département** · **produits** (multi)
+2. **statut** (multi) · **intervenant** (multi) · **Staffing** (Tous · Avec prestation · Sans prestation · CRA hors prestation)
 
-Réinitialiser. Combinables (AND entre filtres, OR dans un multi-select). Liste vide = tous. Options dérivées des valeurs présentes dans les lignes chargées (produits / intervenants staffés uniquement).
+Réinitialiser hors accordéon. Combinables (AND entre filtres, OR dans un multi-select). Options dérivées des valeurs présentes.
 
-## Colonnes
+### Vue « nouvelles demandes »
 
-Mission (lien `/missions/:id`, expand si enfants), produit (texte), équipe (tag DSFR), statut (badge DSFR `sm`), responsable, date de début, jours CRA, montant TTC CRA. **Pas** de colonne Intervenant sur le master (le staffing vit sur les prestations dépliées). Le **filtre** Intervenant reste.
+`/missions?vue=nouvelles-demandes` pré-sélectionne les statuts **A instruire** et **En investigation**.
 
-Si la mission a des **prestations** (`Missions_enfants`, rattachement via `Mission_parent` mappé à l’ingest), le chevron ouvre des **sous-lignes** dans la même grille (8 cellules, pas de mini-tableau, pas d’édition) :
+## Deux lectures (ISO app sœur #216 / #218 / #219)
 
-| Colonne | Expand |
-|---------|--------|
-| Mission | Libellé prestation en gras (0,9rem) ; intervenant en dessous (`fr-hint-text`) s’il est distinct du libellé |
-| Produit | Type de prestation (libellé lisible, ex. `Freelance_jours` → Freelance) |
-| Équipe / Resp / Début | — |
-| Statut | Badge DSFR (même mapping que le master) |
-| Jours / Montant TTC | Agrégat CRA de **cette** prestation ; aucun CRA (`count === 0`) → — |
+Contrôle segmenté DSFR (`fr-segmented--sm`), préférence `localStorage` `pilotage.missions.listeVue` (`detail` \| `lot`) :
 
-Tableau : filets **horizontaux** seulement (comme l’app sœur) ; tag équipe teinté (ex. Product beige). Écarts restants : pas d’export CSV, pas d’en-tête sticky, pas de colonne Actions, montants avec `€`.
+| Vue | Contenu |
+|-----|---------|
+| **Liste détaillée** (défaut) | Tableau 3 niveaux : lot → prestation → CRA |
+| **Par lot** | Bandeau par lot (KPI + timeline équipes) ; tableau prestations à l’ouverture |
+
+Jours / Montant TTC d’un **lot** = somme des CRA de ses **prestations** uniquement (`—` s’il n’y a aucune ligne CRA, pas `0`). Pas d’UI « CRA hors prestation » dans la hiérarchie (filtre Staffing seulement).
+
+### Liste détaillée — colonnes
+
+| Colonne | Lot | Prestation | CRA |
+|---------|-----|------------|-----|
+| Mission | Lien `/missions/:id` + badge nb prestations | Libellé + badge CRA ; meta équipe + intervenant | Période mois/année + tâches |
+| Produit | Lien `/produits/:id` (stub) | — | — |
+| Statut | Badge `noIcon` | Badge propre | — |
+| Début | `formatGristMonthYear` | — | — |
+| Jours / TTC | Σ CRA prestations | CRA prestation | ligne CRA |
+| Actions | **Ouvrir** (fiche) | — | — |
+
+Pas de colonnes Équipe / Resp au niveau lot. Lot sans prestation : **pas de chevron**.
+
+### Par lot
+
+Bandeau 2 colonnes : chevron + titre + statut + produit ; KPI + **timeline** (`background-action-low`) + tags équipe. Expand → Prestations / Équipe / Intervenant / Statut / Jours / TTC → CRA. Menu **Actions** : uniquement **Ouvrir la fiche** (lecture seule widget). Lot sans prestation : « Aucune prestation ».
+
+## Écarts volontaires vs app sœur
+
+- Pas de création / édition / ajout de prestation (drawers)
+- Pas d’export CSV ni rapport d’investissement
+- Lecture seule Grist
 
 ## Récap CRA
 
-Agrégats via `aggregateCraByMissionId` : `Realise.Mission_enfant` (ref vers la ligne enfant) → parent via `Mission_parent`, sinon `Realise.Missions`. Ne pas confondre avec le **texte** `Missions_enfants.Mission_enfant` (fallback du libellé `Libelle`).
+Agrégats via `aggregateCraByEnfantId` / `totauxCraDuLot` : `Realise.Mission_enfant` (ref) → prestation. Équipe prestation = `Equipe` de l’intervenant, pas `Missions.Equipe2`.
