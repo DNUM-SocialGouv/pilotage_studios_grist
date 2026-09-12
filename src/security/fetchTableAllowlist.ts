@@ -1,5 +1,4 @@
 import type { GristFetchTableResult } from "../gristTypes";
-import { FEEDBACK_IDENTITE_TABLE_ID } from "./writeTableAllowlist.ts";
 
 /**
  * Allowlist des tableIds passés à `docApi.fetchTable`.
@@ -13,7 +12,8 @@ export const RELATED_TABLE_IDS = ["BDC", "Constatations", "Commandes_Sofiane"] a
 export type RelatedTableId = (typeof RELATED_TABLE_IDS)[number];
 
 /**
- * Tables lazy (pas au boot) : onglet Dépenses fiche BDC **et** écrans `/missions`.
+ * Tables lazy (pas au boot) : onglet Dépenses fiche BDC, écrans `/missions`,
+ * et select auteur du widget feedback.
  * Lecture seule ; jeton REST `readOnly: true` quand la table passe par REST.
  */
 export const BDC_DEPENSES_TABLE_IDS = [
@@ -24,14 +24,10 @@ export const BDC_DEPENSES_TABLE_IDS = [
   "Tableau_de_pilotage_SDPC_Produits_SDPC",
 ] as const;
 
-/** Sonde identité feedback (triggers user.* — pas au boot). */
-export { FEEDBACK_IDENTITE_TABLE_ID };
-
 export const FETCH_TABLE_ALLOWLIST = [
   PA_TABLE_ID,
   ...RELATED_TABLE_IDS,
   ...BDC_DEPENSES_TABLE_IDS,
-  FEEDBACK_IDENTITE_TABLE_ID,
 ] as const;
 
 export type AllowlistedTableId = (typeof FETCH_TABLE_ALLOWLIST)[number];

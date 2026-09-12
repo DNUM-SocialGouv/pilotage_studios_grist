@@ -13,16 +13,14 @@ Référence design : [`design/feedback_widget/`](../../../design/feedback_widget
 | Page concernée | Select prérempli depuis la route MemoryRouter |
 | Message | Obligatoire ; bouton d’envoi désactivé si vide |
 | Niveau de gêne | Visible seulement si type = Anomalie |
-| Identité | Lecture seule via profil Grist (`getAccessToken` + `/api/profile/user`) |
+| Identité | Select searchable (liste déroulante riche) sur la table `Equipe` (`Prenom_Nom` / `E_mail`) — obligatoire |
 | Contexte technique | Case cochée par défaut (URL widget · UA · résolution) |
 | Après envoi | Confirmation ; *Fermer* / *Un autre retour* |
 | Erreur | Message + possibilité de réessayer (panneau reste ouvert) |
 
-## Identité utilisateur
+## Identité
 
-Le jeton widget + `GET /api/profile/user` renvoie souvent **Anonymous** (pas de scope profil).  
-V1 : sonde via table `Feedback_Identite` (trigger formulas `user.Name` / `user.Email`) — create → `fetchTable` → destroy.  
-Les colonnes `Retours.Auteur` / `Retours.Email` ont aussi des triggers pour l’enregistrement si le nom UI est indisponible.
+Pas d’auto-détection Grist (le jeton widget ne fournit pas un profil fiable). L’utilisateur choisit sa ligne dans `Equipe` (chargée via `fetchAllowlistedTable('Equipe')` à l’ouverture du panneau). `Auteur` / `Email` sont écrits depuis ce choix.
 
 ## Table Grist `Retours`
 

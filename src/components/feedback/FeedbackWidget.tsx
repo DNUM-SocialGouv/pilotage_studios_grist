@@ -1,18 +1,20 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { DsfrSelectRichMulti } from "../dsfr/DsfrSelectRichMulti";
+import { fetchAllowlistedTable } from "../../security/fetchTableAllowlist";
 import {
   createRetoursRecord,
   type FeedbackType,
 } from "../../utils/createRetoursRecord";
 import {
+  feedbackAuteurOptionsFromEquipeTable,
+  type FeedbackAuteurOption,
+} from "../../utils/feedbackEquipe";
+import {
   FEEDBACK_PAGE_OPTIONS,
   pageOptionFromPathname,
   type FeedbackPageOption,
 } from "../../utils/feedbackPages";
-import {
-  fetchGristUserProfile,
-  type GristUserProfile,
-} from "../../utils/gristUserProfile";
 import styles from "./FeedbackWidget.module.css";
 
 const TYPES: FeedbackType[] = ["Anomalie", "Suggestion", "Question"];
@@ -28,11 +30,6 @@ const NIVEAUX = [
   "Gênant — contournement possible",
   "Mineur — cosmétique / confort",
 ] as const;
-
-const DEFAULT_PROFILE: GristUserProfile = {
-  name: "Utilisateur Grist",
-  email: "",
-};
 
 function ChatIcon() {
   return (
@@ -70,24 +67,6 @@ function CloseIcon() {
   );
 }
 
-function UserIcon() {
-  return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      aria-hidden
-      style={{ flex: "none", display: "block" }}
-    >
-      <circle cx="12" cy="8" r="4" />
-      <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
-    </svg>
-  );
-}
-
 function CheckIcon() {
   return (
     <svg
@@ -116,6 +95,7 @@ export function FeedbackWidget() {
   const msgId = `${baseId}-msg`;
   const niveauId = `${baseId}-niveau`;
   const ctxId = `${baseId}-ctx`;
+  const auteurSelectId = `${baseId}-auteur`;
 
   const [open, setOpen] = useState(false);
   const [sent, setSent] = useState(false);
@@ -128,8 +108,10 @@ export function FeedbackWidget() {
   const [message, setMessage] = useState("");
   const [niveau, setNiveau] = useState<string>(NIVEAUX[0]);
   const [joinContext, setJoinContext] = useState(true);
-  const [profile, setProfile] = useState<GristUserProfile>(DEFAULT_PROFILE);
-  const [profileLoading, setProfileLoading] = useState(false);
+  const [auteurId, setAuteurId] = useState("");
+  const [auteurOptions, setAuteurOptions] = useState<FeedbackAuteurOption[]>([]);
+  const [auteursLoading, setAuteursLoading] = useState(false);
+  const [auteursError, setAuteursError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open || sent) {
@@ -143,22 +125,35 @@ export function FeedbackWidget() {
       return;
     }
     let cancelled = false;
-    setProfileLoading(true);
-    void fetchGristUserProfile()
-      .then((user) => {
+    setAuteursLoading(true);
+    setAuteursError(null);
+    void fetchAllowlistedTable("Equipe")
+      .then((table) => {
+        if (cancelled) {
+          return;
+        }
+        setAuteurOptions(feedbackAuteurOptionsFromEquipeTable(table));
+      })
+      .catch(() => {
         if (!cancelled) {
-          setProfile(user);
+          setAuteurOptions([]);
+          setAuteursError("Impossible de charger la liste Equipe.");
         }
       })
       .finally(() => {
         if (!cancelled) {
-          setProfileLoading(false);
+          setAuteursLoading(false);
         }
       });
     return () => {
       cancelled = true;
     };
   }, [open]);
+
+  const selectedAuteur = useMemo(
+    () => auteurOptions.find((o) => o.value === auteurId) ?? null,
+    [auteurOptions, auteurId],
+  );
 
   function close() {
     setOpen(false);
@@ -172,19 +167,20 @@ export function FeedbackWidget() {
     setType("Anomalie");
     setNiveau(NIVEAUX[0]);
     setJoinContext(true);
+    setAuteurId("");
     setPage(pageOptionFromPathname(location.pathname));
   }
 
   async function submit() {
-    if (message.trim().length === 0 || sending) {
+    if (message.trim().length === 0 || !selectedAuteur || sending) {
       return;
     }
     setSending(true);
     setError(null);
     try {
       await createRetoursRecord({
-        userName: profile.name,
-        userEmail: profile.email,
+        userName: selectedAuteur.name,
+        userEmail: selectedAuteur.email,
         type,
         page,
         message,
@@ -207,7 +203,8 @@ export function FeedbackWidget() {
     }
   }
 
-  const canSubmit = message.trim().length > 0 && !sending;
+  const canSubmit =
+    message.trim().length > 0 && selectedAuteur != null && !sending && !auteursLoading;
 
   return (
     <>
@@ -335,15 +332,32 @@ export function FeedbackWidget() {
                 </div>
               ) : null}
 
-              <div className={styles.identity}>
-                <UserIcon />
-                <span style={{ minWidth: 0, lineHeight: 1, margin: 0 }}>
-                  Envoyé en tant que{" "}
-                  <span className={styles.identityName}>
-                    {profileLoading ? "…" : profile.name}
-                  </span>{" "}
-                  · via Grist
-                </span>
+              <div className="fr-mb-2w">
+                <DsfrSelectRichMulti
+                  id={auteurSelectId}
+                  label="Votre identité"
+                  hintText={
+                    auteursLoading
+                      ? "Chargement de la table Equipe…"
+                      : "Choisissez votre nom dans la table Equipe."
+                  }
+                  placeholderWhenEmpty="Rechercher une personne…"
+                  options={auteurOptions}
+                  selectedValues={auteurId ? [auteurId] : []}
+                  onSelectedValuesChange={(values) => setAuteurId(values[0] ?? "")}
+                  searchable
+                  searchLabel="Rechercher"
+                  searchPlaceholder="Nom ou e-mail…"
+                  showBulkActions={false}
+                  maxSelections={1}
+                  pluralEntityLabel="personnes"
+                  disabled={auteursLoading || auteurOptions.length === 0}
+                />
+                {auteursError ? (
+                  <p className={`fr-text--xs ${styles.error}`} role="alert">
+                    {auteursError}
+                  </p>
+                ) : null}
               </div>
 
               <div className="fr-checkbox-group fr-mb-3w">

@@ -9,7 +9,6 @@ export interface GristTableOps {
   create: (record: {
     fields: Record<string, unknown>;
   }) => Promise<GristTableCreateResult>;
-  destroy?: (recordIdOrRecordIds: number | number[]) => Promise<void>;
 }
 
 export interface GristApi {

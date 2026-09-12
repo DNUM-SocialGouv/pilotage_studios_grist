@@ -70,7 +70,7 @@ Entrée MemoryRouter : `/` (`WelcomePage`). Pas de Header / Footer DSFR app. Pas
 | Finance / refs | `src/utils/paFinance.ts`, `montantReste.tsx`, `gristReferences.ts`, `equipeBadge.ts` |
 | Dépenses BDC | `BdcDepensesPanel`, `BdcDepensesByPrestationTable`, `groupSuiviByMissionEnfant.ts`, `CraTtcPiePanel` |
 | Missions | `MissionsListView`, `MissionsDetailView`, `useMissionsData`, `craByMission.ts` |
-| Feedback | `FeedbackWidget`, `createRetoursRecord`, `gristUserProfile`, `writeTableAllowlist` |
+| Feedback | `FeedbackWidget`, `createRetoursRecord`, `feedbackEquipe`, `writeTableAllowlist` |
 
 ---
 
@@ -82,11 +82,11 @@ Entrée MemoryRouter : `/` (`WelcomePage`). Pas de Header / Footer DSFR app. Pas
 | Finance PA + écrans BDC (accès full) | `BDC`, `Constatations`, `Commandes_Sofiane` |
 | Onglet Dépenses fiche BDC **ou** écrans `/missions` (lazy, lecture) | `Realise`, `Missions`, `Missions_enfants` (`Mission_parent` + `Libelle`, fallback texte `Mission_enfant`), `Equipe`, `Tableau_de_pilotage_SDPC_Produits_SDPC` |
 | Feedback widget (écriture create seule, pas de liste) | `Retours` |
-| Sonde identité feedback (create/fetch/destroy) | `Feedback_Identite` |
+| Select auteur feedback (lecture lazy) | `Equipe` (déjà allowlistée) |
 
 **Allowlist lecture** : uniquement via [`src/security/fetchTableAllowlist.ts`](src/security/fetchTableAllowlist.ts) (`FETCH_TABLE_ALLOWLIST`, `fetchAllowlistedTable`) **et** REST `fetchGristRecordsViaToken` (même allowlist). Pas d’ID libre depuis l’UI. Nouvelle table lecture = MAJ ce fichier + §4 + docs + [`SECURITY.md`](SECURITY.md).
 
-**Allowlist écriture** : [`src/security/writeTableAllowlist.ts`](src/security/writeTableAllowlist.ts) — V1 = `Retours` (create feedback) + `Feedback_Identite` (sonde identité create/destroy). Pas d’écriture métier PA/BDC.
+**Allowlist écriture** : [`src/security/writeTableAllowlist.ts`](src/security/writeTableAllowlist.ts) — V1 = `Retours` only (`getTable().create`). `Retours` **n’est pas** dans `FETCH_TABLE_ALLOWLIST`.
 
 **BDC** : chargée via `docApi.getAccessToken({ readOnly: true })` → REST `/tables/BDC/records?auth=…` (jeton court, droits utilisateur) — pas de clé API dans le bundle. Attachments devis idem.
 
