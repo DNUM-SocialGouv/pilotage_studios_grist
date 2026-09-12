@@ -4,14 +4,14 @@
 
 ## Objet
 
-Détail lecture d’une mission master : en-tête P2 (bandeau), onglets — aligné UI sur l’app sœur ([PR #222](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/222), [PR #224](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/224)), **sans** actions d’écriture / IA.
+Détail lecture d’une mission master : en-tête P2 (bandeau), onglets — aligné UI sur l’app sœur ([PR #222](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/222), [PR #224](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/224), [PR #225](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/225)), **sans** actions d’écriture / IA.
 
 ## Parcours
 
 | Élément | Détail |
 |---------|--------|
 | Route | `/missions/:id` |
-| Onglet | Query `?onglet=contexte` \| `equipe` \| `realisations` \| `notes` (alias : `note-studio`, `pieces-jointes`, `tab`) |
+| Onglet | Query `?onglet=contexte` \| `equipe` \| `notes` (alias : `note-studio`, `pieces-jointes`, `tab`). Alias legacy `realisations` → **Équipe & prestations** |
 | Page | `src/pages/MissionsDetailView.tsx` |
 | Retour | Lien vers `/missions` |
 
@@ -34,5 +34,6 @@ Pas de boutons Modifier / CR / estimation.
 |--------|---------|
 | **Contexte** | Champs narratifs (demande, enjeux, historique, utilisateurs / périmètre, liens FIGMA/Notion) en texte préformaté |
 | **Équipe & prestations** | Synthèse `TTC CRA mission · Jours` ; filtre équipe + camembert % TTC (tranche **Hors prestation** si CRA sans enfant) ; tableau prestations avec **CRA dépliables** (chevron si ≥1 CRA, sinon spacer ; sous-lignes période / tâches / jours / TTC) — colonnes : prestation, intervenant, équipe, type, **jours envisagés**, Nb CRA, TTC, statut |
-| **Réalisations** | Lignes `Realise` du master, pagination 10 ; lien `/bdc/:id` si `BDC_cible` / `Bdc_Chorus2` |
 | **Note & pièces jointes** | `Suivi_resp_studio` (lecture) + téléchargement `Docs` (`GristAttachmentDownloadLink`) — pas d’ajout / suppression |
+
+Les CRA sont consultés via les lignes dépliables de l’onglet Équipe (plus d’onglet Réalisations dédié).

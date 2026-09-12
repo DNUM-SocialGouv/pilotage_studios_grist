@@ -1,7 +1,6 @@
-import { Fragment, useEffect, useMemo, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
-import { Pagination } from "@codegouvfr/react-dsfr/Pagination";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
 import { CraTtcPiePanel, type CraTtcPieSlice } from "../components/CraTtcPiePanel";
@@ -20,7 +19,6 @@ import {
 import { formatGristDateTime } from "../utils/formatGristDate";
 import { formatMontantEur } from "../utils/formatMontant";
 import { extractGristReferenceId } from "../utils/gristReferences";
-import { formatGristPeriodeMoisAnnee } from "../utils/gristPeriode";
 import {
   enfantsOfMaster,
   missionEnfantLibelle,
@@ -34,13 +32,10 @@ import {
 } from "../utils/missionsList";
 import { craRowsSorted, equipeLabelForEnfant } from "../utils/missionsListeTotaux";
 import { departementProduitSdpc } from "../utils/pilotageProduits";
-import { labelIntervenantSuivi } from "../utils/suiviLabels";
 import { montantTtcSuiviMensuel } from "../utils/suiviMensuel";
 import { useMissionsOutlet } from "./MissionsLayout";
 
-const CRA_PAGE_SIZE = 10;
-
-type MissionTabId = "contexte" | "equipe" | "realisations" | "notes";
+type MissionTabId = "contexte" | "equipe" | "notes";
 
 const EQUIPE_SANS_LABEL = "Sans équipe";
 const EQUIPE_HORS_PRESTATION_LABEL = "Hors prestation";
@@ -72,11 +67,8 @@ const FIELD_LABELS: Record<string, string> = {
 
 function parseMissionTabId(params: URLSearchParams): MissionTabId {
   const raw = params.get("onglet") ?? params.get("tab");
-  if (raw === "equipe" || raw === "equipe-prestations") {
+  if (raw === "equipe" || raw === "equipe-prestations" || raw === "realisations") {
     return "equipe";
-  }
-  if (raw === "realisations") {
-    return "realisations";
   }
   if (
     raw === "notes" ||
@@ -102,18 +94,6 @@ function formatDecimalFr2(value: number): string {
 
 function MissionProse({ value }: { value: string }) {
   return <p className="mission-fiche-prose fr-mb-0">{value}</p>;
-}
-
-function extractSuiviBdcId(row: SuiviMensuel): number | undefined {
-  const cible = extractGristReferenceId(row.BDC_cible);
-  if (cible != null && cible !== 0) {
-    return cible;
-  }
-  const chorus = extractGristReferenceId(row.Bdc_Chorus2);
-  if (chorus != null && chorus !== 0) {
-    return chorus;
-  }
-  return undefined;
 }
 
 function equipeKeyForEnfant(
@@ -324,7 +304,7 @@ function MissionEquipePanel({
       ) : null}
 
       {enfantsFiltres.length > 0 ? (
-        <TableShell className="fr-mb-0">
+        <TableShell multiline className="fr-mb-0">
           <table>
             <caption className="fr-sr-only">
               Prestations de la mission {missionTitre}
@@ -397,7 +377,9 @@ function MissionEquipePanel({
                               aria-hidden="true"
                             />
                           )}
-                          <span className="fr-text--bold">{libelle}</span>
+                          <span className="fr-text--bold pilotage-expandable-parent-label__title">
+                            {libelle}
+                          </span>
                         </div>
                       </th>
                       <td>{intervenantLabel ?? "—"}</td>
@@ -434,106 +416,6 @@ function MissionEquipePanel({
   );
 }
 
-function MissionCraPanel({
-  realisations,
-  intervenantsById,
-  bdcById,
-}: {
-  realisations: SuiviMensuel[];
-  intervenantsById: Map<number, string>;
-  bdcById: Map<number, string>;
-}) {
-  const [page, setPage] = useState(1);
-  const pageCount = Math.max(1, Math.ceil(realisations.length / CRA_PAGE_SIZE));
-  const safePage = Math.min(page, pageCount);
-  const paginated = realisations.slice(
-    (safePage - 1) * CRA_PAGE_SIZE,
-    safePage * CRA_PAGE_SIZE,
-  );
-
-  if (realisations.length === 0) {
-    return <p className="fr-mb-0">Aucune ligne de suivi mensuel pour cette mission.</p>;
-  }
-
-  return (
-    <>
-      <p className="fr-text--sm fr-text-mention--grey fr-mb-2w">
-        <strong>{realisations.length}</strong> ligne{realisations.length === 1 ? "" : "s"}
-        {pageCount > 1
-          ? ` (affichage de ${(safePage - 1) * CRA_PAGE_SIZE + 1} à ${Math.min(safePage * CRA_PAGE_SIZE, realisations.length)}, ${CRA_PAGE_SIZE} par page)`
-          : null}
-      </p>
-      <TableShell className="fr-mb-2w">
-        <table>
-          <caption className="fr-sr-only">Réalisations CRA liées à la mission</caption>
-          <thead>
-            <tr>
-              <th scope="col">Période</th>
-              <th scope="col">Équipe</th>
-              <th scope="col">Intervenant</th>
-              <th scope="col" className="fr-cell--right">
-                Jours
-              </th>
-              <th scope="col" className="fr-cell--right">
-                Montant TTC
-              </th>
-              <th scope="col">Tâches réalisées</th>
-              <th scope="col">Bon de commande</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginated.map((s) => {
-              const bid = extractSuiviBdcId(s);
-              const nomLigne = s.Nom_BdC?.trim();
-              const bdcLabel =
-                bid != null
-                  ? (bdcById.get(bid) ?? nomLigne ?? `BDC #${bid}`)
-                  : nomLigne || "—";
-              let bdcCell: ReactNode = bdcLabel;
-              if (bid != null && bdcLabel !== "—") {
-                bdcCell = (
-                  <Link className="fr-link" to={`/bdc/${bid}`}>
-                    {bdcLabel}
-                  </Link>
-                );
-              }
-              return (
-                <tr key={s.id}>
-                  <td>{formatGristPeriodeMoisAnnee(s.Periode, s)}</td>
-                  <td>{s.Equipe?.trim() ? tdEquipeTag(s.Equipe) : "—"}</td>
-                  <td>{labelIntervenantSuivi(s, intervenantsById)}</td>
-                  <td className="fr-cell--right">
-                    {s.Nb_jours != null && Number.isFinite(s.Nb_jours)
-                      ? s.Nb_jours.toLocaleString("fr-FR")
-                      : "—"}
-                  </td>
-                  <td className="fr-cell--right">{formatMontantEur(montantTtcSuiviMensuel(s))}</td>
-                  <td>{s.Taches_realisees?.trim() || "—"}</td>
-                  <td>{bdcCell}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </TableShell>
-      {pageCount > 1 ? (
-        <Pagination
-          id="widget-mission-cra-pagination"
-          count={pageCount}
-          defaultPage={safePage}
-          getPageLinkProps={(p) => ({
-            href: `#cra-page-${p}`,
-            onClick: (e) => {
-              e.preventDefault();
-              setPage(p);
-            },
-          })}
-        />
-      ) : null}
-    </>
-  );
-}
-
 function MissionNotesPanel({ mission }: { mission: Mission }) {
   return (
     <>
@@ -561,16 +443,17 @@ function MissionNotesPanel({ mission }: { mission: Mission }) {
 export function MissionsDetailView() {
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { pa, data } = useMissionsOutlet();
-  const [missionTabId, setMissionTabId] = useState<MissionTabId>(() =>
-    parseMissionTabId(searchParams),
-  );
+  const { data } = useMissionsOutlet();
+  const missionTabId = parseMissionTabId(searchParams);
+  const rawOnglet = searchParams.get("onglet") ?? searchParams.get("tab");
   const missionId = id ? Number.parseInt(id, 10) : Number.NaN;
   const mission = data.missions.find((m) => m.id === missionId);
 
   useEffect(() => {
-    setMissionTabId(parseMissionTabId(searchParams));
-  }, [searchParams]);
+    if (rawOnglet === "realisations") {
+      setSearchParams({ onglet: "equipe" }, { replace: true });
+    }
+  }, [rawOnglet, setSearchParams]);
 
   const produitsById = useMemo(
     () => produitsByIdFromRows(data.produits),
@@ -603,14 +486,6 @@ export function MissionsDetailView() {
     }
     return map;
   }, [data.intervenants]);
-
-  const bdcById = useMemo(() => {
-    const map = new Map<number, string>();
-    for (const b of pa.bdcList) {
-      map.set(b.id, b.Nom_BdC?.trim() || `BDC #${b.id}`);
-    }
-    return map;
-  }, [pa.bdcList]);
 
   const enfants = useMemo(
     () => (Number.isFinite(missionId) ? enfantsOfMaster(data.missionEnfants, missionId) : []),
@@ -708,13 +583,7 @@ export function MissionsDetailView() {
     metaColCount === 3 ? "fr-col-12 fr-col-md-4" : "fr-col-12 fr-col-md-6";
 
   function selectMissionTab(nextId: string) {
-    if (
-      nextId === "contexte" ||
-      nextId === "equipe" ||
-      nextId === "realisations" ||
-      nextId === "notes"
-    ) {
-      setMissionTabId(nextId);
+    if (nextId === "contexte" || nextId === "equipe" || nextId === "notes") {
       setSearchParams({ onglet: nextId }, { replace: true });
     }
   }
@@ -778,11 +647,6 @@ export function MissionsDetailView() {
             iconId: "fr-icon-team-line",
           },
           {
-            tabId: "realisations",
-            label: "Réalisations",
-            iconId: "fr-icon-calendar-line",
-          },
-          {
             tabId: "notes",
             label: "Note & pièces jointes",
             iconId: "fr-icon-attachment-line",
@@ -803,13 +667,6 @@ export function MissionsDetailView() {
             joursLabel={joursMission.toLocaleString("fr-FR", { maximumFractionDigits: 4 })}
             intervenantsById={intervenantsById}
             equipesByIntervenantId={equipesByIntervenantId}
-          />
-        ) : null}
-        {missionTabId === "realisations" ? (
-          <MissionCraPanel
-            realisations={realisations}
-            intervenantsById={intervenantsById}
-            bdcById={bdcById}
           />
         ) : null}
         {missionTabId === "notes" ? <MissionNotesPanel mission={mission} /> : null}
