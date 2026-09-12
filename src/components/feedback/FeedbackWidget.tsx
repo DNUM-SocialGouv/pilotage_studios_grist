@@ -129,6 +129,7 @@ export function FeedbackWidget() {
   const [niveau, setNiveau] = useState<string>(NIVEAUX[0]);
   const [joinContext, setJoinContext] = useState(true);
   const [profile, setProfile] = useState<GristUserProfile>(DEFAULT_PROFILE);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   useEffect(() => {
     if (!open || sent) {
@@ -142,11 +143,18 @@ export function FeedbackWidget() {
       return;
     }
     let cancelled = false;
-    void fetchGristUserProfile().then((user) => {
-      if (!cancelled) {
-        setProfile(user);
-      }
-    });
+    setProfileLoading(true);
+    void fetchGristUserProfile()
+      .then((user) => {
+        if (!cancelled) {
+          setProfile(user);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setProfileLoading(false);
+        }
+      });
     return () => {
       cancelled = true;
     };
@@ -331,7 +339,10 @@ export function FeedbackWidget() {
                 <UserIcon />
                 <span style={{ minWidth: 0, lineHeight: 1, margin: 0 }}>
                   Envoyé en tant que{" "}
-                  <span className={styles.identityName}>{profile.name}</span> · via Grist
+                  <span className={styles.identityName}>
+                    {profileLoading ? "…" : profile.name}
+                  </span>{" "}
+                  · via Grist
                 </span>
               </div>
 

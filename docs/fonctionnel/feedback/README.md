@@ -18,6 +18,12 @@ Référence design : [`design/feedback_widget/`](../../../design/feedback_widget
 | Après envoi | Confirmation ; *Fermer* / *Un autre retour* |
 | Erreur | Message + possibilité de réessayer (panneau reste ouvert) |
 
+## Identité utilisateur
+
+Le jeton widget + `GET /api/profile/user` renvoie souvent **Anonymous** (pas de scope profil).  
+V1 : sonde via table `Feedback_Identite` (trigger formulas `user.Name` / `user.Email`) — create → `fetchTable` → destroy.  
+Les colonnes `Retours.Auteur` / `Retours.Email` ont aussi des triggers pour l’enregistrement si le nom UI est indisponible.
+
 ## Table Grist `Retours`
 
 | Colonne | Remplie à l’envoi |

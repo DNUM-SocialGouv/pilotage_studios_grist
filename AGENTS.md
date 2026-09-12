@@ -81,11 +81,12 @@ Entrée MemoryRouter : `/` (`WelcomePage`). Pas de Header / Footer DSFR app. Pas
 | Ancre widget + liste PA | `Plan_activite` |
 | Finance PA + écrans BDC (accès full) | `BDC`, `Constatations`, `Commandes_Sofiane` |
 | Onglet Dépenses fiche BDC **ou** écrans `/missions` (lazy, lecture) | `Realise`, `Missions`, `Missions_enfants` (`Mission_parent` + `Libelle`, fallback texte `Mission_enfant`), `Equipe`, `Tableau_de_pilotage_SDPC_Produits_SDPC` |
-| Feedback widget (écriture create seule, pas de fetchTable) | `Retours` |
+| Feedback widget (écriture create seule, pas de liste) | `Retours` |
+| Sonde identité feedback (create/fetch/destroy) | `Feedback_Identite` |
 
 **Allowlist lecture** : uniquement via [`src/security/fetchTableAllowlist.ts`](src/security/fetchTableAllowlist.ts) (`FETCH_TABLE_ALLOWLIST`, `fetchAllowlistedTable`) **et** REST `fetchGristRecordsViaToken` (même allowlist). Pas d’ID libre depuis l’UI. Nouvelle table lecture = MAJ ce fichier + §4 + docs + [`SECURITY.md`](SECURITY.md).
 
-**Allowlist écriture** : [`src/security/writeTableAllowlist.ts`](src/security/writeTableAllowlist.ts) — V1 = `Retours` only (`getTable().create`). `Retours` **n’est pas** dans `FETCH_TABLE_ALLOWLIST`.
+**Allowlist écriture** : [`src/security/writeTableAllowlist.ts`](src/security/writeTableAllowlist.ts) — V1 = `Retours` (create feedback) + `Feedback_Identite` (sonde identité create/destroy). Pas d’écriture métier PA/BDC.
 
 **BDC** : chargée via `docApi.getAccessToken({ readOnly: true })` → REST `/tables/BDC/records?auth=…` (jeton court, droits utilisateur) — pas de clé API dans le bundle. Attachments devis idem.
 

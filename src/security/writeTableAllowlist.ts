@@ -1,13 +1,19 @@
 /**
- * Allowlist des tableIds autorisés pour une écriture widget (`getTable().create`).
+ * Allowlist des tableIds autorisés pour une écriture widget (`getTable().create` / destroy).
  * Ne jamais accepter un id libre depuis l’UI — passer uniquement par `assertWritableTableId`.
  *
- * V1 : create uniquement sur `Retours` (pas d’update / delete, pas d’écriture métier).
+ * V1 :
+ * - `Retours` : create du feedback
+ * - `Feedback_Identite` : sonde create/destroy pour lire user.Name / user.Email (triggers)
  */
 
 export const RETOURS_TABLE_ID = "Retours";
+export const FEEDBACK_IDENTITE_TABLE_ID = "Feedback_Identite";
 
-export const WRITE_TABLE_ALLOWLIST = [RETOURS_TABLE_ID] as const;
+export const WRITE_TABLE_ALLOWLIST = [
+  RETOURS_TABLE_ID,
+  FEEDBACK_IDENTITE_TABLE_ID,
+] as const;
 
 export type WritableTableId = (typeof WRITE_TABLE_ALLOWLIST)[number];
 

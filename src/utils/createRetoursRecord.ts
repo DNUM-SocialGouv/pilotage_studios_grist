@@ -7,6 +7,7 @@ import {
   RETOURS_TABLE_ID,
   assertWritableTableId,
 } from "../security/writeTableAllowlist.ts";
+import { isUsableDisplayName } from "./gristUserProfile.ts";
 
 export type FeedbackType = "Anomalie" | "Suggestion" | "Question";
 
@@ -28,8 +29,8 @@ export type CreateRetoursInput = {
 
 export type RetoursFields = {
   Date: string;
-  Auteur: string;
-  Email: string;
+  Auteur?: string;
+  Email?: string;
   Type: FeedbackType;
   Page: string;
   Message: string;
@@ -53,10 +54,8 @@ export function buildRetoursFields(input: CreateRetoursInput): RetoursFields {
     ? `${href} · ${userAgent} · ${w}x${h}`
     : "";
 
-  return {
+  const fields: RetoursFields = {
     Date: (input.now ?? new Date()).toISOString(),
-    Auteur: input.userName,
-    Email: input.userEmail,
     Type: input.type,
     Page: input.page,
     Message: message,
@@ -64,6 +63,15 @@ export function buildRetoursFields(input: CreateRetoursInput): RetoursFields {
     Contexte_technique: contexte,
     Statut: "Nouveau",
   };
+
+  // Si le nom est inutilisable (Anonymous…), on omet Auteur/Email pour laisser
+  // les trigger formulas Grist (`user.Name` / `user.Email`) les remplir.
+  if (isUsableDisplayName(input.userName)) {
+    fields.Auteur = input.userName;
+    fields.Email = input.userEmail;
+  }
+
+  return fields;
 }
 
 /**
