@@ -177,6 +177,7 @@ export function toMissionEnfant(record: GristRecord): MissionEnfant {
     Intervenant: record.Intervenant,
     Specialite: asGristChoice(record.Specialite) ?? asString(record.Specialite),
     Type_prestation: asGristChoice(record.Type_prestation) ?? asString(record.Type_prestation),
+    Jours_envisages: asNumber(record.Jours_envisages),
     Statut: asGristChoice(record.Statut) ?? asString(record.Statut),
   };
 }
@@ -190,5 +191,10 @@ export function toIntervenant(record: GristRecord): Intervenant {
 }
 
 export function toProduitSdpc(record: GristRecord): ProduitSdpc {
-  return { id: record.id, Produit: record.Produit };
+  return {
+    id: record.id,
+    Produit: record.Produit,
+    departement_sdpc: record.departement_sdpc,
+    Departement_sdpc: record.Departement_sdpc,
+  };
 }

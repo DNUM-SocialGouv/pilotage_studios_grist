@@ -105,6 +105,7 @@ export interface MissionEnfant {
   Intervenant?: unknown;
   Specialite?: string;
   Type_prestation?: string;
+  Jours_envisages?: number;
   Statut?: string;
 }
 
@@ -118,4 +119,7 @@ export interface Intervenant {
 export type ProduitSdpc = {
   id: number;
   Produit?: unknown;
+  /** Département SDPC (`departement_sdpc` / alias). */
+  departement_sdpc?: unknown;
+  Departement_sdpc?: unknown;
 };

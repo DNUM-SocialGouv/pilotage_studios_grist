@@ -237,6 +237,13 @@ span.fr-tag.fr-tag--beige-gris-galet {
   justify-content: center;
 }
 
+/* Alignement libellé quand la ligne n’a pas de chevron (0 enfant / 0 CRA). */
+.pilotage-expand-toggle-spacer {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
 .pilotage-expand-toggle.fr-btn--icon-left::before {
   transition: transform 0.2s ease;
   transform-origin: center;
@@ -330,11 +337,12 @@ span.fr-tag.fr-tag--beige-gris-galet {
 }
 
 .pilotage-expandable-parent-label > .pilotage-expand-toggle,
+.pilotage-expandable-parent-label > .pilotage-expand-toggle-spacer,
 .pilotage-expandable-parent-label > .fr-badge {
   flex: none;
 }
 
-.pilotage-expandable-parent-label > :not(.pilotage-expand-toggle):not(.fr-badge):not(.fr-link) {
+.pilotage-expandable-parent-label > :not(.pilotage-expand-toggle):not(.pilotage-expand-toggle-spacer):not(.fr-badge):not(.fr-link) {
   min-width: 0;
   flex: 1 1 auto;
 }
@@ -599,6 +607,58 @@ span.fr-tag.fr-tag--beige-gris-galet {
 .fr-table.fr-table--bordered .fr-table__content tbody th,
 .fr-table.fr-table--bordered .fr-table__content tbody td {
   background-image: linear-gradient(0deg, var(--border-default-grey), var(--border-default-grey)) !important;
+}
+
+/* Fiche mission (/missions/:id) — P2 */
+.mission-fiche-title-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.mission-fiche-title-row__identity {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.mission-fiche-title-row .fr-badges-group {
+  margin-bottom: 0;
+}
+
+.mission-fiche-title-row__title {
+  line-height: 1.2;
+}
+
+.mission-fiche-meta-bandeau {
+  border: 1px solid var(--border-default-grey);
+  border-radius: 0.25rem;
+}
+
+.mission-fiche-meta-bandeau__cell {
+  padding: 0.75rem 1rem;
+}
+
+@media (min-width: 48em) {
+  .mission-fiche-meta-bandeau__cell:not(:last-child) {
+    border-right: 1px solid var(--border-default-grey);
+  }
+}
+
+.mission-fiche-meta-bandeau__label {
+  color: var(--text-mention-grey);
+}
+
+.mission-equipe-synthese {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
 }
 
 .mission-fiche-prose {
