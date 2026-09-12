@@ -41,5 +41,6 @@ Chargement **lazy** sur `/missions` uniquement (`useMissionsData`) — pas au bo
 - Pas d’IA (rapport d’investissement, CR, estimation)
 - Pas d’export CSV
 - Liste ISO #216/#218/#219 : deux vues (détaillée / par lot), hiérarchie lot → prestation → CRA, accordéon filtres + Staffing, Actions **Ouvrir la fiche** seulement
+- Fiche ISO [#222](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/222) / [#224](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/224) : bandeau P2, `?onglet=`, 4 onglets, CRA dépliables — sans boutons d’édition
 - Produits et intervenants en **texte** / stubs (écrans catalogue encore stub)
 - Contexte fiche en texte préformaté (pas de rendu Markdown)

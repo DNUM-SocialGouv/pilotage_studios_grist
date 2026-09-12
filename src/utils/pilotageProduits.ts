@@ -1,5 +1,20 @@
 import { asGristChoice } from "./gristReferences.ts";
 
+function textFieldFromRecord(record: Record<string, unknown>, ...keys: string[]): string {
+  for (const key of keys) {
+    const t = asGristChoice(record[key]);
+    if (t?.trim()) {
+      return t.trim();
+    }
+  }
+  return "—";
+}
+
+/** Département du produit SDPC (`departement_sdpc` / `Departement_sdpc`). */
+export function departementProduitSdpc(record: Record<string, unknown>): string {
+  return textFieldFromRecord(record, "departement_sdpc", "Departement_sdpc");
+}
+
 function isPeriodOrCalendarLabel(text: string): boolean {
   const t = text.trim();
   if (
