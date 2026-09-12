@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.13.1/dist/dsfr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.13.1/dist/utility/icons/icons.min.css">
+<style>
+  @keyframes fbw-pop { from { opacity:0; transform:translateY(12px) scale(.98); } to { opacity:1; transform:none; } }
+</style>
+<style id="__om-edit-overrides"></style>
+</helmet>
+
+<div style="min-height:100vh;background:var(--background-alt-grey);font-family:'Marianne',system-ui,sans-serif">
+
+  <div aria-hidden="true" style="pointer-events:none;user-select:none;opacity:.55">
+    <div style="background:var(--background-default-grey);border-bottom:1px solid var(--border-default-grey);padding:1rem 2rem;display:flex;align-items:center;gap:1rem">
+      <p class="fr-logo fr-mb-0">République<br>Française</p>
+      <div><div class="fr-text--bold">Pilotage studios SDPC</div><div class="fr-text--xs" style="color:var(--text-mention-grey)">Direction du numérique des ministères sociaux</div></div>
+    </div>
+    <div style="max-width:960px;margin:2.5rem auto;padding:0 2rem">
+      <div style="height:14px;width:180px;background:var(--border-default-grey);border-radius:3px;margin-bottom:1.75rem"></div>
+      <div style="height:34px;width:320px;background:var(--border-default-grey);border-radius:4px;margin-bottom:2rem"></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem">
+        <div style="height:88px;background:var(--background-default-grey);border:1px solid var(--border-default-grey);border-radius:6px"></div>
+        <div style="height:88px;background:var(--background-default-grey);border:1px solid var(--border-default-grey);border-radius:6px"></div>
+        <div style="height:88px;background:var(--background-default-grey);border:1px solid var(--border-default-grey);border-radius:6px"></div>
+      </div>
+      <div style="height:240px;background:var(--background-default-grey);border:1px solid var(--border-default-grey);border-radius:6px"></div>
+      <p class="fr-text--xs" style="color:var(--text-mention-grey);margin-top:1rem;font-style:italic">Aperçu : fond de page fictif pour situer le widget. En intégration, seul le widget flottant est importé dans chaque écran.</p>
+    </div>
+  </div>
+
+  <!-- Panneau feedback -->
+  <sc-if value="{{ open }}" hint-placeholder-val="{{ true }}">
+    <div role="dialog" aria-modal="false" aria-label="Donner un retour" style="position:fixed;right:24px;bottom:92px;z-index:1001;width:min(400px,calc(100vw - 32px));max-height:calc(100vh - 132px);overflow:auto;background:var(--background-default-grey);border:1px solid var(--border-default-grey);border-radius:8px;box-shadow:0 12px 40px rgba(0,0,20,.22);animation:fbw-pop .16s ease-out">
+
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;padding:1.15rem 1.25rem 0.85rem">
+        <div>
+          <h2 class="fr-mb-0" style="font-size:1.15rem">Un retour à partager&nbsp;?</h2>
+          <p class="fr-text--sm fr-mb-0" style="color:var(--text-mention-grey)">Anomalie, idée ou question — l'équipe studio lit tout.</p>
+        </div>
+        <button aria-label="Fermer" onClick="{{ close }}" style="border:none;background:transparent;cursor:pointer;padding:4px;color:var(--text-mention-grey);flex:none">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <sc-if value="{{ showForm }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:0 1.25rem 1.25rem">
+
+          <fieldset style="border:none;margin:0;padding:0 0 1rem">
+            <legend class="fr-label fr-mb-1w" style="padding:0">Type de retour</legend>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem">
+              <sc-for list="{{ types }}" as="t" hint-placeholder-count="3">
+                <button onClick="{{ t.select }}" aria-pressed="{{ t.pressed }}" style="{{ t.style }}">{{ t.label }}</button>
+              </sc-for>
+            </div>
+          </fieldset>
+
+          <div class="fr-select-group fr-mb-2w">
+            <label class="fr-label" for="fbw-page">Page concernée</label>
+            <select class="fr-select" id="fbw-page" value="{{ page }}" onChange="{{ onPage }}">
+              <sc-for list="{{ pageOptions }}" as="p" hint-placeholder-count="6">
+                <option>{{ p }}</option>
+              </sc-for>
+            </select>
+          </div>
+
+          <div class="fr-input-group fr-mb-2w">
+            <label class="fr-label" for="fbw-msg">Votre message <span style="color:var(--text-default-error)">*</span>
+              <span class="fr-hint-text">{{ msgHint }}</span>
+            </label>
+            <textarea class="fr-input" id="fbw-msg" rows="4" value="{{ message }}" onChange="{{ onMessage }}" placeholder="Décrivez le problème, l'idée ou la question…" style="resize:vertical"></textarea>
+          </div>
+
+          <sc-if value="{{ isAnomalie }}" hint-placeholder-val="{{ false }}">
+            <div class="fr-select-group fr-mb-2w">
+              <label class="fr-label" for="fbw-niveau">Niveau de gêne</label>
+              <select class="fr-select" id="fbw-niveau" value="{{ niveau }}" onChange="{{ onNiveau }}">
+                <option>Bloquant — je ne peux pas continuer</option>
+                <option>Gênant — contournement possible</option>
+                <option>Mineur — cosmétique / confort</option>
+              </select>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;gap:.4rem;align-items:center;line-height:1;margin-bottom:1rem;color:var(--text-mention-grey)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:none;display:block"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 4-6 8-6s8 2 8 6"></path></svg>
+            <span style="min-width:0;line-height:1;margin:0;font-size:.75rem">Envoyé en tant que <span style="color:var(--text-default-grey);font-weight:700">{{ userName }}</span> · via Grist</span>
+          </div>
+
+          <div class="fr-checkbox-group fr-mb-3w">
+            <input type="checkbox" id="fbw-ctx" checked="{{ joinContext }}" onChange="{{ toggleContext }}">
+            <label class="fr-label" for="fbw-ctx">Joindre le contexte technique
+              <span class="fr-hint-text">Page, navigateur et résolution — utile pour reproduire une anomalie.</span>
+            </label>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;gap:.5rem">
+            <button class="fr-btn fr-btn--secondary" onClick="{{ close }}">Annuler</button>
+            <button class="fr-btn" onClick="{{ submit }}" disabled="{{ submitDisabled }}">{{ submitLabel }}</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ sent }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:1.5rem 1.25rem 1.75rem;text-align:center">
+          <div style="width:56px;height:56px;border-radius:50%;background:var(--background-contrast-success);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--text-default-success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <h2 style="font-size:1.15rem" class="fr-mb-1w">Merci, c'est enregistré&nbsp;!</h2>
+          <p class="fr-text--sm" style="color:var(--text-mention-grey)">Votre retour arrive dans le suivi de l'équipe studio. Vous serez informé·e si une suite y est donnée.</p>
+          <div style="display:flex;justify-content:center;gap:.5rem;margin-top:1rem">
+            <button class="fr-btn fr-btn--secondary fr-btn--sm" onClick="{{ close }}">Fermer</button>
+            <button class="fr-btn fr-btn--sm" onClick="{{ reset }}">Un autre retour</button>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <!-- Bouton flottant -->
+  <button onClick="{{ toggle }}" aria-expanded="{{ ariaOpen }}" aria-label="Donner un retour"
+    style="position:fixed;right:24px;bottom:24px;z-index:1000;display:flex;align-items:center;gap:.55rem;padding:.7rem 1.15rem;border:none;border-radius:999px;background:var(--background-action-high-blue-france);color:#fff;font-family:inherit;font-weight:500;font-size:.95rem;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,60,.28)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.9-.9L3 21l1.9-5.1A8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z"></path></svg>
+    <span>{{ buttonLabel }}</span>
+  </button>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;userName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Camille Dubois&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Utilisateur&quot;},&quot;userEmail&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;camille.dubois@sg.social.gouv.fr&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Utilisateur&quot;},&quot;buttonLabel&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Un retour ?&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Apparence&quot;}}">
+const PAGES = ['Accueil','BDC','PA','Produits','Missions','Intervenants','CRA','PV','Évaluations','Analyse','Autre'];
+const TYPES = ['Anomalie','Suggestion','Question'];
+const HINTS = {
+  Anomalie: 'Ce qui s\u2019est passé, ce que vous attendiez, comment le reproduire.',
+  Suggestion: 'L\u2019amélioration proposée et le besoin auquel elle répond.',
+  Question: 'Votre question sur l\u2019outil ou une donnée.',
+};
+
+class Component extends DCLogic {
+  state = { open: true, sent: false, type: 'Anomalie', page: 'Missions', message: '', niveau: 'Gênant — contournement possible', joinContext: true };
+
+  set(k, v) { this.setState({ [k]: v }); }
+
+  renderVals() {
+    const p = this.props;
+    const userName = p.userName ?? 'Camille Dubois';
+    const userEmail = p.userEmail ?? 'camille.dubois@sg.social.gouv.fr';
+    const canSubmit = this.state.message.trim().length > 0;
+
+    const btn = (active) => `padding:.5rem .25rem;border-radius:6px;cursor:pointer;font-family:inherit;font-size:.82rem;font-weight:500;border:1px solid ${active ? 'var(--background-action-high-blue-france)' : 'var(--border-default-grey)'};background:${active ? 'var(--background-action-high-blue-france)' : 'var(--background-default-grey)'};color:${active ? '#fff' : 'var(--text-default-grey)'}`;
+
+    return {
+      open: this.state.open,
+      ariaOpen: this.state.open ? 'true' : 'false',
+      showForm: !this.state.sent,
+      sent: this.state.sent,
+      buttonLabel: p.buttonLabel ?? 'Un retour\u00a0?',
+      userName, userEmail,
+      page: this.state.page,
+      pageOptions: PAGES,
+      message: this.state.message,
+      msgHint: HINTS[this.state.type],
+      isAnomalie: this.state.type === 'Anomalie',
+      niveau: this.state.niveau,
+      joinContext: this.state.joinContext,
+      submitDisabled: canSubmit ? undefined : 'disabled',
+      submitLabel: 'Envoyer le retour',
+      types: TYPES.map(t => ({
+        label: t, pressed: this.state.type === t ? 'true' : 'false',
+        style: btn(this.state.type === t),
+        select: () => this.setState({ type: t }),
+      })),
+      toggle: () => this.setState(s => ({ open: !s.open })),
+      close: () => this.setState({ open: false }),
+      reset: () => this.setState({ sent: false, message: '', type: 'Anomalie' }),
+      onPage: (e) => this.set('page', e.target.value),
+      onMessage: (e) => this.set('message', e.target.value),
+      onNiveau: (e) => this.set('niveau', e.target.value),
+      toggleContext: (e) => this.set('joinContext', e.target.checked),
+      submit: () => { if (canSubmit) this.setState({ sent: true }); },
+    };
+  }
+}
+</script>
+</body>
+</html>

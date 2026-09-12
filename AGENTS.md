@@ -66,10 +66,11 @@ Entrée MemoryRouter : `/` (`WelcomePage`). Pas de Header / Footer DSFR app. Pas
 | Nav | `src/layout/WidgetNav.tsx` + [`widgetNavItems.ts`](src/layout/widgetNavItems.ts) (`WIDGET_NAV_ITEMS`, groupe Budget) |
 | Pages | `src/pages/WelcomePage.tsx`, `Pa*.tsx`, `Bdc*.tsx`, `Missions*.tsx`, `StubPage.tsx` |
 | Données | `src/hooks/useGristPaData.ts`, `useBdcDepensesData.ts`, `useMissionsData.ts`, `GristPaContext.tsx`, `gristMap.ts`, `gristRest.ts`, `gristAccessToken.ts` |
-| Sécu | `src/security/embedTrust.ts`, `NothingHerePage.tsx`, `ensureFreshBuild.ts`, `fetchTableAllowlist.ts` |
+| Sécu | `src/security/embedTrust.ts`, `NothingHerePage.tsx`, `ensureFreshBuild.ts`, `fetchTableAllowlist.ts`, `writeTableAllowlist.ts` |
 | Finance / refs | `src/utils/paFinance.ts`, `montantReste.tsx`, `gristReferences.ts`, `equipeBadge.ts` |
 | Dépenses BDC | `BdcDepensesPanel`, `BdcDepensesByPrestationTable`, `groupSuiviByMissionEnfant.ts`, `CraTtcPiePanel` |
 | Missions | `MissionsListView`, `MissionsDetailView`, `useMissionsData`, `craByMission.ts` |
+| Feedback | `FeedbackWidget`, `createRetoursRecord`, `gristUserProfile`, `writeTableAllowlist` |
 
 ---
 
@@ -80,8 +81,11 @@ Entrée MemoryRouter : `/` (`WelcomePage`). Pas de Header / Footer DSFR app. Pas
 | Ancre widget + liste PA | `Plan_activite` |
 | Finance PA + écrans BDC (accès full) | `BDC`, `Constatations`, `Commandes_Sofiane` |
 | Onglet Dépenses fiche BDC **ou** écrans `/missions` (lazy, lecture) | `Realise`, `Missions`, `Missions_enfants` (`Mission_parent` + `Libelle`, fallback texte `Mission_enfant`), `Equipe`, `Tableau_de_pilotage_SDPC_Produits_SDPC` |
+| Feedback widget (écriture create seule, pas de fetchTable) | `Retours` |
 
-**Allowlist** : uniquement via [`src/security/fetchTableAllowlist.ts`](src/security/fetchTableAllowlist.ts) (`FETCH_TABLE_ALLOWLIST`, `fetchAllowlistedTable`) **et** REST `fetchGristRecordsViaToken` (même allowlist). Pas d’ID libre depuis l’UI. Nouvelle table = MAJ ce fichier + §4 + docs + [`SECURITY.md`](SECURITY.md).
+**Allowlist lecture** : uniquement via [`src/security/fetchTableAllowlist.ts`](src/security/fetchTableAllowlist.ts) (`FETCH_TABLE_ALLOWLIST`, `fetchAllowlistedTable`) **et** REST `fetchGristRecordsViaToken` (même allowlist). Pas d’ID libre depuis l’UI. Nouvelle table lecture = MAJ ce fichier + §4 + docs + [`SECURITY.md`](SECURITY.md).
+
+**Allowlist écriture** : [`src/security/writeTableAllowlist.ts`](src/security/writeTableAllowlist.ts) — V1 = `Retours` only (`getTable().create`). `Retours` **n’est pas** dans `FETCH_TABLE_ALLOWLIST`.
 
 **BDC** : chargée via `docApi.getAccessToken({ readOnly: true })` → REST `/tables/BDC/records?auth=…` (jeton court, droits utilisateur) — pas de clé API dans le bundle. Attachments devis idem.
 
@@ -156,6 +160,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 | PA / finance | `docs/fonctionnel/pa/`, `paFinance.ts`, `PaListView` / `PaDetailView` |
 | BDC | `docs/fonctionnel/bdc/`, `BdcListView` / `BdcDetailView` |
 | Missions | `docs/fonctionnel/missions/`, `useMissionsData`, `MissionsListView` / `MissionsDetailView` |
+| Feedback | `docs/fonctionnel/feedback/`, `FeedbackWidget`, `writeTableAllowlist` |
 | Tableau DSFR | rule `dsfr-tableaux.mdc`, MCP `user-dsfr` |
 | Embed / secrets | `embedTrust.ts`, `NothingHerePage`, `ensureFreshBuild`, SECURITY |
 | Rôles / ACL document | `docs/fonctionnel/roles/` ; inventaire via MCP **local** `grist-mcp-server` (`grist_list_doc_access` / `grist_access_gap_report`) — hors bundle widget |
@@ -174,6 +179,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 |-----------|--------|
 | Stub → écran livré | §2 + `App.tsx` + nav ; créer `docs/fonctionnel/<module>/` ; sommaire docs |
 | Nouvelle table `fetchTable` | `fetchTableAllowlist.ts` + §4 + SECURITY + docs |
+| Nouvelle table écriture | `writeTableAllowlist.ts` + §4 + SECURITY + docs + confirmation HITL |
 | Nouvelle rule / skill | Ligne dans §7 |
 | Changement parcours UI | Mettre à jour `docs/fonctionnel/` (même PR) |
 | Élargissement surface API / écriture | Lire SECURITY ; confirmation explicite + revue |
@@ -183,6 +189,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 ## 10. Hors scope (ne pas recréer sans demande)
 
 - Features IA / assistant
-- Écriture Grist (édition cellules)
+- Écriture Grist hors exception `Retours` (create only) — pas d’édition cellules métier, pas d’update/delete retours depuis le widget
 - Imports CSV Sofiane
 - Remplacer l’app `pilotage_studios`
+- Kanban / notifs / mails de suivi des retours (voir `docs/fonctionnel/feedback/`)
