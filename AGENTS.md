@@ -7,7 +7,14 @@ Sécurité : [`SECURITY.md`](SECURITY.md).
 
 Repo sœur de [pilotage_studios](https://github.com/DNUM-SocialGouv/pilotage_studios) : même document Grist, **code séparé**, rendu dans une **iframe Custom Widget**.
 
+**Grist-first** : toute feature utile aux utilisateurs se conçoit et se livre **d’abord** dans ce widget. L’app web solo suit **en retard**, seulement si besoin perso (portage opt-in — [`docs/portage/`](docs/portage/)). **Pas** de parité d’écrans obligatoire.
+
 Les **skills projet** (`.cursor/skills/`) priment sur les user rules génériques (cursor-devkit, etc.).
+
+### Règle permanente — simplification
+
+Avant d’ajouter un écran, un champ ou un parcours : *« Que peut-on *ne pas* faire ? »*  
+Réduire la complexité ; pas d’ajout « au cas où ». Les agents **proposent de couper** avant d’élargir le scope. Succès = usage simple (référence : fiche mission épurée).
 
 ---
 
@@ -39,17 +46,20 @@ Les **skills projet** (`.cursor/skills/`) priment sur les user rules générique
 
 Nav principale : Accueil, **Budget** (sous-menu Bons de commande · Plans d’activité · Prestation / CRA · Procès-verbaux), Produits, Missions, Intervenants. Pas de route `/budget`.
 
-Entrée MemoryRouter : `/` (`WelcomePage`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
+Entrée MemoryRouter : `/` (`WelcomePage` — modules + **feuille de route** publique `src/content/publicRoadmap.ts`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
 
-### Feuille de route pages
+### Feuille de route (priorité métier)
 
-1 PR par entrée de nav (liste + fiche + liens croisés + **docs/**) :
+1 PR par unité bornée + **docs/**. Ordre **Grist-first** (cœur = missions + prestations + CRA) :
 
-1. PA + BDC (livrés sur `main`)
-2. **Missions** (liste + fiche lecture — cette livraison)
-3. **Produits** ([#3](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3))
-4. Intervenants → CRA → PV → Évaluations (priorité métier)
-5. Analyse : rester stub (hors scope widget)
+1. PA + BDC + lecture Missions + feedback — **livrés**
+2. **CRUD prestations** ([#31](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/31)) — P0
+3. **CRA** en tranches : suivre ([#32](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/32)) → envoyer ([#33](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/33)) → qualifier / lier BDC ([#34](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/34))
+4. **Intervenants + droits Grist** ([#35](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/35)) — socle ACL en parallèle dès l’écriture CRA ; UX « page freelance » **après** Access Rules serveur
+5. Plus tard : Produits ([#3](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3)), forfait ([#36](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/36)), dates←CRA ([#37](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/37)), PV, Évaluations
+6. Analyse : rester stub (hors scope widget)
+
+Visibilité users : section roadmap sur `/` + issues rédigées selon [`docs/issues-publiques.md`](docs/issues-publiques.md).
 
 ---
 
@@ -65,6 +75,7 @@ Entrée MemoryRouter : `/` (`WelcomePage`). Pas de Header / Footer DSFR app. Pas
 | Routes | `src/App.tsx` |
 | Nav | `src/layout/WidgetNav.tsx` + [`widgetNavItems.ts`](src/layout/widgetNavItems.ts) (`WIDGET_NAV_ITEMS`, groupe Budget) |
 | Pages | `src/pages/WelcomePage.tsx`, `Pa*.tsx`, `Bdc*.tsx`, `Missions*.tsx`, `StubPage.tsx` |
+| Contenu public | [`src/content/publicRoadmap.ts`](src/content/publicRoadmap.ts) (feuille de route accueil) |
 | Données | `src/hooks/useGristPaData.ts`, `useBdcDepensesData.ts`, `useMissionsData.ts`, `GristPaContext.tsx`, `gristMap.ts`, `gristRest.ts`, `gristAccessToken.ts` |
 | Sécu | `src/security/embedTrust.ts`, `NothingHerePage.tsx`, `ensureFreshBuild.ts`, `fetchTableAllowlist.ts`, `writeTableAllowlist.ts` |
 | Finance / refs | `src/utils/paFinance.ts`, `montantReste.tsx`, `gristReferences.ts`, `equipeBadge.ts` |
@@ -130,6 +141,8 @@ Workspace Cursor : ouvrir **uniquement** ce dépôt pour le widget — ne pas d�
 | Fichier | Usage |
 |---------|--------|
 | [`docs/README.md`](docs/README.md) | Doc fonctionnelle (parcours métier) |
+| [`docs/issues-publiques.md`](docs/issues-publiques.md) | Rédaction issues roadmap (repo public) |
+| [`docs/portage/`](docs/portage/) | Handoff opt-in vers app sœur (agents) |
 | [`docs/fonctionnel/roles/`](docs/fonctionnel/roles/) | Rôles / partage / Access Rules (HITL) |
 | [`SECURITY.md`](SECURITY.md) | Menace iframe, secrets, allowlist |
 | [`.cursor/skills/pilotage-grist-issue/`](.cursor/skills/pilotage-grist-issue/) | Traiter / créer une issue (+ [`DOC-FONCTIONNEL.md`](.cursor/skills/pilotage-grist-issue/DOC-FONCTIONNEL.md)) |
@@ -148,10 +161,16 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 
 ### Avant une feature
 
-1. Relire §1–2 et [`docs/README.md`](docs/README.md).
-2. Issue GitHub : skill [`pilotage-grist-issue`](.cursor/skills/pilotage-grist-issue/SKILL.md) (+ protocole doc).
-3. PR : skill [`pilotage-grist-pr`](.cursor/skills/pilotage-grist-pr/SKILL.md).
+1. Relire §1–2 et [`docs/README.md`](docs/README.md) ; **challenger la simplification**.
+2. Issue GitHub : skill [`pilotage-grist-issue`](.cursor/skills/pilotage-grist-issue/SKILL.md) (+ protocole doc) ; si issue **publique / roadmap** → [`docs/issues-publiques.md`](docs/issues-publiques.md).
+3. PR : skill [`pilotage-grist-pr`](.cursor/skills/pilotage-grist-pr/SKILL.md) — case **Portage app solo**.
 4. Avant merge : skill [`pilotage-grist-code-review`](.cursor/skills/pilotage-grist-code-review/SKILL.md).
+
+### Portage vers l’app web (`pilotage_studios`)
+
+- **Opt-in** uniquement : fiche [`docs/portage/`](docs/portage/) + issue app label `portage-from-grist`.
+- Interdit : « syncer tout le widget » / monorepo forcé / bot PR web à chaque merge.
+- L’agent web lit la fiche + `docs/fonctionnel/<module>/` du **widget** ; n’importe pas le runtime iframe.
 
 ### Fichiers selon la tâche
 

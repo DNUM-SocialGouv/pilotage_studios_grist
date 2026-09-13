@@ -704,6 +704,26 @@ button.fr-link:disabled {
   width: 100%;
 }
 
+.welcome-roadmap__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.welcome-roadmap__item {
+  border-top: 1px solid var(--border-default-grey);
+  padding-top: 0.75rem;
+}
+
+.welcome-roadmap__item:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.welcome-roadmap__title {
+  font-weight: 700;
+}
+
 .welcome-artwork {
   align-items: center;
   display: flex;
