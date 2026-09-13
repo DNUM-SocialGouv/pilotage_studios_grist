@@ -111,14 +111,21 @@ export function useMissionsData(enabled: boolean): MissionsDataState {
         ...loaded,
       });
     } catch (err) {
-      setState((prev) => ({
-        ...prev,
-        status: "error",
-        error:
-          err instanceof Error
-            ? err.message
-            : "La liste des missions n’a pas pu être chargée.",
-      }));
+      // Ne pas démonter liste/fiche/drawer si on avait déjà des données :
+      // l’écriture Grist peut avoir réussi alors que le re-fetch échoue.
+      setState((prev) => {
+        if (prev.status === "ok") {
+          return prev;
+        }
+        return {
+          ...prev,
+          status: "error",
+          error:
+            err instanceof Error
+              ? err.message
+              : "La liste des missions n’a pas pu être chargée.",
+        };
+      });
       throw err;
     } finally {
       setIsReloading(false);

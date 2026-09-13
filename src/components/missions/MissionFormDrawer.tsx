@@ -178,6 +178,16 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
       void navigate(`/missions/${editing.id}?onglet=equipe`);
     };
 
+    /** Recharge la liste sans faire échouer un write déjà réussi. */
+    const refreshAfterWrite = async (): Promise<boolean> => {
+      try {
+        await onRecordsChanged();
+        return true;
+      } catch {
+        return false;
+      }
+    };
+
     const submitForm = async (values: MissionFormValues) => {
       setSubmitError(undefined);
       setInfoMessage(undefined);
@@ -197,10 +207,15 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
             return;
           }
           await updateMissionRecord(editing.id, patch);
-          await onRecordsChanged();
+          const refreshed = await refreshAfterWrite();
           setIsSuccess(true);
           initialFormRef.current = { ...values };
           setEditing((prev) => (prev ? ({ ...prev, ...patch } as Mission) : null));
+          if (!refreshed) {
+            setInfoMessage(
+              "Modifications enregistrées dans Grist. La liste n’a pas pu être rafraîchie — rechargez la page si besoin.",
+            );
+          }
           return;
         }
 
@@ -230,7 +245,7 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
             });
           } catch (e) {
             const detail = e instanceof Error ? e.message : "Erreur inconnue";
-            await onRecordsChanged();
+            await refreshAfterWrite();
             setCreatedMasterId(masterId);
             setIsSuccess(true);
             setPrestationWarning(
@@ -241,7 +256,7 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
           }
         }
 
-        await onRecordsChanged();
+        await refreshAfterWrite();
         close();
         void navigate(`/missions/${masterId}`);
       } catch (e) {
@@ -313,7 +328,7 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
                 {infoMessage ? (
                   <Alert
                     severity="info"
-                    title="Aucune modification"
+                    title={isSuccess ? "Liste non rafraîchie" : "Aucune modification"}
                     description={infoMessage}
                     className="fr-mb-2w"
                   />
