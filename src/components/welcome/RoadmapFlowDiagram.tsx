@@ -12,7 +12,7 @@ export function RoadmapFlowDiagram({ diagram }: RoadmapFlowDiagramProps) {
   const nodeById = new Map(diagram.nodes.map((n) => [n.id, n]));
 
   return (
-    <div className="roadmap-flow" role="img" aria-label="Schéma du parcours">
+    <div className="roadmap-flow">
       <ol className="roadmap-flow__nodes fr-mb-2w">
         {diagram.nodes.map((node, index) => (
           <li key={node.id} className="roadmap-flow__node">

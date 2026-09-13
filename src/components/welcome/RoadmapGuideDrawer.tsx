@@ -15,21 +15,20 @@ export type RoadmapGuideDrawerProps = {
 export function RoadmapGuideDrawer({ item, onClose }: RoadmapGuideDrawerProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
-  const open = item != null;
 
   useEffect(() => {
     const dialog = dialogRef.current;
-    if (!dialog) {
+    if (!dialog || item == null) {
       return;
     }
-    if (open) {
-      if (!dialog.open) {
-        dialog.showModal();
-      }
-    } else if (dialog.open) {
-      dialog.close();
+    if (!dialog.open) {
+      dialog.showModal();
     }
-  }, [open]);
+  }, [item]);
+
+  const close = () => {
+    dialogRef.current?.close();
+  };
 
   return (
     <dialog
@@ -39,7 +38,7 @@ export function RoadmapGuideDrawer({ item, onClose }: RoadmapGuideDrawerProps) {
       onClose={onClose}
     >
       <div className="pilotage-drawer-dialog__shell">
-        <div className="pilotage-drawer-dialog__scrim" aria-hidden="true" onClick={onClose} />
+        <div className="pilotage-drawer-dialog__scrim" aria-hidden="true" onClick={close} />
         <div className="pilotage-drawer-dialog__panel">
           <div className="pilotage-drawer-dialog__inner">
             <header className="fr-p-3w fr-pb-2w">
@@ -61,7 +60,7 @@ export function RoadmapGuideDrawer({ item, onClose }: RoadmapGuideDrawerProps) {
                     type="button"
                     className="fr-btn--close fr-btn"
                     title="Fermer"
-                    onClick={onClose}
+                    onClick={close}
                   >
                     Fermer
                   </button>
