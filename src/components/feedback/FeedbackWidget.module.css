@@ -53,12 +53,15 @@
   z-index: 1001;
   width: min(400px, calc(100vw - 32px));
   max-height: calc(100vh - 132px);
-  overflow: auto;
+  /* visible : la liste du select riche (absolute) ne doit pas être clipée */
+  overflow: visible;
   background: var(--background-default-grey);
   border: 1px solid var(--border-default-grey);
   border-radius: 8px;
   box-shadow: 0 12px 40px rgba(0, 0, 20, 0.22);
   animation: fbw-pop 0.16s ease-out;
+  display: flex;
+  flex-direction: column;
 }
 
 .header {
@@ -90,6 +93,9 @@
 
 .body {
   padding: 0 1.25rem 1.25rem;
+  overflow: auto;
+  min-height: 0;
+  flex: 1 1 auto;
 }
 
 .typeGrid {

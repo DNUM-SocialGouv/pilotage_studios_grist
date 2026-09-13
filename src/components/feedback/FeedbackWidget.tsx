@@ -277,6 +277,34 @@ export function FeedbackWidget() {
                 </div>
               </fieldset>
 
+              <div className="fr-mb-2w">
+                <DsfrSelectRichMulti
+                  id={auteurSelectId}
+                  label="Votre identité"
+                  hintText={
+                    auteursLoading
+                      ? "Chargement de la table Equipe…"
+                      : "Choisissez votre nom dans la table Equipe (déclaratif)."
+                  }
+                  placeholderWhenEmpty="Rechercher une personne…"
+                  options={auteurOptions}
+                  selectedValues={auteurId ? [auteurId] : []}
+                  onSelectedValuesChange={(values) => setAuteurId(values[0] ?? "")}
+                  searchable
+                  searchLabel="Rechercher"
+                  searchPlaceholder="Nom ou e-mail…"
+                  showBulkActions={false}
+                  maxSelections={1}
+                  pluralEntityLabel="personnes"
+                  disabled={auteursLoading || auteurOptions.length === 0}
+                />
+                {auteursError ? (
+                  <p className={`fr-text--xs ${styles.error}`} role="alert">
+                    {auteursError}
+                  </p>
+                ) : null}
+              </div>
+
               <div className="fr-select-group fr-mb-2w">
                 <label className="fr-label" htmlFor={pageSelectId}>
                   Page concernée
@@ -331,34 +359,6 @@ export function FeedbackWidget() {
                   </select>
                 </div>
               ) : null}
-
-              <div className="fr-mb-2w">
-                <DsfrSelectRichMulti
-                  id={auteurSelectId}
-                  label="Votre identité"
-                  hintText={
-                    auteursLoading
-                      ? "Chargement de la table Equipe…"
-                      : "Choisissez votre nom dans la table Equipe."
-                  }
-                  placeholderWhenEmpty="Rechercher une personne…"
-                  options={auteurOptions}
-                  selectedValues={auteurId ? [auteurId] : []}
-                  onSelectedValuesChange={(values) => setAuteurId(values[0] ?? "")}
-                  searchable
-                  searchLabel="Rechercher"
-                  searchPlaceholder="Nom ou e-mail…"
-                  showBulkActions={false}
-                  maxSelections={1}
-                  pluralEntityLabel="personnes"
-                  disabled={auteursLoading || auteurOptions.length === 0}
-                />
-                {auteursError ? (
-                  <p className={`fr-text--xs ${styles.error}`} role="alert">
-                    {auteursError}
-                  </p>
-                ) : null}
-              </div>
 
               <div className="fr-checkbox-group fr-mb-3w">
                 <input

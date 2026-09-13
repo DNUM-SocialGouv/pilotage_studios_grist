@@ -22,6 +22,8 @@ Référence design : [`design/feedback_widget/`](../../../design/feedback_widget
 
 Pas d’auto-détection Grist (le jeton widget ne fournit pas un profil fiable). L’utilisateur choisit sa ligne dans `Equipe` (chargée via `fetchAllowlistedTable('Equipe')` à l’ouverture du panneau). `Auteur` / `Email` sont écrits depuis ce choix.
 
+**Limite V1** : choix **déclaratif** (pas de lien session Grist ↔ ligne Equipe) — un utilisateur peut sélectionner un autre nom. Acceptable pour un canal de feedback interne ; durcissement possible plus tard (ACL / matching email).
+
 ## Table Grist `Retours`
 
 | Colonne | Remplie à l’envoi |
