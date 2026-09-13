@@ -686,14 +686,6 @@ span.fr-tag.fr-tag--beige-gris-galet {
   color: var(--text-mention-grey);
 }
 
-.mission-equipe-synthese {
-  align-items: flex-start;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: space-between;
-}
-
 .mission-fiche-prose {
   white-space: pre-wrap;
   word-break: break-word;

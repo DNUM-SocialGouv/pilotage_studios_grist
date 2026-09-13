@@ -33,7 +33,6 @@ import {
 } from "../utils/missionsList";
 import { craRowsSorted, equipeLabelForEnfant } from "../utils/missionsListeTotaux";
 import { departementProduitSdpc } from "../utils/pilotageProduits";
-import { montantTtcSuiviMensuel } from "../utils/suiviMensuel";
 import { useMissionsOutlet } from "./MissionsLayout";
 
 type MissionTabId = "contexte" | "equipe" | "notes";
@@ -182,7 +181,6 @@ function MissionEquipePanel({
   ttcByEnfantId,
   craCountByEnfantId,
   horsPrestationTtc,
-  ttcLabel,
   joursLabel,
   intervenantsById,
   equipesByIntervenantId,
@@ -194,7 +192,6 @@ function MissionEquipePanel({
   ttcByEnfantId: Map<number, number>;
   craCountByEnfantId: Map<number, number>;
   horsPrestationTtc: number;
-  ttcLabel: string;
   joursLabel: string;
   intervenantsById: Map<number, string>;
   equipesByIntervenantId: Map<number, string>;
@@ -256,13 +253,6 @@ function MissionEquipePanel({
 
   return (
     <>
-      <div className="mission-equipe-synthese fr-mb-2w">
-        <p className="fr-text--sm fr-mb-0">
-          <strong>TTC CRA mission :</strong> {ttcLabel}
-          <span className="fr-text-mention--grey"> · </span>
-          <strong>Jours :</strong> {joursLabel}
-        </p>
-      </div>
       {horsPrestationTtc > 0 ? (
         <p className="fr-text--xs fr-text-mention--grey fr-mb-2w">
           Dont {formatMontantEur(horsPrestationTtc)} hors prestation (CRA sans rattachement
@@ -291,7 +281,11 @@ function MissionEquipePanel({
           </Select>
         </div>
         <div className="fr-col-12 fr-col-md-8">
-          <CraTtcStackBar slices={ttcParEquipe} title="TTC par équipe" />
+          <CraTtcStackBar
+            slices={ttcParEquipe}
+            title="TTC par équipe"
+            amountsExtra={`${joursLabel} jours`}
+          />
         </div>
       </div>
 
@@ -561,11 +555,6 @@ export function MissionsDetailView() {
     return map;
   }, [craParEnfant]);
 
-  const ttcMission = useMemo(
-    () => realisations.reduce((sum, s) => sum + (montantTtcSuiviMensuel(s) ?? 0), 0),
-    [realisations],
-  );
-
   const joursMission = useMemo(() => {
     let jours = 0;
     for (const s of realisations) {
@@ -739,7 +728,6 @@ export function MissionsDetailView() {
             ttcByEnfantId={ttcByEnfantId}
             craCountByEnfantId={craCountByEnfantId}
             horsPrestationTtc={horsPrestationTtc}
-            ttcLabel={formatMontantEur(ttcMission)}
             joursLabel={joursMission.toLocaleString("fr-FR", { maximumFractionDigits: 4 })}
             intervenantsById={intervenantsById}
             equipesByIntervenantId={equipesByIntervenantId}

@@ -11,6 +11,11 @@ export type CraTtcStackBarSlice = {
 export type CraTtcStackBarProps = {
   slices: CraTtcStackBarSlice[];
   title?: string;
+  /**
+   * Texte après le total TTC (ex. `283,55 jours` → `269 213,85 € · 283,55 jours`).
+   * Omit pour le total seul (comportement BDC).
+   */
+  amountsExtra?: string;
 };
 
 function emptyMessageForTitle(title: string): string {
@@ -25,6 +30,7 @@ function emptyMessageForTitle(title: string): string {
 export function CraTtcStackBar({
   slices,
   title = "TTC par produit",
+  amountsExtra,
 }: CraTtcStackBarProps) {
   const titleId = useId();
   const total = slices.reduce((sum, s) => sum + s.value, 0);
@@ -47,7 +53,10 @@ export function CraTtcStackBar({
   });
 
   const pctLabelPlain = segments.map((s) => `${s.label} ${s.pct} %`).join(" · ");
-  const amounts = formatMontantEur(total);
+  const amountsExtraTrimmed = amountsExtra?.trim();
+  const amounts = amountsExtraTrimmed
+    ? `${formatMontantEur(total)} · ${amountsExtraTrimmed}`
+    : formatMontantEur(total);
   const ariaLabel = segments
     .map((s) => `${s.label} : ${s.pct} % (${formatMontantEur(s.value)})`)
     .join(" · ");
@@ -61,7 +70,7 @@ export function CraTtcStackBar({
         className="widget-usage-bar"
         role="img"
         aria-labelledby={titleId}
-        aria-label={`Répartition ${title} — ${ariaLabel}`}
+        aria-label={`Répartition ${title} — ${ariaLabel} — ${amounts}`}
         title={`${pctLabelPlain} — ${amounts}`}
       >
         <div className="widget-usage-bar__header">
