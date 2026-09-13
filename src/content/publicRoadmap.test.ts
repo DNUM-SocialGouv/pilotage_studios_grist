@@ -1,35 +1,30 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  groupPublicRoadmapByTheme,
   PUBLIC_ROADMAP_ITEMS,
-  ROADMAP_STATUS_LABEL,
-  type PublicRoadmapStatus,
+  PUBLIC_ROADMAP_THEMES,
 } from "./publicRoadmap.ts";
 
-describe("publicRoadmap", () => {
-  it("expose au moins un item En cours et des À venir avec issue", () => {
-    const current = PUBLIC_ROADMAP_ITEMS.filter((i) => i.status === "current");
-    const next = PUBLIC_ROADMAP_ITEMS.filter((i) => i.status === "next");
-    assert.equal(current.length, 1);
-    assert.ok(next.length >= 2);
-    for (const item of [...current, ...next]) {
-      assert.ok(item.issueUrl?.startsWith("https://github.com/"), item.id);
-    }
+describe("groupPublicRoadmapByTheme", () => {
+  it("conserve tous les items et l’ordre des thèmes", () => {
+    const groups = groupPublicRoadmapByTheme();
+    assert.equal(
+      groups.reduce((n, g) => n + g.items.length, 0),
+      PUBLIC_ROADMAP_ITEMS.length,
+    );
+    const themeIds = groups.map((g) => g.theme.id);
+    const expectedOrder = PUBLIC_ROADMAP_THEMES.map((t) => t.id).filter((id) =>
+      PUBLIC_ROADMAP_ITEMS.some((item) => item.themeId === id),
+    );
+    assert.deepEqual(themeIds, expectedOrder);
   });
 
-  it("ordonne prestations avant CRA avant intervenants avant plus tard", () => {
-    const ids = PUBLIC_ROADMAP_ITEMS.map((i) => i.id);
-    const prestations = ids.indexOf("prestations");
-    const cra = ids.indexOf("cra-suivre");
-    const intervenants = ids.indexOf("intervenants-droits");
-    const produits = ids.indexOf("produits-pv");
-    assert.ok(prestations < cra && cra < intervenants && intervenants < produits);
-  });
-
-  it("a un libellé pour chaque statut", () => {
-    const statuses: PublicRoadmapStatus[] = ["done", "current", "next", "later"];
-    for (const s of statuses) {
-      assert.ok(ROADMAP_STATUS_LABEL[s].length > 0);
+  it("chaque item a un guide complet", () => {
+    for (const item of PUBLIC_ROADMAP_ITEMS) {
+      assert.ok(item.guide.lead.trim().length > 0, item.id);
+      assert.ok(item.guide.steps.length > 0, item.id);
+      assert.ok(item.guide.diagram.nodes.length > 0, item.id);
     }
   });
 });

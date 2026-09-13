@@ -1,14 +1,20 @@
+import { useState } from "react";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import Factory from "@codegouvfr/react-dsfr/picto/Factory";
+import { RoadmapGuideDrawer } from "../components/welcome/RoadmapGuideDrawer";
 import {
+  groupPublicRoadmapByTheme,
   PUBLIC_ROADMAP_CTA,
   PUBLIC_ROADMAP_INTRO,
-  PUBLIC_ROADMAP_ITEMS,
   ROADMAP_STATUS_BADGE_CLASS,
   ROADMAP_STATUS_LABEL,
+  type PublicRoadmapItem,
 } from "../content/publicRoadmap";
 
 export function WelcomePage() {
+  const themeGroups = groupPublicRoadmapByTheme();
+  const [guideItem, setGuideItem] = useState<PublicRoadmapItem | null>(null);
+
   return (
     <div className="welcome-page">
       <div className="welcome-page__panel">
@@ -29,32 +35,59 @@ export function WelcomePage() {
           </h2>
           <p className="fr-text--sm fr-mb-2w">{PUBLIC_ROADMAP_INTRO}</p>
           <p className="fr-text--sm fr-mb-2w">{PUBLIC_ROADMAP_CTA}</p>
-          <ol className="welcome-roadmap__list fr-mb-0">
-            {PUBLIC_ROADMAP_ITEMS.map((item) => (
-              <li key={item.id} className="welcome-roadmap__item fr-mb-2w">
-                <div className="welcome-roadmap__item-head">
-                  <span className="welcome-roadmap__title">{item.title}</span>{" "}
-                  <Badge small as="span" className={ROADMAP_STATUS_BADGE_CLASS[item.status]}>
-                    {ROADMAP_STATUS_LABEL[item.status]}
-                  </Badge>
-                </div>
-                <p className="fr-text--sm fr-mb-1w">{item.summary}</p>
-                {item.issueUrl ? (
-                  <a
-                    className="fr-link fr-link--sm"
-                    href={item.issueUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Discuter sur GitHub
-                    <span className="fr-sr-only"> (nouvelle fenêtre) — {item.title}</span>
-                  </a>
-                ) : null}
-              </li>
-            ))}
-          </ol>
+
+          {themeGroups.map((group) => (
+            <section
+              key={group.theme.id}
+              className="welcome-roadmap__theme fr-mb-3w"
+              aria-labelledby={`welcome-roadmap-theme-${group.theme.id}`}
+            >
+              <h3
+                id={`welcome-roadmap-theme-${group.theme.id}`}
+                className="fr-h6 welcome-roadmap__theme-title"
+              >
+                {group.theme.label}
+              </h3>
+              <ol className="welcome-roadmap__list fr-mb-0">
+                {group.items.map((item) => (
+                  <li key={item.id} className="welcome-roadmap__item fr-mb-2w">
+                    <div className="welcome-roadmap__item-head">
+                      <span className="welcome-roadmap__title">{item.title}</span>{" "}
+                      <Badge small as="span" className={ROADMAP_STATUS_BADGE_CLASS[item.status]}>
+                        {ROADMAP_STATUS_LABEL[item.status]}
+                      </Badge>
+                    </div>
+                    <p className="fr-text--sm fr-mb-1w">{item.summary}</p>
+                    <div className="welcome-roadmap__item-actions">
+                      <button
+                        type="button"
+                        className="fr-link fr-link--sm"
+                        onClick={() => setGuideItem(item)}
+                      >
+                        Comment ça marche ?
+                        <span className="fr-sr-only"> — {item.title}</span>
+                      </button>
+                      {item.issueUrl ? (
+                        <a
+                          className="fr-link fr-link--sm"
+                          href={item.issueUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Discuter sur GitHub
+                          <span className="fr-sr-only"> (nouvelle fenêtre) — {item.title}</span>
+                        </a>
+                      ) : null}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          ))}
         </section>
       </div>
+
+      <RoadmapGuideDrawer item={guideItem} onClose={() => setGuideItem(null)} />
     </div>
   );
 }

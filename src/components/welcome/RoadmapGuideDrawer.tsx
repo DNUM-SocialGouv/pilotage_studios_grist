@@ -1,0 +1,108 @@
+import { useEffect, useId, useRef } from "react";
+import { Badge } from "@codegouvfr/react-dsfr/Badge";
+import {
+  ROADMAP_STATUS_BADGE_CLASS,
+  ROADMAP_STATUS_LABEL,
+  type PublicRoadmapItem,
+} from "../../content/publicRoadmap";
+import { RoadmapFlowDiagram } from "./RoadmapFlowDiagram";
+
+export type RoadmapGuideDrawerProps = {
+  item: PublicRoadmapItem | null;
+  onClose: () => void;
+};
+
+export function RoadmapGuideDrawer({ item, onClose }: RoadmapGuideDrawerProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
+  const open = item != null;
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) {
+      return;
+    }
+    if (open) {
+      if (!dialog.open) {
+        dialog.showModal();
+      }
+    } else if (dialog.open) {
+      dialog.close();
+    }
+  }, [open]);
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className="pilotage-drawer-dialog pilotage-drawer-dialog--sm"
+      aria-labelledby={titleId}
+      onClose={onClose}
+    >
+      <div className="pilotage-drawer-dialog__shell">
+        <div className="pilotage-drawer-dialog__scrim" aria-hidden="true" onClick={onClose} />
+        <div className="pilotage-drawer-dialog__panel">
+          <div className="pilotage-drawer-dialog__inner">
+            <header className="fr-p-3w fr-pb-2w">
+              <div className="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
+                <div className="fr-col">
+                  <h2 id={titleId} className="fr-h5 fr-mb-0">
+                    {item?.title ?? "Comment ça marche ?"}
+                  </h2>
+                  {item ? (
+                    <p className="fr-text--sm fr-mb-0 fr-mt-1w">
+                      <Badge small as="span" className={ROADMAP_STATUS_BADGE_CLASS[item.status]}>
+                        {ROADMAP_STATUS_LABEL[item.status]}
+                      </Badge>
+                    </p>
+                  ) : null}
+                </div>
+                <div className="fr-col-auto">
+                  <button
+                    type="button"
+                    className="fr-btn--close fr-btn"
+                    title="Fermer"
+                    onClick={onClose}
+                  >
+                    Fermer
+                  </button>
+                </div>
+              </div>
+            </header>
+
+            {item ? (
+              <div className="pilotage-drawer-dialog__body fr-px-3w fr-pb-3w fr-pt-0">
+                <p className="fr-text--sm fr-mb-3w">{item.guide.lead}</p>
+
+                <h3 className="fr-h6">En pratique</h3>
+                <ol className="roadmap-guide__steps fr-mb-3w">
+                  {item.guide.steps.map((step) => (
+                    <li key={step} className="fr-text--sm">
+                      {step}
+                    </li>
+                  ))}
+                </ol>
+
+                <h3 className="fr-h6">Schéma</h3>
+                <RoadmapFlowDiagram diagram={item.guide.diagram} />
+
+                {item.issueUrl ? (
+                  <p className="fr-mt-3w fr-mb-0">
+                    <a
+                      className="fr-link fr-link--sm"
+                      href={item.issueUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Discuter sur GitHub
+                      <span className="fr-sr-only"> (nouvelle fenêtre) — {item.title}</span>
+                    </a>
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </dialog>
+  );
+}

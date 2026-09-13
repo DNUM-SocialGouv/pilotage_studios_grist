@@ -732,6 +732,10 @@ button.fr-link:disabled {
   width: 100%;
 }
 
+.welcome-roadmap__theme-title {
+  margin-bottom: 0.75rem;
+}
+
 .welcome-roadmap__list {
   list-style: none;
   margin: 0;
@@ -750,6 +754,84 @@ button.fr-link:disabled {
 
 .welcome-roadmap__title {
   font-weight: 700;
+}
+
+.welcome-roadmap__item-actions {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+}
+
+.welcome-roadmap__item-actions .fr-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+
+.roadmap-guide__steps {
+  padding-left: 1.25rem;
+}
+
+.roadmap-flow {
+  background: var(--background-alt-grey);
+  border-left: 3px solid var(--border-plain-blue-france);
+  padding: 1rem 1.25rem;
+}
+
+.roadmap-flow__nodes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.roadmap-flow__node {
+  align-items: center;
+  background: var(--background-default-grey);
+  border: 1px solid var(--border-default-grey);
+  display: inline-flex;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+}
+
+.roadmap-flow__node-index {
+  color: var(--text-mention-grey);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.roadmap-flow__node-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.roadmap-flow__edges {
+  color: var(--text-default-grey);
+  font-size: 0.875rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.roadmap-flow__edge {
+  margin-bottom: 0.25rem;
+}
+
+.roadmap-flow__edge:last-child {
+  margin-bottom: 0;
+}
+
+.roadmap-flow__edge-arrow {
+  margin-inline: 0.35rem;
+}
+
+.roadmap-flow__edge-label {
+  color: var(--text-mention-grey);
 }
 
 .welcome-artwork {
