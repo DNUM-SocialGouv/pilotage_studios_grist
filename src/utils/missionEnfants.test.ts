@@ -9,22 +9,26 @@ import {
 } from "./missionEnfants.ts";
 
 describe("missionEnfantFromGrist", () => {
-  it("mappe Mission_parent et Libelle (schéma canonique)", () => {
+  it("mappe Mission_parent et Titre_de_la_prestation (schéma canonique)", () => {
     const mapped = missionEnfantFromGrist({
       Mission_parent: 51,
-      Libelle: "Coaching Produit — David Koss",
+      Titre_de_la_prestation: "Coaching Produit — David Koss",
     });
     assert.equal(mapped.Mission, 51);
     assert.equal(mapped.Libelle, "Coaching Produit — David Koss");
   });
 
-  it("retombe sur le texte Mission_enfant si Libelle est vide", () => {
+  it("retombe sur Libelle puis Mission_enfant si Titre_de_la_prestation vide", () => {
     const mapped = missionEnfantFromGrist({
+      Mission_parent: 51,
+      Libelle: "Ancien Libelle",
+    });
+    assert.equal(mapped.Libelle, "Ancien Libelle");
+    const mappedLegacy = missionEnfantFromGrist({
       Mission_parent: 51,
       Mission_enfant: "Coaching Produit — David Koss",
     });
-    assert.equal(mapped.Mission, 51);
-    assert.equal(mapped.Libelle, "Coaching Produit — David Koss");
+    assert.equal(mappedLegacy.Libelle, "Coaching Produit — David Koss");
   });
 
   it("accepte le schéma legacy Mission / Libelle", () => {
@@ -36,15 +40,16 @@ describe("missionEnfantFromGrist", () => {
     assert.equal(mapped.Libelle, "Alice — Design");
   });
 
-  it("préfère Mission_parent et Libelle si les deux schémas sont présents", () => {
+  it("préfère Titre_de_la_prestation et Mission_parent si plusieurs schémas sont présents", () => {
     const mapped = missionEnfantFromGrist({
       Mission_parent: 51,
       Mission: 99,
       Mission_enfant: "Libellé texte legacy",
-      Libelle: "Libellé canonique",
+      Libelle: "Ancien Libelle",
+      Titre_de_la_prestation: "Titre canonique",
     });
     assert.equal(mapped.Mission, 51);
-    assert.equal(mapped.Libelle, "Libellé canonique");
+    assert.equal(mapped.Libelle, "Titre canonique");
   });
 
   it("conserve un Mission_parent encodé en tuple Grist", () => {
@@ -62,10 +67,10 @@ describe("missionEnfantFromGrist", () => {
     assert.equal(mapped.Libelle, undefined);
   });
 
-  it("n’utilise pas un id numérique comme libellé (retombe sur Libelle)", () => {
+  it("n’utilise pas un id numérique comme libellé (retombe sur Titre)", () => {
     const mapped = missionEnfantFromGrist({
       Mission_enfant: 12,
-      Libelle: "Alice — Design",
+      Titre_de_la_prestation: "Alice — Design",
     });
     assert.equal(mapped.Libelle, "Alice — Design");
   });

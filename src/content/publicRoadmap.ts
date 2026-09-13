@@ -29,14 +29,14 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     id: "prestations",
     title: "Modifier et gérer les prestations d’une mission",
     summary: "Ajouter et mettre à jour le staffing (prestations) sans repasser par les tables Grist brutes.",
-    status: "current",
+    status: "done",
     issueUrl: "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/31",
   },
   {
     id: "cra-suivre",
     title: "Suivre les CRA dans le parcours de pilotage",
     summary: "Retrouver et lire les réalisations du mois dans le parcours métier.",
-    status: "next",
+    status: "current",
     issueUrl: "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/32",
   },
   {
@@ -80,6 +80,13 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     summary: "Hypothèse : la fenêtre temporelle vient des mois de CRA, pas d’une saisie début/fin à part.",
     status: "later",
     issueUrl: "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/37",
+  },
+  {
+    id: "mission-contexte-edit",
+    title: "Éditer le contexte d’une mission depuis la fiche",
+    summary: "Mettre à jour demande, enjeux, historique et liens sans repasser par les tables Grist.",
+    status: "later",
+    issueUrl: "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/43",
   },
 ];
 

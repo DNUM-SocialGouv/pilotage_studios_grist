@@ -66,7 +66,7 @@ Pas de colonnes Équipe / Resp au niveau lot. Lot sans prestation : **pas de che
 
 ### Par lot
 
-Bandeau 2 colonnes : chevron + titre + statut + produit ; KPI + **timeline** (`background-action-low`) + tags équipe. Expand → Prestations / Équipe / Intervenant / Statut / Jours / TTC → CRA. Menu **Actions** : **Ouvrir la fiche**, **Modifier le lot** (drawer edit). Lot sans prestation : « Aucune prestation ».
+Bandeau 2 colonnes : chevron + titre + statut + produit ; KPI + **timeline** (`background-action-low`) + tags équipe. Expand → Titre de la prestation / Équipe / Intervenant / Statut / Jours / TTC → CRA. Menu **Actions** : **Ouvrir la fiche**, **Modifier le lot** (drawer edit). Lot sans prestation : « Aucune prestation ».
 
 ## Création et modification (drawer unique)
 
@@ -74,7 +74,7 @@ Bouton **« Nouvelle mission »** sous le titre → `MissionFormDrawer` mode **c
 
 Champs : **Nom** (obligatoire) · **Produit (SDPC)** · **Statut**. Largeur fixe **SM** (pas de sélecteur de largeur côté widget).
 
-**Create** — section optionnelle **première prestation** : si un intervenant est choisi, une ligne `Missions_enfants` est créée (`Mission_parent`, `Libelle`, `Intervenant`, …). Succès total → redirection `/missions/:id`. Mission créée sans prestation → avertissement + lien fiche (pas de redirect).
+**Create** — section optionnelle **première prestation** : si un intervenant est choisi, une ligne `Missions_enfants` est créée (`Mission_parent`, `Titre_de_la_prestation`, `Intervenant`, …). Succès total → redirection `/missions/:id`. Mission créée sans prestation → avertissement + lien fiche (pas de redirect).
 
 **Edit** — pas de champs prestation ; lien vers onglet Équipe & prestations. Succès → Alert in-drawer (drawer reste ouvert).
 

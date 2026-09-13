@@ -50,13 +50,13 @@ Lignes `Realise` liées au BDC (`BDC_cible` ou `Bdc_Chorus2`), chargées **uniqu
 | Élément | Comportement |
 |---------|--------------|
 | Compteur | Total de lignes du BDC ; si filtre actif, aussi le nombre affiché |
-| Camembert « TTC par produit » | Toutes les lignes du BDC (filtres sans effet) — `recharts` lazy |
+| Barre « TTC par produit » | Toutes les lignes du BDC (filtres sans effet) — `CraTtcStackBar` |
 | Filtres | Période / Intervenant / Produit (grille 2+1) + « Réinitialiser » |
 | Tableau | Mission master → prestation → CRA, expansible, **sans pagination 10** (exception ISO documentée) |
 | Totaux | Jours + TTC des lignes **filtrées** + TJM moyen (TTC ÷ jours) |
 | Vide | « Aucune ligne de suivi mensuel liée à ce BDC. » |
 | Filtres sans résultat | « Aucune ligne ne correspond à ces filtres. » |
-| Référentiels partiels | Alerte warning + tableau / camembert quand même (regroupement éventuellement incomplet) |
+| Référentiels partiels | Alerte warning + tableau / barre quand même (regroupement éventuellement incomplet) |
 
 Pas de bouton **Ajouter une dépense**, pas d’actions Dupliquer / Modifier (écriture Grist hors scope V1). Libellés produit en texte (pas de lien `/produits/:id` tant que l’écran Produits n’est pas livré).
 

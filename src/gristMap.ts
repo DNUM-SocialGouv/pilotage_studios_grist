@@ -167,7 +167,7 @@ export function toMission(record: GristRecord): Mission {
   };
 }
 
-/** `Missions_enfants` : `missionEnfantFromGrist` priorise `Libelle` puis texte `Mission_enfant`. */
+/** `Missions_enfants` : `missionEnfantFromGrist` priorise `Titre_de_la_prestation` puis legacy. */
 export function toMissionEnfant(record: GristRecord): MissionEnfant {
   const { Mission, Libelle } = missionEnfantFromGrist(record);
   return {
@@ -179,6 +179,7 @@ export function toMissionEnfant(record: GristRecord): MissionEnfant {
     Type_prestation: asGristChoice(record.Type_prestation) ?? asString(record.Type_prestation),
     Jours_envisages: asNumber(record.Jours_envisages),
     Statut: asGristChoice(record.Statut) ?? asString(record.Statut),
+    Date_de_debut: asNumber(record.Date_de_debut),
   };
 }
 

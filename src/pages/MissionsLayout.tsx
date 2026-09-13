@@ -1,6 +1,11 @@
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Link, Outlet, useLocation } from "react-router-dom";
+import { MissionEnfantDrawer } from "../components/missions/MissionEnfantDrawer";
+import {
+  MissionEnfantDrawerProvider,
+  useMissionEnfantDrawerRef,
+} from "../components/missions/MissionEnfantDrawerContext";
 import { MissionFormDrawer } from "../components/missions/MissionFormDrawer";
 import {
   MissionFormDrawerProvider,
@@ -10,6 +15,7 @@ import { useGristPa } from "../GristPaContext";
 import { useMissionsData, type MissionsData, type MissionsDataState } from "../hooks/useMissionsData";
 import type { GristPaData } from "../hooks/useGristPaData";
 import { NothingHerePage } from "../security/NothingHerePage";
+import { DEFAULT_MISSION_ENFANT_STATUT } from "../utils/missionEnfantFormFields";
 import { missionStatutOptions } from "../utils/missionsList";
 import { libelleProduitGrist } from "../utils/pilotageProduits";
 
@@ -34,11 +40,29 @@ function isMissionDetailPath(pathname: string): boolean {
   return pathname.startsWith("/missions/") && pathname !== "/missions/";
 }
 
-function MissionFormDrawerHost({ missionsState }: { missionsState: MissionsDataState }) {
-  const drawerRef = useMissionFormDrawerRef();
+function missionEnfantStatutOptions(
+  enfants: MissionsDataState["missionEnfants"],
+): string[] {
+  const set = new Set<string>([DEFAULT_MISSION_ENFANT_STATUT]);
+  for (const e of enfants) {
+    const s = e.Statut?.trim();
+    if (s) {
+      set.add(s);
+    }
+  }
+  return Array.from(set).sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
+}
+
+function MissionDrawersHost({ missionsState }: { missionsState: MissionsDataState }) {
+  const missionDrawerRef = useMissionFormDrawerRef();
+  const enfantDrawerRef = useMissionEnfantDrawerRef();
   const statutOptions = useMemo(
     () => missionStatutOptions(missionsState.missions),
     [missionsState.missions],
+  );
+  const enfantStatutOptions = useMemo(
+    () => missionEnfantStatutOptions(missionsState.missionEnfants),
+    [missionsState.missionEnfants],
   );
   const produitOptions = useMemo(
     () =>
@@ -62,13 +86,21 @@ function MissionFormDrawerHost({ missionsState }: { missionsState: MissionsDataS
   );
 
   return (
-    <MissionFormDrawer
-      ref={drawerRef}
-      statutOptions={statutOptions}
-      produitOptions={produitOptions}
-      intervenantOptions={intervenantOptions}
-      onRecordsChanged={missionsState.reloadMissions}
-    />
+    <>
+      <MissionFormDrawer
+        ref={missionDrawerRef}
+        statutOptions={statutOptions}
+        produitOptions={produitOptions}
+        intervenantOptions={intervenantOptions}
+        onRecordsChanged={missionsState.reloadMissions}
+      />
+      <MissionEnfantDrawer
+        ref={enfantDrawerRef}
+        statutOptions={enfantStatutOptions}
+        intervenantOptions={intervenantOptions}
+        onRecordsChanged={missionsState.reloadMissions}
+      />
+    </>
   );
 }
 
@@ -152,8 +184,10 @@ function MissionsGate({ children }: { children: ReactNode }) {
   return (
     <MissionsOutletReactContext.Provider value={outletValue}>
       <MissionFormDrawerProvider>
-        {children}
-        <MissionFormDrawerHost missionsState={missionsState} />
+        <MissionEnfantDrawerProvider>
+          {children}
+          <MissionDrawersHost missionsState={missionsState} />
+        </MissionEnfantDrawerProvider>
       </MissionFormDrawerProvider>
     </MissionsOutletReactContext.Provider>
   );

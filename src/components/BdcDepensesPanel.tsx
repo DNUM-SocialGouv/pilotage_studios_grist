@@ -12,7 +12,7 @@ import { libelleProduitGrist } from "../utils/pilotageProduits";
 import { labelIntervenantSuivi, labelProduitSuivi } from "../utils/suiviLabels";
 import { aggregateTtcByLabel, montantTtcSuiviMensuel } from "../utils/suiviMensuel";
 import { BdcDepensesByPrestationTable } from "./BdcDepensesByPrestationTable";
-import { CraTtcPiePanel } from "./CraTtcPiePanel";
+import { CraTtcStackBar } from "./CraTtcStackBar";
 
 const MOIS_SANS_PERIODE = "__sans_periode__";
 
@@ -288,7 +288,7 @@ export function BdcDepensesPanel({ data }: BdcDepensesPanelProps) {
             ) : null}
           </div>
           <div className="fr-col-12 fr-col-lg-5">
-            <CraTtcPiePanel slices={ttcParProduitSlices} title="TTC par produit" size="lg" />
+            <CraTtcStackBar slices={ttcParProduitSlices} title="TTC par produit" />
           </div>
         </div>
       ) : null}

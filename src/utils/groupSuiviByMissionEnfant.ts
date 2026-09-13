@@ -79,7 +79,7 @@ function masterLibelleFor(
 
 /**
  * Libellé prestation sans préfixe master.
- * Si `Libelle` commence par « Master — … », on garde uniquement le suffixe.
+ * Si le titre commence par « Master — … », on garde uniquement le suffixe.
  */
 export function enfantLibelleSansMaster(
   enfant: MissionEnfant,

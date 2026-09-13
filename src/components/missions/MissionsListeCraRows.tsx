@@ -12,7 +12,7 @@ export type MissionsListeCraRowsLayout = "liste" | "fiche";
 /**
  * Sous-lignes CRA sous une prestation.
  * - `liste` : colonnes liste missions (libellé, —, —, —, jours, TTC, actions).
- * - `fiche` : colonnes fiche Équipe (période colspan 4, jours, —, TTC, —).
+ * - `fiche` : colonnes fiche Équipe (période colspan 4, jours, —, TTC, —, actions).
  */
 export function MissionsListeCraRows({
   rows,
@@ -72,6 +72,7 @@ export function MissionsListeCraRows({
               <ExpandableChildCell>—</ExpandableChildCell>
               {ttcCell}
               <ExpandableChildCell>—</ExpandableChildCell>
+              <td className="pilotage-col-actions pilotage-expandable-child-cell" />
             </ExpandableChildRow>
           );
         }
