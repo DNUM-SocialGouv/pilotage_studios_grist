@@ -149,6 +149,26 @@ span.fr-tag.fr-tag--beige-gris-galet {
   font-weight: 700;
 }
 
+.cra-ttc-stack-bar__legend {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+}
+
+.cra-ttc-stack-bar__legend-item {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.35rem;
+}
+
+.cra-ttc-stack-bar__legend-pct {
+  color: var(--text-mention-grey);
+  font-size: 0.875rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .widget-usage-bar__track {
   background: var(--background-contrast-grey);
   border-radius: 0.25rem;

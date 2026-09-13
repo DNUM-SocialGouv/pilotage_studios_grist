@@ -26,7 +26,7 @@ Consultation **lecture seule** des bons de commande Grist dans l’iframe : réc
 | `Realise` | Onglet Dépenses — lignes CRA du BDC (REST filtrée, fiche uniquement) |
 | `Missions`, `Missions_enfants` | Hiérarchie tableau Dépenses |
 | `Equipe` | Libellés intervenants |
-| `Tableau_de_pilotage_SDPC_Produits_SDPC` | Libellés / camembert TTC par produit |
+| `Tableau_de_pilotage_SDPC_Produits_SDPC` | Libellés / barre TTC par produit |
 
 **Accès full obligatoire** pour charger `BDC` : sinon alerte « Accès multi-tables indisponible ».
 

@@ -9,17 +9,14 @@ import {
 } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useWatch } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import type { Mission } from "../../types.ts";
 import { extractGristReferenceId } from "../../utils/gristReferences.ts";
-import {
-  missionEnfantLibelleWriteField,
-  missionEnfantParentWriteField,
-} from "../../utils/missionEnfants.ts";
+import { buildMissionEnfantCreateFields } from "../../utils/missionEnfantFormFields.ts";
 import {
   buildMissionCreateFields,
   buildMissionPatch,
@@ -32,6 +29,7 @@ import {
   createMissionRecord,
   updateMissionRecord,
 } from "../../utils/missionGristWrite.ts";
+import { DsfrSelectRichMulti } from "../dsfr/DsfrSelectRichMulti.tsx";
 
 const DEFAULT_STATUT = "A instruire";
 
@@ -111,6 +109,11 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
       rows.sort((a, b) => a.label.localeCompare(b.label, "fr", { sensitivity: "base" }));
       return rows;
     }, [produitOptions, editing]);
+
+    const intervenantSelectOptions = useMemo(
+      () => intervenantOptions.map((o) => ({ value: String(o.id), label: o.label })),
+      [intervenantOptions],
+    );
 
     const openCreate = useCallback(() => {
       setMode("create");
@@ -232,17 +235,20 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
         if (wantsPrestation) {
           const ivLabel =
             intervenantOptions.find((o) => o.id === intervenantId)?.label?.trim() ?? "";
-          const libelle = values.prestationLibelle.trim() || ivLabel || "Prestation";
-          const jours = Number.parseFloat(values.prestationJoursEnvisages.replace(",", "."));
           try {
-            await createMissionEnfantRecord({
-              ...missionEnfantParentWriteField(masterId),
-              ...missionEnfantLibelleWriteField(libelle),
-              Intervenant: intervenantId,
-              Type_prestation: "Freelance_jours",
-              Statut: "En cours",
-              ...(Number.isFinite(jours) && jours > 0 ? { Jours_envisages: jours } : {}),
-            });
+            await createMissionEnfantRecord(
+              buildMissionEnfantCreateFields({
+                masterId,
+                values: {
+                  Libelle: values.prestationLibelle,
+                  Intervenant: values.prestationIntervenant,
+                  Jours_envisages: values.prestationJoursEnvisages,
+                  Statut: "En cours",
+                  Date_de_debut: "",
+                },
+                intervenantLabel: ivLabel,
+              }),
+            );
           } catch (e) {
             const detail = e instanceof Error ? e.message : "Erreur inconnue";
             await refreshAfterWrite();
@@ -435,18 +441,30 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
                                 nativeInputProps={register("prestationLibelle")}
                               />
                             </div>
-                            <div className="fr-col-12 fr-col-md-6">
-                              <Select
-                                label="Intervenant de la prestation"
-                                nativeSelectProps={register("prestationIntervenant")}
-                              >
-                                <option value="">— Pas maintenant</option>
-                                {intervenantOptions.map((o) => (
-                                  <option key={o.id} value={String(o.id)}>
-                                    {o.label}
-                                  </option>
-                                ))}
-                              </Select>
+                            <div className="fr-col-12">
+                              <Controller
+                                name="prestationIntervenant"
+                                control={control}
+                                render={({ field }) => (
+                                  <DsfrSelectRichMulti
+                                    label="Intervenant de la prestation"
+                                    hintText="Optionnel — laissez vide pour créer la mission seule."
+                                    placeholderWhenEmpty="Rechercher un intervenant…"
+                                    options={intervenantSelectOptions}
+                                    selectedValues={field.value.trim() ? [field.value] : []}
+                                    onSelectedValuesChange={(values) =>
+                                      field.onChange(values[0] ?? "")
+                                    }
+                                    searchable
+                                    searchLabel="Rechercher"
+                                    searchPlaceholder="Nom…"
+                                    showBulkActions={false}
+                                    maxSelections={1}
+                                    pluralEntityLabel="intervenants"
+                                    disabled={savePending}
+                                  />
+                                )}
+                              />
                             </div>
                             <div className="fr-col-12 fr-col-md-6">
                               <Input

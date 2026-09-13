@@ -53,7 +53,7 @@ Entrée MemoryRouter : `/` (`WelcomePage` — modules + **feuille de route** pub
 1 PR par unité bornée + **docs/**. Ordre **Grist-first** (cœur = missions + prestations + CRA) :
 
 1. PA + BDC + lecture Missions + feedback — **livrés**
-2. **CRUD prestations** ([#31](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/31)) — P0
+2. **CRUD prestations** ([#31](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/31)) — **livré**
 3. **CRA** en tranches : suivre ([#32](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/32)) → envoyer ([#33](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/33)) → qualifier / lier BDC ([#34](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/34))
 4. **Intervenants + droits Grist** ([#35](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/35)) — socle ACL en parallèle dès l’écriture CRA ; UX « page freelance » **après** Access Rules serveur
 5. Plus tard : Produits ([#3](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3)), forfait ([#36](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/36)), dates←CRA ([#37](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/37)), PV, Évaluations
@@ -66,7 +66,7 @@ Visibilité users : section roadmap sur `/` + issues rédigées selon [`docs/iss
 ## 3. Stack & carte `src/`
 
 - React 19, TypeScript, Vite 8, React Router 6 (`MemoryRouter`)
-- DSFR `@codegouvfr/react-dsfr` ; camembert Dépenses BDC : `recharts` (lazy)
+- DSFR `@codegouvfr/react-dsfr` ; barres TTC (missions / dépenses BDC) : `CraTtcStackBar` (même langage que PA/BDC)
 - Données : `window.grist.ready` / `onRecords` / `fetchAllowlistedTable` ; table **BDC** via REST `getAccessToken` + [`gristRest.ts`](src/utils/gristRest.ts) (Sofiane / Attachments)
 - **Interdit** : embarquer `VITE_GRIST_API_KEY` ou clés LLM dans le bundle
 
@@ -79,8 +79,8 @@ Visibilité users : section roadmap sur `/` + issues rédigées selon [`docs/iss
 | Données | `src/hooks/useGristPaData.ts`, `useBdcDepensesData.ts`, `useMissionsData.ts`, `GristPaContext.tsx`, `gristMap.ts`, `gristRest.ts`, `gristAccessToken.ts` |
 | Sécu | `src/security/embedTrust.ts`, `NothingHerePage.tsx`, `ensureFreshBuild.ts`, `fetchTableAllowlist.ts`, `writeTableAllowlist.ts` |
 | Finance / refs | `src/utils/paFinance.ts`, `montantReste.tsx`, `gristReferences.ts`, `equipeBadge.ts` |
-| Dépenses BDC | `BdcDepensesPanel`, `BdcDepensesByPrestationTable`, `groupSuiviByMissionEnfant.ts`, `CraTtcPiePanel` |
-| Missions | `MissionsListView`, `MissionsDetailView`, `useMissionsData`, `craByMission.ts` |
+| Dépenses BDC | `BdcDepensesPanel`, `BdcDepensesByPrestationTable`, `groupSuiviByMissionEnfant.ts`, `CraTtcStackBar` |
+| Missions | `MissionsListView`, `MissionsDetailView`, `useMissionsData`, `MissionFormDrawer`, `MissionEnfantDrawer`, `craByMission.ts` |
 | Feedback | `FeedbackWidget`, `createRetoursRecord`, `feedbackEquipe`, `writeTableAllowlist` |
 
 ---
@@ -97,7 +97,7 @@ Visibilité users : section roadmap sur `/` + issues rédigées selon [`docs/iss
 
 **Allowlist lecture** : uniquement via [`src/security/fetchTableAllowlist.ts`](src/security/fetchTableAllowlist.ts) (`FETCH_TABLE_ALLOWLIST`, `fetchAllowlistedTable`) **et** REST `fetchGristRecordsViaToken` (même allowlist). Pas d’ID libre depuis l’UI. Nouvelle table lecture = MAJ ce fichier + §4 + docs + [`SECURITY.md`](SECURITY.md).
 
-**Allowlist écriture** : [`src/security/writeTableAllowlist.ts`](src/security/writeTableAllowlist.ts) — `Retours` (create) ; `Missions` (create + update drawer) ; `Missions_enfants` (create prestation à la création mission). Pas de delete widget. `Retours` **n’est pas** dans `FETCH_TABLE_ALLOWLIST`.
+**Allowlist écriture** : [`src/security/writeTableAllowlist.ts`](src/security/writeTableAllowlist.ts) — `Retours` (create) ; `Missions` (create + update drawer) ; `Missions_enfants` (create + update drawer prestation). Pas de delete widget. `Retours` **n’est pas** dans `FETCH_TABLE_ALLOWLIST`.
 
 **BDC** : chargée via `docApi.getAccessToken({ readOnly: true })` → REST `/tables/BDC/records?auth=…` (jeton court, droits utilisateur) — pas de clé API dans le bundle. Attachments devis idem.
 
@@ -210,7 +210,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 ## 10. Hors scope (ne pas recréer sans demande)
 
 - Features IA / assistant
-- Écriture Grist hors allowlist (`Retours`, drawer `Missions` / `Missions_enfants` create) — pas d’update/delete retours, pas de CRUD enfants avancé, pas de delete
+- Écriture Grist hors allowlist (`Retours`, drawer `Missions` / `Missions_enfants` create+update) — pas d’update/delete retours, pas de delete missions/prestations, pas d’édition `Type_prestation` / `Date_de_fin` prestation
 - Imports CSV Sofiane
 - Remplacer l’app `pilotage_studios`
 - Kanban / notifs / mails **dans le widget** ; alertes ops = hors bundle ([`docs/fonctionnel/feedback/alertes.md`](docs/fonctionnel/feedback/alertes.md) — pas d’URL webhook dans git)

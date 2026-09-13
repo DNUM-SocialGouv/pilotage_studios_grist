@@ -107,6 +107,8 @@ export interface MissionEnfant {
   Type_prestation?: string;
   Jours_envisages?: number;
   Statut?: string;
+  /** Timestamp Grist (secondes) — colonne `Date_de_debut`. */
+  Date_de_debut?: number;
 }
 
 export interface Intervenant {

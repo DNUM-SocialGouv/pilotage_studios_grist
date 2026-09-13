@@ -4,7 +4,7 @@
  *
  * - `Retours` : create only (feedback).
  * - `Missions` : create + update (drawer mission master — pas de delete).
- * - `Missions_enfants` : create only (première prestation à la création mission).
+ * - `Missions_enfants` : create + update (drawer prestation — pas de delete).
  */
 
 export const RETOURS_TABLE_ID = "Retours";
@@ -20,7 +20,10 @@ export const WRITE_TABLE_ALLOWLIST = [
 export type WritableTableId = (typeof WRITE_TABLE_ALLOWLIST)[number];
 
 /** Tables autorisées pour `getTable().update` (sous-ensemble). */
-export const WRITE_TABLE_UPDATE_ALLOWLIST = [MISSIONS_TABLE_ID] as const;
+export const WRITE_TABLE_UPDATE_ALLOWLIST = [
+  MISSIONS_TABLE_ID,
+  MISSIONS_ENFANTS_TABLE_ID,
+] as const;
 
 export type WritableUpdateTableId = (typeof WRITE_TABLE_UPDATE_ALLOWLIST)[number];
 

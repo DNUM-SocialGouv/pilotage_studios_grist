@@ -1,6 +1,6 @@
 /**
  * Modificateurs de couleur des tags DSFR (suffixe après `fr-tag--`).
- * Copie widget de l’app sœur — liste missions seulement.
+ * Copie widget de l’app sœur — liste missions / barre TTC.
  */
 export const EQUIPE_TAG_DSFR_MODIFIERS = [
   "blue-cumulus",
@@ -24,14 +24,36 @@ export const EQUIPE_TAG_DSFR_MODIFIERS = [
 export type EquipeTagDsfrModifier = (typeof EQUIPE_TAG_DSFR_MODIFIERS)[number];
 
 /**
- * Teinte stable par libellé (même équipe → même couleur sur toutes les lignes).
- * Mélange FNV-1a + DJB2 + finalisation pour limiter les collisions modulo
- * (ex. « Design » et « Access. » avec l’ancien seul FNV).
+ * Équipes studio connues — évite les collisions de hash (ex. Tech / RU → green-archipel).
+ * Clés normalisées (minuscule, trim).
+ */
+const EQUIPE_TAG_BY_KEY: Record<string, EquipeTagDsfrModifier> = {
+  design: "green-bourgeon",
+  product: "beige-gris-galet",
+  ru: "blue-ecume",
+  tech: "purple-glycine",
+  "access.": "green-menthe",
+  access: "green-menthe",
+  coach: "yellow-moutarde",
+  adrien: "blue-cumulus",
+};
+
+function normalizeEquipeKey(label: string): string {
+  return label.replace(/\u00a0/g, " ").trim().toLowerCase();
+}
+
+/**
+ * Teinte stable par libellé (même équipe → même couleur tags + barre).
+ * Mapping figé pour les équipes métier, sinon hash (FNV-1a + DJB2).
  */
 export function equipeTagDsfrModifierForLabel(label: string): EquipeTagDsfrModifier {
-  const key = label.trim().toLowerCase();
+  const key = normalizeEquipeKey(label);
   if (!key) {
     return EQUIPE_TAG_DSFR_MODIFIERS[0];
+  }
+  const known = EQUIPE_TAG_BY_KEY[key];
+  if (known) {
+    return known;
   }
   let fnv = 2166136261 >>> 0;
   let djb = 5381;
@@ -49,7 +71,7 @@ export function equipeTagDsfrModifierForLabel(label: string): EquipeTagDsfrModif
   return EQUIPE_TAG_DSFR_MODIFIERS[idx]!;
 }
 
-/** Token CSS `background-action-low` (fond tag / barre timeline). */
+/** Token CSS `background-action-low` (fond tag / segments barre TTC). */
 export function equipeTagBackgroundVar(label: string): string {
   return `var(--background-action-low-${equipeTagDsfrModifierForLabel(label)})`;
 }

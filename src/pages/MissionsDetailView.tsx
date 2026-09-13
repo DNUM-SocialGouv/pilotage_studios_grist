@@ -3,11 +3,13 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
-import { CraTtcPiePanel, type CraTtcPieSlice } from "../components/CraTtcPiePanel";
+import { CraTtcStackBar, type CraTtcStackBarSlice } from "../components/CraTtcStackBar";
 import { ExpandToggle, useExpandableRowIds } from "../components/expandable";
 import { tdEquipeTag } from "../components/EquipeTags";
 import { TableShell } from "../components/FinanceRecap";
 import { GristAttachmentDownloadLink } from "../components/GristAttachmentDownloadLink";
+import { useMissionEnfantDrawerRef } from "../components/missions/MissionEnfantDrawerContext";
+import { useMissionFormDrawerRef } from "../components/missions/MissionFormDrawerContext";
 import { MissionsListeCraRows } from "../components/missions/MissionsListeCraRows";
 import { StatutBadge } from "../components/StatutBadge";
 import type { Mission, MissionEnfant, SuiviMensuel } from "../types";
@@ -16,14 +18,13 @@ import {
   groupSuiviRowsByEnfantId,
   sumSuiviTtcHorsPrestationForMission,
 } from "../utils/craByMission";
-import { formatGristDateTime } from "../utils/formatGristDate";
+import { formatGristDate, formatGristDateTime } from "../utils/formatGristDate";
 import { formatMontantEur } from "../utils/formatMontant";
 import { extractGristReferenceId } from "../utils/gristReferences";
 import {
   enfantsOfMaster,
   missionEnfantLibelle,
   suiviBelongsToMasterMission,
-  typePrestationLabel,
 } from "../utils/missionEnfants";
 import {
   libelleProduitMission,
@@ -33,7 +34,6 @@ import {
 import { craRowsSorted, equipeLabelForEnfant } from "../utils/missionsListeTotaux";
 import { departementProduitSdpc } from "../utils/pilotageProduits";
 import { montantTtcSuiviMensuel } from "../utils/suiviMensuel";
-import { useMissionFormDrawerRef } from "../components/missions/MissionFormDrawerContext";
 import { useMissionsOutlet } from "./MissionsLayout";
 
 type MissionTabId = "contexte" | "equipe" | "notes";
@@ -105,7 +105,7 @@ function equipeKeyForEnfant(
 }
 
 /**
- * Agrège le TTC CRA des prestations par libellé d’équipe (camembert).
+ * Agrège le TTC CRA des prestations par libellé d’équipe (barre empilée).
  * `horsPrestationTtc` : CRA legacy du master.
  */
 function aggregateTtcByEquipe(
@@ -113,7 +113,7 @@ function aggregateTtcByEquipe(
   ttcByEnfantId: Map<number, number>,
   equipesByIntervenantId: Map<number, string>,
   horsPrestationTtc = 0,
-): CraTtcPieSlice[] {
+): CraTtcStackBarSlice[] {
   const map = new Map<string, number>();
   for (const e of enfants) {
     const eq = equipeKeyForEnfant(e, equipesByIntervenantId);
@@ -175,6 +175,7 @@ function MissionContextePanel({ mission }: { mission: Mission }) {
 }
 
 function MissionEquipePanel({
+  missionId,
   missionTitre,
   enfants,
   suiviByEnfantId,
@@ -186,6 +187,7 @@ function MissionEquipePanel({
   intervenantsById,
   equipesByIntervenantId,
 }: {
+  missionId: number;
   missionTitre: string;
   enfants: MissionEnfant[];
   suiviByEnfantId: Map<number, SuiviMensuel[]>;
@@ -199,6 +201,7 @@ function MissionEquipePanel({
 }) {
   const [equipeFilter, setEquipeFilter] = useState("");
   const { isExpanded, toggle } = useExpandableRowIds<string>(undefined, equipeFilter);
+  const enfantDrawerRef = useMissionEnfantDrawerRef();
 
   const equipesPresentes = useMemo(() => {
     const set = new Set<string>();
@@ -265,13 +268,13 @@ function MissionEquipePanel({
           Dont {formatMontantEur(horsPrestationTtc)} hors prestation (CRA sans rattachement
           enfant)
           {equipeFilter && equipeFilter !== EQUIPE_HORS_PRESTATION_LABEL
-            ? " — masqué du camembert avec ce filtre"
+            ? " — masqué du graphique avec ce filtre"
             : ""}
           .
         </p>
       ) : null}
       <div className="fr-grid-row fr-grid-row--gutters mission-equipe-recap fr-mb-2w">
-        <div className="fr-col-12 fr-col-md-6">
+        <div className="fr-col-12 fr-col-md-4">
           <Select
             label="Équipe"
             nativeSelectProps={{
@@ -287,8 +290,23 @@ function MissionEquipePanel({
             ))}
           </Select>
         </div>
-        <div className="fr-col-12 fr-col-md-6">
-          <CraTtcPiePanel slices={ttcParEquipe} title="TTC par équipe" size="lg" />
+        <div className="fr-col-12 fr-col-md-8">
+          <CraTtcStackBar slices={ttcParEquipe} title="TTC par équipe" />
+        </div>
+      </div>
+
+      <div className="fr-grid-row fr-grid-row--gutters fr-grid-row--middle fr-mb-2w">
+        <div className="fr-col">
+          <h2 className="fr-h5 fr-mb-0">Prestations</h2>
+        </div>
+        <div className="fr-col-auto">
+          <button
+            type="button"
+            className="fr-btn fr-btn--secondary fr-btn--sm fr-icon-add-line fr-btn--icon-left"
+            onClick={() => enfantDrawerRef.current?.openCreate(missionId)}
+          >
+            Ajouter une prestation
+          </button>
         </div>
       </div>
 
@@ -320,7 +338,7 @@ function MissionEquipePanel({
                 <th scope="col" className="pilotage-col-equipe-nowrap">
                   Équipe
                 </th>
-                <th scope="col">Type</th>
+                <th scope="col">Date de début</th>
                 <th scope="col" className="fr-cell--right">
                   Jours envisagés
                 </th>
@@ -331,6 +349,9 @@ function MissionEquipePanel({
                   TTC CRA
                 </th>
                 <th scope="col">Statut</th>
+                <th scope="col">
+                  <span className="fr-sr-only">Actions</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -387,7 +408,7 @@ function MissionEquipePanel({
                       <td className="pilotage-col-equipe-nowrap">
                         {equipe ? tdEquipeTag(equipe) : "—"}
                       </td>
-                      <td>{typePrestationLabel(e.Type_prestation)}</td>
+                      <td>{formatGristDate(e.Date_de_debut)}</td>
                       <td className="fr-cell--right">
                         {typeof e.Jours_envisages === "number" &&
                         Number.isFinite(e.Jours_envisages)
@@ -397,6 +418,16 @@ function MissionEquipePanel({
                       <td className="fr-cell--right">{nbCra.toLocaleString("fr-FR")}</td>
                       <td className="fr-cell--right">{formatMontantEur(ttc)}</td>
                       <td>{e.Statut?.trim() || "—"}</td>
+                      <td className="pilotage-col-actions">
+                        <button
+                          type="button"
+                          className="fr-btn fr-btn--tertiary fr-btn--sm fr-icon-edit-line fr-btn--icon-left"
+                          title={`Modifier la prestation ${libelle}`}
+                          onClick={() => enfantDrawerRef.current?.openEdit(e)}
+                        >
+                          Modifier
+                        </button>
+                      </td>
                     </tr>
                     {craOpen ? (
                       <MissionsListeCraRows
@@ -701,6 +732,7 @@ export function MissionsDetailView() {
         {missionTabId === "equipe" ? (
           <MissionEquipePanel
             key={mission.id}
+            missionId={mission.id}
             missionTitre={titre}
             enfants={enfants}
             suiviByEnfantId={suiviByEnfantId}

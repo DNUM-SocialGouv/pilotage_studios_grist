@@ -179,6 +179,7 @@ export function toMissionEnfant(record: GristRecord): MissionEnfant {
     Type_prestation: asGristChoice(record.Type_prestation) ?? asString(record.Type_prestation),
     Jours_envisages: asNumber(record.Jours_envisages),
     Statut: asGristChoice(record.Statut) ?? asString(record.Statut),
+    Date_de_debut: asNumber(record.Date_de_debut),
   };
 }
 

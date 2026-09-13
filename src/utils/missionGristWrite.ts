@@ -55,3 +55,14 @@ export async function createMissionEnfantRecord(
   const result = await getWritableTable(MISSIONS_ENFANTS_TABLE_ID).create({ fields });
   return parseCreateId(result);
 }
+
+export async function updateMissionEnfantRecord(
+  id: number,
+  fields: Partial<Omit<MissionEnfant, "id">>,
+): Promise<void> {
+  assertWritableUpdateTableId(MISSIONS_ENFANTS_TABLE_ID);
+  if (!Number.isFinite(id) || id <= 0) {
+    throw new Error("Identifiant prestation invalide.");
+  }
+  await getWritableTable(MISSIONS_ENFANTS_TABLE_ID).update({ id, fields });
+}
