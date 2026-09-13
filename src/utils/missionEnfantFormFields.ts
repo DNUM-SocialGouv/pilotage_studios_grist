@@ -98,7 +98,7 @@ export function buildMissionEnfantCreateFields(
   args: BuildMissionEnfantCreateArgs,
 ): Partial<Omit<MissionEnfant, "id">> & {
   Mission_parent: number;
-  Libelle: string;
+  Titre_de_la_prestation: string;
 } {
   const intervenantId = Number.parseInt(args.values.Intervenant.trim(), 10);
   const ivLabel = args.intervenantLabel?.trim() ?? "";
@@ -109,7 +109,7 @@ export function buildMissionEnfantCreateFields(
 
   const out: Partial<Omit<MissionEnfant, "id">> & {
     Mission_parent: number;
-    Libelle: string;
+    Titre_de_la_prestation: string;
   } = {
     ...missionEnfantParentWriteField(args.masterId),
     ...missionEnfantLibelleWriteField(libelle),
@@ -138,7 +138,7 @@ export function buildMissionEnfantPatch(
   values: MissionEnfantFormValues,
   init: MissionEnfantFormValues,
   intervenantLabel?: string,
-): Partial<Omit<MissionEnfant, "id">> {
+): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   const ivLabel = intervenantLabel?.trim() ?? "";
 
@@ -172,6 +172,6 @@ export function buildMissionEnfantPatch(
     out.Date_de_debut = dateInputToGristTimestamp(values.Date_de_debut);
   }
 
-  return out as Partial<Omit<MissionEnfant, "id">>;
+  return out;
 }
 

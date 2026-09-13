@@ -197,7 +197,7 @@ export function MissionsListeParLot({
                     </caption>
                     <thead>
                       <tr>
-                        <th scope="col">Prestation</th>
+                        <th scope="col">Titre de la prestation</th>
                         <th scope="col">Équipe</th>
                         <th scope="col">Intervenant</th>
                         <th scope="col">Statut</th>

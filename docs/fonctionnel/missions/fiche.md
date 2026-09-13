@@ -36,7 +36,7 @@ Champs **Nom · Produit · Statut** uniquement. Prestations : renvoi vers l’on
 
 | Mode | Champs |
 |------|--------|
-| **Ajouter** / **Modifier** | Libellé (fallback nom intervenant) · Intervenant (obligatoire) · Jours envisagés (optionnel) · Statut (défaut « En cours ») · Date de début (optionnel) |
+| **Ajouter** / **Modifier** | **Titre de la prestation** (fallback nom intervenant ; colonne Grist `Titre_de_la_prestation`) · Intervenant (obligatoire) · Jours envisagés (optionnel) · Statut (défaut « En cours ») · Date de début (optionnel) |
 | Figé / hors formulaire | `Type_prestation` = `Freelance_jours` à la création seulement ; jamais édité ni affiché ; `Mission_parent` figé ; pas de date de fin ni suppression |
 
 Après succès : Alert in-drawer (edit) ou fermeture (create) + rechargement des données missions.
@@ -46,7 +46,7 @@ Après succès : Alert in-drawer (edit) ou fermeture (create) + rechargement des
 | Onglet | Contenu |
 |--------|---------|
 | **Contexte** | Champs narratifs (demande, enjeux, historique, utilisateurs / périmètre, liens FIGMA/Notion) en texte préformaté |
-| **Équipe & prestations** | Synthèse `TTC CRA mission · Jours` ; filtre équipe + **barre empilée** % TTC par équipe (même langage que PA/BDC ; tranche **Hors prestation** si CRA sans enfant) ; CTA **Ajouter une prestation** ; tableau prestations avec **CRA dépliables** (chevron si ≥1 CRA, sinon spacer ; sous-lignes période / tâches / jours / TTC) — colonnes : prestation, intervenant, équipe, **date de début**, **jours envisagés**, Nb CRA, TTC, statut, action **Modifier** |
+| **Équipe & prestations** | Synthèse `TTC CRA mission · Jours` ; filtre équipe + **barre empilée** % TTC par équipe (même langage que PA/BDC ; tranche **Hors prestation** si CRA sans enfant) ; CTA **Ajouter une prestation** ; tableau prestations avec **CRA dépliables** (chevron si ≥1 CRA, sinon spacer ; sous-lignes période / tâches / jours / TTC) — colonnes : **titre de la prestation**, intervenant, équipe, **date de début**, **jours envisagés**, Nb CRA, TTC, statut, action **Modifier** |
 | **Note & pièces jointes** | `Suivi_resp_studio` (lecture) + téléchargement `Docs` (`GristAttachmentDownloadLink`) — pas d’ajout / suppression |
 
 Les CRA sont consultés via les lignes dépliables de l’onglet Équipe (plus d’onglet Réalisations dédié).

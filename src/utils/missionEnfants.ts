@@ -3,7 +3,8 @@ import { asGristChoice, extractGristReferenceId, extractGristReferenceIds } from
 
 /**
  * Colonnes Grist `Missions_enfants` → champs internes.
- * Canonique : `Mission_parent` / `Libelle`. Fallback texte : `Mission_enfant`
+ * Canonique : `Mission_parent` / `Titre_de_la_prestation`.
+ * Fallbacks lecture : `Libelle` (ancien id), texte `Mission_enfant`
  * (homonyme de `Realise.Mission_enfant` qui est une Ref).
  */
 function textLibelleFromGrist(value: unknown): string | undefined {
@@ -23,7 +24,10 @@ export function missionEnfantFromGrist(record: Record<string, unknown>): Pick<
 > {
   return {
     Mission: record.Mission_parent ?? record.Mission,
-    Libelle: textLibelleFromGrist(record.Libelle) ?? textLibelleFromGrist(record.Mission_enfant),
+    Libelle:
+      textLibelleFromGrist(record.Titre_de_la_prestation) ??
+      textLibelleFromGrist(record.Libelle) ??
+      textLibelleFromGrist(record.Mission_enfant),
   };
 }
 
@@ -34,11 +38,11 @@ export function missionEnfantParentWriteField(masterId: number): {
   return { Mission_parent: masterId };
 }
 
-/** Écriture canonique `Libelle` (plus le texte `Mission_enfant`). */
+/** Écriture canonique `Titre_de_la_prestation` (plus `Libelle` / texte `Mission_enfant`). */
 export function missionEnfantLibelleWriteField(libelle: string): {
-  Libelle: string;
+  Titre_de_la_prestation: string;
 } {
-  return { Libelle: libelle };
+  return { Titre_de_la_prestation: libelle };
 }
 
 export function missionEnfantLibelle(enfant: MissionEnfant, intervenantLabel?: string): string {
@@ -52,7 +56,7 @@ export function missionEnfantLibelle(enfant: MissionEnfant, intervenantLabel?: s
   return `Prestation #${enfant.id}`;
 }
 
-/** Libellé prestation optionnel (`Libelle` / fallback texte). */
+/** Titre prestation optionnel (champ interne mappé depuis Grist). */
 export function enfantLibelleOptionnel(e: MissionEnfant): string | undefined {
   const lib = e.Libelle?.trim();
   if (lib) {

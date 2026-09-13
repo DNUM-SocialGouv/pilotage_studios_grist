@@ -332,7 +332,7 @@ function MissionEquipePanel({
             <thead>
               <tr>
                 <th scope="col" className="pilotage-col-mission-libelle">
-                  Prestation
+                  Titre de la prestation
                 </th>
                 <th scope="col">Intervenant</th>
                 <th scope="col" className="pilotage-col-equipe-nowrap">

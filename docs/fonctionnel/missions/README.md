@@ -7,7 +7,7 @@
 
 ## Objet métier
 
-Une **mission master** (`Missions`) est un lot d’accompagnement (contexte, produit, statut). Les **enfants** (`Missions_enfants`) portent le staffing (`Mission_parent` → master, **`Libelle`** = libellé texte ; fallback lecture : colonne texte `Mission_enfant`). Les lignes CRA (`Realise`) se rattachent d’abord à l’enfant (`Realise.Mission_enfant`, **référence** — homonyme du texte `Missions_enfants.Mission_enfant`), sinon au master (`Realise.Missions`).
+Une **mission master** (`Missions`) est un lot d’accompagnement (contexte, produit, statut). Les **enfants** (`Missions_enfants`) portent le staffing (`Mission_parent` → master, **`Titre_de_la_prestation`** — équivalent de `Nom_de_la_mission` sur le master ; fallbacks lecture : `Libelle`, colonne texte `Mission_enfant`). Les lignes CRA (`Realise`) se rattachent d’abord à l’enfant (`Realise.Mission_enfant`, **référence** — homonyme du texte `Missions_enfants.Mission_enfant`), sinon au master (`Realise.Missions`).
 
 | Outil | Rôle |
 |-------|------|
@@ -39,7 +39,7 @@ Chargement **lazy** sur `/missions` uniquement (`useMissionsData`) — pas au bo
 
 ## Écarts vs l’app
 
-- Drawer master **slim** (Nom · Produit · Statut) ; drawer prestation **slim** (Libellé · Intervenant · Jours · Statut · Date de début) — pas d’édition inline contexte / PJ
+- Drawer master **slim** (Nom · Produit · Statut) ; drawer prestation **slim** (Titre · Intervenant · Jours · Statut · Date de début) — pas d’édition inline contexte / PJ
 - `Type_prestation` figé Freelance à la création, non éditable / non affiché (forfait = [#36](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/36))
 - Pas de `Date_de_fin` prestation (hypothèse CRA = [#37](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/37))
 - Pas d’IA (rapport d’investissement, CR, estimation)

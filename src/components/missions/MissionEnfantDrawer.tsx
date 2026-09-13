@@ -158,7 +158,7 @@ export const MissionEnfantDrawer = forwardRef<
   const title = mode === "edit" ? "Modifier la prestation" : "Nouvelle prestation";
   const description =
     mode === "edit"
-      ? "Met à jour le staffing de cette prestation (libellé, intervenant, jours, statut, date de début)."
+      ? "Met à jour le staffing de cette prestation (titre, intervenant, jours, statut, date de début)."
       : "Ajoute une prestation rattachée à cette mission.";
   const primaryLabel =
     mode === "edit" ? "Enregistrer les modifications" : "Créer la prestation";
@@ -310,7 +310,7 @@ export const MissionEnfantDrawer = forwardRef<
                   <div className="fr-grid-row fr-grid-row--gutters">
                     <div className="fr-col-12">
                       <Input
-                        label="Libellé de la prestation"
+                        label="Titre de la prestation"
                         hintText="Vide → nom de l’intervenant."
                         nativeInputProps={register("Libelle")}
                       />

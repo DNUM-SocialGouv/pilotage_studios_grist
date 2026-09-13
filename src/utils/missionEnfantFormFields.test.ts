@@ -53,7 +53,7 @@ describe("buildMissionEnfantCreateFields", () => {
       intervenantLabel: "Alice Dupont",
     });
     assert.equal(fields.Mission_parent, 12);
-    assert.equal(fields.Libelle, "Alice Dupont");
+    assert.equal(fields.Titre_de_la_prestation, "Alice Dupont");
     assert.equal(fields.Intervenant, 7);
     assert.equal(fields.Type_prestation, DEFAULT_MISSION_ENFANT_TYPE);
     assert.equal(fields.Statut, DEFAULT_MISSION_ENFANT_STATUT);
@@ -73,7 +73,7 @@ describe("buildMissionEnfantCreateFields", () => {
         Statut: "En pause",
       },
     });
-    assert.equal(fields.Libelle, "Design");
+    assert.equal(fields.Titre_de_la_prestation, "Design");
     assert.equal(fields.Jours_envisages, 12.5);
     assert.equal(fields.Statut, "En pause");
     assert.equal(fields.Date_de_debut, dateInputToGristTimestamp("2026-01-10"));
@@ -91,7 +91,7 @@ describe("buildMissionEnfantPatch", () => {
     init.Date_de_debut = "2026-02-01";
     const values = { ...init, Libelle: "B", Statut: "En cours" };
     const patch = buildMissionEnfantPatch(values, init);
-    assert.deepEqual(patch, { Libelle: "B" });
+    assert.deepEqual(patch, { Titre_de_la_prestation: "B" });
     assert.equal("Type_prestation" in patch, false);
     assert.equal("Mission_parent" in patch, false);
   });

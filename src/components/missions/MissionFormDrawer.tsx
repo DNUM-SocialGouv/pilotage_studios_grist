@@ -436,7 +436,7 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
                             </div>
                             <div className="fr-col-12">
                               <Input
-                                label="Libellé de la prestation"
+                                label="Titre de la prestation"
                                 hintText="Vide → nom de l’intervenant."
                                 nativeInputProps={register("prestationLibelle")}
                               />

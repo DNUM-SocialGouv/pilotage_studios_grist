@@ -4,7 +4,7 @@
  */
 
 import type { GristTableCreateResult } from "../gristTypes.ts";
-import type { Mission, MissionEnfant } from "../types.ts";
+import type { Mission } from "../types.ts";
 import {
   MISSIONS_ENFANTS_TABLE_ID,
   MISSIONS_TABLE_ID,
@@ -49,7 +49,7 @@ export async function updateMissionRecord(
 }
 
 export async function createMissionEnfantRecord(
-  fields: Partial<Omit<MissionEnfant, "id">>,
+  fields: Record<string, unknown>,
 ): Promise<number> {
   assertWritableTableId(MISSIONS_ENFANTS_TABLE_ID);
   const result = await getWritableTable(MISSIONS_ENFANTS_TABLE_ID).create({ fields });
@@ -58,7 +58,7 @@ export async function createMissionEnfantRecord(
 
 export async function updateMissionEnfantRecord(
   id: number,
-  fields: Partial<Omit<MissionEnfant, "id">>,
+  fields: Record<string, unknown>,
 ): Promise<void> {
   assertWritableUpdateTableId(MISSIONS_ENFANTS_TABLE_ID);
   if (!Number.isFinite(id) || id <= 0) {
