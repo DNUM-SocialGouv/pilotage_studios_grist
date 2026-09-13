@@ -13,7 +13,10 @@ export type PublicRoadmapItem = {
 };
 
 export const PUBLIC_ROADMAP_INTRO =
-  "On consolide le pilotage : prestations des missions, puis le parcours CRA jusqu’au bon de commande, avec des droits clairs.";
+  "On construit progressivement une interface claire pour suivre les missions, les prestations et les CRA — sans passer par les tables Grist.";
+
+export const PUBLIC_ROADMAP_CTA =
+  "Une question ou une idée ? Commentez sur GitHub, ou utilisez « Un retour ? ».";
 
 export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
   {

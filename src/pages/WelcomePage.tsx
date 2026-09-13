@@ -1,6 +1,7 @@
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import Factory from "@codegouvfr/react-dsfr/picto/Factory";
 import {
+  PUBLIC_ROADMAP_CTA,
   PUBLIC_ROADMAP_INTRO,
   PUBLIC_ROADMAP_ITEMS,
   ROADMAP_STATUS_BADGE_CLASS,
@@ -27,10 +28,7 @@ export function WelcomePage() {
             Feuille de route
           </h2>
           <p className="fr-text--sm fr-mb-2w">{PUBLIC_ROADMAP_INTRO}</p>
-          <p className="fr-text--sm fr-mb-2w">
-            Commentez les étapes « En cours » ou « À venir » sur GitHub pour discuter ensemble.
-            Pour un signal rapide dans l’app, utilisez le bouton « Un retour ? ».
-          </p>
+          <p className="fr-text--sm fr-mb-2w">{PUBLIC_ROADMAP_CTA}</p>
           <ol className="welcome-roadmap__list fr-mb-0">
             {PUBLIC_ROADMAP_ITEMS.map((item) => (
               <li key={item.id} className="welcome-roadmap__item fr-mb-2w">
