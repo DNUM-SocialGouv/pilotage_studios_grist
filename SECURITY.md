@@ -30,7 +30,7 @@ Ce n’est **pas** « tout Internet lit notre Grist » ; c’est « un attaquant
 
 ## Garde-fous en place (V1)
 
-1. **Aucun secret** dans le dépôt / bundle (`VITE_GRIST_API_KEY`, clés LLM interdits).
+1. **Aucun secret** dans le dépôt / bundle (`VITE_GRIST_API_KEY`, clés LLM, **URL Incoming Webhook** Mattermost / Tchap, tokens d’automation Grist — interdits). Alertes `Retours` = config doc Grist hors repo ([`docs/fonctionnel/feedback/alertes.md`](docs/fonctionnel/feedback/alertes.md)).
 2. **Contrôle d’embed** (`src/security/embedTrust.ts`) : refuse `grist.ready` si l’iframe a un parent non Grist ; en prod hors iframe / embed non fiable → `NothingHerePage` (pas de nav).
 3. **Allowlist** des `fetchTable` : uniquement via `fetchAllowlistedTable` (`src/security/fetchTableAllowlist.ts`) — refus runtime hors liste, pas d’ID libre côté UI. Tables lazy (`Realise`, missions, équipe, produits) : allowlist **et** fetch sur `/bdc/:id` (Dépenses), `/missions` (liste + fiche), **ou** panneau feedback (select auteur → `Equipe` uniquement) — pas au boot.
 4. **Écriture métier** : uniquement via `grist.getTable` + garde [`writeTableAllowlist.ts`](src/security/writeTableAllowlist.ts) — **pas** de REST avec clé API, **pas** de delete widget. Exceptions : `Retours` (create feedback) ; `Missions` (create + update patch Nom / Produit / Statut via drawer) ; `Missions_enfants` (create seule, première prestation optionnelle à la création mission). Tout le reste (dont `Realise`, update enfants, delete) reste interdit. ACL Grist Create/Update = HITL (feedback + missions).

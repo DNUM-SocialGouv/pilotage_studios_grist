@@ -43,8 +43,15 @@ Recommandation (à valider / poser manuellement) :
 
 Sans ces règles, tout utilisateur *Editor* du doc peut aussi modifier les retours des autres.
 
-## Hors scope V1
+## Alertes / suivi « nouveau retour »
+
+Sans e-mail Grist ni ETL : runbook ops (webhook Mattermost go/no-go + **fallback** vue filtrée `Statut = Nouveau`) → [`alertes.md`](alertes.md).
+
+**Décision actuelle** : **No-go** Mattermost direct (smoke HTTP 400 decode payload) → process actif = [fallback vue `Nouveau`](alertes.md#fallback-opérationnel-process-actif-tant-que-no-go).
+
+## Hors scope V1 (widget)
 
 - Vue Kanban / page widget listant les retours
-- Notifications Tchap / mail / webhook
+- Notifications depuis le **bundle** (mail, Mattermost, Tchap) — secrets interdits ; config éventuelle = doc Grist uniquement ([`alertes.md`](alertes.md))
 - Boucle auto « informé·e » (champ `Reponse` + statut Fait/Écarté) — promise UX documentée, pas d’automation
+- ETL / transformateur JSON Grist → Mattermost
