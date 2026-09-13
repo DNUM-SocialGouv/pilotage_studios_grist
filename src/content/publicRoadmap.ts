@@ -46,7 +46,7 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
   {
     id: "cra-qualifier",
     title: "Qualifier un CRA et le lier au bon de commande",
-    summary: "Associer le CRA au bon bon de commande (chaîne jusqu’au plan d’activité).",
+    summary: "Associer le CRA au bon de commande (chaîne jusqu’au plan d’activité).",
     status: "next",
     issueUrl: "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/34",
   },
