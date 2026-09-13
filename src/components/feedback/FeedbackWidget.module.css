@@ -20,13 +20,25 @@
   padding: 0.7rem 1.15rem;
   border: none;
   border-radius: 999px;
-  background: var(--background-action-high-blue-france);
+  /* DSFR : button:hover utilise --hover-tint (sinon fond clair + texte blanc). */
+  --hover-tint: var(--background-action-high-blue-france-hover, #1212ff);
+  --active-tint: var(--background-action-high-blue-france-active, #000091);
+  background-color: var(--background-action-high-blue-france);
+  background-image: none;
   color: #fff;
   font-family: inherit;
   font-weight: 500;
   font-size: 0.95rem;
   cursor: pointer;
   box-shadow: 0 6px 20px rgba(0, 0, 60, 0.28);
+}
+
+.fab:hover,
+.fab:focus-visible,
+.fab:active {
+  color: #fff;
+  background-image: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 60, 0.36);
 }
 
 .fab:focus-visible {
