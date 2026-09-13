@@ -69,14 +69,14 @@ export function RoadmapGuideDrawer({ item, onClose }: RoadmapGuideDrawerProps) {
             </header>
 
             {item ? (
-              <div className="pilotage-drawer-dialog__body fr-px-3w fr-pb-3w fr-pt-0">
-                <p className="fr-text--sm fr-mb-3w">{item.guide.lead}</p>
+              <div className="pilotage-drawer-dialog__body roadmap-guide fr-px-3w fr-pb-3w fr-pt-0">
+                <p className="roadmap-guide__lead fr-mb-3w">{item.guide.lead}</p>
 
                 <h3 className="fr-h6">En pratique</h3>
                 <ol className="roadmap-guide__steps fr-mb-3w">
                   {item.guide.steps.map((step) => (
-                    <li key={step} className="fr-text--sm">
-                      {step}
+                    <li key={step}>
+                      <span className="roadmap-guide__step">{step}</span>
                     </li>
                   ))}
                 </ol>

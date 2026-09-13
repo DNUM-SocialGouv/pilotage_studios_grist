@@ -771,67 +771,107 @@ button.fr-link:disabled {
   padding: 0;
 }
 
+/* Texte guide : couleur explicite (évite CanvasText clair du <dialog> dans Grist). */
+.roadmap-guide,
+.roadmap-guide__lead,
+.roadmap-guide__step {
+  color: var(--text-default-grey);
+}
+
+.roadmap-guide__lead,
+.roadmap-guide__step {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
 .roadmap-guide__steps {
+  margin: 0;
   padding-left: 1.25rem;
 }
 
 .roadmap-flow {
   background: var(--background-alt-grey);
   border-left: 3px solid var(--border-plain-blue-france);
+  color: var(--text-default-grey);
   padding: 1rem 1.25rem;
 }
 
-.roadmap-flow__nodes {
+.roadmap-flow__steps,
+.roadmap-flow__links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.roadmap-flow__step {
+  align-items: flex-start;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
 }
 
-.roadmap-flow__node {
-  align-items: center;
-  background: var(--background-default-grey);
-  border: 1px solid var(--border-default-grey);
-  display: inline-flex;
-  gap: 0.5rem;
-  padding: 0.35rem 0.75rem;
-}
-
-.roadmap-flow__node-index {
-  color: var(--text-mention-grey);
-  font-size: 0.875rem;
-  font-weight: 700;
-}
-
-.roadmap-flow__node-label {
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.roadmap-flow__edges {
-  color: var(--text-default-grey);
-  font-size: 0.875rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.roadmap-flow__edge {
-  margin-bottom: 0.25rem;
-}
-
-.roadmap-flow__edge:last-child {
+.roadmap-flow__step:last-child {
   margin-bottom: 0;
 }
 
-.roadmap-flow__edge-arrow {
-  margin-inline: 0.35rem;
+.roadmap-flow__step-index {
+  background: var(--background-default-grey);
+  border: 1px solid var(--border-default-grey);
+  color: var(--text-title-grey);
+  flex: 0 0 auto;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1;
+  min-width: 1.75rem;
+  padding: 0.35rem 0.5rem;
+  text-align: center;
 }
 
-.roadmap-flow__edge-label {
+.roadmap-flow__step-label {
+  color: var(--text-title-grey);
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding-top: 0.25rem;
+}
+
+.roadmap-flow__link {
+  margin-bottom: 1rem;
+}
+
+.roadmap-flow__link:last-child {
+  margin-bottom: 0;
+}
+
+.roadmap-flow__targets {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.roadmap-flow__target {
+  margin: 0;
+}
+
+.roadmap-flow__link-from,
+.roadmap-flow__link-to {
+  background: var(--background-default-grey);
+  border: 1px solid var(--border-default-grey);
+  color: var(--text-title-grey);
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+}
+
+.roadmap-flow__link-arrow {
   color: var(--text-mention-grey);
+  display: block;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  padding: 0.25rem 0.75rem;
+}
+
+.roadmap-flow__link-via {
+  font-weight: 600;
 }
 
 .welcome-artwork {
@@ -848,12 +888,15 @@ button.fr-link:disabled {
 
 /* Drawers pilotage (ISO app sœur) */
 .pilotage-drawer-dialog {
+  background: transparent;
   border: none;
+  /* Force le thème clair DSFR : sinon <dialog> peut hériter CanvasText clair (Grist / dark). */
+  color: var(--text-default-grey);
+  color-scheme: light;
   margin: 0;
   max-height: none;
   max-width: none;
   padding: 0;
-  background: transparent;
 }
 
 .pilotage-drawer-dialog::backdrop {
@@ -878,6 +921,7 @@ button.fr-link:disabled {
 .pilotage-drawer-dialog__panel {
   background: var(--background-default-grey);
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.22);
+  color: var(--text-default-grey);
   display: flex;
   flex-direction: column;
   height: 100%;
