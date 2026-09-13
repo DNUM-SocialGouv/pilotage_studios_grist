@@ -687,8 +687,24 @@ span.fr-tag.fr-tag--beige-gris-galet {
 }
 
 .mission-fiche-prose {
-  white-space: pre-wrap;
   word-break: break-word;
+}
+
+.mission-fiche-prose > p:last-child {
+  margin-bottom: 0;
+}
+
+.mission-fiche-prose__list {
+  margin: 0 0 1rem;
+  padding-left: 1.25rem;
+}
+
+.mission-fiche-prose__list:last-child {
+  margin-bottom: 0;
+}
+
+.mission-fiche-prose__list li {
+  margin-bottom: 0.25rem;
 }
 
 button.fr-link {

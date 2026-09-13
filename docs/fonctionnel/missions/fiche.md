@@ -45,7 +45,7 @@ Après succès : Alert in-drawer (edit) ou fermeture (create) + rechargement des
 
 | Onglet | Contenu |
 |--------|---------|
-| **Contexte** | Champs narratifs (demande, enjeux, historique, utilisateurs / périmètre, liens FIGMA/Notion) en texte préformaté |
+| **Contexte** | Champs narratifs (demande, enjeux, historique, utilisateurs / périmètre, liens FIGMA/Notion) : paragraphes, listes `*` / `-`, gras `**…**`, liens Markdown `[libellé](https://…)` |
 | **Équipe & prestations** | Filtre équipe + **barre empilée** % TTC par équipe (total à droite : `TTC · X jours` ; même langage que PA/BDC ; tranche **Hors prestation** si CRA sans enfant) ; CTA **Ajouter une prestation** ; tableau prestations avec **CRA dépliables** (chevron si ≥1 CRA, sinon spacer ; sous-lignes période / tâches / jours / TTC) — colonnes : **titre de la prestation**, intervenant, équipe, **date de début**, **jours envisagés**, Nb CRA, TTC, statut, action **Modifier** |
 | **Note & pièces jointes** | `Suivi_resp_studio` (lecture) + téléchargement `Docs` (`GristAttachmentDownloadLink`) — pas d’ajout / suppression |
 

@@ -10,6 +10,7 @@ import { TableShell } from "../components/FinanceRecap";
 import { GristAttachmentDownloadLink } from "../components/GristAttachmentDownloadLink";
 import { useMissionEnfantDrawerRef } from "../components/missions/MissionEnfantDrawerContext";
 import { useMissionFormDrawerRef } from "../components/missions/MissionFormDrawerContext";
+import { MissionProse } from "../components/missions/MissionProse";
 import { MissionsListeCraRows } from "../components/missions/MissionsListeCraRows";
 import { StatutBadge } from "../components/StatutBadge";
 import type { Mission, MissionEnfant, SuiviMensuel } from "../types";
@@ -90,10 +91,6 @@ function formatDecimalFr2(value: number): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   });
-}
-
-function MissionProse({ value }: { value: string }) {
-  return <p className="mission-fiche-prose fr-mb-0">{value}</p>;
 }
 
 function equipeKeyForEnfant(

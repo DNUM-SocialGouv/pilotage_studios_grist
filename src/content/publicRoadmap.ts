@@ -81,6 +81,13 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     status: "later",
     issueUrl: "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/37",
   },
+  {
+    id: "mission-contexte-edit",
+    title: "Éditer le contexte d’une mission depuis la fiche",
+    summary: "Mettre à jour demande, enjeux, historique et liens sans repasser par les tables Grist.",
+    status: "later",
+    issueUrl: "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/43",
+  },
 ];
 
 export const ROADMAP_STATUS_LABEL: Record<PublicRoadmapStatus, string> = {
