@@ -38,6 +38,7 @@ gh pr create --repo DNUM-SocialGouv/pilotage_studios_grist \
 
 ## Documentation
 - [ ] `docs/fonctionnel/` à jour ou N/A
+- [ ] Portage app solo : N/A | fiche `docs/portage/`
 
 ## Impact
 - [ ] UI widget seule

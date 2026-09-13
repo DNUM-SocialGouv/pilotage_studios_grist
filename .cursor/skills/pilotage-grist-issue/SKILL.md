@@ -17,9 +17,14 @@ gh issue view <NUM> --repo DNUM-SocialGouv/pilotage_studios_grist
 - Pas d’IA / secrets LLM dans le widget.
 - Pas d’écriture Grist sans demande explicite.
 - Données via `grist-plugin-api` uniquement ; tables hors ancre via `fetchAllowlistedTable` seulement.
+- **Simplification** : avant d’élargir le scope, proposer ce qu’on *ne fait pas* (voir AGENTS.md).
+- Issues **publiques** / roadmap : rédiger selon [`docs/issues-publiques.md`](../../../docs/issues-publiques.md).
 
-## Playbook — nouvel écran (ex. Produits [#3](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3))
+## Créer une issue (roadmap / métier)
 
+Préférer le template [`docs/issues-publiques.md`](../../../docs/issues-publiques.md). Brancher l’URL dans `src/content/publicRoadmap.ts` si visible sur l’accueil.
+
+## Playbook — nouvel écran (ex. prochaines : prestations [#31](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/31), pas Produits en priorité)
 1. Route `MemoryRouter` dans `src/App.tsx` (liste + fiche si besoin) ; retirer le stub correspondant.
 2. Entrée déjà dans `WIDGET_NAV_LINKS` (ou l’ajouter) — pas de `BrowserRouter`.
 3. Si nouvelle table : étendre `src/security/fetchTableAllowlist.ts` + `AGENTS.md` §4 + SECURITY.

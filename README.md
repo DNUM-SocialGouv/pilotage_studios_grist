@@ -40,7 +40,7 @@ npm run lint
 
 ## V1
 
-- Navigation (sans Header/Footer) + **PA** et **BDC** (liste + fiche, liens croisés)
-- Doc parcours : [docs/fonctionnel/pa/](docs/fonctionnel/pa/), [docs/fonctionnel/bdc/](docs/fonctionnel/bdc/)
-- Autres entrées de nav = stubs (Analyse IA = hors scope widget)
-- Feuille de route : 1 PR par entrée de nav (liste + fiche + docs), ensuite [Produits #3](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3)
+- Navigation (sans Header/Footer) + **PA**, **BDC**, **Missions** (liste + fiche) + feedback
+- Accueil : feuille de route publique ([`src/content/publicRoadmap.ts`](src/content/publicRoadmap.ts)) — discussion via issues GitHub
+- Doc parcours : [docs/](docs/README.md) · **Grist-first** : voir [AGENTS.md](AGENTS.md) §2
+- Prochaine priorité métier : [prestations #31](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/31) (pas Produits en premier)
