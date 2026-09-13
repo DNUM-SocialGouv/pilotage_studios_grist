@@ -715,3 +715,58 @@ button.fr-link:disabled {
 .welcome-artwork .fr-artwork {
   max-width: 100%;
 }
+
+/* Drawers pilotage (ISO app sœur) */
+.pilotage-drawer-dialog {
+  border: none;
+  margin: 0;
+  max-height: none;
+  max-width: none;
+  padding: 0;
+  background: transparent;
+}
+
+.pilotage-drawer-dialog::backdrop {
+  background: rgba(22, 22, 22, 0.64);
+}
+
+.pilotage-drawer-dialog__shell {
+  display: flex;
+  height: 100%;
+  inset: 0;
+  justify-content: flex-end;
+  position: fixed;
+  width: 100%;
+  z-index: 1000;
+}
+
+.pilotage-drawer-dialog__scrim {
+  flex: 1;
+  min-width: 0;
+}
+
+.pilotage-drawer-dialog__panel {
+  background: var(--background-default-grey);
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.22);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 94vw;
+}
+
+.pilotage-drawer-dialog__inner {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.pilotage-drawer-dialog__body {
+  flex: 1;
+  overflow: auto;
+}
+
+/* Taille fixe SM — pas de sélecteur / localStorage (voir rule pilotage-drawers). */
+.pilotage-drawer-dialog--sm .pilotage-drawer-dialog__panel {
+  width: min(48rem, 94vw);
+}

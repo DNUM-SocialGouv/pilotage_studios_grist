@@ -15,4 +15,5 @@ export type MissionsListeHierarchieProps = {
   toggleMaster: (id: number) => void;
   isEnfantExpanded: (key: string) => boolean;
   toggleEnfant: (key: string) => void;
+  onEditMission?: (mission: Mission) => void;
 };

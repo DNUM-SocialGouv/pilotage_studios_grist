@@ -60,19 +60,30 @@ Jours / Montant TTC d’un **lot** = somme des CRA de ses **prestations** unique
 | Statut | Badge `noIcon` | Badge propre | — |
 | Début | `formatGristMonthYear` | — | — |
 | Jours / TTC | Σ CRA prestations | CRA prestation | ligne CRA |
-| Actions | **Ouvrir** (fiche) | — | — |
+| Actions | **Ouvrir** + **Modifier** (drawer) | — | — |
 
 Pas de colonnes Équipe / Resp au niveau lot. Lot sans prestation : **pas de chevron**.
 
 ### Par lot
 
-Bandeau 2 colonnes : chevron + titre + statut + produit ; KPI + **timeline** (`background-action-low`) + tags équipe. Expand → Prestations / Équipe / Intervenant / Statut / Jours / TTC → CRA. Menu **Actions** : uniquement **Ouvrir la fiche** (lecture seule widget). Lot sans prestation : « Aucune prestation ».
+Bandeau 2 colonnes : chevron + titre + statut + produit ; KPI + **timeline** (`background-action-low`) + tags équipe. Expand → Prestations / Équipe / Intervenant / Statut / Jours / TTC → CRA. Menu **Actions** : **Ouvrir la fiche**, **Modifier le lot** (drawer edit). Lot sans prestation : « Aucune prestation ».
+
+## Création et modification (drawer unique)
+
+Bouton **« Nouvelle mission »** sous le titre → `MissionFormDrawer` mode **create** (statut par défaut « A instruire »). **Modifier** depuis la liste détaillée ou le menu par lot → mode **edit**.
+
+Champs : **Nom** (obligatoire) · **Produit (SDPC)** · **Statut**. Largeur fixe **SM** (pas de sélecteur de largeur côté widget).
+
+**Create** — section optionnelle **première prestation** : si un intervenant est choisi, une ligne `Missions_enfants` est créée (`Mission_parent`, `Libelle`, `Intervenant`, …). Succès total → redirection `/missions/:id`. Mission créée sans prestation → avertissement + lien fiche (pas de redirect).
+
+**Edit** — pas de champs prestation ; lien vers onglet Équipe & prestations. Succès → Alert in-drawer (drawer reste ouvert).
+
+Composant : `src/components/missions/MissionFormDrawer.tsx` — écriture via `missionGristWrite.ts` (plugin API Grist).
 
 ## Écarts volontaires vs app sœur
 
-- Pas de création / édition / ajout de prestation (drawers)
+- Pas d’ajout prestation depuis la liste (drawer enfant)
 - Pas d’export CSV ni rapport d’investissement
-- Lecture seule Grist
 
 ## Récap CRA
 

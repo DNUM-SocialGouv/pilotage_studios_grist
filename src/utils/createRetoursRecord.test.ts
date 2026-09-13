@@ -10,8 +10,10 @@ import {
 import type { GristFetchTableResult } from "../gristTypes.ts";
 
 describe("writeTableAllowlist", () => {
-  it("autorise uniquement Retours", () => {
+  it("autorise Retours, Missions et Missions_enfants", () => {
     assert.equal(isWritableTableId("Retours"), true);
+    assert.equal(isWritableTableId("Missions"), true);
+    assert.equal(isWritableTableId("Missions_enfants"), true);
     assert.equal(isWritableTableId("Feedback_Identite"), false);
     assert.equal(isWritableTableId("BDC"), false);
     assert.throws(() => assertWritableTableId("Plan_activite"), /non autorisée/);

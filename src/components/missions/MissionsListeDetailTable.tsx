@@ -170,6 +170,7 @@ export function MissionsListeDetailTable({
   toggleMaster,
   isEnfantExpanded,
   toggleEnfant,
+  onEditMission,
 }: MissionsListeHierarchieProps) {
   return (
     <TableShell multiline className="fr-mb-4w">
@@ -257,13 +258,25 @@ export function MissionsListeDetailTable({
                     {formatCraMontant(totaux, craState)}
                   </td>
                   <td className="pilotage-col-actions">
-                    <Link
-                      className="fr-btn fr-btn--secondary fr-btn--sm fr-btn--icon-left fr-icon-arrow-right-line"
-                      to={`/missions/${m.id}`}
-                      title="Ouvrir la fiche de cette mission"
-                    >
-                      Ouvrir
-                    </Link>
+                    <div className="fr-btns-group fr-btns-group--inline fr-btns-group--sm">
+                      <Link
+                        className="fr-btn fr-btn--secondary fr-btn--sm fr-btn--icon-left fr-icon-arrow-right-line"
+                        to={`/missions/${m.id}`}
+                        title="Ouvrir la fiche de cette mission"
+                      >
+                        Ouvrir
+                      </Link>
+                      {onEditMission ? (
+                        <button
+                          type="button"
+                          className="fr-btn fr-btn--tertiary fr-btn--sm fr-icon-edit-line fr-btn--icon-left"
+                          title="Modifier la mission"
+                          onClick={() => onEditMission(m)}
+                        >
+                          Modifier
+                        </button>
+                      ) : null}
+                    </div>
                   </td>
                 </tr>
                 {expanded ? (

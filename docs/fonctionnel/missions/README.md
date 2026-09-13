@@ -12,21 +12,23 @@ Une **mission master** (`Missions`) est un lot d’accompagnement (contexte, pro
 | Outil | Rôle |
 |-------|------|
 | **Grist** (`Missions`, `Missions_enfants`, `Realise`, `Equipe`, produits SDPC) | Référentiel |
-| **Ce widget** | Liste / fiche **lecture seule** |
-| **App sœur** | Création, édition, CSV, IA — [doc missions app](https://github.com/DNUM-SocialGouv/pilotage_studios/blob/main/docs/fonctionnel/missions/README.md) |
+| **Ce widget** | Liste / fiche + **drawer** create/edit master (ISO [#227](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/227) sœur) |
+| **App sœur** | Parité drawer + CRUD prestations, CSV, IA — [doc missions app](https://github.com/DNUM-SocialGouv/pilotage_studios/blob/main/docs/fonctionnel/missions/README.md) |
 
 ## Données Grist
 
 | Table | Usage |
 |-------|--------|
-| `Missions` | Lignes liste / fiche (masters) |
-| `Missions_enfants` | Prestations : `Mission_parent` (ref), `Libelle` (texte canonique), `Mission_enfant` (texte fallback) |
+| `Missions` | Lignes liste / fiche (masters) ; **écriture** create + update (drawer) |
+| `Missions_enfants` | Prestations ; **écriture** create seule (première prestation optionnelle à la création mission) |
 | `Equipe` | Libellés intervenants / équipe |
 | `Tableau_de_pilotage_SDPC_Produits_SDPC` | Libellés produit |
 | `Realise` | Agrégats jours / TTC + réalisations fiche |
 | `BDC` | Liens BDC sur l’onglet CRA (déjà chargé au boot) |
 
-Chargement **lazy** sur `/missions` uniquement (`useMissionsData`) — pas au boot widget, **indépendant** du chargement REST BDC. Allowlist : `src/security/fetchTableAllowlist.ts`. Accès **full** obligatoire pour `fetchTable`.
+Écriture **uniquement** via `grist.getTable` dans l’iframe (pas de clé API) — voir [`SECURITY.md`](../../../SECURITY.md) et `writeTableAllowlist.ts`.
+
+Chargement **lazy** sur `/missions` uniquement (`useMissionsData`) — pas au boot widget, **indépendant** du chargement REST BDC. Allowlist lecture : `src/security/fetchTableAllowlist.ts`. Accès **full** obligatoire pour `fetchTable` et écriture.
 
 ## Parcours
 
@@ -37,10 +39,11 @@ Chargement **lazy** sur `/missions` uniquement (`useMissionsData`) — pas au bo
 
 ## Écarts vs l’app
 
-- Pas d’écriture (drawers, CRUD enfants, édition inline, upload PJ)
+- Drawer master **slim** (Nom · Produit · Statut) — pas de CRUD prestations avancé (`MissionEnfantDrawer`), pas d’édition inline contexte / PJ
 - Pas d’IA (rapport d’investissement, CR, estimation)
 - Pas d’export CSV
-- Liste ISO #216/#218/#219 : deux vues (détaillée / par lot), hiérarchie lot → prestation → CRA, accordéon filtres + Staffing, Actions **Ouvrir la fiche** seulement
-- Fiche ISO [#222](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/222) / [#224](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/224) / [#225](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/225) : bandeau P2, `?onglet=`, 3 onglets, CRA dépliables — sans boutons d’édition
+- Pas de **delete** widget sur missions / prestations
+- Liste ISO #216/#218/#219 + drawer [#227](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/227)
+- Fiche ISO #222 / #224 / #225 + bouton **Modifier** (drawer edit)
 - Produits et intervenants en **texte** / stubs (écrans catalogue encore stub)
 - Contexte fiche en texte préformaté (pas de rendu Markdown)

@@ -33,6 +33,7 @@ import {
 import { craRowsSorted, equipeLabelForEnfant } from "../utils/missionsListeTotaux";
 import { departementProduitSdpc } from "../utils/pilotageProduits";
 import { montantTtcSuiviMensuel } from "../utils/suiviMensuel";
+import { useMissionFormDrawerRef } from "../components/missions/MissionFormDrawerContext";
 import { useMissionsOutlet } from "./MissionsLayout";
 
 type MissionTabId = "contexte" | "equipe" | "notes";
@@ -443,7 +444,8 @@ function MissionNotesPanel({ mission }: { mission: Mission }) {
 export function MissionsDetailView() {
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { data } = useMissionsOutlet();
+  const { data, isReloading } = useMissionsOutlet();
+  const missionFormDrawerRef = useMissionFormDrawerRef();
   const missionTabId = parseMissionTabId(searchParams);
   const rawOnglet = searchParams.get("onglet") ?? searchParams.get("tab");
   const missionId = id ? Number.parseInt(id, 10) : Number.NaN;
@@ -551,7 +553,42 @@ export function MissionsDetailView() {
     [realisations, missionId, enfants],
   );
 
-  if (!Number.isFinite(missionId) || !mission) {
+  if (!Number.isFinite(missionId)) {
+    return (
+      <div className="fr-py-1w">
+        <p className="fr-mb-2w">
+          <Link className="fr-link" to="/missions">
+            ← Retour à la liste
+          </Link>
+        </p>
+        <Alert
+          severity="warning"
+          title="Mission introuvable"
+          description={`Identifiant de mission invalide : ${id ?? "—"}.`}
+        />
+      </div>
+    );
+  }
+
+  if (!mission) {
+    if (isReloading) {
+      return (
+        <div className="fr-py-1w">
+          <p className="fr-mb-2w">
+            <Link className="fr-link" to="/missions">
+              ← Retour à la liste
+            </Link>
+          </p>
+          <Alert
+            severity="info"
+            small
+            title="Chargement"
+            description="Chargement de la mission…"
+            role="status"
+          />
+        </div>
+      );
+    }
     return (
       <div className="fr-py-1w">
         <p className="fr-mb-2w">
@@ -605,6 +642,13 @@ export function MissionsDetailView() {
           </ul>
           <h1 className="fr-mb-0 fr-h3 mission-fiche-title-row__title">{titre}</h1>
         </div>
+        <button
+          type="button"
+          className="fr-btn fr-btn--primary fr-icon-edit-line fr-btn--icon-left"
+          onClick={() => missionFormDrawerRef.current?.openEdit(mission)}
+        >
+          Modifier
+        </button>
       </div>
 
       <div

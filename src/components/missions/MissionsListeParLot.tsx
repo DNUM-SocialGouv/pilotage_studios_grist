@@ -76,6 +76,7 @@ export function MissionsListeParLot({
   toggleMaster,
   isEnfantExpanded,
   toggleEnfant,
+  onEditMission,
 }: MissionsListeHierarchieProps) {
   return (
     <div className="missions-lot-list fr-mb-4w">
@@ -241,6 +242,16 @@ export function MissionsListeParLot({
                     iconClassName: "fr-icon-arrow-right-line",
                     to: ficheTo,
                   },
+                  ...(onEditMission
+                    ? [
+                        {
+                          id: "edit",
+                          label: "Modifier le lot",
+                          iconClassName: "fr-icon-edit-line",
+                          onClick: () => onEditMission(m),
+                        },
+                      ]
+                    : []),
                 ]}
               />
             </div>
