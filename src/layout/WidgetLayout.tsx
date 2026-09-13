@@ -1,4 +1,5 @@
 import { Outlet } from "react-router-dom";
+import { FeedbackWidget } from "../components/feedback/FeedbackWidget";
 import { WidgetNav } from "./WidgetNav";
 
 /** Coquille iframe : navigation seule (pas de Header Marianne / Footer). */
@@ -9,6 +10,7 @@ export function WidgetLayout() {
       <main id="main-content" className="fr-container fr-pb-4w" tabIndex={-1}>
         <Outlet />
       </main>
+      <FeedbackWidget />
     </div>
   );
 }

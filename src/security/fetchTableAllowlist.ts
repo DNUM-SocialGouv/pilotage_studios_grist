@@ -12,7 +12,8 @@ export const RELATED_TABLE_IDS = ["BDC", "Constatations", "Commandes_Sofiane"] a
 export type RelatedTableId = (typeof RELATED_TABLE_IDS)[number];
 
 /**
- * Tables lazy (pas au boot) : onglet Dépenses fiche BDC **et** écrans `/missions`.
+ * Tables lazy (pas au boot) : onglet Dépenses fiche BDC, écrans `/missions`,
+ * et select auteur du widget feedback.
  * Lecture seule ; jeton REST `readOnly: true` quand la table passe par REST.
  */
 export const BDC_DEPENSES_TABLE_IDS = [
