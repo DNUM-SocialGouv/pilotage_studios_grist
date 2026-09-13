@@ -4,7 +4,7 @@
 
 ## Objet
 
-Détail lecture d’une mission master : en-tête P2 (bandeau), onglets — aligné UI sur l’app sœur ([PR #222](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/222), [PR #224](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/224), [PR #225](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/225)), **sans** actions d’écriture / IA.
+Détail d’une mission master : en-tête P2 (bandeau), onglets — aligné UI sur l’app sœur ([PR #222](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/222), [PR #224](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/224), [PR #225](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/225), drawer [#227](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/227)). Édition master via drawer ; pas d’IA ni d’édition inline contexte / PJ.
 
 ## Parcours
 
@@ -17,16 +17,20 @@ Détail lecture d’une mission master : en-tête P2 (bandeau), onglets — alig
 
 ## États
 
-Même gate que la liste (`MissionsLayout`). Mission introuvable : alerte warning + retour liste.
+Même gate que la liste (`MissionsLayout`). Mission introuvable : alerte warning + retour liste. Pendant un rechargement après création : « Chargement de la mission… » (évite un faux introuvable).
 
 ## En-tête (P2)
 
 | Élément | Contenu |
 |---------|---------|
-| Ligne titre | Badge statut + **H1** (`Nom_de_la_mission`) |
+| Ligne titre | Badge statut + **H1** (`Nom_de_la_mission`) + bouton **Modifier** (drawer edit) |
 | Bandeau méta | 2–3 colonnes bordées : **Produit** (texte) · **Département** (`departement_sdpc` du produit SDPC lié) · **Dernière mise à jour** (masquée si vide). Pas d’intervenants ni de TTC CRA dans l’en-tête |
 
-Pas de boutons Modifier / CR / estimation.
+Pas de CR / estimation / IA.
+
+## Drawer « Modifier »
+
+Champs **Nom · Produit · Statut** uniquement. Prestations : renvoi vers l’onglet **Équipe & prestations** (lien in-drawer). Après enregistrement : Alert succès in-drawer.
 
 ## Onglets
 

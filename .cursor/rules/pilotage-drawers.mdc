@@ -1,0 +1,14 @@
+---
+description: Drawers widget Grist — taille fixe SM, pas de sélecteur de largeur.
+globs:
+  - src/components/**/*Drawer*.tsx
+  - src/index.css
+alwaysApply: false
+---
+
+# Drawers (widget Grist)
+
+- **Taille fixe SM** : classe `pilotage-drawer-dialog pilotage-drawer-dialog--sm` (largeur CSS ~48rem).
+- **Ne pas** porter `PilotageDrawerSizePicker` / `usePilotageDrawerSize` / `localStorage` `pilotage.drawerSize.*` depuis l’app sœur.
+- **Ne pas** ajouter de toolbar « Largeur du panneau » ni de variants MD/LG/XL côté widget.
+- Markup de référence : `<dialog className="pilotage-drawer-dialog pilotage-drawer-dialog--sm">` + shell / scrim / panel / body (voir `MissionFormDrawer`).

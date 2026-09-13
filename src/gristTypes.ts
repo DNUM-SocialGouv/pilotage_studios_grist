@@ -9,6 +9,10 @@ export interface GristTableOps {
   create: (record: {
     fields: Record<string, unknown>;
   }) => Promise<GristTableCreateResult>;
+  update: (record: {
+    id: number;
+    fields: Record<string, unknown>;
+  }) => Promise<void>;
 }
 
 export interface GristApi {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Intervenant, Mission, MissionEnfant, ProduitSdpc, SuiviMensuel } from "../types";
 import type { GristFetchTableResult, GristRecord } from "../gristTypes";
 import {
@@ -24,6 +24,11 @@ export type MissionsData = {
   suivi: SuiviMensuel[];
 };
 
+export type MissionsDataState = MissionsData & {
+  isReloading: boolean;
+  reloadMissions: () => Promise<void>;
+};
+
 const EMPTY: MissionsData = {
   status: "idle",
   error: null,
@@ -35,7 +40,7 @@ const EMPTY: MissionsData = {
   suivi: [],
 };
 
-async function loadMissionsTables(): Promise<Omit<MissionsData, "status" | "error">> {
+export async function loadMissionsTables(): Promise<Omit<MissionsData, "status" | "error">> {
   const labels = [
     "Missions",
     "Missions_enfants",
@@ -89,8 +94,43 @@ async function loadMissionsTables(): Promise<Omit<MissionsData, "status" | "erro
  * Missions + enfants + CRA + référentiels — chargé uniquement sur `/missions`.
  * Pas au boot widget.
  */
-export function useMissionsData(enabled: boolean): MissionsData {
+export function useMissionsData(enabled: boolean): MissionsDataState {
   const [state, setState] = useState<MissionsData>(EMPTY);
+  const [isReloading, setIsReloading] = useState(false);
+
+  const reloadMissions = useCallback(async () => {
+    if (!enabled) {
+      return;
+    }
+    setIsReloading(true);
+    try {
+      const loaded = await loadMissionsTables();
+      setState({
+        status: "ok",
+        error: null,
+        ...loaded,
+      });
+    } catch (err) {
+      // Ne pas démonter liste/fiche/drawer si on avait déjà des données :
+      // l’écriture Grist peut avoir réussi alors que le re-fetch échoue.
+      setState((prev) => {
+        if (prev.status === "ok") {
+          return prev;
+        }
+        return {
+          ...prev,
+          status: "error",
+          error:
+            err instanceof Error
+              ? err.message
+              : "La liste des missions n’a pas pu être chargée.",
+        };
+      });
+      throw err;
+    } finally {
+      setIsReloading(false);
+    }
+  }, [enabled]);
 
   useEffect(() => {
     if (!enabled) {
@@ -132,5 +172,5 @@ export function useMissionsData(enabled: boolean): MissionsData {
     };
   }, [enabled]);
 
-  return state;
+  return { ...state, isReloading, reloadMissions };
 }

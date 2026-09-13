@@ -32,6 +32,7 @@ import {
   type MissionsListeVue,
 } from "../utils/missionsListeVue";
 import type { CraCellState } from "../utils/missionsListeTotaux";
+import { useMissionFormDrawerRef } from "../components/missions/MissionFormDrawerContext";
 import { useMissionsOutlet } from "./MissionsLayout";
 
 const PAGE_SIZE = 10;
@@ -39,6 +40,7 @@ const NOUVELLES_DEMANDES_STATUTS = ["A instruire", "En investigation"] as const;
 
 export function MissionsListView() {
   const { data } = useMissionsOutlet();
+  const missionFormDrawerRef = useMissionFormDrawerRef();
   const [searchParams] = useSearchParams();
   const vueNouvellesDemandes = searchParams.get("vue") === "nouvelles-demandes";
   const statutUrl = searchParams.get("statut")?.trim() ?? "";
@@ -258,6 +260,17 @@ export function MissionsListView() {
   return (
     <>
       <h1>Missions</h1>
+
+      <div className="fr-mb-3w">
+        <button
+          type="button"
+          className="fr-btn fr-btn--primary fr-icon-add-line fr-btn--icon-left"
+          title="Créer une nouvelle mission"
+          onClick={() => missionFormDrawerRef.current?.openCreate()}
+        >
+          Nouvelle mission
+        </button>
+      </div>
 
       {data.refsError ? (
         <Alert
@@ -489,6 +502,7 @@ export function MissionsListView() {
               toggleMaster={toggleMaster}
               isEnfantExpanded={isEnfantExpanded}
               toggleEnfant={toggleEnfant}
+              onEditMission={(m) => missionFormDrawerRef.current?.openEdit(m)}
             />
           ) : (
             <MissionsListeParLot
@@ -504,6 +518,7 @@ export function MissionsListView() {
               toggleMaster={toggleMaster}
               isEnfantExpanded={isEnfantExpanded}
               toggleEnfant={toggleEnfant}
+              onEditMission={(m) => missionFormDrawerRef.current?.openEdit(m)}
             />
           )}
         </>

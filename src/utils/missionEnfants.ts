@@ -27,6 +27,20 @@ export function missionEnfantFromGrist(record: Record<string, unknown>): Pick<
   };
 }
 
+/** Écriture canonique : ref master (`Mission_parent`). */
+export function missionEnfantParentWriteField(masterId: number): {
+  Mission_parent: number;
+} {
+  return { Mission_parent: masterId };
+}
+
+/** Écriture canonique `Libelle` (plus le texte `Mission_enfant`). */
+export function missionEnfantLibelleWriteField(libelle: string): {
+  Libelle: string;
+} {
+  return { Libelle: libelle };
+}
+
 export function missionEnfantLibelle(enfant: MissionEnfant, intervenantLabel?: string): string {
   const lib = enfantLibelleOptionnel(enfant);
   if (lib) {
