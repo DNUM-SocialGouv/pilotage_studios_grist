@@ -60,8 +60,8 @@ export function RoadmapFlowDiagram({ diagram }: RoadmapFlowDiagramProps) {
                       key={`${edge.from}-${edge.to}-${edge.label ?? ""}-${index}`}
                       className="roadmap-flow__target"
                     >
-                      <span className="roadmap-flow__link-arrow" aria-hidden="true">
-                        ↓
+                      <span className="roadmap-flow__link-arrow">
+                        <span aria-hidden="true">↓</span>
                         {edge.label ? (
                           <span className="roadmap-flow__link-via"> {edge.label}</span>
                         ) : null}
