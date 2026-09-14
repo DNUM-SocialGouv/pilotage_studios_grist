@@ -153,3 +153,53 @@ export function gristPeriodeMonthKeyToTimestamp(key: string): number | undefined
   }
   return Math.floor(Date.UTC(year, month - 1, 1) / 1000);
 }
+
+/** Libellé « Juin 2026 » depuis une clé `YYYY-MM`. */
+export function formatGristPeriodeMonthKeyLabel(key: string): string {
+  const ts = gristPeriodeMonthKeyToTimestamp(key);
+  if (ts == null) {
+    return key;
+  }
+  return formatGristPeriodeMoisAnnee(ts);
+}
+
+type SuiviPeriodeRow = { Periode?: unknown; Annee?: string; Mois?: string };
+
+/**
+ * Inclusif sur clés `YYYY-MM`. Bornes vides = pas de filtre.
+ * Si au moins une borne est active, une ligne sans période résolvable est exclue.
+ */
+export function suiviInPeriodeRange(
+  row: SuiviPeriodeRow,
+  debutKey: string,
+  finKey: string,
+): boolean {
+  const debut = debutKey.trim();
+  const fin = finKey.trim();
+  if (!debut && !fin) {
+    return true;
+  }
+  const key = gristPeriodeFilterKey(row.Periode, row);
+  if (key == null) {
+    return false;
+  }
+  if (debut && key < debut) {
+    return false;
+  }
+  if (fin && key > fin) {
+    return false;
+  }
+  return true;
+}
+
+/** Clés `YYYY-MM` distinctes des lignes (sans période ignorées), tri croissant. */
+export function collectPeriodeMonthKeys(rows: SuiviPeriodeRow[]): string[] {
+  const keys = new Set<string>();
+  for (const row of rows) {
+    const key = gristPeriodeFilterKey(row.Periode, row);
+    if (key) {
+      keys.add(key);
+    }
+  }
+  return Array.from(keys).sort((a, b) => a.localeCompare(b));
+}

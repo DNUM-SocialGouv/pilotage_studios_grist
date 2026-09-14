@@ -21,6 +21,11 @@ import {
 } from "../utils/craByMission";
 import { formatGristDate, formatGristDateTime } from "../utils/formatGristDate";
 import { formatMontantEur } from "../utils/formatMontant";
+import {
+  collectPeriodeMonthKeys,
+  formatGristPeriodeMonthKeyLabel,
+  suiviInPeriodeRange,
+} from "../utils/gristPeriode";
 import { extractGristReferenceId } from "../utils/gristReferences";
 import {
   enfantsOfMaster,
@@ -174,33 +179,89 @@ function MissionEquipePanel({
   missionId,
   missionTitre,
   enfants,
-  suiviByEnfantId,
-  ttcByEnfantId,
-  craCountByEnfantId,
-  horsPrestationTtc,
-  joursLabel,
+  realisations,
   intervenantsById,
   equipesByIntervenantId,
 }: {
   missionId: number;
   missionTitre: string;
   enfants: MissionEnfant[];
-  suiviByEnfantId: Map<number, SuiviMensuel[]>;
-  ttcByEnfantId: Map<number, number>;
-  craCountByEnfantId: Map<number, number>;
-  horsPrestationTtc: number;
-  joursLabel: string;
+  realisations: SuiviMensuel[];
   intervenantsById: Map<number, string>;
   equipesByIntervenantId: Map<number, string>;
 }) {
   const [equipeFilter, setEquipeFilter] = useState("");
-  const { isExpanded, toggle } = useExpandableRowIds<string>(undefined, equipeFilter);
+  const [periodeDebut, setPeriodeDebut] = useState("");
+  const [periodeFin, setPeriodeFin] = useState("");
+  const expandResetKey = `${equipeFilter}|${periodeDebut}|${periodeFin}`;
+  const { isExpanded, toggle } = useExpandableRowIds<string>(undefined, expandResetKey);
   const enfantDrawerRef = useMissionEnfantDrawerRef();
+
+  const periodeFilterActive = Boolean(periodeDebut || periodeFin);
+
+  const periodeOptions = useMemo(
+    () => collectPeriodeMonthKeys(realisations),
+    [realisations],
+  );
+
+  const realisationsFiltrees = useMemo(
+    () =>
+      realisations.filter((row) => suiviInPeriodeRange(row, periodeDebut, periodeFin)),
+    [realisations, periodeDebut, periodeFin],
+  );
+
+  const suiviByEnfantId = useMemo(
+    () => groupSuiviRowsByEnfantId(realisationsFiltrees),
+    [realisationsFiltrees],
+  );
+
+  const craParEnfant = useMemo(
+    () => aggregateCraByEnfantId(realisationsFiltrees),
+    [realisationsFiltrees],
+  );
+
+  const ttcByEnfantId = useMemo(() => {
+    const map = new Map<number, number>();
+    for (const [eid, totaux] of craParEnfant) {
+      map.set(eid, totaux.ttc);
+    }
+    return map;
+  }, [craParEnfant]);
+
+  const craCountByEnfantId = useMemo(() => {
+    const map = new Map<number, number>();
+    for (const [eid, totaux] of craParEnfant) {
+      map.set(eid, totaux.count);
+    }
+    return map;
+  }, [craParEnfant]);
+
+  const horsPrestationTtc = useMemo(
+    () => sumSuiviTtcHorsPrestationForMission(realisationsFiltrees, missionId, enfants),
+    [realisationsFiltrees, missionId, enfants],
+  );
+
+  const joursLabel = useMemo(() => {
+    let jours = 0;
+    for (const s of realisationsFiltrees) {
+      if (typeof s.Nb_jours === "number" && Number.isFinite(s.Nb_jours)) {
+        jours += s.Nb_jours;
+      }
+    }
+    return jours.toLocaleString("fr-FR", { maximumFractionDigits: 4 });
+  }, [realisationsFiltrees]);
+
+  const enfantsApresPeriode = useMemo(() => {
+    if (!periodeFilterActive) {
+      return enfants;
+    }
+    return enfants.filter((e) => (craCountByEnfantId.get(e.id) ?? 0) > 0);
+  }, [enfants, periodeFilterActive, craCountByEnfantId]);
 
   const equipesPresentes = useMemo(() => {
     const set = new Set<string>();
     let hasSansEquipe = false;
-    for (const e of enfants) {
+    for (const e of enfantsApresPeriode) {
       const eq = equipeLabelForEnfant(e, equipesByIntervenantId);
       if (eq) {
         set.add(eq);
@@ -215,21 +276,21 @@ function MissionEquipePanel({
       set.add(EQUIPE_HORS_PRESTATION_LABEL);
     }
     return Array.from(set).sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
-  }, [enfants, equipesByIntervenantId, horsPrestationTtc]);
+  }, [enfantsApresPeriode, equipesByIntervenantId, horsPrestationTtc]);
 
   const enfantsFiltres = useMemo(() => {
     if (!equipeFilter || equipeFilter === EQUIPE_HORS_PRESTATION_LABEL) {
-      return equipeFilter === EQUIPE_HORS_PRESTATION_LABEL ? [] : enfants;
+      return equipeFilter === EQUIPE_HORS_PRESTATION_LABEL ? [] : enfantsApresPeriode;
     }
-    return enfants.filter(
+    return enfantsApresPeriode.filter(
       (e) => equipeKeyForEnfant(e, equipesByIntervenantId) === equipeFilter,
     );
-  }, [enfants, equipeFilter, equipesByIntervenantId]);
+  }, [enfantsApresPeriode, equipeFilter, equipesByIntervenantId]);
 
   const ttcParEquipe = useMemo(() => {
     if (!equipeFilter) {
       return aggregateTtcByEquipe(
-        enfants,
+        enfantsApresPeriode,
         ttcByEnfantId,
         equipesByIntervenantId,
         horsPrestationTtc,
@@ -240,13 +301,32 @@ function MissionEquipePanel({
     }
     return aggregateTtcByEquipe(enfantsFiltres, ttcByEnfantId, equipesByIntervenantId, 0);
   }, [
-    enfants,
+    enfantsApresPeriode,
     enfantsFiltres,
     equipeFilter,
     ttcByEnfantId,
     equipesByIntervenantId,
     horsPrestationTtc,
   ]);
+
+  const emptyMessage = (() => {
+    if (enfants.length === 0) {
+      return null;
+    }
+    if (enfantsFiltres.length > 0) {
+      return null;
+    }
+    if (equipeFilter === EQUIPE_HORS_PRESTATION_LABEL) {
+      return "Les CRA hors prestation n’apparaissent pas dans le tableau des prestations.";
+    }
+    if (periodeFilterActive && enfantsApresPeriode.length === 0) {
+      return "Aucune prestation avec CRA sur cette période.";
+    }
+    if (equipeFilter) {
+      return `Aucune prestation pour l’équipe « ${equipeFilter} ».`;
+    }
+    return null;
+  })();
 
   return (
     <>
@@ -277,7 +357,39 @@ function MissionEquipePanel({
             ))}
           </Select>
         </div>
-        <div className="fr-col-12 fr-col-md-8">
+        <div className="fr-col-12 fr-col-md-4">
+          <Select
+            label="Du mois"
+            nativeSelectProps={{
+              value: periodeDebut,
+              onChange: (e) => setPeriodeDebut(e.currentTarget.value),
+            }}
+          >
+            <option value="">Tous</option>
+            {periodeOptions.map((key) => (
+              <option key={key} value={key}>
+                {formatGristPeriodeMonthKeyLabel(key)}
+              </option>
+            ))}
+          </Select>
+        </div>
+        <div className="fr-col-12 fr-col-md-4">
+          <Select
+            label="Au mois"
+            nativeSelectProps={{
+              value: periodeFin,
+              onChange: (e) => setPeriodeFin(e.currentTarget.value),
+            }}
+          >
+            <option value="">Tous</option>
+            {periodeOptions.map((key) => (
+              <option key={key} value={key}>
+                {formatGristPeriodeMonthKeyLabel(key)}
+              </option>
+            ))}
+          </Select>
+        </div>
+        <div className="fr-col-12">
           <CraTtcStackBar
             slices={ttcParEquipe}
             title="TTC par équipe"
@@ -305,13 +417,7 @@ function MissionEquipePanel({
         <p className="fr-mb-0">Aucune prestation rattachée à cette mission.</p>
       ) : null}
 
-      {enfants.length > 0 && enfantsFiltres.length === 0 ? (
-        <p className="fr-mb-0">
-          {equipeFilter === EQUIPE_HORS_PRESTATION_LABEL
-            ? "Les CRA hors prestation n’apparaissent pas dans le tableau des prestations."
-            : `Aucune prestation pour l’équipe « ${equipeFilter} ».`}
-        </p>
-      ) : null}
+      {emptyMessage ? <p className="fr-mb-0">{emptyMessage}</p> : null}
 
       {enfantsFiltres.length > 0 ? (
         <TableShell multiline className="fr-mb-0">
@@ -319,6 +425,9 @@ function MissionEquipePanel({
             <caption className="fr-sr-only">
               Prestations de la mission {missionTitre}
               {equipeFilter ? ` — équipe ${equipeFilter}` : ""}
+              {periodeFilterActive
+                ? ` — période CRA${periodeDebut ? ` du ${formatGristPeriodeMonthKeyLabel(periodeDebut)}` : ""}${periodeFin ? ` au ${formatGristPeriodeMonthKeyLabel(periodeFin)}` : ""}`
+                : ""}
             </caption>
             <thead>
               <tr>
@@ -526,50 +635,6 @@ export function MissionsDetailView() {
     );
   }, [data.missionEnfants, data.suivi, missionId]);
 
-  const suiviByEnfantId = useMemo(
-    () => groupSuiviRowsByEnfantId(realisations),
-    [realisations],
-  );
-
-  const craParEnfant = useMemo(
-    () => aggregateCraByEnfantId(realisations),
-    [realisations],
-  );
-
-  const ttcByEnfantId = useMemo(() => {
-    const map = new Map<number, number>();
-    for (const [eid, totaux] of craParEnfant) {
-      map.set(eid, totaux.ttc);
-    }
-    return map;
-  }, [craParEnfant]);
-
-  const craCountByEnfantId = useMemo(() => {
-    const map = new Map<number, number>();
-    for (const [eid, totaux] of craParEnfant) {
-      map.set(eid, totaux.count);
-    }
-    return map;
-  }, [craParEnfant]);
-
-  const joursMission = useMemo(() => {
-    let jours = 0;
-    for (const s of realisations) {
-      if (typeof s.Nb_jours === "number" && Number.isFinite(s.Nb_jours)) {
-        jours += s.Nb_jours;
-      }
-    }
-    return jours;
-  }, [realisations]);
-
-  const horsPrestationTtc = useMemo(
-    () =>
-      Number.isFinite(missionId)
-        ? sumSuiviTtcHorsPrestationForMission(realisations, missionId, enfants)
-        : 0,
-    [realisations, missionId, enfants],
-  );
-
   if (!Number.isFinite(missionId)) {
     return (
       <div className="fr-py-1w">
@@ -721,11 +786,7 @@ export function MissionsDetailView() {
             missionId={mission.id}
             missionTitre={titre}
             enfants={enfants}
-            suiviByEnfantId={suiviByEnfantId}
-            ttcByEnfantId={ttcByEnfantId}
-            craCountByEnfantId={craCountByEnfantId}
-            horsPrestationTtc={horsPrestationTtc}
-            joursLabel={joursMission.toLocaleString("fr-FR", { maximumFractionDigits: 4 })}
+            realisations={realisations}
             intervenantsById={intervenantsById}
             equipesByIntervenantId={equipesByIntervenantId}
           />
