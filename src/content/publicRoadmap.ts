@@ -158,7 +158,7 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
   {
     id: "cra-recap-porteurs",
     themeId: "cra",
-    title: "Générer le récap porteurs depuis la liste des CRA",
+    title: "Générer le récap porteurs (Outils)",
     summary: "Préparer l’export mensuel groupé par portage pour envoi manuel aux ESN.",
     status: "done",
     issueUrl: "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/48",

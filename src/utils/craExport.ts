@@ -15,11 +15,11 @@ import { resolveSuiviMasterMissionId } from "./missionEnfants.ts";
 import { libelleProduitGrist } from "./pilotageProduits.ts";
 import { montantTtcSuiviMensuel } from "./suiviMensuel.ts";
 
-export { copyHtmlToClipboard, copyTextToClipboard } from "./clipboard.ts";
-
 export const CRA_EXPORT_SANS_PORTAGE = "Sans portage";
 
 export type CraExportRow = {
+  /** Id ligne `Realise` (clé React / debug). */
+  suiviId: number;
   portage: string;
   intervenant: string;
   periode: string;
@@ -185,6 +185,7 @@ export function buildCraExportRows(
       typeof s.Nb_jours === "number" && Number.isFinite(s.Nb_jours) ? s.Nb_jours : null;
     const ttc = montantTtcSuiviMensuel(s);
     return {
+      suiviId: s.id,
       portage: portageForSuivi(s, maps),
       intervenant: labelIntervenant(s, maps),
       periode: formatGristPeriodeMoisAnnee(s.Periode, s),
@@ -245,11 +246,16 @@ export function groupCraExportByPortage(rows: readonly CraExportRow[]): CraExpor
     });
 }
 
-function csvEscape(value: string): string {
-  if (/[;"\n\r]/.test(value)) {
-    return `"${value.replace(/"/g, '""')}"`;
+/** Neutralise formules Excel (`=`, `+`, `-`, `@`, tab…) et échappe `;` / quotes. */
+export function csvEscape(value: string): string {
+  let v = value;
+  if (/^[=+\-@\t\r]/.test(v)) {
+    v = `'${v}`;
   }
-  return value;
+  if (/[;"\n\r]/.test(v)) {
+    return `"${v.replace(/"/g, '""')}"`;
+  }
+  return v;
 }
 
 function formatJoursCsv(value: number | null): string {
@@ -259,14 +265,12 @@ function formatJoursCsv(value: number | null): string {
   return String(value).replace(".", ",");
 }
 
+/** TTC CSV sans séparateur de milliers (évite espaces insécables Excel). */
 function formatTtcCsv(value: number | null): string {
   if (value == null) {
     return "";
   }
-  return value.toLocaleString("fr-FR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  return value.toFixed(2).replace(".", ",");
 }
 
 function formatTtcDisplay(value: number | null): string {
@@ -336,7 +340,7 @@ export function craExportRowsToMarkdown(
 ): string {
   const active = columns.length > 0 ? columns : CRA_EXPORT_COLUMNS;
   const escapeMd = (value: string) =>
-    value.replace(/\|/g, "\\|").replace(/\r?\n/g, " ").trim();
+    escapeHtml(value).replace(/\|/g, "\\|").replace(/\r?\n/g, " ").trim();
 
   const header = `| ${active.map((c) => escapeMd(c.label)).join(" | ")} |`;
   const sep = `| ${active.map(() => "---").join(" | ")} |`;
@@ -349,7 +353,7 @@ export function craExportRowsToMarkdown(
   return [header, sep, ...body].join("\n");
 }
 
-function escapeHtml(value: string): string {
+export function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")

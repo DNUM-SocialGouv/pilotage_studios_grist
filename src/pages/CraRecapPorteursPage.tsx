@@ -75,7 +75,6 @@ export function CraRecapPorteursPage() {
   const [actionMessage, setActionMessage] = useState<string | undefined>();
   const [actionError, setActionError] = useState<string | undefined>();
   const [busy, setBusy] = useState(false);
-  const [periodeInitialized, setPeriodeInitialized] = useState(false);
 
   const intervenantsById = useMemo(() => {
     const map = new Map<number, string>();
@@ -129,13 +128,47 @@ export function CraRecapPorteursPage() {
 
   const periodeOptions = useMemo(() => craPeriodeOptions(sortedSuivi), [sortedSuivi]);
 
+  /** Resynchronise le mois si vide ou hors options (évite le flash « période requise »). */
   useEffect(() => {
-    if (periodeInitialized || periodeOptions.length === 0) {
+    if (periodeOptions.length === 0) {
+      if (periode) {
+        setPeriode("");
+      }
       return;
     }
-    setPeriode(periodeOptions[0].value);
-    setPeriodeInitialized(true);
-  }, [periodeInitialized, periodeOptions]);
+    if (!periode || !periodeOptions.some((o) => o.value === periode)) {
+      setPeriode(periodeOptions[0].value);
+    }
+  }, [periodeOptions, periode]);
+
+  const resetFiltersAfterPeriodeChange = () => {
+    setEquipeFilter("");
+    setPortageFilter("");
+    setBdcFiltre("");
+    setIntervenantFiltre("");
+    setProduitFiltre("");
+  };
+
+  const resetFiltersAfterEquipeChange = () => {
+    setPortageFilter("");
+    setBdcFiltre("");
+    setIntervenantFiltre("");
+    setProduitFiltre("");
+  };
+
+  const portageDataUnavailable = useMemo(() => {
+    const equipeFailed = Boolean(data.refsError?.includes("Equipe"));
+    if (equipeFailed) {
+      return true;
+    }
+    if (data.intervenants.length > 0) {
+      return false;
+    }
+    return sortedSuivi.some((s) => {
+      const id = extractGristReferenceId(s.Intervenants);
+      return id != null && id !== 0;
+    });
+  }, [data.refsError, data.intervenants.length, sortedSuivi]);
 
   const labelMaps: CraExportLabelMaps = useMemo(
     () => ({
@@ -295,6 +328,12 @@ export function CraRecapPorteursPage() {
 
   const runCopy = async (rows: typeof exportRows, label: string) => {
     clearFeedback();
+    if (portageDataUnavailable) {
+      setActionError(
+        "Le référentiel Equipe (portage) est indisponible — export et copie bloqués.",
+      );
+      return;
+    }
     if (activeColumns.length === 0) {
       setActionError("Activez au moins une colonne.");
       return;
@@ -315,6 +354,12 @@ export function CraRecapPorteursPage() {
 
   const runDownloadAllCsv = () => {
     clearFeedback();
+    if (portageDataUnavailable) {
+      setActionError(
+        "Le référentiel Equipe (portage) est indisponible — export et copie bloqués.",
+      );
+      return;
+    }
     if (activeColumns.length === 0) {
       setActionError("Activez au moins une colonne.");
       return;
@@ -336,6 +381,12 @@ export function CraRecapPorteursPage() {
 
   const runDownloadByPortage = async () => {
     clearFeedback();
+    if (portageDataUnavailable) {
+      setActionError(
+        "Le référentiel Equipe (portage) est indisponible — export et copie bloqués.",
+      );
+      return;
+    }
     if (activeColumns.length === 0) {
       setActionError("Activez au moins une colonne.");
       return;
@@ -361,6 +412,12 @@ export function CraRecapPorteursPage() {
 
   const runDownloadOne = (group: CraExportPortageGroup) => {
     clearFeedback();
+    if (portageDataUnavailable) {
+      setActionError(
+        "Le référentiel Equipe (portage) est indisponible — export et copie bloqués.",
+      );
+      return;
+    }
     if (activeColumns.length === 0) {
       setActionError("Activez au moins une colonne.");
       return;
@@ -432,7 +489,14 @@ export function CraRecapPorteursPage() {
   return (
     <>
       <h1>Récap CRA pour les porteurs</h1>
-      {data.refsError ? (
+      {portageDataUnavailable ? (
+        <Alert
+          severity="error"
+          title="Portage indisponible"
+          description="La table Equipe n’a pas pu être chargée : le groupement par porteur serait incorrect. Rechargez la page ou vérifiez vos droits Grist — export et copie sont bloqués."
+          className="fr-mb-2w"
+        />
+      ) : data.refsError ? (
         <Alert
           severity="warning"
           title="Référentiels partiels"
@@ -455,7 +519,7 @@ export function CraRecapPorteursPage() {
               onChange: (e) => {
                 clearFeedback();
                 setPeriode(e.currentTarget.value);
-                setPortageFilter("");
+                resetFiltersAfterPeriodeChange();
               },
             }}
           >
@@ -477,7 +541,7 @@ export function CraRecapPorteursPage() {
               onChange: (e) => {
                 clearFeedback();
                 setEquipeFilter(e.currentTarget.value);
-                setPortageFilter("");
+                resetFiltersAfterEquipeChange();
               },
             }}
           >
@@ -623,13 +687,22 @@ export function CraRecapPorteursPage() {
         />
       ) : null}
 
-      {!periode ? (
+      {!periode && periodeOptions.length === 0 ? (
         <Alert
           severity="info"
           small
-          title="Période requise"
-          description="Choisissez un mois pour préparer le récap."
+          title="Aucune période"
+          description="Aucune réalisation avec période exploitable."
           className="fr-mb-2w"
+        />
+      ) : !periode ? (
+        <Alert
+          severity="info"
+          small
+          title="Chargement"
+          description="Sélection du mois…"
+          className="fr-mb-2w"
+          role="status"
         />
       ) : exportRows.length === 0 ? (
         <p className="fr-text--sm fr-text-mention--grey fr-mb-2w">
@@ -693,7 +766,7 @@ export function CraRecapPorteursPage() {
               type="button"
               priority="primary"
               iconId="fr-icon-download-line"
-              disabled={busy || visibleGroups.length === 0}
+              disabled={busy || portageDataUnavailable || visibleGroups.length === 0}
               onClick={() => {
                 void runDownloadByPortage();
               }}
@@ -704,7 +777,7 @@ export function CraRecapPorteursPage() {
               type="button"
               priority="secondary"
               iconId="fr-icon-file-download-line"
-              disabled={busy || visibleRows.length === 0}
+              disabled={busy || portageDataUnavailable || visibleRows.length === 0}
               onClick={runDownloadAllCsv}
             >
               CSV consolidé
@@ -713,7 +786,7 @@ export function CraRecapPorteursPage() {
               type="button"
               priority="tertiary"
               iconId="fr-icon-clipboard-line"
-              disabled={busy || visibleRows.length === 0}
+              disabled={busy || portageDataUnavailable || visibleRows.length === 0}
               onClick={() => {
                 void runCopy(
                   visibleRows,
@@ -726,10 +799,10 @@ export function CraRecapPorteursPage() {
           </div>
 
           <div className="fr-accordions-group">
-            {visibleGroups.map((group) => (
+            {visibleGroups.map((group, groupIndex) => (
               <Accordion
-                key={group.portage}
-                id={`cra-recap-portage-${sanitizeId(group.portage)}`}
+                key={`${groupIndex}-${group.portage}`}
+                id={`cra-recap-portage-${groupIndex}-${sanitizeId(group.portage)}`}
                 titleAs="h3"
                 label={`${group.portage} — ${group.rows.length} ligne${
                   group.rows.length > 1 ? "s" : ""
@@ -745,7 +818,7 @@ export function CraRecapPorteursPage() {
                       size="small"
                       priority="secondary"
                       iconId="fr-icon-download-line"
-                      disabled={busy}
+                      disabled={busy || portageDataUnavailable}
                       onClick={() => runDownloadOne(group)}
                     >
                       CSV
@@ -755,7 +828,7 @@ export function CraRecapPorteursPage() {
                       size="small"
                       priority="tertiary"
                       iconId="fr-icon-clipboard-line"
-                      disabled={busy}
+                      disabled={busy || portageDataUnavailable}
                       onClick={() => {
                         void runCopy(group.rows, `Récap ${group.portage}`);
                       }}
@@ -782,8 +855,8 @@ export function CraRecapPorteursPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {group.rows.map((r, index) => (
-                          <tr key={`${group.portage}-${r.intervenant}-${r.bdc}-${index}`}>
+                        {group.rows.map((r) => (
+                          <tr key={r.suiviId}>
                             {activeColumns.map((col) => (
                               <td
                                 key={col.id}

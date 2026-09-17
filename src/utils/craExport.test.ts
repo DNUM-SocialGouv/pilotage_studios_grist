@@ -8,8 +8,11 @@ import {
   CRA_EXPORT_SANS_PORTAGE,
   craExportCsvFilename,
   craExportRowsToCsv,
+  craExportRowsToHtml,
   craExportRowsToMarkdown,
+  csvEscape,
   defaultCraExportColumnVisibility,
+  escapeHtml,
   groupCraExportByPortage,
   sanitizeCraExportFilenamePart,
   selectedCraExportColumns,
@@ -68,6 +71,20 @@ describe("groupCraExportByPortage", () => {
     assert.equal(groups[0].portage, "Malt");
     assert.equal(groups[0].totalJours, 3);
     assert.equal(groups[1].portage, CRA_EXPORT_SANS_PORTAGE);
+    assert.equal(groups[0].rows[0].suiviId, 2);
+  });
+});
+
+describe("csvEscape", () => {
+  it("neutralise les formules Excel en tête de cellule", () => {
+    assert.equal(csvEscape("=cmd"), "'=cmd");
+    assert.equal(csvEscape("+1+1"), "'+1+1");
+    assert.equal(csvEscape("-1"), "'-1");
+    assert.equal(csvEscape("@SUM"), "'@SUM");
+  });
+
+  it("échappe point-virgule et guillemets", () => {
+    assert.equal(csvEscape('a;b"c'), '"a;b""c"');
   });
 });
 
@@ -84,6 +101,44 @@ describe("craExportRowsToCsv", () => {
     assert.ok(csv.includes("Malt;Alice"));
     assert.ok(csv.includes("CH-001"));
     assert.ok(csv.includes("2,5"));
+    assert.ok(csv.includes("1234,50"));
+  });
+
+  it("neutralise une formule dans un libellé", () => {
+    const maps = {
+      ...emptyMaps,
+      intervenantsById: new Map([[1, "=HYPERLINK()"]]),
+    };
+    const exportRows = buildCraExportRows(
+      [row({ id: 1, Intervenants: 1, BDC_cible: 10 })],
+      maps,
+    );
+    const csv = craExportRowsToCsv(exportRows, [CRA_EXPORT_COLUMNS[1]]);
+    assert.ok(csv.includes("'=HYPERLINK()"));
+  });
+});
+
+describe("escapeHtml / craExportRowsToHtml", () => {
+  it("échappe les balises HTML", () => {
+    assert.equal(escapeHtml(`<img src=x onerror=alert(1)>`), "&lt;img src=x onerror=alert(1)&gt;");
+  });
+
+  it("produit un tableau HTML échappé", () => {
+    const maps = {
+      ...emptyMaps,
+      intervenantsById: new Map([[1, `<b>Alice</b>`]]),
+    };
+    const exportRows = buildCraExportRows(
+      [row({ id: 1, Intervenants: 1, BDC_cible: 10 })],
+      maps,
+    );
+    const html = craExportRowsToHtml(exportRows, [
+      CRA_EXPORT_COLUMNS[0],
+      CRA_EXPORT_COLUMNS[1],
+    ]);
+    assert.ok(html.includes("<table"));
+    assert.ok(html.includes("&lt;b&gt;Alice&lt;/b&gt;"));
+    assert.ok(!html.includes("<b>Alice</b>"));
   });
 });
 
@@ -96,6 +151,20 @@ describe("craExportRowsToMarkdown", () => {
     const md = craExportRowsToMarkdown(exportRows, [CRA_EXPORT_COLUMNS[0], CRA_EXPORT_COLUMNS[1]]);
     assert.ok(md.includes("| Portage | Intervenant |"));
     assert.ok(md.includes("| Malt | Alice |"));
+  });
+
+  it("échappe le HTML dans les cellules Markdown", () => {
+    const maps = {
+      ...emptyMaps,
+      intervenantsById: new Map([[1, `<script>x</script>`]]),
+    };
+    const exportRows = buildCraExportRows(
+      [row({ id: 1, Intervenants: 1, BDC_cible: 10 })],
+      maps,
+    );
+    const md = craExportRowsToMarkdown(exportRows, [CRA_EXPORT_COLUMNS[1]]);
+    assert.ok(md.includes("&lt;script&gt;"));
+    assert.ok(!md.includes("<script>"));
   });
 });
 

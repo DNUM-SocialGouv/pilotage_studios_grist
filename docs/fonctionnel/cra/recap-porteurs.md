@@ -20,8 +20,8 @@ Menu **Outils → Récap porteurs** (page dédiée, pas de drawer). Pas de bouto
 
 | Filtre | Comportement |
 |--------|--------------|
-| **Mois du récap** | Obligatoire. Prérempli avec le mois le plus récent dans les données. |
-| **Équipe** | Filtre local. Changer d’équipe réinitialise le filtre portage. |
+| **Mois du récap** | Obligatoire. Prérempli avec le mois le plus récent (resynchronisé si hors options). **Réinitialise** équipe, portage et filtres avancés. |
+| **Équipe** | Filtre local. **Réinitialise** portage et filtres avancés. |
 | **Portage** | Filtre l’aperçu **et** les actions globales (compteur, Copier tout, CSV). |
 | **Avancés** | BDC, intervenant, produit (accordéon) — locaux à la page. |
 
@@ -60,3 +60,5 @@ Mêmes tables lazy que `/cra` via `useMissionsData` + `BDC` du contexte PA. Grou
 - Pas de rapprochement Malt
 - Lecture seule (pas de create / edit CRA — [#33](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/33))
 - Aperçu par portage **sans pagination** (exception DSFR) : l’export / la copie portent toutes les lignes du groupe
+- Si la table `Equipe` est indisponible : **export et copie bloqués** (évite un récap entièrement « Sans portage »)
+- Changer de mois (ou d’équipe) réinitialise les autres filtres
