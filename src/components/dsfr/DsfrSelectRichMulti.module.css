@@ -7,6 +7,11 @@
   z-index: 1;
 }
 
+/* Comme DsfrDropdownMenu : le panneau ouvert passe devant les autres champs de la grille. */
+.rootOpen {
+  z-index: 40;
+}
+
 /**
  * Groupe « Tout sélectionner / Tout désélectionner » : marges natives du DSFR
  * (jusqu’à 1rem entre boutons empilés) remplacées par gap 1V (0,25rem) + typo xs

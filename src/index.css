@@ -439,6 +439,14 @@ span.fr-tag.fr-tag--beige-gris-galet {
   --collapse-max-height: none;
 }
 
+/*
+ * Accordion DSFR : focus-within → z-index 1, égal aux overlays de bordure fr-table (1–2)
+ * dans le même stacking context → le contour du tableau passe devant le panneau ouvert.
+ */
+.missions-liste-filtres.fr-accordion:focus-within {
+  z-index: 10;
+}
+
 .missions-liste-filtres .fr-search-bar {
   width: 100%;
   max-width: none;

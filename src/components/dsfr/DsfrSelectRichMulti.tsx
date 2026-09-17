@@ -211,7 +211,7 @@ export function DsfrSelectRichMulti(props: DsfrSelectRichMultiProps) {
   return (
     <div
       ref={rootRef}
-      className={cx(fr.cx("fr-select-group"), styles.root, className)}
+      className={cx(fr.cx("fr-select-group"), styles.root, open && styles.rootOpen, className)}
       style={rootStyle}
     >
       <label className={fr.cx("fr-label")} htmlFor={`${baseId}-trigger`}>
