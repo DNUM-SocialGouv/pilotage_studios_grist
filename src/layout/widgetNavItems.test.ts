@@ -43,11 +43,28 @@ describe("isGroupActive", () => {
     assert.equal(isGroupActive("/", budget), false);
     assert.equal(isGroupActive("/produits", budget), false);
     assert.equal(isGroupActive("/missions", budget), false);
+    assert.equal(isGroupActive("/outils/recap-porteurs", budget), false);
+  });
+});
+
+describe("groupe Outils", () => {
+  const outils = WIDGET_NAV_ITEMS.find(
+    (item) => isWidgetNavGroup(item) && item.text === "Outils",
+  );
+  assert.ok(outils && isWidgetNavGroup(outils));
+
+  it("est actif sur le récap porteurs", () => {
+    assert.equal(isGroupActive("/outils/recap-porteurs", outils), true);
+  });
+
+  it("n’est pas actif hors Outils", () => {
+    assert.equal(isGroupActive("/cra", outils), false);
+    assert.equal(isGroupActive("/", outils), false);
   });
 });
 
 describe("flattenNavLinks", () => {
-  it("aplatit Accueil, sous-menu Budget et liens directs", () => {
+  it("aplatit Accueil, sous-menu Budget, liens directs et Outils", () => {
     const hrefs = flattenNavLinks(WIDGET_NAV_ITEMS).map((link) => link.href);
     assert.deepEqual(hrefs, [
       "/",
@@ -58,12 +75,13 @@ describe("flattenNavLinks", () => {
       "/produits",
       "/missions",
       "/intervenants",
+      "/outils/recap-porteurs",
     ]);
   });
 });
 
 describe("WIDGET_MODULE_LINKS", () => {
-  it("liste les 7 modules welcome (hors Accueil)", () => {
+  it("liste les modules welcome (hors Accueil)", () => {
     assert.deepEqual(
       WIDGET_MODULE_LINKS.map(({ text, href, status }) => ({ text, href, status })),
       [
@@ -74,6 +92,7 @@ describe("WIDGET_MODULE_LINKS", () => {
         { text: "Produits", href: "/produits", status: "coming" },
         { text: "Missions", href: "/missions", status: "in_progress" },
         { text: "Intervenants", href: "/intervenants", status: "coming" },
+        { text: "Récap porteurs", href: "/outils/recap-porteurs", status: "in_progress" },
       ],
     );
   });

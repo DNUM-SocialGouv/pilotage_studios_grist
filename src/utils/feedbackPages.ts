@@ -8,6 +8,7 @@ export const FEEDBACK_PAGE_OPTIONS = [
   "Missions",
   "Intervenants",
   "Prestation / CRA",
+  "Récap porteurs",
   "Procès-verbaux",
   "Évaluations",
   "Analyse",
@@ -38,6 +39,12 @@ export function pageOptionFromPathname(pathname: string): FeedbackPageOption {
   }
   if (pathname === "/cra" || pathname.startsWith("/cra/")) {
     return "Prestation / CRA";
+  }
+  if (
+    pathname === "/outils/recap-porteurs" ||
+    pathname.startsWith("/outils/recap-porteurs/")
+  ) {
+    return "Récap porteurs";
   }
   if (pathname === "/pv" || pathname.startsWith("/pv/")) {
     return "Procès-verbaux";

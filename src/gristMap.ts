@@ -188,6 +188,7 @@ export function toIntervenant(record: GristRecord): Intervenant {
     id: record.id,
     Prenom_Nom: asString(record.Prenom_Nom) ?? asGristChoice(record.Prenom_Nom),
     Equipe: asGristChoice(record.Equipe) ?? asString(record.Equipe),
+    Portage: asGristChoice(record.Portage) ?? asString(record.Portage),
   };
 }
 
