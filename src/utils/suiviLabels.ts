@@ -1,10 +1,10 @@
-import type { SuiviMensuel } from "../types";
+import type { SuiviMensuel } from "../types.ts";
 import {
   extractGristReferenceId,
   extractProduitLibelleFromSuivi,
   extractProduitRefFromSuivi,
-} from "./gristReferences";
-import { libelleProduitGrist } from "./pilotageProduits";
+} from "./gristReferences.ts";
+import { libelleProduitGrist } from "./pilotageProduits.ts";
 
 export function labelIntervenantSuivi(
   s: SuiviMensuel,

@@ -131,25 +131,53 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     id: "cra-suivre",
     themeId: "cra",
     title: "Suivre les CRA dans le parcours de pilotage",
-    summary: "Retrouver et lire les réalisations du mois dans le parcours métier.",
-    status: "current",
+    summary:
+      "Retrouver et lire les réalisations : page Prestation / CRA et lignes sous les missions.",
+    status: "done",
     issueUrl: "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/32",
     guide: {
-      lead: "Le CRA (compte-rendu d’activité) décrit le travail réalisé sur une période. Cette étape vise à le lire dans le même parcours que la mission — pas dans une table isolée.",
+      lead: "Le CRA décrit le travail réalisé sur une période. Vous pouvez le lire en liste transversale (Budget → Prestation / CRA) ou depuis la fiche mission.",
       steps: [
-        "Partir de la mission, puis de la prestation concernée.",
-        "Retrouver les réalisations du mois (jours, montants) rattachées à cette prestation.",
-        "Comparer ce qui était envisagé et ce qui a été réalisé, pour piloter sans perdre le fil.",
+        "Ouvrir Prestation / CRA pour filtrer par mois, équipe, intervenant, produit ou bon de commande.",
+        "Ou partir d’une mission et déplier les réalisations d’une prestation.",
+        "Comparer le prévu et le réalisé sans ouvrir les tables brutes.",
       ],
       diagram: {
         nodes: [
-          { id: "mission", label: "Mission" },
-          { id: "presta", label: "Prestation" },
-          { id: "cra", label: "Réalisations du mois" },
+          { id: "liste", label: "Liste CRA" },
+          { id: "mission", label: "Fiche mission" },
+          { id: "cra", label: "Réalisations" },
         ],
         edges: [
-          { from: "mission", to: "presta" },
-          { from: "presta", to: "cra", label: "CRA" },
+          { from: "liste", to: "cra" },
+          { from: "mission", to: "cra", label: "dépliable" },
+        ],
+      },
+    },
+  },
+  {
+    id: "cra-recap-porteurs",
+    themeId: "cra",
+    title: "Générer le récap porteurs depuis la liste des CRA",
+    summary: "Préparer l’export mensuel groupé par portage pour envoi manuel aux ESN.",
+    status: "later",
+    issueUrl: "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/48",
+    guide: {
+      lead: "En fin de mois, les managers préparent un récap par porteur (MALT, OCTO…) à partir des CRA du mois — sans e-mail automatique.",
+      steps: [
+        "Choisir le mois (et éventuellement l’équipe / le portage).",
+        "Générer le récap groupé par porteur.",
+        "Exporter ou copier pour l’envoi manuel.",
+      ],
+      diagram: {
+        nodes: [
+          { id: "cra", label: "CRA du mois" },
+          { id: "portage", label: "Par portage" },
+          { id: "export", label: "Export" },
+        ],
+        edges: [
+          { from: "cra", to: "portage", label: "groupe" },
+          { from: "portage", to: "export" },
         ],
       },
     },
@@ -159,7 +187,7 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     themeId: "cra",
     title: "Envoyer les CRA en fin de mois",
     summary: "Soumettre un CRA, puis le faire relire par un manager — avec des droits adaptés.",
-    status: "next",
+    status: "current",
     issueUrl: "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/33",
     guide: {
       lead: "En fin de mois, l’intervenant déclare son activité. Un manager la relit avant qu’elle compte pour le suivi.",
@@ -206,6 +234,34 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
         edges: [
           { from: "cra", to: "bdc", label: "lié à" },
           { from: "bdc", to: "pa", label: "finance" },
+        ],
+      },
+    },
+  },
+  {
+    id: "droits-prep",
+    themeId: "intervenants",
+    title: "Préparer les droits Grist avant l’envoi des CRA",
+    summary:
+      "Rôles pilotes, correspondance compte ↔ intervenant, et règles sur les réalisations.",
+    status: "next",
+    issueUrl: "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/47",
+    guide: {
+      lead: "Avant d’ouvrir la soumission des CRA, les droits du document doivent être clairs : qui voit et modifie quelles réalisations.",
+      steps: [
+        "Renseigner le rôle pour quelques comptes de test (admin, responsable, freelance).",
+        "S’assurer que l’e-mail du compte Grist correspond à la fiche intervenant.",
+        "Valider la matrice sur les réalisations, puis tester « voir comme » un autre profil.",
+      ],
+      diagram: {
+        nodes: [
+          { id: "roles", label: "Rôles" },
+          { id: "regles", label: "Règles document" },
+          { id: "test", label: "Voir comme…" },
+        ],
+        edges: [
+          { from: "roles", to: "regles" },
+          { from: "regles", to: "test" },
         ],
       },
     },

@@ -49,5 +49,5 @@ Consultation **lecture seule** des bons de commande Grist dans l’iframe : réc
 
 - Pas d’écriture Grist, pas de drawer création / devis / suivi mensuel
 - Onglet PV stub (écran `/pv` pas encore livré)
-- Pas de mini-donut conso/budget ni page `/cra` transversale
+- Pas de mini-donut conso/budget ; page `/cra` transversale = lecture [#32](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/32)
 - Select Data reste `Plan_activite` (ancre) — pas de reconfig pour BDC

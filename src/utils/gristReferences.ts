@@ -223,6 +223,22 @@ export function extractProduitLibelleFromSuivi(record: Record<string, unknown>):
 const BDC_CIBLE_KEY = "BDC_cible";
 const SUIVI_BDC_CHORUS_REF_KEY = "Bdc_Chorus2";
 
+/**
+ * Id BDC à afficher / lier pour une ligne `Realise` :
+ * `BDC_cible` si renseigné, sinon `Bdc_Chorus2`.
+ */
+export function extractSuiviBdcRowRef(record: Record<string, unknown>): number | undefined {
+  const cible = extractGristReferenceId(record[BDC_CIBLE_KEY]);
+  if (cible !== undefined && cible !== 0) {
+    return cible;
+  }
+  const chorus = extractGristReferenceId(record[SUIVI_BDC_CHORUS_REF_KEY]);
+  if (chorus !== undefined && chorus !== 0) {
+    return chorus;
+  }
+  return undefined;
+}
+
 /** La ligne de suivi est rattachée à ce BDC (`BDC_cible` ou `Bdc_Chorus2`). */
 export function suiviRowLinksToBdc(record: Record<string, unknown>, bdcId: number): boolean {
   const cible = extractGristReferenceId(record[BDC_CIBLE_KEY]);
