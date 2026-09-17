@@ -11,3 +11,4 @@ docs/fonctionnel/roles/**/*-nominatif*
 docs/fonctionnel/roles/**/private/
 *.access-inventory.json
 grist-access-inventory.json
+.tmp-pilotage_studios/
