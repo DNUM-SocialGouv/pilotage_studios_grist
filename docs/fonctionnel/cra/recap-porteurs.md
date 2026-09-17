@@ -59,3 +59,4 @@ Mêmes tables lazy que `/cra` via `useMissionsData` + `BDC` du contexte PA. Grou
 - Tâches réalisées non exportées
 - Pas de rapprochement Malt
 - Lecture seule (pas de create / edit CRA — [#33](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/33))
+- Aperçu par portage **sans pagination** (exception DSFR) : l’export / la copie portent toutes les lignes du groupe
