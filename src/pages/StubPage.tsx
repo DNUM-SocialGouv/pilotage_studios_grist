@@ -16,10 +16,6 @@ const STUB_COPY: Record<
     title: "Intervenants",
     description: "Écran à venir. Disponible dans l’app Pilotage studios (`/intervenants`).",
   },
-  cra: {
-    title: "Prestation / CRA",
-    description: "Écran à venir. Disponible dans l’app Pilotage studios (`/cra`).",
-  },
   pv: {
     title: "Procès-verbaux",
     description: "Écran à venir. Disponible dans l’app Pilotage studios (`/pv`).",

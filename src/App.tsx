@@ -8,6 +8,7 @@ import { MissionsLayout } from "./pages/MissionsLayout";
 import { MissionsListView } from "./pages/MissionsListView";
 import { PaDetailView } from "./pages/PaDetailView";
 import { PaListView } from "./pages/PaListView";
+import { CraListView } from "./pages/CraListView";
 import { StubPage } from "./pages/StubPage";
 import { WelcomePage } from "./pages/WelcomePage";
 import { getEmbedTrust } from "./security/embedTrust";
@@ -42,7 +43,7 @@ export default function App() {
               <Route path=":id" element={<MissionsDetailView />} />
             </Route>
             <Route path="intervenants" element={<StubPage slug="intervenants" />} />
-            <Route path="cra" element={<StubPage slug="cra" />} />
+            <Route path="cra" element={<CraListView />} />
             <Route path="pv" element={<StubPage slug="pv" />} />
             <Route path="evaluations" element={<StubPage slug="evaluations" />} />
             <Route path="analyse" element={<StubPage slug="analyse" />} />

@@ -29,7 +29,7 @@ export const WIDGET_NAV_ITEMS: WidgetNavItem[] = [
     children: [
       { text: "Bons de commande", href: "/bdc", status: "in_progress" },
       { text: "Plans d’activité", href: "/pa", status: "in_progress" },
-      { text: "Prestation / CRA", href: "/cra", status: "coming" },
+      { text: "Prestation / CRA", href: "/cra", status: "in_progress" },
       { text: "Procès-verbaux", href: "/pv", status: "coming" },
     ],
   },

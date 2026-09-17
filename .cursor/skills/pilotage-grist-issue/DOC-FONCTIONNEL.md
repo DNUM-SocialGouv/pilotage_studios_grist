@@ -24,6 +24,7 @@ Repérer si le module est **documenté**, **stub** ou **à documenter**.
 | `/pa`, `/pa/:id` | `pa/` |
 | `/bdc`, `/bdc/:id` | `bdc/` |
 | `/missions`, `/missions/:id` | `missions/` |
+| `/cra` | `cra/` |
 | `/produits`… (stubs) | À créer au livrable |
 | `/analyse` | N/A — hors scope widget |
 

@@ -91,7 +91,7 @@ export async function loadMissionsTables(): Promise<Omit<MissionsData, "status" 
 }
 
 /**
- * Missions + enfants + CRA + référentiels — chargé uniquement sur `/missions`.
+ * Missions + enfants + CRA + référentiels — chargé sur `/missions` et `/cra`.
  * Pas au boot widget.
  */
 export function useMissionsData(enabled: boolean): MissionsDataState {
