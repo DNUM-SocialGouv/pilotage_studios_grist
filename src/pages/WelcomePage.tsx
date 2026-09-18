@@ -18,7 +18,7 @@ function themeLabel(themeId: PublicRoadmapItem["themeId"]): string {
 
 export function WelcomePage() {
   const kanbanGroups = groupPublicRoadmapByKanban();
-  const { items: retours } = useRetoursList();
+  const { items: retours, status: retoursStatus, error: retoursError } = useRetoursList();
   const [guideItem, setGuideItem] = useState<PublicRoadmapItem | null>(null);
 
   return (
@@ -41,7 +41,11 @@ export function WelcomePage() {
           </h2>
 
           <div className="welcome-kanban fr-grid-row fr-grid-row--gutters">
-            <WelcomeFeedbackColumn items={retours} />
+            <WelcomeFeedbackColumn
+              items={retours}
+              status={retoursStatus}
+              error={retoursError}
+            />
             {kanbanGroups.map((group) => (
               <section
                 key={group.column.id}

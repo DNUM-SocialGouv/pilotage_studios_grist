@@ -24,8 +24,11 @@ Suivi des cellules : [`matrice-droits.md`](matrice-droits.md) tableau **A**.
 
 ## Technique widget
 
-- Lecture `Acl_profil` via `fetchAllowlistedTable` (`useAclProfilData` + `AclProfilProvider`)
-- Filtre `WIDGET_NAV_ITEMS` : `filterNavItemsByPageAccess` + `canAccessHref`
-- Garde : `PageAccessGuard` sur les routes mappées
+- Lecture `Acl_profil` **après** boot PA (`useGristPa` + `fetchAllowlistedTable` via `useAclProfilData` / `AclProfilProvider`) — retries si fetch précoce
+- Pendant `loading` profil : **nav complète** (pas de flash fail-closed) ; gardes affichent « Vérification… »
+- Si profil `empty` / `error` : alerte sous la nav + fail-closed budget
+- Filtre `WIDGET_NAV_ITEMS` : `filterNavItemsByPageAccess` + `canAccessHref` (une fois le profil résolu)
+- Garde : `PageAccessGuard` sur les routes mappées (refus → `/`)
 - Helpers purs : `src/security/pageAccess.ts`
 - `Droits_pages` **hors** allowlist (Owner / `Role_ACL` Admin seulement)
+- `useAclProfil` hors provider → **throw** (comme `useGristPa`)

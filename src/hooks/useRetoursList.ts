@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useGristPa } from "../GristPaContext";
 import { recordsFromFetchTable } from "../gristMap";
 import { getEmbedTrust } from "../security/embedTrust";
 import { fetchAllowlistedTable } from "../security/fetchTableAllowlist";
@@ -22,11 +23,22 @@ const INITIAL: RetoursListData = {
   error: null,
 };
 
+const FETCH_MAX_ATTEMPTS = 3;
+const FETCH_RETRY_MS = 250;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
 /**
  * Charge `Retours` pour la colonne Feedback de l’accueil.
+ * Attend la fin du boot PA (`grist.ready`) avant le premier `fetchTable`.
  * Hors iframe : liste vide (pas de faux tickets).
  */
 export function useRetoursList(): RetoursListData {
+  const pa = useGristPa();
   const [state, setState] = useState<RetoursListData>(INITIAL);
 
   useEffect(() => {
@@ -36,61 +48,63 @@ export function useRetoursList(): RetoursListData {
       return;
     }
 
+    if (pa.untrustedEmbed || pa.outsideGrist) {
+      setState({ status: "standalone", items: [], error: null });
+      return;
+    }
+
+    if (pa.loading) {
+      setState((prev) => (prev.status === "loading" ? prev : INITIAL));
+      return;
+    }
+
     let cancelled = false;
-    let attempts = 0;
-    const maxAttempts = 50;
 
     const load = async () => {
-      try {
-        const raw = await fetchAllowlistedTable("Retours");
-        if (cancelled) {
+      let lastError: string | null = null;
+      for (let attempt = 1; attempt <= FETCH_MAX_ATTEMPTS; attempt += 1) {
+        try {
+          const raw = await fetchAllowlistedTable("Retours");
+          if (cancelled) {
+            return;
+          }
+          const rows = recordsFromFetchTable(raw);
+          const items = sortRetoursNewestFirst(
+            rows.map((row) =>
+              retourKanbanItemFromRecord(row as Record<string, unknown> & { id: number }),
+            ),
+          );
+          setState({
+            status: items.length === 0 ? "empty" : "ok",
+            items,
+            error: null,
+          });
           return;
+        } catch (err) {
+          if (cancelled) {
+            return;
+          }
+          lastError = err instanceof Error ? err.message : String(err);
+          if (attempt < FETCH_MAX_ATTEMPTS) {
+            await sleep(FETCH_RETRY_MS);
+          }
         }
-        const rows = recordsFromFetchTable(raw);
-        const items = sortRetoursNewestFirst(
-          rows.map((row) =>
-            retourKanbanItemFromRecord(row as Record<string, unknown> & { id: number }),
-          ),
-        );
-        setState({
-          status: items.length === 0 ? "empty" : "ok",
-          items,
-          error: null,
-        });
-      } catch (err) {
-        if (cancelled) {
-          return;
-        }
-        const message = err instanceof Error ? err.message : String(err);
-        setState({ status: "error", items: [], error: message });
       }
-    };
-
-    const tryConnect = () => {
       if (cancelled) {
         return;
       }
-      if (!window.grist?.docApi?.fetchTable) {
-        attempts += 1;
-        if (attempts < maxAttempts) {
-          window.setTimeout(tryConnect, 100);
-          return;
-        }
-        setState({
-          status: "error",
-          items: [],
-          error: "API Grist indisponible pour lire les retours.",
-        });
-        return;
-      }
-      void load();
+      setState({
+        status: "error",
+        items: [],
+        error: lastError ?? "Lecture des retours impossible.",
+      });
     };
 
-    tryConnect();
+    void load();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [pa.loading, pa.outsideGrist, pa.untrustedEmbed]);
 
   return state;
 }

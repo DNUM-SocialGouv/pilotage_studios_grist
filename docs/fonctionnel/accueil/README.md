@@ -28,7 +28,7 @@ Première page affichée à l’ouverture du Custom Widget dans Grist : titre + 
 
 ## Données Grist
 
-Roadmap / guides : **versionnés dans le code**. Colonne Feedback : lecture `Retours` (allowlist).
+Roadmap / guides : **versionnés dans le code**. Colonne Feedback : lecture `Retours` (allowlist) après boot Grist ; message d’erreur visible si la lecture échoue.
 
 ## Hors scope
 

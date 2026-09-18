@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useGristPa } from "../GristPaContext";
 import { recordsFromFetchTable } from "../gristMap";
 import { getEmbedTrust } from "../security/embedTrust";
 import { fetchAllowlistedTable } from "../security/fetchTableAllowlist";
@@ -25,6 +26,9 @@ const INITIAL: AclProfilData = {
   error: null,
 };
 
+const FETCH_MAX_ATTEMPTS = 3;
+const FETCH_RETRY_MS = 250;
+
 function roleFromRecord(fields: Record<string, unknown>): string | null {
   const raw = fields.Role;
   if (typeof raw === "string" && raw.trim() !== "") {
@@ -39,11 +43,19 @@ function roleFromRecord(fields: Record<string, unknown>): string | null {
   return null;
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
 /**
  * Charge la ligne `Acl_profil` visible pour l’utilisateur courant (ACL serveur).
+ * Attend la fin du boot PA (`grist.ready`) avant le premier `fetchTable`.
  * Hors iframe / standalone : tous les écrans ouverts (préview locale).
  */
 export function useAclProfilData(): AclProfilData {
+  const pa = useGristPa();
   const [state, setState] = useState<AclProfilData>(INITIAL);
 
   useEffect(() => {
@@ -58,76 +70,88 @@ export function useAclProfilData(): AclProfilData {
       return;
     }
 
+    if (pa.untrustedEmbed) {
+      setState({
+        status: "error",
+        role: null,
+        flags: PAGE_ACCESS_FAIL_CLOSED,
+        error: "Embed non autorisé : profil d’accès indisponible.",
+      });
+      return;
+    }
+
+    if (pa.outsideGrist) {
+      setState({
+        status: "standalone",
+        role: null,
+        flags: PAGE_ACCESS_ALL_OPEN,
+        error: null,
+      });
+      return;
+    }
+
+    // Attendre que useGristPaData ait appelé grist.ready (évite fetchTable trop tôt).
+    if (pa.loading) {
+      setState((prev) => (prev.status === "loading" ? prev : INITIAL));
+      return;
+    }
+
     let cancelled = false;
-    let attempts = 0;
-    const maxAttempts = 50;
 
     const load = async () => {
-      try {
-        const raw = await fetchAllowlistedTable("Acl_profil");
-        if (cancelled) {
-          return;
-        }
-        const rows = recordsFromFetchTable(raw);
-        if (rows.length === 0) {
+      let lastError: string | null = null;
+      for (let attempt = 1; attempt <= FETCH_MAX_ATTEMPTS; attempt += 1) {
+        try {
+          const raw = await fetchAllowlistedTable("Acl_profil");
+          if (cancelled) {
+            return;
+          }
+          const rows = recordsFromFetchTable(raw);
+          if (rows.length === 0) {
+            setState({
+              status: "empty",
+              role: null,
+              flags: PAGE_ACCESS_FAIL_CLOSED,
+              error: null,
+            });
+            return;
+          }
+          const row = rows[0]!;
+          const fields: Record<string, unknown> = { ...row };
+          delete fields.id;
           setState({
-            status: "empty",
-            role: null,
-            flags: PAGE_ACCESS_FAIL_CLOSED,
+            status: "ok",
+            role: roleFromRecord(fields),
+            flags: pageAccessFromRecord(fields),
             error: null,
           });
           return;
+        } catch (err) {
+          if (cancelled) {
+            return;
+          }
+          lastError = err instanceof Error ? err.message : String(err);
+          if (attempt < FETCH_MAX_ATTEMPTS) {
+            await sleep(FETCH_RETRY_MS);
+          }
         }
-        const row = rows[0]!;
-        const fields: Record<string, unknown> = { ...row };
-        delete fields.id;
-        setState({
-          status: "ok",
-          role: roleFromRecord(fields),
-          flags: pageAccessFromRecord(fields),
-          error: null,
-        });
-      } catch (err) {
-        if (cancelled) {
-          return;
-        }
-        const message = err instanceof Error ? err.message : String(err);
-        setState({
-          status: "error",
-          role: null,
-          flags: PAGE_ACCESS_FAIL_CLOSED,
-          error: message,
-        });
       }
-    };
-
-    const tryConnect = () => {
       if (cancelled) {
         return;
       }
-      const grist = window.grist;
-      if (!grist?.docApi?.fetchTable) {
-        attempts += 1;
-        if (attempts < maxAttempts) {
-          window.setTimeout(tryConnect, 100);
-          return;
-        }
-        setState({
-          status: "error",
-          role: null,
-          flags: PAGE_ACCESS_FAIL_CLOSED,
-          error: "API Grist indisponible pour lire Acl_profil.",
-        });
-        return;
-      }
-      void load();
+      setState({
+        status: "error",
+        role: null,
+        flags: PAGE_ACCESS_FAIL_CLOSED,
+        error: lastError ?? "Lecture Acl_profil impossible.",
+      });
     };
 
-    tryConnect();
+    void load();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [pa.loading, pa.outsideGrist, pa.untrustedEmbed]);
 
   return state;
 }

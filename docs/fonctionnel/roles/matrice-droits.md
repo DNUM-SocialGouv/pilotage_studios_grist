@@ -73,7 +73,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | `Realise` (CRA) hors montants | CRUD | R département | **R/U ses lignes** | — | **Non** | Lignes hors `Calcul_TTC` encore ouvertes |
 | `Realise.Calcul_TTC` | RU | — | — | — | **Appliqué (Owner)** | `-RU` si non-Owner |
 | `Missions` / `Missions_enfants` | CRUD | R/U dép. | R ses missions | R / — | Non (rôle) | |
-| `Retours` (feedback) | C (widget) | C | C | C ? | Widget create | Allowlist écriture widget |
+| `Retours` (feedback) | CR (widget liste) | C (+ R liste V1) | C (+ R liste V1) | C ? | Widget create + **Read liste V1** | Kanban Feedback partagé ; resserrer Read = HITL si audience élargie |
 | `Acl_profil` | CR soi | CR soi | CR soi | CR soi | **Appliqué** | `user.Email == rec.E_mail` → `+CR` ; `True` → `-CRUD` |
 | `Droits_pages` | CRUD (Owner / Admin) | — | — | — | **Appliqué** | Owner **ou** `Role_ACL == Admin` → `+CRUD` ; `True` → `-CRUD` |
 | Structure (S) | Owner | — | — | — | **Appliqué** | `-S` si non-Owner |
@@ -92,6 +92,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-09-18 (soir) | Revue #52 : nav sans flash loading ; fetch Acl/Retours après boot PA ; alerte profil ; décision Read `Retours` partagée V1 | 5, 6 (doc) | Correctifs revue |
 | 2026-09-18 (soir) | Widget : lecture `Acl_profil`, filtre nav + gardes `/pa` `/bdc` `/cra` `/pv` `/outils/recap-porteurs` | 4, 5 | Feature droits pages |
 | 2026-09-18 (soir) | Grist : `Droits_pages` Owner/Admin ; `Acl_profil.Page_*` formules ← `Droits_pages` | 4, 6 | HITL |
 | 2026-09-18 (soir) | Constatations : `user.Access == "OWNER"` → `+CRUD` (Owners only) ; leçon = allow explicite Owner, pas deny seul | 6 | HITL + 403 app sœur |
@@ -108,6 +109,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 3. Les **Invités** voient-ils le Custom Widget, ou seulement des pages Grist ?
 4. Table `Utilisateurs_ACL` séparée de `Equipe` ?
 5. Les 12 Owners actuels : tous `Admin`, ou réduire le partage Owner ?
+6. `Retours` Read : garder le kanban partagé V1, ou resserrer Read = Admin/Owner dès l’élargissement freelance ?
 
 ## Comment mettre à jour (humain + agent)
 

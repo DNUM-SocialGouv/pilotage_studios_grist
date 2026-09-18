@@ -1,5 +1,7 @@
+import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import { Button } from "@codegouvfr/react-dsfr/Button";
+import type { RetoursListStatus } from "../../hooks/useRetoursList";
 import { requestOpenFeedback } from "../../utils/feedbackOpen";
 import {
   badgeClassForRetourType,
@@ -9,6 +11,8 @@ import {
 
 type WelcomeFeedbackColumnProps = {
   items: RetourKanbanItem[];
+  status: RetoursListStatus;
+  error: string | null;
 };
 
 /** Placeholder toujours visible (même s’il y a déjà des tickets). */
@@ -60,7 +64,9 @@ function FeedbackCard({ item }: { item: RetourKanbanItem }) {
  * Colonne kanban « Feedback » (1ʳᵉ position).
  * Placeholder d’invitation toujours affiché ; liste des `Retours` en dessous s’il y en a.
  */
-export function WelcomeFeedbackColumn({ items }: WelcomeFeedbackColumnProps) {
+export function WelcomeFeedbackColumn({ items, status, error }: WelcomeFeedbackColumnProps) {
+  const count = status === "loading" || status === "error" ? 0 : items.length;
+
   return (
     <section
       className="welcome-kanban__column fr-col-12 fr-col-md-6 fr-col-xl-3"
@@ -73,12 +79,30 @@ export function WelcomeFeedbackColumn({ items }: WelcomeFeedbackColumnProps) {
         <Badge
           small
           as="span"
-          aria-label={`Feedback : ${items.length} retour${items.length === 1 ? "" : "s"}`}
+          aria-label={`Feedback : ${count} retour${count === 1 ? "" : "s"}`}
         >
-          {items.length}
+          {status === "loading" ? "…" : count}
         </Badge>
       </div>
       <FeedbackInvitePlaceholder />
+      {status === "error" ? (
+        <Alert
+          className="fr-mt-2w"
+          severity="error"
+          small
+          title="Retours indisponibles"
+          description={
+            error
+              ? `Impossible de charger la liste des retours (${error}).`
+              : "Impossible de charger la liste des retours."
+          }
+        />
+      ) : null}
+      {status === "loading" ? (
+        <p className="fr-text--sm fr-hint-text fr-mt-2w fr-mb-0" role="status">
+          Chargement des retours…
+        </p>
+      ) : null}
       {items.length > 0 ? (
         <ul className="welcome-kanban__list fr-mb-0 fr-mt-2w">
           {items.map((item) => (

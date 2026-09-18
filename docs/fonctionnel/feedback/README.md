@@ -35,15 +35,22 @@ Pas d’auto-détection Grist (le jeton widget ne fournit pas un profil fiable).
 
 Lecture widget : allowlistée pour la **colonne Feedback** de l’accueil (`fetchAllowlistedTable('Retours')`) — lignes affichées **telles quelles** (pas de filtre « traité » côté front). Colonne **toujours en 1ʳᵉ position** : placeholder d’invitation (CTA) **toujours visible**, puis la liste des tickets s’il y en a.
 
+### Confidentialité lecture (décision V1)
+
+**Décision produit** : la colonne Feedback est un **kanban partagé interne** — tout utilisateur qui peut lire `Retours` via les Access Rules voit les messages des autres (prénom + extrait). Acceptable tant que le document reste un cercle restreint Pilotage.
+
+**Pas** de filtre front « mes retours seulement » (contournable). Si l’audience s’élargit (freelance nombreux, invités) : durcir en Access Rules (ex. Read = Owner / `Role_ACL` Admin, Create pour tous) — HITL Grist, pas de masquage JS.
+
 ## Access Rules (HITL — à appliquer dans Grist)
 
 Recommandation (à valider / poser manuellement) :
 
 - **Create** : utilisateurs ayant accès au document (même population que le widget).
+- **Read** : aujourd’hui ouvert à la population widget (voir décision V1 ci-dessus) ; resserrer à Owners / Admin si besoin de confidentialité.
 - **Update / Delete** : Owners / équipe studio uniquement (tri `Statut`, `Priorite`, `Assigne_a`, `Reponse`).
 - Choices Type / Niveau_gene / Statut / Priorite : à peaufiner dans l’UI Grist si besoin (colonnes créées en Text + valeurs métier documentées).
 
-Sans ces règles, tout utilisateur *Editor* du doc peut aussi modifier les retours des autres.
+Sans règles Update/Delete, tout utilisateur *Editor* du doc peut aussi modifier les retours des autres.
 
 ## Alertes / suivi « nouveau retour »
 
