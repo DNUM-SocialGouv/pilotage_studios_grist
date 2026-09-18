@@ -48,7 +48,7 @@ Réduire la complexité ; pas d’ajout « au cas où ». Les agents **proposent
 
 Nav principale : Accueil, **Budget** (sous-menu Bons de commande · Plans d’activité · Prestation / CRA · Procès-verbaux), Produits, Missions, Intervenants, **Outils** (Récap porteurs). Pas de route `/budget`.
 
-Entrée MemoryRouter : `/` (`WelcomePage` — modules + **feuille de route** publique `src/content/publicRoadmap.ts`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
+Entrée MemoryRouter : `/` (`WelcomePage` — **feuille de route kanban** Backlog · En cours · Livré, contenu `src/content/publicRoadmap.ts`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
 
 ### Feuille de route (priorité métier)
 
