@@ -4,13 +4,13 @@ import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { TableShell } from "../components/FinanceRecap";
-import { useEquipeData } from "../hooks/useEquipeData";
 import {
   EQUIPE_DEFAULT_STATUT,
   equipeDisplayName,
   filterEquipeMembers,
   uniqueSortedLabels,
 } from "../utils/equipeList";
+import { useEquipeOutlet } from "./EquipeLayout";
 
 const PAGE_SIZE = 10;
 
@@ -20,7 +20,7 @@ function dash(value: string | undefined): string {
 }
 
 export function EquipeListView() {
-  const data = useEquipeData(true);
+  const { data } = useEquipeOutlet();
   const [search, setSearch] = useState("");
   const [searchDraft, setSearchDraft] = useState("");
   const [statutFilter, setStatutFilter] = useState(EQUIPE_DEFAULT_STATUT);

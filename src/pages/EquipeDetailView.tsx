@@ -1,7 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
-import { useEquipeData } from "../hooks/useEquipeData";
 import { equipeDisplayName } from "../utils/equipeList";
+import { useEquipeOutlet } from "./EquipeLayout";
 
 function dash(value: string | undefined): string {
   const t = value?.trim();
@@ -10,7 +10,7 @@ function dash(value: string | undefined): string {
 
 export function EquipeDetailView() {
   const { id } = useParams();
-  const data = useEquipeData(true);
+  const { data } = useEquipeOutlet();
   const memberId = id ? Number.parseInt(id, 10) : NaN;
   const member = data.members.find((m) => m.id === memberId);
 

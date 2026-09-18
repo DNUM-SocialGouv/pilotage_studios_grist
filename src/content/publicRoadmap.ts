@@ -461,6 +461,8 @@ export function roadmapStatusToKanbanColumn(
 
 /** Regroupe les items en colonnes Backlog → En cours → Livré.
  * Livré : ordre antéchronologique (dernier traité en haut = reverse de l’ordre source).
+ * Convention : un nouvel item `done` doit être placé **après** les autres `done`
+ * dans `PUBLIC_ROADMAP_ITEMS`, sinon il n’apparaîtra pas en tête de Livré.
  */
 export function groupPublicRoadmapByKanban(
   items: PublicRoadmapItem[] = PUBLIC_ROADMAP_ITEMS,

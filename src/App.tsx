@@ -13,6 +13,7 @@ import { PaListView } from "./pages/PaListView";
 import { CraListView } from "./pages/CraListView";
 import { CraRecapPorteursPage } from "./pages/CraRecapPorteursPage";
 import { EquipeDetailView } from "./pages/EquipeDetailView";
+import { EquipeLayout } from "./pages/EquipeLayout";
 import { EquipeListView } from "./pages/EquipeListView";
 import { StubPage } from "./pages/StubPage";
 import { WelcomePage } from "./pages/WelcomePage";
@@ -99,18 +100,13 @@ export default function App() {
                 path="equipe"
                 element={
                   <PageAccessGuard>
-                    <EquipeListView />
+                    <EquipeLayout />
                   </PageAccessGuard>
                 }
-              />
-              <Route
-                path="equipe/:id"
-                element={
-                  <PageAccessGuard>
-                    <EquipeDetailView />
-                  </PageAccessGuard>
-                }
-              />
+              >
+                <Route index element={<EquipeListView />} />
+                <Route path=":id" element={<EquipeDetailView />} />
+              </Route>
               <Route path="intervenants" element={<Navigate to="/equipe" replace />} />
               <Route path="intervenants/:id" element={<IntervenantsToEquipeRedirect />} />
               <Route

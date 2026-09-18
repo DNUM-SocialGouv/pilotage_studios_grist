@@ -279,11 +279,13 @@ export function PaListView() {
         </div>
       </div>
 
-      <p className="fr-mb-2w">
-        <button type="button" className="fr-link" onClick={resetFilters}>
-          Réinitialiser les filtres
-        </button>
-      </p>
+      {filtersActive ? (
+        <p className="fr-mb-2w">
+          <button type="button" className="fr-link" onClick={resetFilters}>
+            Réinitialiser les filtres
+          </button>
+        </p>
+      ) : null}
 
       <p className="fr-text--sm fr-mb-2w">
         {rows.length === 0

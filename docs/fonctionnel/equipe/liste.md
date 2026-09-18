@@ -11,7 +11,7 @@ Consulter les personnes du pilotage, filtrer, ouvrir une fiche.
 | Élément | Détail |
 |---------|--------|
 | Route | `/equipe` |
-| Page | `src/pages/EquipeListView.tsx` |
+| Page | `src/pages/EquipeListView.tsx` (sous `EquipeLayout`) |
 | Navigation | **Équipe** (`WidgetNav`) |
 | Pagination | 10 lignes |
 

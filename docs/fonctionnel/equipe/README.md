@@ -12,7 +12,7 @@ L’**équipe** rassemble les personnes du pilotage (table Grist `Equipe`). Le w
 | Outil | Rôle |
 |-------|------|
 | **Grist** (`Equipe`) | Référentiel personnes + rôle ACL |
-| **Ce widget** | Liste / fiche — **lecture seule** |
+| **Ce widget** | Liste / fiche — **lecture seule** (`EquipeLayout` : un fetch partagé, gate hors Grist) |
 | **App sœur** | Hors scope de ce livrable |
 
 ## Données Grist

@@ -27,7 +27,7 @@ Consulter les PA, filtrer, lire le récap financier filtré et ouvrir une fiche.
 
 ## Filtres
 
-Recherche (libellé, domaine, sous-domaine, responsable, priorité), **année**, **bureau**, **priorité**. Bouton réinitialiser. Combinables.
+Recherche (libellé, domaine, sous-domaine, responsable, priorité), **année**, **bureau**, **priorité**. Lien **Réinitialiser les filtres** visible seulement si au moins un filtre est actif. Combinables.
 
 ## Colonnes
 

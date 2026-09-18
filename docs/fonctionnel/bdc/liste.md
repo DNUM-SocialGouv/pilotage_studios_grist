@@ -29,7 +29,7 @@ Parcourir les BDC, filtrer, ouvrir une fiche ; lien vers le PA rattaché.
 
 ## Filtres
 
-Recherche (placeholder : nom, financeur, n° Chorus, PA, équipe…), **statut**, **financeur**, **équipe**. Réinitialiser. Combinables.
+Recherche (placeholder : nom, financeur, n° Chorus, PA, équipe…), **statut**, **financeur**, **équipe**. Lien **Réinitialiser les filtres** visible seulement si au moins un filtre est actif. Combinables.
 
 Options statut / financeur / équipe dérivées des valeurs présentes dans les lignes chargées. Filtre équipe : le BDC est conservé s’il contient au moins le token sélectionné (`Equipe2`).
 

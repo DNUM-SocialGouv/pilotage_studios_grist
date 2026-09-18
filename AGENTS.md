@@ -84,7 +84,7 @@ Visibilité users : section roadmap sur `/` + issues rédigées selon [`docs/iss
 | Finance / refs | `src/utils/paFinance.ts`, `montantReste.tsx`, `gristReferences.ts`, `equipeBadge.ts` |
 | Dépenses BDC | `BdcDepensesPanel`, `BdcDepensesByPrestationTable`, `groupSuiviByMissionEnfant.ts`, `CraTtcStackBar` |
 | Missions | `MissionsListView`, `MissionsDetailView`, `useMissionsData`, `MissionFormDrawer`, `MissionEnfantDrawer`, `craByMission.ts` |
-| Équipe | `EquipeListView`, `EquipeDetailView`, `useEquipeData`, `equipeList.ts` |
+| Équipe | `EquipeListView`, `EquipeDetailView`, `EquipeLayout`, `useEquipeData`, `equipeList.ts` |
 | CRA | `CraListView`, `CraRecapPorteursPage`, `craList.ts`, `craExport.ts` (filtres / libellés / export porteurs) |
 | Feedback | `FeedbackWidget`, `createRetoursRecord`, `feedbackEquipe`, `writeTableAllowlist` |
 
@@ -189,7 +189,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 | PA / finance | `docs/fonctionnel/pa/`, `paFinance.ts`, `PaListView` / `PaDetailView` |
 | BDC | `docs/fonctionnel/bdc/`, `BdcListView` / `BdcDetailView` |
 | Missions | `docs/fonctionnel/missions/`, `useMissionsData`, `MissionsListView` / `MissionsDetailView` |
-| Équipe | `docs/fonctionnel/equipe/`, `useEquipeData`, `EquipeListView` / `EquipeDetailView` |
+| Équipe | `docs/fonctionnel/equipe/`, `useEquipeData`, `EquipeLayout` / `EquipeListView` / `EquipeDetailView` |
 | Feedback | `docs/fonctionnel/feedback/` (+ [`alertes.md`](docs/fonctionnel/feedback/alertes.md)), `FeedbackWidget`, `writeTableAllowlist` |
 | Tableau DSFR | rule `dsfr-tableaux.mdc`, MCP `user-dsfr` |
 | Embed / secrets | `embedTrust.ts`, `NothingHerePage`, `ensureFreshBuild`, SECURITY |

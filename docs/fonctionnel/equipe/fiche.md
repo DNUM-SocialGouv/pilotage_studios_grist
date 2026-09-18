@@ -11,7 +11,7 @@ Voir la carte d’identité d’une personne, en lecture seule.
 | Élément | Détail |
 |---------|--------|
 | Route | `/equipe/:id` |
-| Page | `src/pages/EquipeDetailView.tsx` |
+| Page | `src/pages/EquipeDetailView.tsx` (sous `EquipeLayout`) |
 | Retour | Lien vers `/equipe` |
 
 ## États
