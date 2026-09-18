@@ -26,6 +26,17 @@ describe("groupPublicRoadmapByKanban", () => {
       }
     }
   });
+
+  it("classe Livré en antéchronologique (dernier done en tête)", () => {
+    const doneInSourceOrder = PUBLIC_ROADMAP_ITEMS.filter((i) => i.status === "done");
+    const livre = groupPublicRoadmapByKanban().find((g) => g.column.id === "livre");
+    assert.ok(livre);
+    assert.ok(doneInSourceOrder.length >= 2);
+    assert.deepEqual(
+      livre.items.map((i) => i.id),
+      [...doneInSourceOrder].reverse().map((i) => i.id),
+    );
+  });
 });
 
 describe("groupPublicRoadmapByTheme", () => {

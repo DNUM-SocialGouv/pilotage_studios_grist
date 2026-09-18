@@ -3,7 +3,7 @@
 export type PublicRoadmapStatus = "done" | "current" | "next" | "later";
 
 export type PublicRoadmapThemeId =
-  "consulter" | "prestations" | "cra" | "intervenants" | "suite";
+  "consulter" | "prestations" | "cra" | "equipe" | "suite";
 
 export type PublicRoadmapGuide = {
   /** Accroche : à quoi sert cette brique, pour qui. */
@@ -39,7 +39,7 @@ export const PUBLIC_ROADMAP_THEMES: PublicRoadmapTheme[] = [
   { id: "consulter", label: "Consulter le pilotage" },
   { id: "prestations", label: "Prestations" },
   { id: "cra", label: "CRA" },
-  { id: "intervenants", label: "Intervenants et droits" },
+  { id: "equipe", label: "Équipe et droits" },
   { id: "suite", label: "Suite" },
 ];
 
@@ -235,7 +235,7 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
   },
   {
     id: "droits-menus",
-    themeId: "intervenants",
+    themeId: "equipe",
     title: "Menus adaptés au rôle de chacun",
     summary:
       "Admin, responsable, freelance ou invité : le menu montre seulement les écrans autorisés (budget / CRA réservés).",
@@ -255,7 +255,7 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
   },
   {
     id: "droits-prep",
-    themeId: "intervenants",
+    themeId: "equipe",
     title: "Affiner les droits sur les réalisations (CRA)",
     summary:
       "Avant l’envoi des CRA : qui peut lire ou modifier quelles lignes de réalisations — testé « voir comme ».",
@@ -273,21 +273,61 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     },
   },
   {
-    id: "intervenants-droits",
-    themeId: "intervenants",
-    title: "Intervenants et qui voit / fait quoi",
+    id: "equipe-liste",
+    themeId: "equipe",
+    title: "Consulter l’équipe",
     summary:
-      "Consulter les intervenants et clarifier les droits selon les rôles.",
+      "Lister les personnes du pilotage et ouvrir une fiche (carte d’identité), en lecture seule.",
+    status: "done",
+    issueUrl:
+      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/53",
+    guide: {
+      lead: "L’annuaire de l’équipe évite d’ouvrir la table brute : on voit qui est là, dans quel département, avec quel rôle.",
+      stepsIntro: "Dans le widget, vous pouvez :",
+      steps: [
+        "Ouvrir le menu Équipe",
+        "Filtrer (par défaut les personnes actives) et rechercher",
+        "Ouvrir une fiche : nom, département, portage, statut, spécialité, rôle",
+      ],
+      pagePath: "/equipe",
+      pageLinkLabel: "Ouvrir Équipe",
+    },
+  },
+  {
+    id: "equipe-droits-ecran",
+    themeId: "equipe",
+    title: "Qui voit l’écran Équipe",
+    summary:
+      "Décider, selon le rôle, si le menu et la page Équipe restent visibles.",
     status: "next",
     issueUrl:
-      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/35",
+      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/54",
     guide: {
-      lead: "Tout le monde n’a pas le même rôle : freelance, manager, admin. Cette brique clarifie qui peut voir ou modifier quoi.",
-      stepsIntro: "Quand cet écran sera livré, vous pourrez :",
+      lead: "Aujourd’hui l’annuaire est ouvert à tous les rôles. Il faudra trancher si un freelance ou un invité doit le voir.",
+      stepsIntro: "Quand ce travail sera fait :",
       steps: [
-        "Consulter la liste des intervenants liés au pilotage",
-        "Comprendre les droits selon le rôle (lire, envoyer un CRA, valider…)",
-        "Travailler chacun dans le périmètre qui lui est ouvert",
+        "La matrice des droits dira oui ou non pour chaque rôle",
+        "Le menu suivra cette décision",
+        "Les montants et l’e-mail resteront hors de cet écran",
+      ],
+    },
+  },
+  {
+    id: "equipe-acces-grist",
+    themeId: "equipe",
+    title: "Table Équipe et accès Grist",
+    summary:
+      "Nettoyer la table des personnes et protéger les données selon les rôles, côté Grist.",
+    status: "later",
+    issueUrl:
+      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55",
+    guide: {
+      lead: "La table Équipe sert à la fois d’annuaire et de base pour les droits. Les règles Grist doivent coller aux rôles, sans exposer TJM ou e-mail à tout le monde.",
+      stepsIntro: "Ce travail, plus tard :",
+      steps: [
+        "Compléter rôles et e-mails utiles",
+        "Tester « voir comme » selon le rôle",
+        "Garder le widget sur la carte d’identité seulement",
       ],
     },
   },
@@ -419,16 +459,23 @@ export function roadmapStatusToKanbanColumn(
   return "backlog";
 }
 
-/** Regroupe les items en colonnes Backlog → En cours → Livré (ordre source conservé). */
+/** Regroupe les items en colonnes Backlog → En cours → Livré.
+ * Livré : ordre antéchronologique (dernier traité en haut = reverse de l’ordre source).
+ * Convention : un nouvel item `done` doit être placé **après** les autres `done`
+ * dans `PUBLIC_ROADMAP_ITEMS`, sinon il n’apparaîtra pas en tête de Livré.
+ */
 export function groupPublicRoadmapByKanban(
   items: PublicRoadmapItem[] = PUBLIC_ROADMAP_ITEMS,
 ): PublicRoadmapKanbanGroup[] {
-  return ROADMAP_KANBAN_COLUMNS.map((column) => ({
-    column,
-    items: items.filter(
+  return ROADMAP_KANBAN_COLUMNS.map((column) => {
+    const columnItems = items.filter(
       (item) => roadmapStatusToKanbanColumn(item.status) === column.id,
-    ),
-  }));
+    );
+    return {
+      column,
+      items: column.id === "livre" ? [...columnItems].reverse() : columnItems,
+    };
+  });
 }
 
 /** Regroupe les items dans l’ordre des thèmes (thèmes vides omis). */

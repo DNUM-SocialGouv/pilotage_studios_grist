@@ -4,6 +4,7 @@ import { recordsFromFetchTable } from "../gristMap";
 import { getEmbedTrust } from "../security/embedTrust";
 import { fetchAllowlistedTable } from "../security/fetchTableAllowlist";
 import {
+  filterRetoursOpenForFeedback,
   retourKanbanItemFromRecord,
   sortRetoursNewestFirst,
   type RetourKanbanItem,
@@ -69,9 +70,11 @@ export function useRetoursList(): RetoursListData {
             return;
           }
           const rows = recordsFromFetchTable(raw);
-          const items = sortRetoursNewestFirst(
-            rows.map((row) =>
-              retourKanbanItemFromRecord(row as Record<string, unknown> & { id: number }),
+          const items = filterRetoursOpenForFeedback(
+            sortRetoursNewestFirst(
+              rows.map((row) =>
+                retourKanbanItemFromRecord(row as Record<string, unknown> & { id: number }),
+              ),
             ),
           );
           setState({

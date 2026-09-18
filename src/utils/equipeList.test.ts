@@ -1,0 +1,95 @@
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+import type { EquipeMember } from "../types.ts";
+import {
+  EQUIPE_DEFAULT_STATUT,
+  equipeDisplayName,
+  filterEquipeMembers,
+  uniqueSortedLabels,
+} from "./equipeList.ts";
+
+const alice: EquipeMember = {
+  id: 1,
+  Prenom_Nom: "Alice Martin",
+  Equipe: "Design",
+  Portage: "MALT",
+  Statut: "Actif",
+  Specialite: "UX",
+  Role_ACL: "Freelance",
+};
+const bob: EquipeMember = {
+  id: 2,
+  Prenom_Nom: "Bob Durand",
+  Equipe: "Tech",
+  Portage: "OCTO",
+  Statut: "Inactif",
+  Specialite: "Dev",
+  Role_ACL: "Admin",
+};
+const sansNom: EquipeMember = {
+  id: 3,
+  Equipe: "Design",
+  Statut: "Actif",
+};
+
+describe("equipeDisplayName", () => {
+  it("utilise le nom ou un fallback d’id", () => {
+    assert.equal(equipeDisplayName(alice), "Alice Martin");
+    assert.equal(equipeDisplayName(sansNom), "Personne #3");
+  });
+});
+
+describe("uniqueSortedLabels", () => {
+  it("déduplique et trie", () => {
+    assert.deepEqual(uniqueSortedLabels(["Tech", "Design", "  ", undefined, "Design"]), [
+      "Design",
+      "Tech",
+    ]);
+  });
+});
+
+describe("filterEquipeMembers", () => {
+  const all = [bob, alice, sansNom];
+
+  it("filtre par statut Actif par défaut métier", () => {
+    const rows = filterEquipeMembers(all, {
+      search: "",
+      statut: EQUIPE_DEFAULT_STATUT,
+      equipe: "",
+      portage: "",
+      role: "",
+    });
+    assert.deepEqual(
+      rows.map((r) => r.id),
+      [1, 3],
+    );
+  });
+
+  it("cherche dans le nom et trie", () => {
+    const rows = filterEquipeMembers(all, {
+      search: "durand",
+      statut: "",
+      equipe: "",
+      portage: "",
+      role: "",
+    });
+    assert.deepEqual(
+      rows.map((r) => r.id),
+      [2],
+    );
+  });
+
+  it("combine département et rôle", () => {
+    const rows = filterEquipeMembers(all, {
+      search: "",
+      statut: "",
+      equipe: "Design",
+      portage: "",
+      role: "Freelance",
+    });
+    assert.deepEqual(
+      rows.map((r) => r.id),
+      [1],
+    );
+  });
+});

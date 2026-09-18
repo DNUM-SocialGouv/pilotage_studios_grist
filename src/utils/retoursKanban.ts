@@ -1,6 +1,6 @@
 /**
  * Lecture des retours utilisateurs (table Grist `Retours`) pour l’accueil.
- * Pas de filtre métier « traité » — on affiche les lignes telles que renvoyées par Grist.
+ * La colonne Feedback n’affiche que les retours encore ouverts (hors Fait / Écarté).
  */
 
 export type RetourKanbanItem = {
@@ -67,6 +67,21 @@ export function retourKanbanItemFromRecord(
 
 export function sortRetoursNewestFirst(items: RetourKanbanItem[]): RetourKanbanItem[] {
   return [...items].sort((a, b) => b.id - a.id);
+}
+
+/** Retours encore à traiter dans la colonne Feedback (hors soldés). */
+export function isRetourOpenForFeedback(statut: string): boolean {
+  const s = statut.trim().toLowerCase();
+  if (!s) {
+    return true;
+  }
+  return s !== "fait" && s !== "écarté" && s !== "ecarte" && s !== "terminé" && s !== "termine";
+}
+
+export function filterRetoursOpenForFeedback(
+  items: readonly RetourKanbanItem[],
+): RetourKanbanItem[] {
+  return items.filter((item) => isRetourOpenForFeedback(item.statut));
 }
 
 /**

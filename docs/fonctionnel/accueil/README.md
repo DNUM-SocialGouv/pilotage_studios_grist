@@ -18,7 +18,7 @@ Première page affichée à l’ouverture du Custom Widget dans Grist : titre + 
 |---------|--------|
 | Entrée | `MemoryRouter` démarre sur `/` (`initialEntries`) |
 | En-tête | Titre « Pilotage studios » + pictogramme `Factory` |
-| Roadmap | Titre « Roadmap » + **kanban** : **Feedback** (placeholder CTA + liste `Retours`) · **Backlog** · **En cours** · **Livré** |
+| Roadmap | Titre « Roadmap » + **kanban** : **Feedback** (placeholder CTA + liste `Retours` ouverts) · **Backlog** · **En cours** · **Livré** (dernier livré en haut) |
 | Carte | Titre, badge statut produit (Fait / En cours / À venir / Plus tard), thème, résumé, actions |
 | Comment ça marche ? | Ouvre un drawer SM (`RoadmapGuideDrawer`) avec lead, étapes (ou puces), lien optionnel vers l’écran (`pagePath`) — un guide par item. |
 | GitHub | Liens « Discuter sur GitHub » (`target=_blank`) si `issueUrl` |

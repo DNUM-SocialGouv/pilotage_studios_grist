@@ -33,7 +33,7 @@ Pas d’auto-détection Grist (le jeton widget ne fournit pas un profil fiable).
 
 Écriture widget : **create uniquement** via `grist.getTable('Retours').create`, gardée par [`writeTableAllowlist.ts`](../../../src/security/writeTableAllowlist.ts).
 
-Lecture widget : allowlistée pour la **colonne Feedback** de l’accueil (`fetchAllowlistedTable('Retours')`) — lignes affichées **telles quelles** (pas de filtre « traité » côté front). Colonne **toujours en 1ʳᵉ position** : placeholder d’invitation (CTA) **toujours visible**, puis la liste des tickets s’il y en a.
+Lecture widget : allowlistée pour la **colonne Feedback** de l’accueil (`fetchAllowlistedTable('Retours')`) — seuls les retours **ouverts** (hors `Fait` / `Écarté` / `Terminé`). Colonne **toujours en 1ʳᵉ position** : placeholder d’invitation (CTA) **toujours visible**, puis la liste des tickets ouverts s’il y en a.
 
 ### Confidentialité lecture (décision V1)
 

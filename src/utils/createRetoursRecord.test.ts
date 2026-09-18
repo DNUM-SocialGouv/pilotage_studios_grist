@@ -114,6 +114,8 @@ describe("pageOptionFromPathname", () => {
     assert.equal(pageOptionFromPathname("/pa/12"), "Plans d’activité");
     assert.equal(pageOptionFromPathname("/bdc"), "Bons de commande");
     assert.equal(pageOptionFromPathname("/missions/3"), "Missions");
+    assert.equal(pageOptionFromPathname("/equipe/2"), "Équipe");
+    assert.equal(pageOptionFromPathname("/intervenants"), "Équipe");
     assert.equal(pageOptionFromPathname("/outils/recap-porteurs"), "Récap porteurs");
     assert.equal(pageOptionFromPathname("/inconnu"), "Autre");
   });

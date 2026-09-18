@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   badgeClassForRetourType,
+  filterRetoursOpenForFeedback,
   formatRetourDate,
   prenomFromAuteur,
   retourKanbanItemFromRecord,
@@ -64,6 +65,44 @@ describe("sortRetoursNewestFirst", () => {
     assert.deepEqual(
       sorted.map((r) => r.id),
       [3, 1],
+    );
+  });
+});
+
+describe("filterRetoursOpenForFeedback", () => {
+  it("retire Fait / Écarté et garde Nouveau", () => {
+    const filtered = filterRetoursOpenForFeedback([
+      {
+        id: 1,
+        dateLabel: "",
+        auteur: "a",
+        type: "t",
+        page: "",
+        message: "ouvert",
+        statut: "Nouveau",
+      },
+      {
+        id: 4,
+        dateLabel: "",
+        auteur: "b",
+        type: "t",
+        page: "",
+        message: "filtres",
+        statut: "Fait",
+      },
+      {
+        id: 5,
+        dateLabel: "",
+        auteur: "c",
+        type: "t",
+        page: "",
+        message: "écarté",
+        statut: "Écarté",
+      },
+    ]);
+    assert.deepEqual(
+      filtered.map((r) => r.id),
+      [1],
     );
   });
 });

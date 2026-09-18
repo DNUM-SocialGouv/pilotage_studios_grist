@@ -3,6 +3,7 @@ import type {
   BDC,
   CommandeSofiane,
   Constatation,
+  EquipeMember,
   Intervenant,
   Mission,
   MissionEnfant,
@@ -189,6 +190,20 @@ export function toIntervenant(record: GristRecord): Intervenant {
     Prenom_Nom: asString(record.Prenom_Nom) ?? asGristChoice(record.Prenom_Nom),
     Equipe: asGristChoice(record.Equipe) ?? asString(record.Equipe),
     Portage: asGristChoice(record.Portage) ?? asString(record.Portage),
+  };
+}
+
+export function toEquipeMember(record: GristRecord): EquipeMember {
+  return {
+    id: record.id,
+    Prenom_Nom: asString(record.Prenom_Nom) ?? asGristChoice(record.Prenom_Nom),
+    Equipe: asGristChoice(record.Equipe) ?? asString(record.Equipe),
+    Portage: asGristChoice(record.Portage) ?? asString(record.Portage),
+    Statut: asGristChoice(record.Statut) ?? asString(record.Statut),
+    Specialite: asGristChoice(record.Specialite) ?? asString(record.Specialite),
+    Role_ACL: asGristChoice(record.Role_ACL) ?? asString(record.Role_ACL),
+    Missions_en_cours:
+      asString(record.Missions_en_cours) ?? asGristChoice(record.Missions_en_cours),
   };
 }
 

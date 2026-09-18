@@ -35,7 +35,7 @@ export const WIDGET_NAV_ITEMS: WidgetNavItem[] = [
   },
   { text: "Produits", href: "/produits", status: "coming" },
   { text: "Missions", href: "/missions", status: "in_progress" },
-  { text: "Intervenants", href: "/intervenants", status: "coming" },
+  { text: "Équipe", href: "/equipe", status: "in_progress" },
   {
     text: "Outils",
     children: [

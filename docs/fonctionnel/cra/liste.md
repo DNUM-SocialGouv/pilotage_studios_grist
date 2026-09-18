@@ -48,7 +48,7 @@ Tri défaut : période décroissante, puis id. Pagination **10** lignes.
 
 - Création / modification (#33)
 - Rapprochement Malt
-- Filtrage selon rôle utilisateur (droits serveur — [#47](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/47), [#35](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/35))
+- Filtrage selon rôle utilisateur (droits serveur — [#47](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/47), [#54](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/54), [#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55))
 
 Voir aussi le parcours **[récap porteurs](recap-porteurs.md)** (`/outils/recap-porteurs`, [#48](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/48)).
 

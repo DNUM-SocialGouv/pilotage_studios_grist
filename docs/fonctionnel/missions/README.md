@@ -47,5 +47,5 @@ Chargement **lazy** sur `/missions` uniquement (`useMissionsData`) — pas au bo
 - Pas de **delete** widget sur missions / prestations
 - Liste ISO #216/#218/#219 + drawer [#227](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/227)
 - Fiche ISO #222 / #224 / #225 + bouton **modifier** (drawer edit) + CRUD prestations [#31](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/31)
-- Produits et intervenants en **texte** / stubs (écrans catalogue encore stub)
+- Produits encore stub ; écran **Équipe** = `/equipe` (pas de lien croisé depuis la fiche mission)
 - Contexte fiche : formatage léger (paragraphes, listes, gras `**…**`, liens Markdown http(s) — pas de HTML brut)

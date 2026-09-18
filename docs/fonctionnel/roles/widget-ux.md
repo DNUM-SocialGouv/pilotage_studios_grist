@@ -20,7 +20,7 @@ Suivi des cellules : [`matrice-droits.md`](matrice-droits.md) tableau **A**.
 - Ne jamais présenter l’UX comme « sécurisé » sans couche 6.
 - Toute nouvelle garde de route / filtre nav → **MAJ matrice** (rule `roles-matrice`).
 - Pas de deny Admin-only global sur `Realise` tant que la saisie freelance n’est pas tranchée.
-- Fail-closed si profil absent / erreur : pas de PA / BDC / CRA / PV / récap ; Accueil / Missions / Produits / Intervenants restent ouverts (aligné seed non-Admin).
+- Fail-closed si profil absent / erreur : pas de PA / BDC / CRA / PV / récap ; Accueil / Missions / Produits / Équipe restent ouverts (aligné seed non-Admin).
 
 ## Technique widget
 

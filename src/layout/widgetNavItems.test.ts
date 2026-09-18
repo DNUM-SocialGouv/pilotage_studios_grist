@@ -74,7 +74,7 @@ describe("flattenNavLinks", () => {
       "/pv",
       "/produits",
       "/missions",
-      "/intervenants",
+      "/equipe",
       "/outils/recap-porteurs",
     ]);
   });
@@ -91,7 +91,7 @@ describe("WIDGET_MODULE_LINKS", () => {
         { text: "Procès-verbaux", href: "/pv", status: "coming" },
         { text: "Produits", href: "/produits", status: "coming" },
         { text: "Missions", href: "/missions", status: "in_progress" },
-        { text: "Intervenants", href: "/intervenants", status: "coming" },
+        { text: "Équipe", href: "/equipe", status: "in_progress" },
         { text: "Récap porteurs", href: "/outils/recap-porteurs", status: "in_progress" },
       ],
     );

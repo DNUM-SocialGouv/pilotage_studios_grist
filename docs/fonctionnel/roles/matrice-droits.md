@@ -51,7 +51,8 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 | Récap porteurs | `/outils/recap-porteurs` | **oui** | **non** | **non** | **non** | **Appliqué** UX | |
 | Procès-verbaux | `/pv` | **oui** | **non** | **non** | **non** | **Appliqué** UX (stub) | |
 | Missions | `/missions` | oui | oui | oui | oui | **Appliqué** UX | |
-| Produits / Intervenants | stubs | oui | oui | oui | oui | **Appliqué** UX (stub) | |
+| Équipe | `/equipe` | oui | oui | oui | oui | **Appliqué** UX (lecture) | Ancien stub Intervenants ; flag Grist `Page_intervenants` |
+| Produits | stub | oui | oui | oui | oui | **Appliqué** UX (stub) | |
 
 ---
 
@@ -73,7 +74,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | `Realise` (CRA) hors montants | CRUD | R département | **R/U ses lignes** | — | **Non** | Lignes hors `Calcul_TTC` encore ouvertes |
 | `Realise.Calcul_TTC` | RU | — | — | — | **Appliqué (Owner)** | `-RU` si non-Owner |
 | `Missions` / `Missions_enfants` | CRUD | R/U dép. | R ses missions | R / — | Non (rôle) | |
-| `Retours` (feedback) | CR (widget liste) | C (+ R liste V1) | C (+ R liste V1) | C ? | Widget create + **Read liste V1** | Kanban Feedback partagé ; resserrer Read = HITL si audience élargie |
+| `Retours` (feedback) | CR (widget liste) | C (+ R liste V1) | C (+ R liste V1) | C ? | Widget create + **Read liste V1** | Kanban Feedback : affichage **ouverts seulement** (hors Fait/Écarté) ; ACL Read partagée |
 | `Acl_profil` | CR soi | CR soi | CR soi | CR soi | **Appliqué** | `user.Email == rec.E_mail` → `+CR` ; `True` → `-CRUD` |
 | `Droits_pages` | CRUD (Owner / Admin) | — | — | — | **Appliqué** | Owner **ou** `Role_ACL == Admin` → `+CRUD` ; `True` → `-CRUD` |
 | Structure (S) | Owner | — | — | — | **Appliqué** | `-S` si non-Owner |
@@ -92,6 +93,8 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-09-19 | Feedback : masquer retours `Fait` / `Écarté` / `Terminé` dans la colonne Feedback (accueil) | 5 | [#56](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/pull/56) |
+| 2026-09-19 | Écran Équipe liste + fiche lecture (`/equipe`) ; nav libellé Équipe ; flag page toujours `Page_intervenants` | 5 | [#53](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/53) |
 | 2026-09-18 (soir) | Revue #52 : nav sans flash loading ; fetch Acl/Retours après boot PA ; alerte profil ; décision Read `Retours` partagée V1 | 5, 6 (doc) | Correctifs revue |
 | 2026-09-18 (soir) | Widget : lecture `Acl_profil`, filtre nav + gardes `/pa` `/bdc` `/cra` `/pv` `/outils/recap-porteurs` | 4, 5 | Feature droits pages |
 | 2026-09-18 (soir) | Grist : `Droits_pages` Owner/Admin ; `Acl_profil.Page_*` formules ← `Droits_pages` | 4, 6 | HITL |
