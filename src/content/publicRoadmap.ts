@@ -425,10 +425,50 @@ export const ROADMAP_STATUS_BADGE_CLASS: Record<PublicRoadmapStatus, string> = {
   later: "",
 };
 
+/** Colonnes kanban accueil (gauche → droite). */
+export type RoadmapKanbanColumnId = "backlog" | "en_cours" | "livre";
+
+export type RoadmapKanbanColumn = {
+  id: RoadmapKanbanColumnId;
+  label: string;
+};
+
+export const ROADMAP_KANBAN_COLUMNS: RoadmapKanbanColumn[] = [
+  { id: "backlog", label: "Backlog" },
+  { id: "en_cours", label: "En cours" },
+  { id: "livre", label: "Livré" },
+];
+
+export type PublicRoadmapKanbanGroup = {
+  column: RoadmapKanbanColumn;
+  items: PublicRoadmapItem[];
+};
+
 export type PublicRoadmapThemeGroup = {
   theme: PublicRoadmapTheme;
   items: PublicRoadmapItem[];
 };
+
+/** Mappe le statut produit vers une colonne kanban. */
+export function roadmapStatusToKanbanColumn(
+  status: PublicRoadmapStatus,
+): RoadmapKanbanColumnId {
+  if (status === "done") return "livre";
+  if (status === "current") return "en_cours";
+  return "backlog";
+}
+
+/** Regroupe les items en colonnes Backlog → En cours → Livré (ordre source conservé). */
+export function groupPublicRoadmapByKanban(
+  items: PublicRoadmapItem[] = PUBLIC_ROADMAP_ITEMS,
+): PublicRoadmapKanbanGroup[] {
+  return ROADMAP_KANBAN_COLUMNS.map((column) => ({
+    column,
+    items: items.filter(
+      (item) => roadmapStatusToKanbanColumn(item.status) === column.id,
+    ),
+  }));
+}
 
 /** Regroupe les items dans l’ordre des thèmes (thèmes vides omis). */
 export function groupPublicRoadmapByTheme(
