@@ -95,12 +95,13 @@ Visibilité users : section roadmap sur `/` + issues rédigées selon [`docs/iss
 | Ancre widget + liste PA | `Plan_activite` |
 | Finance PA + écrans BDC (accès full) | `BDC`, `Constatations`, `Commandes_Sofiane` |
 | Onglet Dépenses fiche BDC **ou** écrans `/missions` **ou** `/cra` **ou** `/outils/recap-porteurs` (lazy, lecture) | `Realise`, `Missions`, `Missions_enfants` (`Mission_parent` + `Titre_de_la_prestation`, fallbacks lecture `Libelle` / texte `Mission_enfant`), `Equipe` (`Portage` pour récap porteurs), `Tableau_de_pilotage_SDPC_Produits_SDPC` |
-| Feedback widget (écriture create seule, pas de liste) | `Retours` |
+| Feedback widget (écriture create + lecture liste accueil) | `Retours` |
+| Droits pages session (nav + gardes) | `Acl_profil` (lecture ; `Page_*` formules ← `Droits_pages` hors allowlist) |
 | Select auteur feedback (lecture lazy) | `Equipe` (déjà allowlistée) |
 
 **Allowlist lecture** : uniquement via [`src/security/fetchTableAllowlist.ts`](src/security/fetchTableAllowlist.ts) (`FETCH_TABLE_ALLOWLIST`, `fetchAllowlistedTable`) **et** REST `fetchGristRecordsViaToken` (même allowlist). Pas d’ID libre depuis l’UI. Nouvelle table lecture = MAJ ce fichier + §4 + docs + [`SECURITY.md`](SECURITY.md).
 
-**Allowlist écriture** : [`src/security/writeTableAllowlist.ts`](src/security/writeTableAllowlist.ts) — `Retours` (create) ; `Missions` (create + update drawer) ; `Missions_enfants` (create + update drawer prestation). Pas de delete widget. `Retours` **n’est pas** dans `FETCH_TABLE_ALLOWLIST`.
+**Allowlist écriture** : [`src/security/writeTableAllowlist.ts`](src/security/writeTableAllowlist.ts) — `Retours` (create) ; `Missions` (create + update drawer) ; `Missions_enfants` (create + update drawer prestation). Pas de delete widget. `Retours` est aussi en **lecture** (`FETCH_TABLE_ALLOWLIST`) pour la colonne Feedback de l’accueil.
 
 **BDC** : chargée via `docApi.getAccessToken({ readOnly: true })` → REST `/tables/BDC/records?auth=…` (jeton court, droits utilisateur) — pas de clé API dans le bundle. Attachments devis idem.
 
@@ -155,6 +156,8 @@ Workspace Cursor : ouvrir **uniquement** ce dépôt pour le widget — ne pas d�
 | [`.cursor/rules/dsfr-tableaux.mdc`](.cursor/rules/dsfr-tableaux.mdc) | Tableaux DSFR |
 | [`.cursor/rules/widget-iframe.mdc`](.cursor/rules/widget-iframe.mdc) | Contraintes iframe (always-on) |
 | [`.cursor/rules/pilotage-drawers.mdc`](.cursor/rules/pilotage-drawers.mdc) | Drawers : taille fixe SM, pas de sélecteur largeur |
+| [`.cursor/rules/pedagogie-non-technique.mdc`](.cursor/rules/pedagogie-non-technique.mdc) | « En clair » : brief non technique en tête des plans / issues / PR / synthèses (always-on) |
+| [`.cursor/rules/roles-matrice.mdc`](.cursor/rules/roles-matrice.mdc) | MAJ obligatoire [`docs/fonctionnel/roles/matrice-droits.md`](docs/fonctionnel/roles/matrice-droits.md) si feature / permissions (always-on) |
 
 MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + DSFR). Dans Cursor, les namespaces exposés sont typiquement `user-grist` et `user-dsfr`.
 
@@ -187,7 +190,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 | Feedback | `docs/fonctionnel/feedback/` (+ [`alertes.md`](docs/fonctionnel/feedback/alertes.md)), `FeedbackWidget`, `writeTableAllowlist` |
 | Tableau DSFR | rule `dsfr-tableaux.mdc`, MCP `user-dsfr` |
 | Embed / secrets | `embedTrust.ts`, `NothingHerePage`, `ensureFreshBuild`, SECURITY |
-| Rôles / ACL document | `docs/fonctionnel/roles/` ; inventaire via MCP **local** `grist-mcp-server` (`grist_list_doc_access` / `grist_access_gap_report`) — hors bundle widget |
+| Rôles / ACL document | `docs/fonctionnel/roles/` (+ **matrice-droits.md** registre vivant) ; inventaire via MCP **local** `grist-mcp-server` — hors bundle widget |
 | Exploration Grist | MCP `user-grist` (lecture) — **pas** de clé dans le bundle |
 
 ### Validation
@@ -207,6 +210,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 | Nouvelle rule / skill | Ligne dans §7 |
 | Changement parcours UI | Mettre à jour `docs/fonctionnel/` (même PR) |
 | Élargissement surface API / écriture | Lire SECURITY ; confirmation explicite + revue |
+| Feature / permissions (rôles, nav, ACL) | MAJ [`docs/fonctionnel/roles/matrice-droits.md`](docs/fonctionnel/roles/matrice-droits.md) (rule `roles-matrice`) |
 
 ---
 

@@ -2,8 +2,11 @@ import type { MouseEvent, ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MainNavigation } from "@codegouvfr/react-dsfr/MainNavigation";
 import type { MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation";
+import { useAclProfil } from "../AclProfilContext";
+import { canAccessHref } from "../security/pageAccess";
 import {
   WIDGET_NAV_ITEMS,
+  filterNavItemsByPageAccess,
   isGroupActive,
   isNavActive,
   isWidgetNavGroup,
@@ -37,13 +40,17 @@ function navItemText(link: WidgetNavLink): ReactNode {
 export function WidgetNav() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const { flags } = useAclProfil();
+  const navTree = filterNavItemsByPageAccess(WIDGET_NAV_ITEMS, (href) =>
+    canAccessHref(href, flags),
+  );
 
   const onNavClick = (href: string) => (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     navigate(href);
   };
 
-  const items: MainNavigationProps.Item[] = WIDGET_NAV_ITEMS.map((item) => {
+  const items: MainNavigationProps.Item[] = navTree.map((item) => {
     if (isWidgetNavGroup(item)) {
       return {
         text: item.text,

@@ -201,7 +201,7 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     title: "Envoyer les CRA en fin de mois",
     summary:
       "Soumettre un CRA, puis le faire relire par un manager — avec des droits adaptés.",
-    status: "current",
+    status: "next",
     issueUrl:
       "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/33",
     guide: {
@@ -234,21 +234,41 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     },
   },
   {
-    id: "droits-prep",
+    id: "droits-menus",
     themeId: "intervenants",
-    title: "Préparer les droits Grist avant l’envoi des CRA",
+    title: "Menus adaptés au rôle de chacun",
     summary:
-      "Rôles pilotes, correspondance compte ↔ intervenant, et règles sur les réalisations.",
-    status: "next",
+      "Admin, responsable, freelance ou invité : le menu montre seulement les écrans autorisés (budget / CRA réservés).",
+    status: "done",
     issueUrl:
       "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/47",
     guide: {
-      lead: "Avant d’ouvrir la soumission des CRA, les droits du document doivent être clairs : qui voit et modifie quelles réalisations.",
-      stepsIntro: "La préparation porte sur :",
+      lead: "Chacun a un rôle dans le pilotage. Le widget s’aligne dessus pour n’afficher que les pages utiles — sans ouvrir le budget à tout le monde.",
+      stepsIntro: "En pratique :",
       steps: [
-        "Les rôles de quelques comptes de test (admin, responsable, freelance)",
-        "La correspondance e-mail Grist ↔ fiche intervenant",
-        "La matrice sur les réalisations, testée avec « voir comme »",
+        "Votre compte est relié à votre fiche équipe (e-mail)",
+        "Le rôle (Admin, responsable, freelance, invité) détermine les pages visibles",
+        "Plans d’activité, bons de commande, CRA et récap porteurs restent réservés aux profils autorisés",
+        "Missions (et écrans ouverts à tous) restent accessibles selon la matrice",
+      ],
+    },
+  },
+  {
+    id: "droits-prep",
+    themeId: "intervenants",
+    title: "Affiner les droits sur les réalisations (CRA)",
+    summary:
+      "Avant l’envoi des CRA : qui peut lire ou modifier quelles lignes de réalisations — testé « voir comme ».",
+    status: "current",
+    issueUrl:
+      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/47",
+    guide: {
+      lead: "Les menus sont filtrés. Reste à protéger les données de réalisations elles-mêmes, pour qu’un freelance ne voie ou ne modifie que son périmètre.",
+      stepsIntro: "Travail en cours :",
+      steps: [
+        "Définir qui lit / modifie quelles réalisations selon le rôle",
+        "Tester avec « voir comme » (admin, responsable, freelance)",
+        "Débloquer ensuite l’envoi des CRA en fin de mois en confiance",
       ],
     },
   },

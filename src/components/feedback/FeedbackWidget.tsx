@@ -15,6 +15,7 @@ import {
   pageOptionFromPathname,
   type FeedbackPageOption,
 } from "../../utils/feedbackPages";
+import { subscribeOpenFeedback } from "../../utils/feedbackOpen";
 import styles from "./FeedbackWidget.module.css";
 
 const TYPES: FeedbackType[] = ["Anomalie", "Suggestion", "Question"];
@@ -119,6 +120,14 @@ export function FeedbackWidget() {
     }
     setPage(pageOptionFromPathname(location.pathname));
   }, [location.pathname, open, sent]);
+
+  useEffect(() => {
+    return subscribeOpenFeedback(() => {
+      setOpen(true);
+      setSent(false);
+      setError(null);
+    });
+  }, []);
 
   useEffect(() => {
     if (!open) {

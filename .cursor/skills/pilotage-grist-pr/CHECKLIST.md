@@ -9,6 +9,7 @@
 - [ ] `fetchTable` uniquement via `fetchAllowlistedTable` (pas d’ID libre)
 - [ ] Tables documentées dans `AGENTS.md` §4 si nouvel écran / nouvelle table
 - [ ] Doc fonctionnelle : `docs/fonctionnel/` MAJ ou **N/A** justifié ([DOC-FONCTIONNEL.md](../pilotage-grist-issue/DOC-FONCTIONNEL.md))
+- [ ] Matrice rôles : [`matrice-droits.md`](../../docs/fonctionnel/roles/matrice-droits.md) MAJ (tableau A/B + journal) ou **N/A** si hors permissions / écrans sensibles
 - [ ] Portage app solo : **N/A** | fiche créée sous `docs/portage/` ([template](../../docs/portage/_TEMPLATE.md))
 - [ ] Si roadmap / issue publique : libellés métier OK ([issues-publiques.md](../../docs/issues-publiques.md)) ; pas de nominatif
 - [ ] Simplification challengée (rien d’ajouté « au cas où »)

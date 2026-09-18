@@ -31,7 +31,9 @@ Pas d’auto-détection Grist (le jeton widget ne fournit pas un profil fiable).
 | `Date`, `Auteur`, `Email`, `Type`, `Page`, `Message`, `Niveau_gene`, `Contexte_technique`, `Statut` (= Nouveau) | Oui |
 | `Priorite`, `Assigne_a`, `Lien_ticket`, `Reponse` | Non (suivi équipe dans Grist) |
 
-Écriture widget : **create uniquement** via `grist.getTable('Retours').create`, gardée par [`writeTableAllowlist.ts`](../../../src/security/writeTableAllowlist.ts). Pas de lecture liste retours dans le widget V1 (`Retours` **hors** `FETCH_TABLE_ALLOWLIST`).
+Écriture widget : **create uniquement** via `grist.getTable('Retours').create`, gardée par [`writeTableAllowlist.ts`](../../../src/security/writeTableAllowlist.ts).
+
+Lecture widget : allowlistée pour la **colonne Feedback** de l’accueil (`fetchAllowlistedTable('Retours')`) — lignes affichées **telles quelles** (pas de filtre « traité » côté front). Colonne **toujours en 1ʳᵉ position** : placeholder d’invitation (CTA) **toujours visible**, puis la liste des tickets s’il y en a.
 
 ## Access Rules (HITL — à appliquer dans Grist)
 
@@ -49,9 +51,9 @@ Sans e-mail Grist ni ETL : runbook ops (webhook Mattermost go/no-go + **fallback
 
 **Décision actuelle** : **No-go** Mattermost direct (smoke HTTP 400 decode payload) → process actif = [fallback vue `Nouveau`](alertes.md#fallback-opérationnel-process-actif-tant-que-no-go).
 
-## Hors scope V1 (widget)
+## Hors scope (widget)
 
-- Vue Kanban / page widget listant les retours
 - Notifications depuis le **bundle** (mail, Mattermost, Tchap) — secrets interdits ; config éventuelle = doc Grist uniquement ([`alertes.md`](alertes.md))
 - Boucle auto « informé·e » (champ `Reponse` + statut Fait/Écarté) — promise UX documentée, pas d’automation
 - ETL / transformateur JSON Grist → Mattermost
+- Filtrer / trier les retours selon un workflow de traitement (géré hors front : présence des lignes dans la table)

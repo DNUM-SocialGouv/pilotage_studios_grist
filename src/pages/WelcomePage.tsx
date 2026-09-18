@@ -2,15 +2,15 @@ import { useState } from "react";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import Factory from "@codegouvfr/react-dsfr/picto/Factory";
 import { RoadmapGuideDrawer } from "../components/welcome/RoadmapGuideDrawer";
+import { WelcomeFeedbackColumn } from "../components/welcome/WelcomeFeedbackColumn";
 import {
   groupPublicRoadmapByKanban,
-  PUBLIC_ROADMAP_CTA,
-  PUBLIC_ROADMAP_INTRO,
   PUBLIC_ROADMAP_THEMES,
   ROADMAP_STATUS_BADGE_CLASS,
   ROADMAP_STATUS_LABEL,
   type PublicRoadmapItem,
 } from "../content/publicRoadmap";
+import { useRetoursList } from "../hooks/useRetoursList";
 
 function themeLabel(themeId: PublicRoadmapItem["themeId"]): string {
   return PUBLIC_ROADMAP_THEMES.find((t) => t.id === themeId)?.label ?? themeId;
@@ -18,11 +18,12 @@ function themeLabel(themeId: PublicRoadmapItem["themeId"]): string {
 
 export function WelcomePage() {
   const kanbanGroups = groupPublicRoadmapByKanban();
+  const { items: retours } = useRetoursList();
   const [guideItem, setGuideItem] = useState<PublicRoadmapItem | null>(null);
 
   return (
     <div className="welcome-page">
-      <div className="welcome-page__panel">
+      <div className="welcome-page__panel welcome-page__panel--wide">
         <div className="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
           <div className="fr-col-12 fr-col-sm-7">
             <h1 className="fr-h3">Pilotage studios</h1>
@@ -36,16 +37,15 @@ export function WelcomePage() {
 
         <section className="welcome-roadmap fr-mt-3w" aria-labelledby="welcome-roadmap-title">
           <h2 id="welcome-roadmap-title" className="fr-h5">
-            Feuille de route
+            Roadmap
           </h2>
-          <p className="fr-text--sm fr-mb-2w">{PUBLIC_ROADMAP_INTRO}</p>
-          <p className="fr-text--sm fr-mb-2w">{PUBLIC_ROADMAP_CTA}</p>
 
           <div className="welcome-kanban fr-grid-row fr-grid-row--gutters">
+            <WelcomeFeedbackColumn items={retours} />
             {kanbanGroups.map((group) => (
               <section
                 key={group.column.id}
-                className="welcome-kanban__column fr-col-12 fr-col-md-4"
+                className="welcome-kanban__column fr-col-12 fr-col-md-6 fr-col-xl-3"
                 aria-labelledby={`welcome-kanban-${group.column.id}`}
               >
                 <div className="welcome-kanban__column-head">

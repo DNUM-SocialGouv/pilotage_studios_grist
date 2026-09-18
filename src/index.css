@@ -812,6 +812,10 @@ button.fr-link:disabled {
   width: 100%;
 }
 
+.welcome-page__panel--wide {
+  max-width: 90rem;
+}
+
 .welcome-kanban__column-head {
   align-items: center;
   display: flex;
@@ -837,6 +841,27 @@ button.fr-link:disabled {
   border: 1px solid var(--border-default-grey);
   border-radius: 0.25rem;
   padding: 0.75rem 1rem;
+}
+
+.welcome-feedback-empty {
+  background: var(--background-alt-blue-france);
+  border: 1px dashed var(--border-default-blue-france);
+  border-radius: 0.25rem;
+  padding: 1.25rem 1rem;
+  text-align: center;
+}
+
+.welcome-feedback-empty__pictogram {
+  color: var(--text-action-high-blue-france);
+  font-size: 1.75rem;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.welcome-feedback-empty__title {
+  color: var(--text-title-grey);
+  font-weight: 700;
+  margin: 0;
 }
 
 .welcome-roadmap__title {
