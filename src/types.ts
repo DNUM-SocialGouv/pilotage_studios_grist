@@ -115,6 +115,8 @@ export interface Intervenant {
   id: number;
   Prenom_Nom?: string;
   Equipe?: string;
+  /** Porteur / ESN (`Equipe.Portage`) — MALT, OCTO… */
+  Portage?: string;
 }
 
 /** Ligne catalogue produits (libellé = colonne Grist `Produit`). */

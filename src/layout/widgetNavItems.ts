@@ -36,6 +36,12 @@ export const WIDGET_NAV_ITEMS: WidgetNavItem[] = [
   { text: "Produits", href: "/produits", status: "coming" },
   { text: "Missions", href: "/missions", status: "in_progress" },
   { text: "Intervenants", href: "/intervenants", status: "coming" },
+  {
+    text: "Outils",
+    children: [
+      { text: "Récap porteurs", href: "/outils/recap-porteurs", status: "in_progress" },
+    ],
+  },
 ];
 
 export function flattenNavLinks(items: WidgetNavItem[]): WidgetNavLink[] {

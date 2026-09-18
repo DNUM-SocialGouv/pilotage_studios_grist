@@ -9,6 +9,7 @@ import { MissionsListView } from "./pages/MissionsListView";
 import { PaDetailView } from "./pages/PaDetailView";
 import { PaListView } from "./pages/PaListView";
 import { CraListView } from "./pages/CraListView";
+import { CraRecapPorteursPage } from "./pages/CraRecapPorteursPage";
 import { StubPage } from "./pages/StubPage";
 import { WelcomePage } from "./pages/WelcomePage";
 import { getEmbedTrust } from "./security/embedTrust";
@@ -44,6 +45,7 @@ export default function App() {
             </Route>
             <Route path="intervenants" element={<StubPage slug="intervenants" />} />
             <Route path="cra" element={<CraListView />} />
+            <Route path="outils/recap-porteurs" element={<CraRecapPorteursPage />} />
             <Route path="pv" element={<StubPage slug="pv" />} />
             <Route path="evaluations" element={<StubPage slug="evaluations" />} />
             <Route path="analyse" element={<StubPage slug="analyse" />} />

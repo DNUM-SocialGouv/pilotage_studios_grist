@@ -158,16 +158,16 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
   {
     id: "cra-recap-porteurs",
     themeId: "cra",
-    title: "Générer le récap porteurs depuis la liste des CRA",
+    title: "Générer le récap porteurs (Outils)",
     summary: "Préparer l’export mensuel groupé par portage pour envoi manuel aux ESN.",
-    status: "later",
+    status: "done",
     issueUrl: "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/48",
     guide: {
       lead: "En fin de mois, les managers préparent un récap par porteur (MALT, OCTO…) à partir des CRA du mois — sans e-mail automatique.",
       steps: [
+        "Ouvrir Outils → Récap porteurs.",
         "Choisir le mois (et éventuellement l’équipe / le portage).",
-        "Générer le récap groupé par porteur.",
-        "Exporter ou copier pour l’envoi manuel.",
+        "Exporter (CSV) ou copier (HTML / Markdown) pour l’envoi manuel.",
       ],
       diagram: {
         nodes: [
