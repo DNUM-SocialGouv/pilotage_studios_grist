@@ -1,4 +1,5 @@
 import type { GristFetchTableResult } from "../gristTypes";
+import { RETOURS_TABLE_ID } from "./writeTableAllowlist";
 
 /**
  * Allowlist des tableIds passés à `docApi.fetchTable`.
@@ -12,8 +13,8 @@ export const RELATED_TABLE_IDS = ["BDC", "Constatations", "Commandes_Sofiane"] a
 export type RelatedTableId = (typeof RELATED_TABLE_IDS)[number];
 
 /**
- * Tables lazy (pas au boot) : onglet Dépenses fiche BDC, écrans `/missions`, `/cra`,
- * `/outils/recap-porteurs`, et select auteur du widget feedback.
+ * Tables lazy (pas au boot PA) : onglet Dépenses fiche BDC, écrans `/missions`, `/cra`,
+ * `/outils/recap-porteurs`, select auteur du widget feedback.
  * Lecture seule ; jeton REST `readOnly: true` quand la table passe par REST.
  */
 export const BDC_DEPENSES_TABLE_IDS = [
@@ -24,10 +25,21 @@ export const BDC_DEPENSES_TABLE_IDS = [
   "Tableau_de_pilotage_SDPC_Produits_SDPC",
 ] as const;
 
+/**
+ * Pont droits pages (couche 4→5) : lu juste après le boot PA (nav / gardes).
+ * Une ligne session via Access Rules ; formules `Page_*` ← `Droits_pages`
+ * (table admin, hors allowlist widget).
+ */
+export const ACL_PROFIL_TABLE_ID = "Acl_profil" as const;
+
+/** `Retours` : colonne Feedback accueil — lu après boot PA (pas au même tick que `Plan_activite`). */
+
 export const FETCH_TABLE_ALLOWLIST = [
   PA_TABLE_ID,
   ...RELATED_TABLE_IDS,
   ...BDC_DEPENSES_TABLE_IDS,
+  ACL_PROFIL_TABLE_ID,
+  RETOURS_TABLE_ID,
 ] as const;
 
 export type AllowlistedTableId = (typeof FETCH_TABLE_ALLOWLIST)[number];

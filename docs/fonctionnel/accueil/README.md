@@ -10,7 +10,7 @@
 
 ## Objet
 
-Première page affichée à l’ouverture du Custom Widget dans Grist : titre + pictogramme + **feuille de route en kanban** (Backlog · En cours · Livré). Chaque carte propose **« Comment ça marche ? »** (drawer d’onboarding). La navigation des modules se fait via la **nav** (`WidgetNav`), pas une liste sur l’accueil.
+Première page affichée à l’ouverture du Custom Widget dans Grist : titre + pictogramme + **Roadmap en kanban** (Feedback · Backlog · En cours · Livré). Chaque carte roadmap propose **« Comment ça marche ? »** (drawer d’onboarding). La navigation des modules se fait via la **nav** (`WidgetNav`), pas une liste sur l’accueil.
 
 ## Comportement
 
@@ -18,17 +18,17 @@ Première page affichée à l’ouverture du Custom Widget dans Grist : titre + 
 |---------|--------|
 | Entrée | `MemoryRouter` démarre sur `/` (`initialEntries`) |
 | En-tête | Titre « Pilotage studios » + pictogramme `Factory` |
-| Feuille de route | Intro + CTA + **kanban** (`groupPublicRoadmapByKanban`) : colonnes gauche → droite **Backlog** (`next` + `later`) · **En cours** (`current`) · **Livré** (`done`) |
+| Roadmap | Titre « Roadmap » + **kanban** : **Feedback** (placeholder CTA + liste `Retours`) · **Backlog** · **En cours** · **Livré** |
 | Carte | Titre, badge statut produit (Fait / En cours / À venir / Plus tard), thème, résumé, actions |
-| Comment ça marche ? | Ouvre un drawer SM (`RoadmapGuideDrawer`) avec lead, étapes (ou puces), lien optionnel vers l’écran (`pagePath`) — un guide par item. Pas de schéma (Mermaid hors scope V1 : package lourd). |
+| Comment ça marche ? | Ouvre un drawer SM (`RoadmapGuideDrawer`) avec lead, étapes (ou puces), lien optionnel vers l’écran (`pagePath`) — un guide par item. |
 | GitHub | Liens « Discuter sur GitHub » (`target=_blank`) si `issueUrl` |
-| Nav | `WidgetNav` : barre horizontale compacte même sous 62em (sinon DSFR empile en colonne hors Header) ; Accueil icône home ; **Budget** / **Outils** en menus ; hors nav : Analyse, Évaluations |
-| Layout | Panneau large (`max-width` ~72rem) pour 3 colonnes |
+| Nav | `WidgetNav` : Accueil icône home ; **Budget** / **Outils** en menus |
+| Layout | Panneau large (`welcome-page__panel--wide`) pour 4 colonnes |
 | Fallback | Route `*` → redirection vers `/` |
 
 ## Données Grist
 
-Aucune lecture dédiée : page statique (le provider PA peut charger en arrière-plan pour les autres écrans). La roadmap et les guides sont **versionnés dans le code** (pas de table Grist).
+Roadmap / guides : **versionnés dans le code**. Colonne Feedback : lecture `Retours` (allowlist) après boot Grist ; message d’erreur visible si la lecture échoue.
 
 ## Hors scope
 

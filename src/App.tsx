@@ -1,4 +1,6 @@
 import { MemoryRouter, Navigate, Route, Routes } from "react-router-dom";
+import { AclProfilProvider } from "./AclProfilContext";
+import { PageAccessGuard } from "./components/PageAccessGuard";
 import { GristPaProvider } from "./GristPaContext";
 import { WidgetLayout } from "./layout/WidgetLayout";
 import { BdcDetailView } from "./pages/BdcDetailView";
@@ -30,29 +32,101 @@ export default function App() {
 
   return (
     <GristPaProvider>
-      <MemoryRouter initialEntries={["/"]}>
-        <Routes>
-          <Route element={<WidgetLayout />}>
-            <Route index element={<WelcomePage />} />
-            <Route path="pa" element={<PaListView />} />
-            <Route path="pa/:id" element={<PaDetailView />} />
-            <Route path="bdc" element={<BdcListView />} />
-            <Route path="bdc/:id" element={<BdcDetailView />} />
-            <Route path="produits" element={<StubPage slug="produits" />} />
-            <Route path="missions" element={<MissionsLayout />}>
-              <Route index element={<MissionsListView />} />
-              <Route path=":id" element={<MissionsDetailView />} />
+      <AclProfilProvider>
+        <MemoryRouter initialEntries={["/"]}>
+          <Routes>
+            <Route element={<WidgetLayout />}>
+              <Route index element={<WelcomePage />} />
+              <Route
+                path="pa"
+                element={
+                  <PageAccessGuard>
+                    <PaListView />
+                  </PageAccessGuard>
+                }
+              />
+              <Route
+                path="pa/:id"
+                element={
+                  <PageAccessGuard>
+                    <PaDetailView />
+                  </PageAccessGuard>
+                }
+              />
+              <Route
+                path="bdc"
+                element={
+                  <PageAccessGuard>
+                    <BdcListView />
+                  </PageAccessGuard>
+                }
+              />
+              <Route
+                path="bdc/:id"
+                element={
+                  <PageAccessGuard>
+                    <BdcDetailView />
+                  </PageAccessGuard>
+                }
+              />
+              <Route
+                path="produits"
+                element={
+                  <PageAccessGuard>
+                    <StubPage slug="produits" />
+                  </PageAccessGuard>
+                }
+              />
+              <Route
+                path="missions"
+                element={
+                  <PageAccessGuard>
+                    <MissionsLayout />
+                  </PageAccessGuard>
+                }
+              >
+                <Route index element={<MissionsListView />} />
+                <Route path=":id" element={<MissionsDetailView />} />
+              </Route>
+              <Route
+                path="intervenants"
+                element={
+                  <PageAccessGuard>
+                    <StubPage slug="intervenants" />
+                  </PageAccessGuard>
+                }
+              />
+              <Route
+                path="cra"
+                element={
+                  <PageAccessGuard>
+                    <CraListView />
+                  </PageAccessGuard>
+                }
+              />
+              <Route
+                path="outils/recap-porteurs"
+                element={
+                  <PageAccessGuard>
+                    <CraRecapPorteursPage />
+                  </PageAccessGuard>
+                }
+              />
+              <Route
+                path="pv"
+                element={
+                  <PageAccessGuard>
+                    <StubPage slug="pv" />
+                  </PageAccessGuard>
+                }
+              />
+              <Route path="evaluations" element={<StubPage slug="evaluations" />} />
+              <Route path="analyse" element={<StubPage slug="analyse" />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
-            <Route path="intervenants" element={<StubPage slug="intervenants" />} />
-            <Route path="cra" element={<CraListView />} />
-            <Route path="outils/recap-porteurs" element={<CraRecapPorteursPage />} />
-            <Route path="pv" element={<StubPage slug="pv" />} />
-            <Route path="evaluations" element={<StubPage slug="evaluations" />} />
-            <Route path="analyse" element={<StubPage slug="analyse" />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
+          </Routes>
+        </MemoryRouter>
+      </AclProfilProvider>
     </GristPaProvider>
   );
 }

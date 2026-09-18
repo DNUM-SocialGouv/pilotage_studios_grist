@@ -1,25 +1,34 @@
-# Widget UX selon rôle — différé
+# Widget UX selon rôle
 
-## Décision
+## En clair
 
-L’adaptation du Custom Widget (masquer nav / écrans selon `Role`) est **hors scope immédiat**, conformément à la feuille de route rôles.
+Le widget **cache des menus** et **refuse des pages** selon les cases `Page_*` de votre fiche `Acl_profil` (elles viennent automatiquement de la table admin `Droits_pages`). C’est du **confort** : ça n’empêche pas de contourner l’interface. La protection réelle des données reste les **Access Rules** Grist (couche 6) — prévues plus tard pour la saisie CRA freelance.
 
-Raison : le contrôle d’accès réel doit d’abord être dans les **Access Rules Grist**. Une UX widget sans ACL = fausse sécurité (le JS reste contournable ; `fetchTable` / REST respectent les ACL serveur).
+## Statut (2026-09-18)
 
-## Quand le reprendre
+| Étape | État |
+|-------|------|
+| User Attribute `Equipe` | **Fait** |
+| Pont `Acl_profil` (rôle + `Page_*` ← `Droits_pages`) | **Fait** (Grist) |
+| Nav filtrée + gardes de route | **Fait** (widget) |
+| Access Rules `Realise` par rôle | **Plus tard** |
 
-Après :
+Suivi des cellules : [`matrice-droits.md`](matrice-droits.md) tableau **A**.
 
-1. User Attributes `user.Email` → `Equipe` opérationnels
-2. Matrice de droits appliquée et testée View As
-3. Revue sécu ([SECURITY.md](../../../SECURITY.md)) si `Equipe` entre dans `FETCH_TABLE_ALLOWLIST`
+## Règles produit
 
-## Piste technique (non implémentée)
+- Ne jamais présenter l’UX comme « sécurisé » sans couche 6.
+- Toute nouvelle garde de route / filtre nav → **MAJ matrice** (rule `roles-matrice`).
+- Pas de deny Admin-only global sur `Realise` tant que la saisie freelance n’est pas tranchée.
+- Fail-closed si profil absent / erreur : pas de PA / BDC / CRA / PV / récap ; Accueil / Missions / Produits / Intervenants restent ouverts (aligné seed non-Admin).
 
-- Lire le profil via plugin API / table allowlistée `Equipe` filtrée par email session (si exposé)
-- Adapter `WIDGET_NAV_LINKS` selon `Role`
-- Ne jamais se fier uniquement au masquage UI pour les données sensibles (TJM, budgets)
+## Technique widget
 
-## Statut todo
-
-**Différé / documenté** — pas de code widget dans cette itération.
+- Lecture `Acl_profil` **après** boot PA (`useGristPa` + `fetchAllowlistedTable` via `useAclProfilData` / `AclProfilProvider`) — retries si fetch précoce
+- Pendant `loading` profil : **nav complète** (pas de flash fail-closed) ; gardes affichent « Vérification… »
+- Si profil `empty` / `error` : alerte sous la nav + fail-closed budget
+- Filtre `WIDGET_NAV_ITEMS` : `filterNavItemsByPageAccess` + `canAccessHref` (une fois le profil résolu)
+- Garde : `PageAccessGuard` sur les routes mappées (refus → `/`)
+- Helpers purs : `src/security/pageAccess.ts`
+- `Droits_pages` **hors** allowlist (Owner / `Role_ACL` Admin seulement)
+- `useAclProfil` hors provider → **throw** (comme `useGristPa`)

@@ -1,0 +1,40 @@
+---
+description: Mettre à jour la matrice rôles & droits à chaque feature ou changement de permissions
+alwaysApply: true
+---
+
+# Matrice rôles & droits (registre vivant)
+
+## Source de vérité
+
+[`docs/fonctionnel/roles/matrice-droits.md`](../../docs/fonctionnel/roles/matrice-droits.md) — tableaux **A** (écrans widget) et **B** (données Grist) + journal + **6 couches**.
+
+Schéma pédagogique : canvas local `roles-droits-schema.canvas.tsx` (aligné sur les 6 couches).
+
+## Quand mettre à jour (obligatoire)
+
+Dès qu’une feature ou un correctif touche **au moins un** de :
+
+- Visibilité nav / garde de route selon le rôle
+- Colonne `Equipe.Role` (Rôle ACL), emails Equipe, User Attribute
+- Access Rules Grist (tables / colonnes)
+- Allowlist lecture/écriture liée à qui peut accéder à quoi
+- Nouveau parcours sensible (CRA, budgets, intervenants, feedback droits)
+
+Alors, **dans la même PR** (ou session HITL documentée) :
+
+1. Mettre à jour le tableau **A** et/ou **B** (cellules + colonne Statut / Appliqué)
+2. Ajouter une ligne au **Journal**
+3. Si snapshot ACL change → [`access-rules.md`](../../docs/fonctionnel/roles/access-rules.md)
+4. Case PR / checklist : matrice à jour **ou N/A** avec une phrase de justification
+
+## Jamais
+
+- Livrer un masquage UX ou une règle Grist **sans** trace dans la matrice
+- Confondre couche **5** (confort widget) et couche **6** (vrai contrôle données)
+- Remplacer les Access Rules par du seul JS widget
+- Muter les ACL via API/MCP (Owner, UI Grist uniquement)
+
+## Rappel couches (ordre)
+
+1 Partage → 2 Rôle ACL → 3 Propriété utilisateur → 4 Pont widget → 5 UX → 6 Access Rules tables

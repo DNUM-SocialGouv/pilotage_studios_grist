@@ -66,3 +66,24 @@ export function isNavActive(pathname: string, href: string): boolean {
 export function isGroupActive(pathname: string, group: WidgetNavGroup): boolean {
   return group.children.some((child) => isNavActive(pathname, child.href));
 }
+
+/** Filtre nav selon drapeaux `Page_*` (couche 5). */
+export function filterNavItemsByPageAccess(
+  items: WidgetNavItem[],
+  canAccess: (href: string) => boolean,
+): WidgetNavItem[] {
+  const out: WidgetNavItem[] = [];
+  for (const item of items) {
+    if (isWidgetNavGroup(item)) {
+      const children = item.children.filter((child) => canAccess(child.href));
+      if (children.length > 0) {
+        out.push({ ...item, children });
+      }
+      continue;
+    }
+    if (canAccess(item.href)) {
+      out.push(item);
+    }
+  }
+  return out;
+}

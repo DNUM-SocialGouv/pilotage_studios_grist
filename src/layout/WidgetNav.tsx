@@ -1,9 +1,13 @@
 import type { MouseEvent, ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { MainNavigation } from "@codegouvfr/react-dsfr/MainNavigation";
 import type { MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation";
+import { useAclProfil } from "../AclProfilContext";
+import { canAccessHref } from "../security/pageAccess";
 import {
   WIDGET_NAV_ITEMS,
+  filterNavItemsByPageAccess,
   isGroupActive,
   isNavActive,
   isWidgetNavGroup,
@@ -37,13 +41,21 @@ function navItemText(link: WidgetNavLink): ReactNode {
 export function WidgetNav() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const { status, flags, error } = useAclProfil();
+
+  // Pendant le chargement : nav complète (évite flash Admin Budget → masqué → réouvert).
+  // Après résolution : filtre selon `Page_*` (fail-closed si empty/error).
+  const navTree =
+    status === "loading"
+      ? WIDGET_NAV_ITEMS
+      : filterNavItemsByPageAccess(WIDGET_NAV_ITEMS, (href) => canAccessHref(href, flags));
 
   const onNavClick = (href: string) => (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     navigate(href);
   };
 
-  const items: MainNavigationProps.Item[] = WIDGET_NAV_ITEMS.map((item) => {
+  const items: MainNavigationProps.Item[] = navTree.map((item) => {
     if (isWidgetNavGroup(item)) {
       return {
         text: item.text,
@@ -70,9 +82,28 @@ export function WidgetNav() {
     };
   });
 
+  const showProfilIssue = status === "error" || status === "empty";
+
   return (
     <div className="widget-nav fr-mb-2w">
       <MainNavigation items={items} />
+      {showProfilIssue ? (
+        <Alert
+          className="fr-mt-2w"
+          severity="warning"
+          small
+          title={
+            status === "empty"
+              ? "Profil d’accès introuvable"
+              : "Profil d’accès indisponible"
+          }
+          description={
+            status === "empty"
+              ? "Aucune fiche Acl_profil pour votre compte : les menus budget restent masqués (fail-closed). Contactez un administrateur Pilotage."
+              : `Impossible de lire vos droits d’écrans${error ? ` (${error})` : ""}. Les menus budget restent masqués. Réessayez ou contactez un administrateur.`
+          }
+        />
+      ) : null}
     </div>
   );
 }

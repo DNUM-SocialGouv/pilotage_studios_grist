@@ -1,0 +1,34 @@
+---
+description: Lisibilité non-technique et pédagogie sur toute production destinée à l'utilisateur (plans, issues, PR, réponses de chat)
+alwaysApply: true
+---
+
+# Lisibilité non-technique & pédagogie
+
+Le porteur du produit a un profil **non technique**. Il doit **toujours** comprendre
+ce qu'on fait ; le détail technique reste présent pour qu'il apprenne.
+
+## Toujours
+
+- **Commencer par un paragraphe « En clair »** : le *quoi* et le *pourquoi*, en langage
+  courant / métier (missions, prestations, CRA / réalisations, bons de commande,
+  plans d’activité, widget dans Grist, rôles…), **sans jargon**.
+  S'applique à **tout** ce qui lui est destiné : **plans** (obligation première),
+  issues GitHub, pull requests, et **réponses de conversation** (synthèses,
+  explications, propositions).
+- Après « En clair », le détail **peut** être technique **à condition d'expliquer** :
+  définir chaque terme technique à sa première apparition (courte glose entre
+  parenthèses), et relier au **bénéfice concret**.
+- Ton : **vouvoiement**, vocabulaire métier Pilotage (voir [`docs/README.md`](../../docs/README.md)).
+
+## Jamais
+
+- Ouvrir par du jargon, un nom de fichier, une commande, un sigle non explicité,
+  ou un numéro d'issue seul, dans le paragraphe « En clair ».
+- Supposer que le lecteur connaît un acronyme (ACL, HITL, CSP, REST, iframe…) sans le
+  définir la première fois.
+- Répondre uniquement en technique sur une question métier.
+
+## Intitulé
+
+Le bloc d'ouverture s'intitule **« En clair »** (dans les gabarits : `## En clair`).

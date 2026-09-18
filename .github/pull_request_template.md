@@ -1,3 +1,7 @@
+## En clair
+
+<!-- Quoi + pourquoi en langage métier, sans jargon ni noms de fichiers -->
+
 ## Résumé
 
 <!-- 1–3 phrases : pourquoi ce changement -->
@@ -28,4 +32,5 @@
 ## Documentation
 
 - [ ] `docs/fonctionnel/` mis à jour (parcours) ou **N/A**
+- [ ] Matrice rôles [`docs/fonctionnel/roles/matrice-droits.md`](../docs/fonctionnel/roles/matrice-droits.md) mise à jour (écrans / données / journal) ou **N/A**
 - [ ] `AGENTS.md` / skills mis à jour (ou N/A)
