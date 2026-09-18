@@ -34,7 +34,7 @@ Accordéon **Filtres** (ouvert par défaut ; le titre indique le nombre de filtr
 1. Recherche (mission ou produit) · **équipe** · **département** · **produits** (multi)
 2. **statut** (multi) · **intervenant** (multi) · **Staffing** (Tous · Avec prestation · Sans prestation · CRA hors prestation)
 
-Réinitialiser hors accordéon. Combinables (AND entre filtres, OR dans un multi-select). Options dérivées des valeurs présentes.
+Réinitialiser hors accordéon **uniquement si au moins un filtre est actif**. Combinables (AND entre filtres, OR dans un multi-select). Options dérivées des valeurs présentes.
 
 ### Vue « nouvelles demandes »
 

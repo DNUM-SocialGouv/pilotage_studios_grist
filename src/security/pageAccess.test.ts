@@ -57,12 +57,15 @@ describe("pageAccessKeyForPath / canAccessPath", () => {
     assert.equal(pageAccessKeyForPath("/bdc"), "Page_bdc");
     assert.equal(pageAccessKeyForPath("/cra"), "Page_cra");
     assert.equal(pageAccessKeyForPath("/outils/recap-porteurs"), "Page_recap_porteurs");
+    assert.equal(pageAccessKeyForPath("/equipe"), "Page_intervenants");
+    assert.equal(pageAccessKeyForPath("/equipe/4"), "Page_intervenants");
     assert.equal(pageAccessKeyForPath("/analyse"), null);
   });
 
   it("refuse CRA en fail-closed", () => {
     assert.equal(canAccessPath("/cra", PAGE_ACCESS_FAIL_CLOSED), false);
     assert.equal(canAccessPath("/missions", PAGE_ACCESS_FAIL_CLOSED), true);
+    assert.equal(canAccessPath("/equipe", PAGE_ACCESS_FAIL_CLOSED), true);
     assert.equal(canAccessPath("/cra", PAGE_ACCESS_ALL_OPEN), true);
   });
 });

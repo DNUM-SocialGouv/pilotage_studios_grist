@@ -51,7 +51,8 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 | Récap porteurs | `/outils/recap-porteurs` | **oui** | **non** | **non** | **non** | **Appliqué** UX | |
 | Procès-verbaux | `/pv` | **oui** | **non** | **non** | **non** | **Appliqué** UX (stub) | |
 | Missions | `/missions` | oui | oui | oui | oui | **Appliqué** UX | |
-| Produits / Intervenants | stubs | oui | oui | oui | oui | **Appliqué** UX (stub) | |
+| Équipe | `/equipe` | oui | oui | oui | oui | **Appliqué** UX (lecture) | Ancien stub Intervenants ; flag Grist `Page_intervenants` |
+| Produits | stub | oui | oui | oui | oui | **Appliqué** UX (stub) | |
 
 ---
 
@@ -92,6 +93,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-09-19 | Écran Équipe liste + fiche lecture (`/equipe`) ; nav libellé Équipe ; flag page toujours `Page_intervenants` | 5 | [#53](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/53) |
 | 2026-09-18 (soir) | Revue #52 : nav sans flash loading ; fetch Acl/Retours après boot PA ; alerte profil ; décision Read `Retours` partagée V1 | 5, 6 (doc) | Correctifs revue |
 | 2026-09-18 (soir) | Widget : lecture `Acl_profil`, filtre nav + gardes `/pa` `/bdc` `/cra` `/pv` `/outils/recap-porteurs` | 4, 5 | Feature droits pages |
 | 2026-09-18 (soir) | Grist : `Droits_pages` Owner/Admin ; `Acl_profil.Page_*` formules ← `Droits_pages` | 4, 6 | HITL |

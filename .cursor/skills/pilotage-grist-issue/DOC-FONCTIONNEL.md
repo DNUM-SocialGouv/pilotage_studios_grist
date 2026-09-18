@@ -24,6 +24,7 @@ Repérer si le module est **documenté**, **stub** ou **à documenter**.
 | `/pa`, `/pa/:id` | `pa/` |
 | `/bdc`, `/bdc/:id` | `bdc/` |
 | `/missions`, `/missions/:id` | `missions/` |
+| `/equipe`, `/equipe/:id` | `equipe/` |
 | `/cra` | `cra/` |
 | `/outils/recap-porteurs` | `cra/` (récap porteurs) |
 | `/produits`… (stubs) | À créer au livrable |

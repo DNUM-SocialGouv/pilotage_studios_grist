@@ -6,7 +6,7 @@ export const FEEDBACK_PAGE_OPTIONS = [
   "Plans d’activité",
   "Produits",
   "Missions",
-  "Intervenants",
+  "Équipe",
   "Prestation / CRA",
   "Récap porteurs",
   "Procès-verbaux",
@@ -34,8 +34,13 @@ export function pageOptionFromPathname(pathname: string): FeedbackPageOption {
   if (pathname === "/produits" || pathname.startsWith("/produits/")) {
     return "Produits";
   }
-  if (pathname === "/intervenants" || pathname.startsWith("/intervenants/")) {
-    return "Intervenants";
+  if (
+    pathname === "/equipe" ||
+    pathname.startsWith("/equipe/") ||
+    pathname === "/intervenants" ||
+    pathname.startsWith("/intervenants/")
+  ) {
+    return "Équipe";
   }
   if (pathname === "/cra" || pathname.startsWith("/cra/")) {
     return "Prestation / CRA";

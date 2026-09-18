@@ -119,6 +119,21 @@ export interface Intervenant {
   Portage?: string;
 }
 
+/**
+ * Fiche personne pour l’écran `/equipe` (carte d’identité).
+ * Pas de TJM, montants ni e-mail.
+ */
+export interface EquipeMember {
+  id: number;
+  Prenom_Nom?: string;
+  Equipe?: string;
+  Portage?: string;
+  Statut?: string;
+  Specialite?: string;
+  Role_ACL?: string;
+  Missions_en_cours?: string;
+}
+
 /** Ligne catalogue produits (libellé = colonne Grist `Produit`). */
 export type ProduitSdpc = {
   id: number;

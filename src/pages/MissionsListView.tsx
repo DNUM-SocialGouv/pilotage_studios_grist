@@ -426,18 +426,20 @@ export function MissionsListView() {
         </div>
       </Accordion>
 
-      <div className="fr-mb-2w">
-        <a
-          href="#reinitialiser-filtres"
-          className="fr-link"
-          onClick={(e) => {
-            e.preventDefault();
-            resetFilters();
-          }}
-        >
-          Réinitialiser les filtres
-        </a>
-      </div>
+      {filtresActifsCount > 0 ? (
+        <div className="fr-mb-2w">
+          <a
+            href="#reinitialiser-filtres"
+            className="fr-link"
+            onClick={(e) => {
+              e.preventDefault();
+              resetFilters();
+            }}
+          >
+            Réinitialiser les filtres
+          </a>
+        </div>
+      ) : null}
 
       {data.missions.length === 0 ? (
         <p className="fr-mb-2w">Aucune mission dans la table « Missions ».</p>

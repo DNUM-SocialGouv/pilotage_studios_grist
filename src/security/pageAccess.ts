@@ -52,6 +52,7 @@ export const PAGE_ACCESS_ALL_OPEN: PageAccessFlags = {
 /** Route (pathname) → clé `Page_*`. Routes hors map = non filtrées. */
 export const ROUTE_PAGE_ACCESS: ReadonlyArray<{ prefix: string; key: PageAccessKey }> = [
   { prefix: "/outils/recap-porteurs", key: "Page_recap_porteurs" },
+  { prefix: "/equipe", key: "Page_intervenants" },
   { prefix: "/intervenants", key: "Page_intervenants" },
   { prefix: "/missions", key: "Page_missions" },
   { prefix: "/produits", key: "Page_produits" },

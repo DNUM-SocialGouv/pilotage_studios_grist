@@ -12,10 +12,6 @@ const STUB_COPY: Record<
     title: "Missions",
     description: "Écran à venir. Disponible dans l’app Pilotage studios (`/missions`).",
   },
-  intervenants: {
-    title: "Intervenants",
-    description: "Écran à venir. Disponible dans l’app Pilotage studios (`/intervenants`).",
-  },
   pv: {
     title: "Procès-verbaux",
     description: "Écran à venir. Disponible dans l’app Pilotage studios (`/pv`).",

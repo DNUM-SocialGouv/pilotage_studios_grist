@@ -1,0 +1,62 @@
+import type { EquipeMember } from "../types";
+
+export const EQUIPE_DEFAULT_STATUT = "Actif";
+
+export function equipeDisplayName(member: EquipeMember): string {
+  const name = member.Prenom_Nom?.trim();
+  return name || `Personne #${member.id}`;
+}
+
+export function uniqueSortedLabels(values: readonly (string | undefined)[]): string[] {
+  const set = new Set<string>();
+  for (const value of values) {
+    const label = value?.trim();
+    if (label) {
+      set.add(label);
+    }
+  }
+  return Array.from(set).sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
+}
+
+export type EquipeListFilters = {
+  search: string;
+  statut: string;
+  equipe: string;
+  portage: string;
+  role: string;
+};
+
+export function filterEquipeMembers(
+  members: readonly EquipeMember[],
+  filters: EquipeListFilters,
+): EquipeMember[] {
+  const q = filters.search.trim().toLowerCase();
+  return members
+    .filter((member) => {
+      const okStatut = !filters.statut || (member.Statut?.trim() ?? "") === filters.statut;
+      const okEquipe = !filters.equipe || (member.Equipe?.trim() ?? "") === filters.equipe;
+      const okPortage = !filters.portage || (member.Portage?.trim() ?? "") === filters.portage;
+      const okRole = !filters.role || (member.Role_ACL?.trim() ?? "") === filters.role;
+      if (!okStatut || !okEquipe || !okPortage || !okRole) {
+        return false;
+      }
+      if (!q) {
+        return true;
+      }
+      const hay = [
+        equipeDisplayName(member),
+        member.Equipe,
+        member.Portage,
+        member.Statut,
+        member.Specialite,
+        member.Role_ACL,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return hay.includes(q);
+    })
+    .sort((a, b) =>
+      equipeDisplayName(a).localeCompare(equipeDisplayName(b), "fr", { sensitivity: "base" }),
+    );
+}

@@ -21,10 +21,11 @@ App sœur (hors iframe) : [pilotage_studios](https://github.com/DNUM-SocialGouv/
 | **Missions** | [fonctionnel/missions/](fonctionnel/missions/) — [liste](fonctionnel/missions/liste.md) · [fiche](fonctionnel/missions/fiche.md) | Documenté (lecture + drawer master ; CRUD prestations = [#31](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/31)) |
 | **CRA** | [fonctionnel/cra/](fonctionnel/cra/) — [liste](fonctionnel/cra/liste.md) · [récap porteurs](fonctionnel/cra/recap-porteurs.md) | Documenté (lecture `/cra` + récap `/outils/recap-porteurs` ; [#32](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/32), [#48](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/48)) |
 | **Feedback** | [fonctionnel/feedback/](fonctionnel/feedback/) — [alertes](fonctionnel/feedback/alertes.md) | Documenté (bouton → `Retours` ; alertes = fallback / webhook HITL) |
+| **Équipe** | [fonctionnel/equipe/](fonctionnel/equipe/) — [liste](fonctionnel/equipe/liste.md) · [fiche](fonctionnel/equipe/fiche.md) | Documenté (lecture `/equipe` ; [#53](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/53)) |
 | **Rôles & droits Grist** | [fonctionnel/roles/](fonctionnel/roles/) — **[matrice](fonctionnel/roles/matrice-droits.md)** (registre vivant) · [ACL](fonctionnel/roles/access-rules.md) · [inventaire](fonctionnel/roles/inventaire-partage.md) | 6 couches + tableaux écrans/données ; prep [#47](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/47) |
 | **Issues publiques** | [issues-publiques.md](issues-publiques.md) | Template rédaction (repo public) |
 | **Portage → app sœur** | [portage/](portage/) | Opt-in handoff agents |
-| Produits, Intervenants, PV | — | Stub « À venir » (nav) — ordre : voir AGENTS §2 |
+| Produits, PV | — | Stub « À venir » (nav) — ordre : voir AGENTS §2 |
 | Évaluations, Analyse | — | Stub hors nav |
 
 ## Organisation des fichiers

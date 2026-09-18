@@ -1,4 +1,4 @@
-import { MemoryRouter, Navigate, Route, Routes } from "react-router-dom";
+import { MemoryRouter, Navigate, Route, Routes, useParams } from "react-router-dom";
 import { AclProfilProvider } from "./AclProfilContext";
 import { PageAccessGuard } from "./components/PageAccessGuard";
 import { GristPaProvider } from "./GristPaContext";
@@ -12,10 +12,17 @@ import { PaDetailView } from "./pages/PaDetailView";
 import { PaListView } from "./pages/PaListView";
 import { CraListView } from "./pages/CraListView";
 import { CraRecapPorteursPage } from "./pages/CraRecapPorteursPage";
+import { EquipeDetailView } from "./pages/EquipeDetailView";
+import { EquipeListView } from "./pages/EquipeListView";
 import { StubPage } from "./pages/StubPage";
 import { WelcomePage } from "./pages/WelcomePage";
 import { getEmbedTrust } from "./security/embedTrust";
 import { NothingHerePage } from "./security/NothingHerePage";
+
+function IntervenantsToEquipeRedirect() {
+  const { id } = useParams();
+  return <Navigate to={id ? `/equipe/${id}` : "/equipe"} replace />;
+}
 
 function shouldShowDeadPage(): boolean {
   if (import.meta.env.DEV) {
@@ -89,13 +96,23 @@ export default function App() {
                 <Route path=":id" element={<MissionsDetailView />} />
               </Route>
               <Route
-                path="intervenants"
+                path="equipe"
                 element={
                   <PageAccessGuard>
-                    <StubPage slug="intervenants" />
+                    <EquipeListView />
                   </PageAccessGuard>
                 }
               />
+              <Route
+                path="equipe/:id"
+                element={
+                  <PageAccessGuard>
+                    <EquipeDetailView />
+                  </PageAccessGuard>
+                }
+              />
+              <Route path="intervenants" element={<Navigate to="/equipe" replace />} />
+              <Route path="intervenants/:id" element={<IntervenantsToEquipeRedirect />} />
               <Route
                 path="cra"
                 element={
