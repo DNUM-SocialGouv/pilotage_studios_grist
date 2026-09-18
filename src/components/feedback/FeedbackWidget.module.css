@@ -112,14 +112,38 @@
   font-size: 0.82rem;
   font-weight: 500;
   border: 1px solid var(--border-default-grey);
-  background: var(--background-default-grey);
+  /* DSFR : button:hover utilise --hover-tint (sinon fond clair + texte blanc). */
+  --hover-tint: var(--background-alt-grey);
+  --active-tint: var(--background-contrast-grey);
+  background-color: var(--background-default-grey);
+  background-image: none;
   color: var(--text-default-grey);
 }
 
+.typeBtn:hover,
+.typeBtn:focus-visible {
+  color: var(--text-title-grey);
+  background-color: var(--background-alt-grey);
+  background-image: none;
+  border-color: var(--border-action-high-blue-france);
+}
+
 .typeBtnActive {
+  --hover-tint: var(--background-action-high-blue-france-hover, #1212ff);
+  --active-tint: var(--background-action-high-blue-france-active, #000091);
   border-color: var(--background-action-high-blue-france);
-  background: var(--background-action-high-blue-france);
+  background-color: var(--background-action-high-blue-france);
+  background-image: none;
   color: #fff;
+}
+
+.typeBtnActive:hover,
+.typeBtnActive:focus-visible,
+.typeBtnActive:active {
+  color: #fff;
+  background-color: var(--background-action-high-blue-france-hover, #1212ff);
+  background-image: none;
+  border-color: var(--background-action-high-blue-france-hover, #1212ff);
 }
 
 .required {

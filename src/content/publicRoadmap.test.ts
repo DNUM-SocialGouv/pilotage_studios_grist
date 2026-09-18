@@ -46,7 +46,6 @@ describe("groupPublicRoadmapByTheme", () => {
     for (const item of PUBLIC_ROADMAP_ITEMS) {
       assert.ok(item.guide.lead.trim().length > 0, item.id);
       assert.ok(item.guide.steps.length > 0, item.id);
-      assert.ok(item.guide.diagram.nodes.length > 0, item.id);
     }
   });
 });

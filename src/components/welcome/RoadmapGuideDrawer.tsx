@@ -1,11 +1,11 @@
 import { useEffect, useId, useRef } from "react";
+import { Link } from "react-router-dom";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import {
   ROADMAP_STATUS_BADGE_CLASS,
   ROADMAP_STATUS_LABEL,
   type PublicRoadmapItem,
 } from "../../content/publicRoadmap";
-import { RoadmapFlowDiagram } from "./RoadmapFlowDiagram";
 
 export type RoadmapGuideDrawerProps = {
   item: PublicRoadmapItem | null;
@@ -29,6 +29,8 @@ export function RoadmapGuideDrawer({ item, onClose }: RoadmapGuideDrawerProps) {
   const close = () => {
     dialogRef.current?.close();
   };
+
+  const useBulletList = Boolean(item?.guide.stepsIntro);
 
   return (
     <dialog
@@ -73,16 +75,38 @@ export function RoadmapGuideDrawer({ item, onClose }: RoadmapGuideDrawerProps) {
                 <p className="roadmap-guide__lead fr-mb-3w">{item.guide.lead}</p>
 
                 <h3 className="fr-h6">En pratique</h3>
-                <ol className="roadmap-guide__steps fr-mb-3w">
-                  {item.guide.steps.map((step) => (
-                    <li key={step}>
-                      <span className="roadmap-guide__step">{step}</span>
-                    </li>
-                  ))}
-                </ol>
+                {item.guide.stepsIntro ? (
+                  <p className="fr-text--sm fr-mb-1w">{item.guide.stepsIntro}</p>
+                ) : null}
+                {useBulletList ? (
+                  <ul className="roadmap-guide__steps fr-mb-3w">
+                    {item.guide.steps.map((step) => (
+                      <li key={step}>
+                        <span className="roadmap-guide__step">{step}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <ol className="roadmap-guide__steps fr-mb-3w">
+                    {item.guide.steps.map((step) => (
+                      <li key={step}>
+                        <span className="roadmap-guide__step">{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
 
-                <h3 className="fr-h6">Schéma</h3>
-                <RoadmapFlowDiagram diagram={item.guide.diagram} />
+                {item.guide.pagePath ? (
+                  <p className="fr-mb-0">
+                    <Link
+                      className="fr-link"
+                      to={item.guide.pagePath}
+                      onClick={close}
+                    >
+                      {item.guide.pageLinkLabel ?? "Ouvrir la page"}
+                    </Link>
+                  </p>
+                ) : null}
 
                 {item.issueUrl ? (
                   <p className="fr-mt-3w fr-mb-0">
