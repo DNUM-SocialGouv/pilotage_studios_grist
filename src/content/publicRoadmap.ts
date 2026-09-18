@@ -459,16 +459,21 @@ export function roadmapStatusToKanbanColumn(
   return "backlog";
 }
 
-/** Regroupe les items en colonnes Backlog → En cours → Livré (ordre source conservé). */
+/** Regroupe les items en colonnes Backlog → En cours → Livré.
+ * Livré : ordre antéchronologique (dernier traité en haut = reverse de l’ordre source).
+ */
 export function groupPublicRoadmapByKanban(
   items: PublicRoadmapItem[] = PUBLIC_ROADMAP_ITEMS,
 ): PublicRoadmapKanbanGroup[] {
-  return ROADMAP_KANBAN_COLUMNS.map((column) => ({
-    column,
-    items: items.filter(
+  return ROADMAP_KANBAN_COLUMNS.map((column) => {
+    const columnItems = items.filter(
       (item) => roadmapStatusToKanbanColumn(item.status) === column.id,
-    ),
-  }));
+    );
+    return {
+      column,
+      items: column.id === "livre" ? [...columnItems].reverse() : columnItems,
+    };
+  });
 }
 
 /** Regroupe les items dans l’ordre des thèmes (thèmes vides omis). */
