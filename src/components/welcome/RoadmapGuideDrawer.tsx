@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import {
   ROADMAP_STATUS_BADGE_CLASS,
@@ -15,6 +15,7 @@ export type RoadmapGuideDrawerProps = {
 export function RoadmapGuideDrawer({ item, onClose }: RoadmapGuideDrawerProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -30,7 +31,10 @@ export function RoadmapGuideDrawer({ item, onClose }: RoadmapGuideDrawerProps) {
     dialogRef.current?.close();
   };
 
-  const useBulletList = Boolean(item?.guide.stepsIntro);
+  const goToPage = (path: string) => {
+    navigate(path);
+    close();
+  };
 
   return (
     <dialog
@@ -78,30 +82,26 @@ export function RoadmapGuideDrawer({ item, onClose }: RoadmapGuideDrawerProps) {
                 {item.guide.stepsIntro ? (
                   <p className="fr-text--sm fr-mb-1w">{item.guide.stepsIntro}</p>
                 ) : null}
-                {useBulletList ? (
-                  <ul className="roadmap-guide__steps fr-mb-3w">
-                    {item.guide.steps.map((step) => (
-                      <li key={step}>
-                        <span className="roadmap-guide__step">{step}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <ol className="roadmap-guide__steps fr-mb-3w">
-                    {item.guide.steps.map((step) => (
-                      <li key={step}>
-                        <span className="roadmap-guide__step">{step}</span>
-                      </li>
-                    ))}
-                  </ol>
-                )}
+                <ul className="roadmap-guide__steps fr-mb-3w">
+                  {item.guide.steps.map((step) => (
+                    <li key={step}>
+                      <span className="roadmap-guide__step">{step}</span>
+                    </li>
+                  ))}
+                </ul>
 
                 {item.guide.pagePath ? (
                   <p className="fr-mb-0">
                     <Link
                       className="fr-link"
                       to={item.guide.pagePath}
-                      onClick={close}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const path = item.guide.pagePath;
+                        if (path) {
+                          goToPage(path);
+                        }
+                      }}
                     >
                       {item.guide.pageLinkLabel ?? "Ouvrir la page"}
                     </Link>

@@ -55,7 +55,11 @@ export function WelcomePage() {
                   >
                     {group.column.label}
                   </h3>
-                  <Badge small as="span">
+                  <Badge
+                    small
+                    as="span"
+                    aria-label={`${group.column.label} : ${group.items.length} élément${group.items.length === 1 ? "" : "s"}`}
+                  >
                     {group.items.length}
                   </Badge>
                 </div>
