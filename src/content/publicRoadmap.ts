@@ -361,16 +361,16 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     themeId: "equipe",
     title: "Voir son TJM, pas celui des collègues",
     summary:
-      "Un freelance peut consulter son tarif journalier sur sa fiche ; les autres freelances ne le voient pas.",
-    status: "next",
+      "Un freelance peut consulter son tarif journalier (et Total TTC) sur sa fiche ; les autres freelances ne les voient pas. Réglage Access Rules (Owner).",
+    status: "current",
     issueUrl:
       "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/60",
     guide: {
       lead: "Le TJM est sensible : on le protège pour les collègues, tout en permettant à chacun de retrouver le sien sur sa propre fiche.",
-      stepsIntro: "Après réglage des droits dans le document :",
+      stepsIntro: "Après réglage des droits dans le document (Owner) :",
       steps: [
-        "Sur ma fiche : mon TJM est lisible",
-        "Sur la fiche d’un collègue : pas de TJM",
+        "Sur ma fiche : mon TJM et mon Total TTC sont lisibles",
+        "Sur la fiche d’un collègue : pas de montants",
         "Un Admin / Owner continue de voir l’ensemble des fiches",
       ],
       pagePath: "/equipe",
@@ -382,16 +382,16 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     themeId: "equipe",
     title: "La fiche affiche seulement ce qui est autorisé",
     summary:
-      "Le widget suit les droits réels : sur ma fiche, le TJM apparaît s’il est autorisé ; sinon il reste masqué.",
-    status: "next",
+      "Le widget suit les droits réels : TJM et Total TTC apparaissent sur la fiche s’ils sont autorisés ; sinon masqués.",
+    status: "done",
     issueUrl:
       "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/61",
     guide: {
       lead: "L’écran ne contourne pas les règles : il montre ce que le document autorise déjà, rien de plus.",
-      stepsIntro: "Dans le widget, vous pourrez :",
+      stepsIntro: "Dans le widget, vous pouvez :",
       steps: [
-        "Ouvrir votre fiche et voir les champs autorisés (dont le TJM si le droit existe)",
-        "Ouvrir la fiche d’un autre et constater que les infos sensibles restent absentes",
+        "Ouvrir une fiche : TJM et Total TTC seulement s’ils sont lisibles",
+        "Constater qu’ils restent absents sur une fiche collègue (après réglage des droits)",
         "Garder la consultation seule pour cette étape",
       ],
       pagePath: "/equipe",

@@ -66,7 +66,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | Table / ressource | Admin | Resp. | Freelance | Invité | Appliqué ? | Notes |
 |-------------------|-------|-------|-----------|--------|------------|-------|
 | `Equipe` (hors TJM/TTC) | CRUD | R | R (3 cols) | R | **Appliqué** | Table `+R-CUD` ; Freelance : seulement `Prenom_Nom` / `Equipe` / `Specialite` ([#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55)) |
-| `Equipe.TJM`, `Total_TTC` | RU | — | — | — | **Appliqué (Owner)** | `-RU` si non-Owner |
+| `Equipe.TJM`, `Total_TTC` | RU | RU | R soi | R soi | **Cible (#60)** — widget prêt (#61) | Aujourd’hui Owner only ; HITL : Admin toutes fiches + soi (`user.Email == rec.E_mail`) |
 | `Equipe.E_mail` | RU | — | — | — | **Appliqué** | `-RU` si non-(Owner\|Admin) |
 | `Plan_activite` | CRUD | R ? | R / — | R / — | Non (rôle) | Ancre widget |
 | `BDC` métadonnées | CRUD | R ? | R limité | R / — | Non (rôle) | |
@@ -95,6 +95,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-09-19 | Fiche Équipe : affiche TJM / Total TTC si lisibles ; cible ACL Admin + soi (#60 HITL) | 5, 6 (doc) | [#61](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/61) / [#60](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/60) |
 | 2026-09-19 | `Acl_profil` : règle Owner/Admin `+CRUD` (ménage doublons) ; widget création auto fiche absente | 4, 5, 6 | [#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55) |
 | 2026-09-19 | Widget : création auto `Acl_profil` si fiche absente (create allowlisté) ; doublons → id minimal | 4, 5 | [#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55) |
 | 2026-09-19 | Access Rules `Equipe` : CRUD Owner/Admin ; lecture seule ailleurs ; Freelance 3 colonnes ; widget annuaire adapté | 5, 6 | [#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55) |

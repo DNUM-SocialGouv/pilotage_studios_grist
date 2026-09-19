@@ -5,6 +5,7 @@ import {
   EQUIPE_DEFAULT_STATUT,
   equipeDisplayName,
   equipeFieldReadable,
+  equipeMontantLisible,
   filterEquipeMembers,
   initialEquipeStatutFilter,
   uniqueSortedLabels,
@@ -38,6 +39,15 @@ describe("equipeDisplayName", () => {
   it("utilise le nom ou un fallback d’id", () => {
     assert.equal(equipeDisplayName(alice), "Alice Martin");
     assert.equal(equipeDisplayName(sansNom), "Personne #3");
+  });
+});
+
+describe("equipeMontantLisible", () => {
+  it("accepte un nombre fini et refuse le reste", () => {
+    assert.equal(equipeMontantLisible(450), true);
+    assert.equal(equipeMontantLisible(0), true);
+    assert.equal(equipeMontantLisible(undefined), false);
+    assert.equal(equipeMontantLisible(Number.NaN), false);
   });
 });
 

@@ -4,7 +4,8 @@ import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import { StatutBadge } from "../components/StatutBadge";
 import { tdEquipeTag } from "../components/EquipeTags";
-import { equipeDisplayName } from "../utils/equipeList";
+import { equipeDisplayName, equipeMontantLisible } from "../utils/equipeList";
+import { formatMontantEur } from "../utils/formatMontant";
 import { useEquipeOutlet } from "./EquipeLayout";
 
 function dash(value: string | undefined): string {
@@ -15,6 +16,13 @@ function dash(value: string | undefined): string {
 function readable(value: string | undefined): string | undefined {
   const t = value?.trim();
   return t || undefined;
+}
+
+function metaColClassForCount(count: number): string {
+  if (count >= 4) return "fr-col-12 fr-col-md-3";
+  if (count === 3) return "fr-col-12 fr-col-md-4";
+  if (count === 2) return "fr-col-12 fr-col-md-6";
+  return "fr-col-12";
 }
 
 export function EquipeDetailView() {
@@ -82,6 +90,8 @@ export function EquipeDetailView() {
   const specialite = readable(member.Specialite);
   const missionsEnCours = readable(member.Missions_en_cours);
   const departement = readable(member.Equipe);
+  const showTjm = equipeMontantLisible(member.TJM);
+  const showTotalTtc = equipeMontantLisible(member.Total_TTC);
 
   const metaCells: { label: string; value: ReactNode }[] = [
     {
@@ -92,9 +102,18 @@ export function EquipeDetailView() {
   if (specialite) {
     metaCells.push({ label: "Spécialité", value: specialite });
   }
+  // Visibles seulement si Access Rules les livrent (Admin / Owner / soi).
+  if (showTjm) {
+    metaCells.push({ label: "TJM", value: formatMontantEur(member.TJM) });
+  }
+  if (showTotalTtc) {
+    metaCells.push({
+      label: "Total TTC",
+      value: formatMontantEur(member.Total_TTC),
+    });
+  }
 
-  const metaColClass =
-    metaCells.length === 2 ? "fr-col-12 fr-col-md-6" : "fr-col-12";
+  const metaColClass = metaColClassForCount(metaCells.length);
 
   return (
     <div className="fr-py-1w">

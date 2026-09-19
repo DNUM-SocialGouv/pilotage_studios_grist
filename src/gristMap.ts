@@ -208,6 +208,9 @@ export function toEquipeMember(record: GristRecord): EquipeMember {
     Role_ACL: asGristChoice(record.Role_ACL) ?? asString(record.Role_ACL),
     Missions_en_cours:
       asString(record.Missions_en_cours) ?? asGristChoice(record.Missions_en_cours),
+    // CENSORED / illisible → undefined (pas d’affichage widget)
+    TJM: asNumber(record.TJM),
+    Total_TTC: asNumber(record.Total_TTC),
   };
 }
 
