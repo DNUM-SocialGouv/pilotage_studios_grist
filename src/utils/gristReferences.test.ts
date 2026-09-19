@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { extractGristReferenceIds, suiviRowLinksToBdc } from "./gristReferences.ts";
+import {
+  asGristChoice,
+  extractGristReferenceIds,
+  suiviRowLinksToBdc,
+} from "./gristReferences.ts";
 
 describe("suiviRowLinksToBdc", () => {
   it("matche BDC_cible", () => {
@@ -15,6 +19,15 @@ describe("suiviRowLinksToBdc", () => {
   it("ignore 0 / absent", () => {
     assert.equal(suiviRowLinksToBdc({ BDC_cible: 0, Bdc_Chorus2: 0 }, 12), false);
     assert.equal(suiviRowLinksToBdc({}, 12), false);
+  });
+});
+
+describe("asGristChoice", () => {
+  it("ignore CENSORED et placeholders ACL", () => {
+    assert.equal(asGristChoice("CENSORED"), undefined);
+    assert.equal(asGristChoice("..."), undefined);
+    assert.equal(asGristChoice("[Pending]"), undefined);
+    assert.equal(asGristChoice("Freelance"), "Freelance");
   });
 });
 

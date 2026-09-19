@@ -15,7 +15,11 @@ export type FeedbackAuteurOption = {
 
 function asText(value: unknown): string {
   if (typeof value === "string") {
-    return value.trim();
+    const t = value.trim();
+    if (!t || t === "CENSORED" || t === "...") {
+      return "";
+    }
+    return t;
   }
   const choice = asGristChoice(value);
   return choice?.trim() ?? "";

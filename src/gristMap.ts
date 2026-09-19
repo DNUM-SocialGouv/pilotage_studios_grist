@@ -39,6 +39,10 @@ function asNumber(value: unknown): number | undefined {
 
 function asString(value: unknown): string | undefined {
   if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed || trimmed === "CENSORED" || trimmed === "..." || trimmed.startsWith("[Pending")) {
+      return undefined;
+    }
     return value;
   }
   if (typeof value === "number" && Number.isFinite(value)) {
@@ -46,8 +50,8 @@ function asString(value: unknown): string | undefined {
   }
   // Valeurs plugin décodées (CensoredValue, etc.) — pas de faux positifs URL.
   if (value != null && typeof value === "object" && "toString" in value) {
-    const label = String(value);
-    if (label === "CENSORED" || label === "..." || label.startsWith("[Pending")) {
+    const label = String(value).trim();
+    if (!label || label === "CENSORED" || label === "..." || label.startsWith("[Pending")) {
       return undefined;
     }
   }

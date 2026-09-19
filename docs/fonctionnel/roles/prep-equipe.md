@@ -1,28 +1,30 @@
-# Préparation `Equipe.Role` et emails
+# Préparation `Equipe.Role_ACL` et emails
 
-## Colonne `Role` (fait)
+## Colonne `Role_ACL` (fait)
 
 | Champ | Valeur |
 |-------|--------|
 | tableId | `Equipe` |
-| columnId | `Role` |
+| columnId | `Role_ACL` |
 | label | Rôle ACL |
-| type | Choice (`isFormula: false`) |
+| type | Choice |
 | choices | `Admin`, `Responsable de département`, `Freelance`, `Invité` |
 
-Remplissage des valeurs : **manuel / HITL** après validation de [matrice-droits.md](matrice-droits.md). Aucune ligne pré-remplie automatiquement.
+Remplissage : **manuel / HITL**. Compteurs (2026-09-19) : Admin et Freelance bien présents ; **Resp. / Invité** encore rares ou absents ; nombreuses lignes sans rôle.
+
+Les Access Rules (#55) s’appuient sur `user.Equipe.Role_ACL` (User Attribute via `E_mail`).
 
 ## Emails Actifs à compléter
 
-Compteur anonymisé : **15** Actifs sans `E_mail` (voir [inventaire-partage.md](inventaire-partage.md)).  
+Compteur anonymisé : **~15** Actifs sans `E_mail` (voir [inventaire-partage.md](inventaire-partage.md) / gap MCP).  
 Liste nominative : dossier local gitignoré `docs/fonctionnel/roles/private/` (hors git).
+
+Sans e-mail aligné sur le compte Grist → pas de match User Attribute → pas de rôle résolu (Freelance / Admin).
 
 ## Alias email
 
-Règle : stocker dans `E_mail` **exactement** l’adresse du compte Grist.  
-Cas concrets : section « Alias » du fichier nominatif local sous `private/` (si présent).
+Stocker dans `E_mail` **exactement** l’adresse du compte Grist.
 
 ## Repo public
 
-Pas de noms ni d’adresses mail dans les docs versionnées.  
-Inventaires détaillés = `docs/fonctionnel/roles/private/` uniquement (gitignore). Suppression : `rm -rf docs/fonctionnel/roles/private`.
+Pas de noms ni d’adresses mail dans les docs versionnées.

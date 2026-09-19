@@ -25,14 +25,14 @@ Ce document est le **tableau de bord des droits** du Pilotage : pour chaque écr
 
 ## Les 6 couches
 
-| # | Couche | Où | Rôle | Statut (2026-09-18) |
+| # | Couche | Où | Rôle | Statut (2026-09-19) |
 |---|--------|-----|------|---------------------|
 | 1 | Partage du document | Grist → Partager | Porte d’entrée | En place |
-| 2 | Rôle ACL (`Equipe.Role_ACL`) | Table Equipe | Qui est quoi | En place (Admin renseignés) |
+| 2 | Rôle ACL (`Equipe.Role_ACL`) | Table Equipe | Qui est quoi | En place (Admin + Freelance ; Resp./Invité à compléter) |
 | 3 | Propriété d’utilisateur | Règles d’accès → propriétés | Qui est connecté → fiche Equipe | **Fait** (`Equipe` ← `user.Email` / `E_mail`) |
 | 4 | Pont vers le widget | Table `Acl_profil` | Rôle + `Page_*` (formules ← `Droits_pages`) | **Fait** |
 | 5 | Confort interface (widget) | Nav + gardes de route | Masquer / bloquer écrans | **Fait** (selon `Page_*`) |
-| 6 | Règles d’accès (tables) | Access Rules Grist | Protéger les données (fins) | **Plus tard** (pas de mur Admin-only sur `Realise`) |
+| 6 | Règles d’accès (tables) | Access Rules Grist | Protéger les données (fins) | **Partiel** — `Equipe` par rôle (#55) ; pas encore de mur sur `Realise` |
 
 Détail technique des règles actuelles : [access-rules.md](access-rules.md).
 
@@ -65,8 +65,9 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Table / ressource | Admin | Resp. | Freelance | Invité | Appliqué ? | Notes |
 |-------------------|-------|-------|-----------|--------|------------|-------|
-| `Equipe` (hors TJM/TTC) | CRUD | R (+ U limité ?) | R soi | R / — | Non (rôle) | Partiel historique Owner vs reste |
-| `Equipe.TJM`, `Total_TTC` | RU | — | — | — | **Appliqué (Owner)** | `-RU` si non-Owner (2026-09-18 soir) |
+| `Equipe` (hors TJM/TTC) | CRUD | R | R (3 cols) | R | **Appliqué** | Table `+R-CUD` ; Freelance : seulement `Prenom_Nom` / `Equipe` / `Specialite` ([#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55)) |
+| `Equipe.TJM`, `Total_TTC` | RU | — | — | — | **Appliqué (Owner)** | `-RU` si non-Owner |
+| `Equipe.E_mail` | RU | — | — | — | **Appliqué** | `-RU` si non-(Owner\|Admin) |
 | `Plan_activite` | CRUD | R ? | R / — | R / — | Non (rôle) | Ancre widget |
 | `BDC` métadonnées | CRUD | R ? | R limité | R / — | Non (rôle) | |
 | `BDC` montants / Devis / Sofiane… | RU | — | — | — | **Appliqué (Owner)** | `-RU` si non-Owner |
@@ -76,7 +77,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | `Realise.Calcul_TTC` | RU | — | — | — | **Appliqué (Owner)** | `-RU` si non-Owner |
 | `Missions` / `Missions_enfants` | CRUD | R/U dép. | R ses missions | R / — | Non (rôle) | |
 | `Retours` (feedback) | CR (widget liste) | C (+ R liste V1) | C (+ R liste V1) | C ? | Widget create + **Read liste V1** | Kanban Feedback : affichage **ouverts seulement** (hors Fait/Écarté) ; ACL Read partagée |
-| `Acl_profil` | CR soi | CR soi | CR soi | CR soi | **Appliqué** | `user.Email == rec.E_mail` → `+CR` ; `True` → `-CRUD` |
+| `Acl_profil` | CRUD | CRUD | CR soi | CR soi | **Appliqué** | Owner/Admin `+CRUD` ; `user.Email == rec.E_mail` → `+CR` ; `True` → `-CRUD` |
 | `Droits_pages` | CRUD (Owner / Admin) | — | — | — | **Appliqué** | Owner **ou** `Role_ACL == Admin` → `+CRUD` ; `True` → `-CRUD` |
 | Structure (S) | Owner | — | — | — | **Appliqué** | `-S` si non-Owner |
 
@@ -94,6 +95,9 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-09-19 | `Acl_profil` : règle Owner/Admin `+CRUD` (ménage doublons) ; widget création auto fiche absente | 4, 5, 6 | [#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55) |
+| 2026-09-19 | Widget : création auto `Acl_profil` si fiche absente (create allowlisté) ; doublons → id minimal | 4, 5 | [#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55) |
+| 2026-09-19 | Access Rules `Equipe` : CRUD Owner/Admin ; lecture seule ailleurs ; Freelance 3 colonnes ; widget annuaire adapté | 5, 6 | [#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55) |
 | 2026-09-19 | Renommage Grist `Page_intervenants` → `Page_equipe` (`Droits_pages` + `Acl_profil`) ; widget aligné | 4, 5 | [#54](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/54) |
 | 2026-09-19 | Page Admin `/outils/droits-pages` : édition `Droits_pages` par thématiques ; Équipe configurable via cette page | 4, 5 | [#54](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/54) |
 | 2026-09-19 | Feedback : masquer retours `Fait` / `Écarté` / `Terminé` dans la colonne Feedback (accueil) | 5 | [#56](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/pull/56) |

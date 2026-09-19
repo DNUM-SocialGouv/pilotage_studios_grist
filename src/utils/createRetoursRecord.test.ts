@@ -10,10 +10,11 @@ import {
 import type { GristFetchTableResult } from "../gristTypes.ts";
 
 describe("writeTableAllowlist", () => {
-  it("autorise Retours, Missions et Missions_enfants en create ; Droits_pages en update only", () => {
+  it("autorise Retours, Missions, Missions_enfants et Acl_profil en create ; Droits_pages en update only", () => {
     assert.equal(isWritableTableId("Retours"), true);
     assert.equal(isWritableTableId("Missions"), true);
     assert.equal(isWritableTableId("Missions_enfants"), true);
+    assert.equal(isWritableTableId("Acl_profil"), true);
     assert.equal(isWritableTableId("Droits_pages"), false);
     assert.equal(isWritableTableId("Feedback_Identite"), false);
     assert.equal(isWritableTableId("BDC"), false);
@@ -33,6 +34,16 @@ describe("feedbackAuteurOptionsFromEquipeTable", () => {
     assert.equal(options[0]?.name, "Alice");
     assert.equal(options[0]?.value, "1");
     assert.equal(options[1]?.label, "Zoé (z@example.com)");
+  });
+
+  it("ignore un e-mail CENSORED (ACL colonnes)", () => {
+    const table = {
+      id: [1],
+      Prenom_Nom: ["Alice"],
+      E_mail: ["CENSORED"],
+    } as GristFetchTableResult;
+    const options = feedbackAuteurOptionsFromEquipeTable(table);
+    assert.deepEqual(options, [{ value: "1", name: "Alice", email: "", label: "Alice" }]);
   });
 });
 

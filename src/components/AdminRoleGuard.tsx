@@ -43,7 +43,7 @@ export function AdminRoleGuard({ children }: AdminRoleGuardProps) {
         className="fr-mt-2w"
         severity="warning"
         title="Aucune fiche de rôle"
-        description="Votre profil Acl_profil est vide : impossible de confirmer le rôle Admin pour ouvrir cette page."
+        description="Votre fiche d’accès (Acl_profil) n’a pas pu être créée ou lue : impossible de confirmer le rôle Admin pour ouvrir cette page."
       />
     );
   }
