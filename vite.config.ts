@@ -10,7 +10,7 @@ const PROD_CSP = [
   "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self'",
-  "img-src 'self' data:",
+  "img-src 'self' data: https://api.dicebear.com",
   "connect-src 'self' https://grist.numerique.gouv.fr",
   "object-src 'none'",
   "base-uri 'self'",

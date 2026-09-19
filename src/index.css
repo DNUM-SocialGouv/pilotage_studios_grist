@@ -746,6 +746,13 @@ span.fr-tag.fr-tag--beige-gris-galet {
   min-width: 0;
 }
 
+.equipe-fiche-title-row__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
 .mission-fiche-title-row .fr-badges-group,
 .equipe-fiche-title-row .fr-badges-group {
   margin-bottom: 0;
@@ -754,6 +761,32 @@ span.fr-tag.fr-tag--beige-gris-galet {
 .mission-fiche-title-row__title,
 .equipe-fiche-title-row__title {
   line-height: 1.2;
+}
+
+.equipe-avatar {
+  background-color: var(--background-contrast-grey);
+  border-radius: 0.25rem;
+  display: block;
+  flex-shrink: 0;
+  image-rendering: pixelated;
+  object-fit: cover;
+}
+
+.equipe-avatar--sm {
+  height: 2rem;
+  width: 2rem;
+}
+
+.equipe-avatar--lg {
+  height: 4rem;
+  width: 4rem;
+}
+
+.equipe-list-name-cell {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.5rem;
+  max-width: 100%;
 }
 
 .mission-fiche-meta-bandeau,
