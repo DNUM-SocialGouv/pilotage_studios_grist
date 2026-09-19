@@ -50,6 +50,14 @@ export function DroitsPagesAdminPage() {
     }
   }, [data.status, data.rows, savingKey]);
 
+  useEffect(() => {
+    if (!saveOk) {
+      return;
+    }
+    const t = window.setTimeout(() => setSaveOk(null), 4000);
+    return () => window.clearTimeout(t);
+  }, [saveOk]);
+
   if (pa.untrustedEmbed) {
     return <NothingHerePage />;
   }
@@ -106,7 +114,7 @@ export function DroitsPagesAdminPage() {
     setSavingKey(cellKey);
 
     try {
-      const verified = await updateDroitsPagesRecord(row.id, next);
+      const verified = await updateDroitsPagesRecord(row.id, key, value);
       data.patchRow(row.id, verified);
       setDraft((prev) => ({ ...prev, [role]: { ...verified, Page_accueil: true } }));
       refreshAcl();

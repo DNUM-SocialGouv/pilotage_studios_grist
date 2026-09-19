@@ -9,7 +9,6 @@ import {
   fetchAllowlistedTable,
 } from "../security/fetchTableAllowlist.ts";
 import {
-  PAGE_ACCESS_KEYS,
   pageAccessFromRecord,
   type PageAccessFlags,
   type PageAccessKey,
@@ -41,25 +40,18 @@ function recordsFromFetch(
 }
 
 /**
- * Ne garde que les `Page_*` éditables ; force `Page_accueil` à true.
- * Ignore toute clé hors allowlist `PAGE_ACCESS_KEYS`.
+ * Patch d’**une** case éditable uniquement (évite d’écraser d’autres `Page_*`
+ * si le brouillon est incomplet).
  */
-export function sanitizeDroitsPagesUpdateFields(
-  flags: Partial<PageAccessFlags>,
-): Record<PageAccessKey, boolean> {
+export function sanitizeDroitsPagesPatchField(
+  key: PageAccessKey,
+  value: boolean,
+): Record<string, boolean> {
   const editable = new Set(editablePageAccessKeys());
-  const out = {} as Record<PageAccessKey, boolean>;
-  for (const key of PAGE_ACCESS_KEYS) {
-    if (key === "Page_accueil") {
-      out[key] = true;
-      continue;
-    }
-    if (!editable.has(key)) {
-      continue;
-    }
-    out[key] = flags[key] === true;
+  if (key === "Page_accueil" || !editable.has(key)) {
+    throw new Error(`Colonne « ${key} » non modifiable depuis le widget.`);
   }
-  return out;
+  return { [key]: value === true };
 }
 
 export async function fetchDroitsPagesFlagsById(
@@ -94,17 +86,18 @@ function explainWriteError(err: unknown): string {
 }
 
 /**
- * Met à jour une ligne, puis relit pour confirmer que Grist a bien persisté.
+ * Met à jour **une** case `Page_*`, puis relit pour confirmer la persistance.
  */
 export async function updateDroitsPagesRecord(
   id: number,
-  flags: Partial<PageAccessFlags>,
+  key: PageAccessKey,
+  value: boolean,
 ): Promise<PageAccessFlags> {
   assertWritableUpdateTableId(DROITS_PAGES_TABLE_ID);
   if (!Number.isFinite(id) || id <= 0) {
     throw new Error("Identifiant Droits_pages invalide.");
   }
-  const fields = sanitizeDroitsPagesUpdateFields(flags);
+  const fields = sanitizeDroitsPagesPatchField(key, value);
   try {
     await getWritableTable(DROITS_PAGES_TABLE_ID).update({ id, fields });
   } catch (err) {
@@ -117,13 +110,11 @@ export async function updateDroitsPagesRecord(
       "Écriture envoyée mais la ligne Droits_pages est illisible ensuite (droits Grist ?).",
     );
   }
-  for (const key of Object.keys(fields) as PageAccessKey[]) {
-    if (verified[key] !== fields[key]) {
-      throw new Error(
-        `Grist n’a pas conservé « ${key} » (attendu ${String(fields[key])}, lu ${String(verified[key])}). ` +
-          "Vérifiez les Access Rules sur Droits_pages (Owner ou Role_ACL Admin).",
-      );
-    }
+  if (verified[key] !== fields[key]) {
+    throw new Error(
+      `Grist n’a pas conservé « ${key} » (attendu ${String(fields[key])}, lu ${String(verified[key])}). ` +
+        "Vérifiez les Access Rules sur Droits_pages (Owner ou Role_ACL Admin).",
+    );
   }
   return verified;
 }

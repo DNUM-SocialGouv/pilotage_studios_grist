@@ -6,7 +6,7 @@ import {
   assertWritableUpdateTableId,
 } from "../security/writeTableAllowlist.ts";
 import { isAllowlistedTableId } from "../security/fetchTableAllowlist.ts";
-import { sanitizeDroitsPagesUpdateFields } from "./droitsPagesGristWrite.ts";
+import { sanitizeDroitsPagesPatchField } from "./droitsPagesGristWrite.ts";
 import {
   DROITS_PAGES_THEMES,
   editablePageAccessKeys,
@@ -47,18 +47,21 @@ describe("droitsPagesThemes", () => {
   });
 });
 
-describe("sanitizeDroitsPagesUpdateFields", () => {
-  it("force Page_accueil et ignore les clés inconnues", () => {
-    const fields = sanitizeDroitsPagesUpdateFields({
-      Page_accueil: false,
+describe("sanitizeDroitsPagesPatchField", () => {
+  it("n’écrit qu’une case éditable", () => {
+    assert.deepEqual(sanitizeDroitsPagesPatchField("Page_equipe", true), {
       Page_equipe: true,
+    });
+    assert.deepEqual(sanitizeDroitsPagesPatchField("Page_bdc", false), {
       Page_bdc: false,
-      ...({ Page_inconnue: true } as object),
-    } as Partial<import("../security/pageAccess.ts").PageAccessFlags>);
-    assert.equal(fields.Page_accueil, true);
-    assert.equal(fields.Page_equipe, true);
-    assert.equal(fields.Page_bdc, false);
-    assert.equal("Page_inconnue" in fields, false);
+    });
+  });
+
+  it("refuse Accueil et les clés hors thématiques", () => {
+    assert.throws(
+      () => sanitizeDroitsPagesPatchField("Page_accueil", false),
+      /non modifiable/,
+    );
   });
 });
 
