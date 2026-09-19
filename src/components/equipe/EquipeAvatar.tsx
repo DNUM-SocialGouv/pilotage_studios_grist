@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { equipeAvatarUrl } from "../../utils/equipeAvatar";
 
 type EquipeAvatarProps = {
@@ -9,21 +10,34 @@ type EquipeAvatarProps = {
 
 /**
  * Avatar Pixelbot décoratif (DiceBear) — seed Grist `Avatar` ou repli id.
+ * Si l’image ne charge pas (CDN indisponible), affiche un placeholder gris.
  */
 export function EquipeAvatar({ avatar, memberId, size = "sm" }: EquipeAvatarProps) {
-  const src = equipeAvatarUrl(avatar, memberId);
+  const [failed, setFailed] = useState(false);
   const className =
     size === "lg" ? "equipe-avatar equipe-avatar--lg" : "equipe-avatar equipe-avatar--sm";
+  const px = size === "lg" ? 64 : 32;
+
+  if (failed) {
+    return (
+      <span
+        className={`${className} equipe-avatar--placeholder`}
+        style={{ width: px, height: px }}
+        aria-hidden="true"
+      />
+    );
+  }
 
   return (
     <img
       className={className}
-      src={src}
+      src={equipeAvatarUrl(avatar, memberId)}
       alt=""
-      width={size === "lg" ? 64 : 32}
-      height={size === "lg" ? 64 : 32}
+      width={px}
+      height={px}
       loading="lazy"
       decoding="async"
+      onError={() => setFailed(true)}
     />
   );
 }

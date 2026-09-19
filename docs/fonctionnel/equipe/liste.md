@@ -32,7 +32,7 @@ Si `Statut` est illisible, aucun filtre Actif n’est appliqué (évite une list
 
 ## Colonnes
 
-Toujours : avatar Pixelbot + Nom (lien), département.  
+Toujours : avatar Pixelbot + Nom (lien unique sur les deux), département.  
 Conditionnelles : portage, statut, spécialité, rôle — seulement si lisibles via Access Rules.
 
-L’avatar utilise le seed `Equipe.Avatar` (DiceBear Pixelbot) ; si vide, repli stable `equipe-{id}`.
+L’avatar utilise le seed `Equipe.Avatar` (DiceBear Pixelbot) ; si vide, repli stable `equipe-{id}`. Si l’image ne charge pas, un placeholder gris conserve l’emprise.

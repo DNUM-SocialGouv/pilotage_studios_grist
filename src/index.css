@@ -782,11 +782,22 @@ span.fr-tag.fr-tag--beige-gris-galet {
   width: 4rem;
 }
 
-.equipe-list-name-cell {
+.equipe-avatar--placeholder {
+  /* Même emprise que l’image si DiceBear ne répond pas */
+  box-sizing: border-box;
+}
+
+a.equipe-list-name-cell {
   align-items: center;
   display: inline-flex;
   gap: 0.5rem;
   max-width: 100%;
+  text-decoration: none;
+}
+
+a.equipe-list-name-cell:hover,
+a.equipe-list-name-cell:focus-visible {
+  text-decoration: underline;
 }
 
 .mission-fiche-meta-bandeau,

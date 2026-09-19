@@ -309,12 +309,13 @@ export function EquipeListView() {
               paginated.map((member) => (
                 <tr key={member.id}>
                   <th scope="row">
-                    <span className="equipe-list-name-cell">
+                    <Link
+                      className="fr-link equipe-list-name-cell"
+                      to={`/equipe/${member.id}`}
+                    >
                       <EquipeAvatar avatar={member.Avatar} memberId={member.id} size="sm" />
-                      <Link className="fr-link" to={`/equipe/${member.id}`}>
-                        {equipeDisplayName(member)}
-                      </Link>
-                    </span>
+                      {equipeDisplayName(member)}
+                    </Link>
                   </th>
                   <td>{dash(member.Equipe)}</td>
                   {showPortage ? <td>{dash(member.Portage)}</td> : null}

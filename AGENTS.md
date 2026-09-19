@@ -98,7 +98,7 @@ Visibilité users : section roadmap sur `/` + issues rédigées selon [`docs/iss
 | Ancre widget + liste PA | `Plan_activite` |
 | Finance PA + écrans BDC (accès full) | `BDC`, `Constatations`, `Commandes_Sofiane` |
 | Onglet Dépenses fiche BDC **ou** écrans `/missions` **ou** `/cra` **ou** `/outils/recap-porteurs` **ou** `/equipe` (lazy, lecture) | `Realise`, `Missions`, `Missions_enfants` (`Mission_parent` + `Titre_de_la_prestation`, fallbacks lecture `Libelle` / texte `Mission_enfant`), `Equipe` (annuaire `/equipe` + `Portage` récap porteurs), `Tableau_de_pilotage_SDPC_Produits_SDPC` |
-| Fiche `/equipe/:id` (lazy, lecture — section Missions & prestations) | `Missions`, `Missions_enfants` (filtre `Intervenant` = personne) |
+| Fiche `/equipe/:id` (lazy, lecture — section Missions & prestations) | `Missions`, `Missions_enfants` (filtre `Intervenant` = personne) ; avatar = `Equipe.Avatar` (seed) |
 | Feedback widget (écriture create + lecture liste accueil) | `Retours` |
 | Droits pages session (nav + gardes) | `Acl_profil` (lecture ; create auto si absente ; `Page_*` formules ← `Droits_pages`) |
 | Matrice écrans Admin (`/outils/droits-pages`) | `Droits_pages` (lecture + update ; Owner / Admin ACL) |
@@ -192,7 +192,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 | PA / finance | `docs/fonctionnel/pa/`, `paFinance.ts`, `PaListView` / `PaDetailView` |
 | BDC | `docs/fonctionnel/bdc/`, `BdcListView` / `BdcDetailView` |
 | Missions | `docs/fonctionnel/missions/`, `useMissionsData`, `MissionsListView` / `MissionsDetailView` |
-| Équipe | `docs/fonctionnel/equipe/`, `useEquipeData`, `useEquipeMemberMissionsData`, `EquipeLayout` / `EquipeListView` / `EquipeDetailView` |
+| Équipe | `docs/fonctionnel/equipe/`, `useEquipeData`, `useEquipeMemberMissionsData`, `EquipeLayout` / `EquipeListView` / `EquipeDetailView`, `EquipeAvatar` (seed `Equipe.Avatar` → DiceBear Pixelbot) |
 | Feedback | `docs/fonctionnel/feedback/` (+ [`alertes.md`](docs/fonctionnel/feedback/alertes.md)), `FeedbackWidget`, `writeTableAllowlist` |
 | Tableau DSFR | rule `dsfr-tableaux.mdc`, MCP `user-dsfr` |
 | Embed / secrets | `embedTrust.ts`, `NothingHerePage`, `ensureFreshBuild`, SECURITY |
