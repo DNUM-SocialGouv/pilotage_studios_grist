@@ -47,7 +47,7 @@ Le widget ([#61](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issue
 Colonnes du bloc Freelance (`-RU`) :  
 `Portage`, `Statut`, `Nb_Jours`, `Ordinateur2`, `Nom_BdC`, `BdC_Chorus`, `Droits_d_acces_aux_tables_budgets`, `Mode_recrutement`, `Missions_en_cours`, `Missions_en_cours2`, `Portage_en_cours`, `Role_ACL`.
 
-Colonnes **laissées visibles** aux Freelances : `Prenom_Nom`, `Equipe`, `Specialite` (+ héritage lecture table).
+Colonnes **laissées visibles** aux Freelances : `Prenom_Nom`, `Equipe`, `Specialite`, `Avatar` (+ héritage lecture table).
 
 **UI Grist** : le CRUD se configure sur le bloc **Toutes** (`*`), pas dans un bloc colonnes (qui n’offre que R/U).
 

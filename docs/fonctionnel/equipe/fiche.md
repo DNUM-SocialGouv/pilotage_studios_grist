@@ -28,6 +28,7 @@ Voir la carte d’identité d’une personne, en lecture seule — mise en page 
 
 | Zone | Contenu |
 |------|---------|
+| Avatar | Image Pixelbot (seed `Avatar`) à gauche du titre |
 | Badges | Statut (couleurs Actif / Inactif), rôle, portage — seulement s’ils sont lisibles |
 | Titre | Nom (`Prenom_Nom`) |
 | Bandeau | Département (toujours, tag couleur studio) · spécialité si lisible · **TJM** et **Total TTC** si lisibles |

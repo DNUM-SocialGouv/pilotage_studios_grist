@@ -4,6 +4,7 @@ import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { TableShell } from "../components/FinanceRecap";
+import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
 import {
   equipeDisplayName,
   equipeFieldReadable,
@@ -308,7 +309,11 @@ export function EquipeListView() {
               paginated.map((member) => (
                 <tr key={member.id}>
                   <th scope="row">
-                    <Link className="fr-link" to={`/equipe/${member.id}`}>
+                    <Link
+                      className="fr-link equipe-list-name-cell"
+                      to={`/equipe/${member.id}`}
+                    >
+                      <EquipeAvatar avatar={member.Avatar} memberId={member.id} size="sm" />
                       {equipeDisplayName(member)}
                     </Link>
                   </th>

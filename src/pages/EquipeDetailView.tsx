@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import type { ReactNode } from "react";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
+import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
 import { EquipeFicheMissionsSection } from "../components/equipe/EquipeFicheMissionsSection";
 import { StatutBadge } from "../components/StatutBadge";
 import { tdEquipeTag } from "../components/EquipeTags";
@@ -120,32 +121,35 @@ export function EquipeDetailView() {
 
       <div className="equipe-fiche-title-row fr-mb-2w">
         <div className="equipe-fiche-title-row__identity">
-          {statut || role || portage ? (
-            <ul className="fr-badges-group fr-mb-0">
-              {statut ? (
-                <li>
-                  <StatutBadge statut={statut} variant="equipe" />
-                </li>
-              ) : null}
-              {role ? (
-                <li>
-                  <Badge small as="span" severity="info" noIcon>
-                    {role}
-                  </Badge>
-                </li>
-              ) : null}
-              {portage ? (
-                <li>
-                  <Badge small as="span" noIcon>
-                    {portage}
-                  </Badge>
-                </li>
-              ) : null}
-            </ul>
-          ) : null}
-          <h1 className="fr-mb-0 fr-h3 equipe-fiche-title-row__title">
-            {equipeDisplayName(member)}
-          </h1>
+          <EquipeAvatar avatar={member.Avatar} memberId={member.id} size="lg" />
+          <div className="equipe-fiche-title-row__text">
+            {statut || role || portage ? (
+              <ul className="fr-badges-group fr-mb-0">
+                {statut ? (
+                  <li>
+                    <StatutBadge statut={statut} variant="equipe" />
+                  </li>
+                ) : null}
+                {role ? (
+                  <li>
+                    <Badge small as="span" severity="info" noIcon>
+                      {role}
+                    </Badge>
+                  </li>
+                ) : null}
+                {portage ? (
+                  <li>
+                    <Badge small as="span" noIcon>
+                      {portage}
+                    </Badge>
+                  </li>
+                ) : null}
+              </ul>
+            ) : null}
+            <h1 className="fr-mb-0 fr-h3 equipe-fiche-title-row__title">
+              {equipeDisplayName(member)}
+            </h1>
+          </div>
         </div>
       </div>
 
