@@ -22,8 +22,9 @@ Selon les **Access Rules** Grist, un **Freelance** ne voit que **nom**, **dépar
 | Table | Usage |
 |-------|--------|
 | `Equipe` | Liste et fiche (`fetchAllowlistedTable`) |
+| `Missions`, `Missions_enfants` | Fiche uniquement : section Missions & prestations (Intervenant → personne) |
 
-Colonnes widget (Admin / droits complets) : `Prenom_Nom`, `Equipe`, `Portage`, `Statut`, `Specialite`, `Role_ACL`, `Missions_en_cours` (fiche), `TJM` / `Total_TTC` (fiche, si Access Rules).
+Colonnes widget (Admin / droits complets) : `Prenom_Nom`, `Equipe`, `Portage`, `Statut`, `Specialite`, `Role_ACL`, `TJM` / `Total_TTC` (fiche, si Access Rules).
 
 **Jamais** dans le widget : `E_mail` (et autres champs budgétaires hors TJM / Total TTC autorisés). **Jamais** de TJM / Total TTC sur la liste.
 
@@ -43,5 +44,7 @@ Le drapeau de page Grist est `Page_equipe` ([Droits des pages](../roles/droits-p
 ## Hors scope (widget)
 
 - Création / modification d’une fiche
+- Création / édition de mission depuis la fiche personne
+- Aperçu CRA sur la fiche personne (hors scope #62)
 - Qui voit le menu : [Droits des pages](../roles/droits-pages-admin.md) (#54)
 - Règles sur `Realise` / page freelance missions (#47)

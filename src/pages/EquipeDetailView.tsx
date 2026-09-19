@@ -2,16 +2,12 @@ import { Link, useParams } from "react-router-dom";
 import type { ReactNode } from "react";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
+import { EquipeFicheMissionsSection } from "../components/equipe/EquipeFicheMissionsSection";
 import { StatutBadge } from "../components/StatutBadge";
 import { tdEquipeTag } from "../components/EquipeTags";
 import { equipeDisplayName, equipeMontantLisible } from "../utils/equipeList";
 import { formatMontantEur } from "../utils/formatMontant";
 import { useEquipeOutlet } from "./EquipeLayout";
-
-function dash(value: string | undefined): string {
-  const t = value?.trim();
-  return t || "—";
-}
 
 function readable(value: string | undefined): string | undefined {
   const t = value?.trim();
@@ -88,7 +84,6 @@ export function EquipeDetailView() {
   const role = readable(member.Role_ACL);
   const portage = readable(member.Portage);
   const specialite = readable(member.Specialite);
-  const missionsEnCours = readable(member.Missions_en_cours);
   const departement = readable(member.Equipe);
   const showTjm = equipeMontantLisible(member.TJM);
   const showTotalTtc = equipeMontantLisible(member.Total_TTC);
@@ -154,10 +149,6 @@ export function EquipeDetailView() {
         </div>
       </div>
 
-      <p className="fr-text--sm fr-mb-3w">
-        Consultation uniquement — pas d’édition dans le widget.
-      </p>
-
       <div
         className="fr-grid-row equipe-fiche-meta-bandeau fr-mb-4w"
         role="group"
@@ -176,14 +167,10 @@ export function EquipeDetailView() {
         ))}
       </div>
 
-      {missionsEnCours ? (
-        <section className="fr-mb-3w" aria-labelledby="equipe-fiche-missions">
-          <h2 id="equipe-fiche-missions" className="fr-h6">
-            Missions en cours
-          </h2>
-          <p className="fr-mb-0 fr-text--sm">{dash(missionsEnCours)}</p>
-        </section>
-      ) : null}
+      <EquipeFicheMissionsSection
+        memberId={member.id}
+        enabled={data.status === "ok"}
+      />
     </div>
   );
 }
