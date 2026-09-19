@@ -121,7 +121,8 @@ export interface Intervenant {
 
 /**
  * Fiche personne pour l’écran `/equipe` (carte d’identité).
- * Pas de TJM, montants ni e-mail.
+ * TJM / Total_TTC : présents seulement si Access Rules les rendent lisibles
+ * (Owner / Admin, ou soi-même — pas les collègues). Pas d’e-mail dans le widget.
  */
 export interface EquipeMember {
   id: number;
@@ -132,6 +133,10 @@ export interface EquipeMember {
   Specialite?: string;
   Role_ACL?: string;
   Missions_en_cours?: string;
+  /** Tarif journalier — uniquement si lisible côté Grist. */
+  TJM?: number;
+  /** Total TTC — uniquement si lisible côté Grist. */
+  Total_TTC?: number;
 }
 
 /** Ligne catalogue produits (libellé = colonne Grist `Produit`). */

@@ -5,14 +5,15 @@ Anonymisé — pas de noms ni d’emails.
 
 ## En clair
 
-Les montants sensibles restent **Owners only**. La table **Équipe** a maintenant des règles par **rôle** : lecture seule pour la plupart, écriture Owner/Admin, e-mail et TJM protégés, et les **Freelances** ne voient que Prénom-Nom · département · Spécialité.
+La table **Équipe** a des règles par **rôle** : lecture seule pour la plupart, écriture Owner/Admin, e-mail protégé, et les **Freelances** ne voient que Prénom-Nom · département · Spécialité sur l’annuaire. **TJM** et **Total TTC** : Owner / Admin sur toutes les fiches, et **soi-même** sur sa fiche (#60 — appliqué 2026-09-19).
 
 ## Synthèse
 
 | Indicateur | Valeur |
 |------------|--------|
 | User Attributes | **OK** — Name `Equipe`, `user.Email` → `Equipe.E_mail` |
-| Montants / TJM / BDC… | **`-RU`** si non-Owner (inchangé) |
+| Montants BDC / summaries… | **`-RU`** si non-Owner (inchangé) |
+| `Equipe.TJM`, `Total_TTC` | **Appliqué** — refus sauf Owner, Admin, ou soi (`user.Email == rec.E_mail`) |
 | `Equipe` table (`*`) | Owner **ou** `Role_ACL == Admin` → `+CRUD` ; `True` → `+R -CUD` |
 | `Equipe.E_mail` | non-(Owner\|Admin) → `-RU` |
 | `Equipe` colonnes « hors carte » | `Role_ACL == Freelance` → `-RU` (voir liste) |
@@ -26,16 +27,22 @@ Les montants sensibles restent **Owners only**. La table **Équipe** a maintenan
 | `-RU` / `-CUD` | Refuser |
 | `-S` | Refuser structure |
 
-## Table `Equipe` (détail #55)
+## Table `Equipe` (détail #55 + TJM soi #60)
 
 | Colonnes | Condition | Droits | Mémo |
 |----------|-----------|--------|------|
-| `TJM`, `Total_TTC` | `user.Access != "OWNER"` | `-RU` | Non-Owners : pas de lecture/modif |
+| `TJM`, `Total_TTC` | `user.Access != "OWNER" and user.Equipe.Role_ACL != "Admin" and user.Email != rec.E_mail` | `-RU` | Owner / Admin : toutes les fiches ; chacun lit sa ligne ; collègues non (**appliqué** 2026-09-19) |
 | `E_mail` | `user.Access != "OWNER" and user.Equipe.Role_ACL != "Admin"` | `-RU` | Seuls Owner et Admin voient ou modifient l’e-mail |
 | `Role_ACL` | idem (non-Owner et non-Admin) | `-RU` | Rôle réservé Owner/Admin |
 | Multi (voir ci-dessous) | `user.Equipe.Role_ACL == "Freelance"` | `-RU` | Freelances : seulement Prénom-Nom, Equipe, Spécialité |
 | `*` (Toutes) | `user.Access == "OWNER" or user.Equipe.Role_ACL == "Admin"` | `+CRUD` | Écriture complète |
 | `*` (Toutes) | `True` | `+R -CUD` | Autres : lecture seule |
+
+**Vérif MCP** (règle ressource `Equipe` / `TJM,Total_TTC`) : condition et `-RU` conformes ; mémo UI : « Admin voit toutes les fiches ; chacun voit sa ligne ; les collègues non. »
+
+**Point d’attention** : l’e-mail du compte Grist doit être **identique** à `Equipe.E_mail` (sinon « soi » ne matche pas — voir [prep-equipe.md](prep-equipe.md)).
+
+Le widget ([#61](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/61)) n’affiche TJM / Total TTC que si Grist les livre (nombre lisible).
 
 Colonnes du bloc Freelance (`-RU`) :  
 `Portage`, `Statut`, `Nb_Jours`, `Ordinateur2`, `Nom_BdC`, `BdC_Chorus`, `Droits_d_acces_aux_tables_budgets`, `Mode_recrutement`, `Missions_en_cours`, `Missions_en_cours2`, `Portage_en_cours`, `Role_ACL`.

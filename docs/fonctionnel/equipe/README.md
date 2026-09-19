@@ -3,11 +3,11 @@
 [← Documentation](../../README.md) › **Équipe**
 
 > **Routes** : `/equipe`, `/equipe/:id`  
-> **Issues** : [#53](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/53) (écran) · [#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55) (Access Rules)
+> **Issues** : [#53](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/53) (écran) · [#59](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/59) (UX fiche) · [#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55) (Access Rules)
 
 ## Objet métier
 
-L’**équipe** rassemble les personnes du pilotage (table Grist `Equipe`). Le widget affiche un **annuaire** en consultation. Pas d’édition, pas de TJM.
+L’**équipe** rassemble les personnes du pilotage (table Grist `Equipe`). Le widget affiche un **annuaire** en consultation. Pas d’édition. Les montants (**TJM**, **Total TTC**) n’apparaissent que sur la **fiche**, et seulement s’ils sont lisibles (Admin / Owner, ou la personne elle-même).
 
 Selon les **Access Rules** Grist, un **Freelance** ne voit que **nom**, **département** et **spécialité** (autres colonnes masquées côté Grist et dans le widget).
 
@@ -23,9 +23,9 @@ Selon les **Access Rules** Grist, un **Freelance** ne voit que **nom**, **dépar
 |-------|--------|
 | `Equipe` | Liste et fiche (`fetchAllowlistedTable`) |
 
-Colonnes widget (Admin / droits complets) : `Prenom_Nom`, `Equipe`, `Portage`, `Statut`, `Specialite`, `Role_ACL`, `Missions_en_cours` (fiche).
+Colonnes widget (Admin / droits complets) : `Prenom_Nom`, `Equipe`, `Portage`, `Statut`, `Specialite`, `Role_ACL`, `Missions_en_cours` (fiche), `TJM` / `Total_TTC` (fiche, si Access Rules).
 
-**Jamais** dans le widget : `TJM`, `Total_TTC`, `E_mail` (et champs budgétaires).
+**Jamais** dans le widget : `E_mail` (et autres champs budgétaires hors TJM / Total TTC autorisés). **Jamais** de TJM / Total TTC sur la liste.
 
 Allowlist lecture : `src/security/fetchTableAllowlist.ts`. Pas d’écriture `Equipe`.
 

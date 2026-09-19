@@ -33,6 +33,11 @@ export function equipeFieldReadable(
   });
 }
 
+/** True si un montant Equipe est réellement lisible (Access Rules). */
+export function equipeMontantLisible(value: number | undefined): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
 /**
  * Filtre statut initial : « Actif » seulement si la colonne Statut est lisible
  * et contient cette valeur (sinon « tous » — cas Freelance / ACL colonnes).

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { severityForStatut } from "./statutBadge.ts";
+import { severityForEquipeStatut, severityForStatut } from "./statutBadge.ts";
 
 describe("severityForStatut", () => {
   it("mappe En cours vers new", () => {
@@ -20,5 +20,17 @@ describe("severityForStatut", () => {
     assert.equal(severityForStatut("Terminé"), "info");
     assert.equal(severityForStatut(undefined), "info");
     assert.equal(severityForStatut(""), "info");
+  });
+});
+
+describe("severityForEquipeStatut", () => {
+  it("mappe Actif vers success et Inactif vers warning", () => {
+    assert.equal(severityForEquipeStatut("Actif"), "success");
+    assert.equal(severityForEquipeStatut("Inactif"), "warning");
+  });
+
+  it("retombe sur severityForStatut pour le reste", () => {
+    assert.equal(severityForEquipeStatut("En cours"), "new");
+    assert.equal(severityForEquipeStatut(""), "info");
   });
 });

@@ -336,6 +336,111 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     },
   },
   {
+    id: "equipe-fiche-ux",
+    themeId: "equipe",
+    title: "Fiche personne plus claire",
+    summary:
+      "Améliorer la lecture de la fiche d’une personne (identité, statut, rôle, portage), toujours en consultation.",
+    status: "done",
+    issueUrl:
+      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/59",
+    guide: {
+      lead: "La fiche personne se lit d’un coup d’œil : badges (statut, rôle, portage) et bandeau (département, spécialité).",
+      stepsIntro: "Dans le widget, vous pouvez :",
+      steps: [
+        "Ouvrir une fiche depuis la liste Équipe",
+        "Voir l’identité mise en avant, avec statut, rôle et portage en badges",
+        "Lire département et spécialité dans le bandeau ; missions en cours en texte si renseignées",
+      ],
+      pagePath: "/equipe",
+      pageLinkLabel: "Ouvrir Équipe",
+    },
+  },
+  {
+    id: "equipe-tjm-soi",
+    themeId: "equipe",
+    title: "Voir son TJM, pas celui des collègues",
+    summary:
+      "Un freelance peut consulter son tarif journalier (et Total TTC) sur sa fiche ; les autres freelances ne les voient pas.",
+    status: "done",
+    issueUrl:
+      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/60",
+    guide: {
+      lead: "Le TJM est sensible : on le protège pour les collègues, tout en permettant à chacun de retrouver le sien sur sa propre fiche.",
+      stepsIntro: "Avec les droits du document :",
+      steps: [
+        "Sur ma fiche : mon TJM et mon Total TTC sont lisibles",
+        "Sur la fiche d’un collègue : pas de montants",
+        "Un Admin / Owner continue de voir l’ensemble des fiches",
+      ],
+      pagePath: "/equipe",
+      pageLinkLabel: "Ouvrir Équipe",
+    },
+  },
+  {
+    id: "equipe-fiche-droits",
+    themeId: "equipe",
+    title: "La fiche affiche seulement ce qui est autorisé",
+    summary:
+      "Le widget suit les droits réels : TJM et Total TTC apparaissent sur la fiche s’ils sont autorisés ; sinon masqués.",
+    status: "done",
+    issueUrl:
+      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/61",
+    guide: {
+      lead: "L’écran ne contourne pas les règles : il montre ce que le document autorise déjà, rien de plus.",
+      stepsIntro: "Dans le widget, vous pouvez :",
+      steps: [
+        "Ouvrir une fiche : TJM et Total TTC seulement s’ils sont lisibles",
+        "Constater qu’ils restent absents sur une fiche collègue (après réglage des droits)",
+        "Garder la consultation seule pour cette étape",
+      ],
+      pagePath: "/equipe",
+      pageLinkLabel: "Ouvrir Équipe",
+    },
+  },
+  {
+    id: "equipe-fiche-missions",
+    themeId: "equipe",
+    title: "Missions rattachées sur la fiche personne",
+    summary:
+      "Lister les missions liées à une personne et ouvrir la fiche mission depuis Équipe.",
+    status: "later",
+    issueUrl:
+      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/62",
+    guide: {
+      lead: "Une fiche personne complète relie l’annuaire au pilotage des missions, sans remplacer l’écran Missions.",
+      stepsIntro: "Plus tard, vous pourrez :",
+      steps: [
+        "Voir une section Missions sur la fiche",
+        "Ouvrir une mission liée en un clic",
+        "Ne voir que les missions déjà accessibles selon vos droits",
+      ],
+      pagePath: "/equipe",
+      pageLinkLabel: "Ouvrir Équipe",
+    },
+  },
+  {
+    id: "equipe-fiche-edition-admin",
+    themeId: "equipe",
+    title: "Éditer une fiche Équipe (Admin)",
+    summary:
+      "Permettre aux Admin de corriger certains champs d’une personne depuis le widget, sans passer par la table.",
+    status: "later",
+    issueUrl:
+      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/63",
+    guide: {
+      lead: "Corriger un département, un portage ou un statut ne devrait pas obliger à ouvrir la table brute.",
+      stepsIntro: "Quand ce parcours sera livré, un Admin pourra :",
+      steps: [
+        "Ouvrir une fiche et modifier des champs non sensibles (liste à trancher)",
+        "Enregistrer : la liste et la fiche se mettent à jour",
+        "Les freelances restent en consultation seule pour cette vague",
+      ],
+      pagePath: "/equipe",
+      pageLinkLabel: "Ouvrir Équipe",
+    },
+  },
+  {
     id: "produits-pv",
     themeId: "suite",
     title: "Catalogue Produits, procès-verbaux, évaluations",
