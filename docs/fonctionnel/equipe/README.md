@@ -3,7 +3,7 @@
 [← Documentation](../../README.md) › **Équipe**
 
 > **Routes** : `/equipe`, `/equipe/:id`  
-> **Issues** : [#53](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/53) (écran) · [#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55) (Access Rules)
+> **Issues** : [#53](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/53) (écran) · [#59](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/59) (UX fiche) · [#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55) (Access Rules)
 
 ## Objet métier
 

@@ -8,3 +8,14 @@ export function severityForStatut(statut: string | undefined): StatutBadgeSeveri
   if (s.includes("annul")) return "error";
   return "info";
 }
+
+/** Sévérité DSFR pour le statut d’une fiche Équipe (Actif / Inactif…). */
+export function severityForEquipeStatut(
+  statut: string | undefined,
+): StatutBadgeSeverity {
+  const s = statut?.toLowerCase().trim() ?? "";
+  if (!s) return "info";
+  if (s.includes("inactif")) return "warning";
+  if (s.includes("actif")) return "success";
+  return severityForStatut(statut);
+}

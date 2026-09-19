@@ -1,11 +1,20 @@
 import { Link, useParams } from "react-router-dom";
+import type { ReactNode } from "react";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
+import { Badge } from "@codegouvfr/react-dsfr/Badge";
+import { StatutBadge } from "../components/StatutBadge";
+import { tdEquipeTag } from "../components/EquipeTags";
 import { equipeDisplayName } from "../utils/equipeList";
 import { useEquipeOutlet } from "./EquipeLayout";
 
 function dash(value: string | undefined): string {
   const t = value?.trim();
   return t || "—";
+}
+
+function readable(value: string | undefined): string | undefined {
+  const t = value?.trim();
+  return t || undefined;
 }
 
 export function EquipeDetailView() {
@@ -67,6 +76,26 @@ export function EquipeDetailView() {
     );
   }
 
+  const statut = readable(member.Statut);
+  const role = readable(member.Role_ACL);
+  const portage = readable(member.Portage);
+  const specialite = readable(member.Specialite);
+  const missionsEnCours = readable(member.Missions_en_cours);
+  const departement = readable(member.Equipe);
+
+  const metaCells: { label: string; value: ReactNode }[] = [
+    {
+      label: "Département",
+      value: departement ? tdEquipeTag(departement) : "—",
+    },
+  ];
+  if (specialite) {
+    metaCells.push({ label: "Spécialité", value: specialite });
+  }
+
+  const metaColClass =
+    metaCells.length === 2 ? "fr-col-12 fr-col-md-6" : "fr-col-12";
+
   return (
     <div className="fr-py-1w">
       <p className="fr-mb-2w">
@@ -74,45 +103,68 @@ export function EquipeDetailView() {
           ← Retour à la liste
         </Link>
       </p>
-      <h1 className="fr-h3">{equipeDisplayName(member)}</h1>
-      <p className="fr-text--sm fr-mb-3w">Consultation uniquement — pas d’édition dans le widget.</p>
 
-      <dl className="fr-grid-row fr-grid-row--gutters fr-mb-3w">
-        <div className="fr-col-6 fr-col-md-4">
-          <dt className="fr-text--sm">Département</dt>
-          <dd className="fr-mb-0">{dash(member.Equipe)}</dd>
+      <div className="equipe-fiche-title-row fr-mb-2w">
+        <div className="equipe-fiche-title-row__identity">
+          {statut || role || portage ? (
+            <ul className="fr-badges-group fr-mb-0">
+              {statut ? (
+                <li>
+                  <StatutBadge statut={statut} variant="equipe" />
+                </li>
+              ) : null}
+              {role ? (
+                <li>
+                  <Badge small as="span" severity="info" noIcon>
+                    {role}
+                  </Badge>
+                </li>
+              ) : null}
+              {portage ? (
+                <li>
+                  <Badge small as="span" noIcon>
+                    {portage}
+                  </Badge>
+                </li>
+              ) : null}
+            </ul>
+          ) : null}
+          <h1 className="fr-mb-0 fr-h3 equipe-fiche-title-row__title">
+            {equipeDisplayName(member)}
+          </h1>
         </div>
-        {member.Portage?.trim() ? (
-          <div className="fr-col-6 fr-col-md-4">
-            <dt className="fr-text--sm">Portage</dt>
-            <dd className="fr-mb-0">{dash(member.Portage)}</dd>
+      </div>
+
+      <p className="fr-text--sm fr-mb-3w">
+        Consultation uniquement — pas d’édition dans le widget.
+      </p>
+
+      <div
+        className="fr-grid-row equipe-fiche-meta-bandeau fr-mb-4w"
+        role="group"
+        aria-label="Informations de la personne"
+      >
+        {metaCells.map((cell) => (
+          <div
+            key={cell.label}
+            className={`${metaColClass} equipe-fiche-meta-bandeau__cell`}
+          >
+            <div className="fr-text--xs fr-mb-1v equipe-fiche-meta-bandeau__label">
+              {cell.label}
+            </div>
+            <div className="fr-text--sm fr-mb-0">{cell.value}</div>
           </div>
-        ) : null}
-        {member.Statut?.trim() ? (
-          <div className="fr-col-6 fr-col-md-4">
-            <dt className="fr-text--sm">Statut</dt>
-            <dd className="fr-mb-0">{dash(member.Statut)}</dd>
-          </div>
-        ) : null}
-        {member.Specialite?.trim() ? (
-          <div className="fr-col-6 fr-col-md-4">
-            <dt className="fr-text--sm">Spécialité</dt>
-            <dd className="fr-mb-0">{dash(member.Specialite)}</dd>
-          </div>
-        ) : null}
-        {member.Role_ACL?.trim() ? (
-          <div className="fr-col-6 fr-col-md-4">
-            <dt className="fr-text--sm">Rôle</dt>
-            <dd className="fr-mb-0">{dash(member.Role_ACL)}</dd>
-          </div>
-        ) : null}
-        {member.Missions_en_cours?.trim() ? (
-          <div className="fr-col-12">
-            <dt className="fr-text--sm">Missions en cours</dt>
-            <dd className="fr-mb-0">{dash(member.Missions_en_cours)}</dd>
-          </div>
-        ) : null}
-      </dl>
+        ))}
+      </div>
+
+      {missionsEnCours ? (
+        <section className="fr-mb-3w" aria-labelledby="equipe-fiche-missions">
+          <h2 id="equipe-fiche-missions" className="fr-h6">
+            Missions en cours
+          </h2>
+          <p className="fr-mb-0 fr-text--sm">{dash(missionsEnCours)}</p>
+        </section>
+      ) : null}
     </div>
   );
 }

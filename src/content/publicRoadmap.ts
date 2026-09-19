@@ -341,16 +341,16 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     title: "Fiche personne plus claire",
     summary:
       "Améliorer la lecture de la fiche d’une personne (identité, statut, rôle, portage), toujours en consultation.",
-    status: "current",
+    status: "done",
     issueUrl:
       "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/59",
     guide: {
-      lead: "La fiche personne doit se lire d’un coup d’œil, comme une vraie carte d’identité — pas une grille de libellés à plat.",
-      stepsIntro: "Quand ce chantier sera livré, vous pourrez :",
+      lead: "La fiche personne se lit d’un coup d’œil : badges (statut, rôle, portage) et bandeau (département, spécialité).",
+      stepsIntro: "Dans le widget, vous pouvez :",
       steps: [
         "Ouvrir une fiche depuis la liste Équipe",
-        "Voir l’identité mise en avant, avec statut, rôle et portage bien visibles",
-        "Revenir à la liste sans confusion",
+        "Voir l’identité mise en avant, avec statut, rôle et portage en badges",
+        "Lire département et spécialité dans le bandeau ; missions en cours en texte si renseignées",
       ],
       pagePath: "/equipe",
       pageLinkLabel: "Ouvrir Équipe",

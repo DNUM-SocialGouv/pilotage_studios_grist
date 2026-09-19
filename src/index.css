@@ -722,8 +722,9 @@ span.fr-tag.fr-tag--beige-gris-galet {
   background-image: linear-gradient(0deg, var(--border-default-grey), var(--border-default-grey)) !important;
 }
 
-/* Fiche mission (/missions/:id) — P2 */
-.mission-fiche-title-row {
+/* Fiches détail — mission (/missions/:id) et équipe (/equipe/:id) */
+.mission-fiche-title-row,
+.equipe-fiche-title-row {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
@@ -731,7 +732,8 @@ span.fr-tag.fr-tag--beige-gris-galet {
   justify-content: space-between;
 }
 
-.mission-fiche-title-row__identity {
+.mission-fiche-title-row__identity,
+.equipe-fiche-title-row__identity {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
@@ -739,30 +741,36 @@ span.fr-tag.fr-tag--beige-gris-galet {
   min-width: 0;
 }
 
-.mission-fiche-title-row .fr-badges-group {
+.mission-fiche-title-row .fr-badges-group,
+.equipe-fiche-title-row .fr-badges-group {
   margin-bottom: 0;
 }
 
-.mission-fiche-title-row__title {
+.mission-fiche-title-row__title,
+.equipe-fiche-title-row__title {
   line-height: 1.2;
 }
 
-.mission-fiche-meta-bandeau {
+.mission-fiche-meta-bandeau,
+.equipe-fiche-meta-bandeau {
   border: 1px solid var(--border-default-grey);
   border-radius: 0.25rem;
 }
 
-.mission-fiche-meta-bandeau__cell {
+.mission-fiche-meta-bandeau__cell,
+.equipe-fiche-meta-bandeau__cell {
   padding: 0.75rem 1rem;
 }
 
 @media (min-width: 48em) {
-  .mission-fiche-meta-bandeau__cell:not(:last-child) {
+  .mission-fiche-meta-bandeau__cell:not(:last-child),
+  .equipe-fiche-meta-bandeau__cell:not(:last-child) {
     border-right: 1px solid var(--border-default-grey);
   }
 }
 
-.mission-fiche-meta-bandeau__label {
+.mission-fiche-meta-bandeau__label,
+.equipe-fiche-meta-bandeau__label {
   color: var(--text-mention-grey);
 }
 
