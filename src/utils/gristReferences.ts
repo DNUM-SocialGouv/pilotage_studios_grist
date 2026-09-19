@@ -88,10 +88,13 @@ export function normalizeGristChoice(value: unknown): string {
   return normalizeGristChoiceString(String(value));
 }
 
-/** Comme `normalizeGristChoice`, mais `undefined` si vide. */
+/** Comme `normalizeGristChoice`, mais `undefined` si vide ou censuré (ACL colonnes). */
 export function asGristChoice(value: unknown): string | undefined {
   const s = normalizeGristChoice(value);
-  return s.length > 0 ? s : undefined;
+  if (!s || s === "CENSORED" || s === "..." || s.startsWith("[Pending")) {
+    return undefined;
+  }
+  return s;
 }
 
 /**

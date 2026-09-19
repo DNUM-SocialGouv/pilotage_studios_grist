@@ -18,14 +18,18 @@ export function uniqueSortedLabels(values: readonly (string | undefined)[]): str
   return Array.from(set).sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
 }
 
-/** True si au moins une fiche a une valeur non vide pour ce champ. */
+/** True si au moins une fiche a une valeur lisible (hors vide / CENSORED ACL). */
 export function equipeFieldReadable(
   members: readonly EquipeMember[],
   key: keyof EquipeMember,
 ): boolean {
   return members.some((member) => {
     const raw = member[key];
-    return typeof raw === "string" && raw.trim() !== "";
+    if (typeof raw !== "string") {
+      return false;
+    }
+    const t = raw.trim();
+    return t !== "" && t !== "CENSORED" && t !== "..." && !t.startsWith("[Pending");
   });
 }
 

@@ -74,6 +74,25 @@ describe("initialEquipeStatutFilter / equipeFieldReadable", () => {
     });
     assert.equal(rows.length, 2);
   });
+
+  it("ignore la string CENSORED comme valeur lisible", () => {
+    const censored: EquipeMember[] = [
+      {
+        id: 1,
+        Prenom_Nom: "Alice",
+        Equipe: "Design",
+        Portage: "CENSORED",
+        Statut: "CENSORED",
+        Role_ACL: "...",
+        Specialite: "UX",
+      },
+    ];
+    assert.equal(equipeFieldReadable(censored, "Portage"), false);
+    assert.equal(equipeFieldReadable(censored, "Statut"), false);
+    assert.equal(equipeFieldReadable(censored, "Role_ACL"), false);
+    assert.equal(equipeFieldReadable(censored, "Specialite"), true);
+    assert.equal(initialEquipeStatutFilter(censored), "");
+  });
 });
 
 describe("filterEquipeMembers", () => {
