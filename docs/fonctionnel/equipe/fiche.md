@@ -38,7 +38,7 @@ Voir la carte d’identité d’une personne, en lecture seule — mise en page 
 - Source : tables `Missions` + `Missions_enfants` (chargement lazy sur la fiche uniquement).
 - Colonnes : **Mission** (lien, regroupée si plusieurs prestations) · **Prestation** · **Statut**.
 - Une ligne = une **prestation** staffée ; les prestations d’une même mission sont regroupées (mission affichée une seule fois).
-- Filtre **En cours** : exclut les prestations au statut Terminé / Clos / Archivé (et variantes).
+- Filtre **En cours** : exclut Terminé / Clos / Archivé / Annulé (et variantes) ; conserve En cours, En pause, En projet, etc.
 - Filtre **Toutes** : historique inclus.
 - Pas de création / édition depuis Équipe. Pas d’aperçu CRA sur cette page.
 - On n’affiche que ce que Grist laisse déjà lire (mêmes droits qu’ailleurs).

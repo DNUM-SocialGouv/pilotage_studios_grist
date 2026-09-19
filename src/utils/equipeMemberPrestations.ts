@@ -35,11 +35,17 @@ export type EquipePrestationMissionGroup = {
 
 export type EquipePrestationsFilter = "en-cours" | "toutes";
 
-/** True si la prestation n’est pas dans un statut « terminé / clos / archivé ». */
+/**
+ * True si la prestation n’est pas terminée / close / archivée / annulée.
+ * « En pause », « En projet », « En cours » restent visibles sous le filtre En cours.
+ */
 export function isPrestationEnCours(statut: string | undefined): boolean {
   const t = statut?.trim().toLowerCase();
   if (!t) {
     return true;
+  }
+  if (t.includes("annul")) {
+    return false;
   }
   return !PRESTATION_STATUTS_TERMINES.has(t);
 }

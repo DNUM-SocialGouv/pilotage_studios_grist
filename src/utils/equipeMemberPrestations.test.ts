@@ -22,6 +22,12 @@ describe("isPrestationEnCours", () => {
     assert.equal(isPrestationEnCours("Clos"), false);
     assert.equal(isPrestationEnCours("Archivé"), false);
   });
+
+  it("exclut les prestations annulées du filtre en cours", () => {
+    assert.equal(isPrestationEnCours("Annulé"), false);
+    assert.equal(isPrestationEnCours("Annulée"), false);
+    assert.equal(isPrestationEnCours("annule"), false);
+  });
 });
 
 describe("buildEquipePrestationRows", () => {

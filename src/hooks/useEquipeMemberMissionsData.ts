@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import type { Mission, MissionEnfant } from "../types";
-import type { GristFetchTableResult } from "../gristTypes";
 import { recordsFromFetchTable, toMission, toMissionEnfant } from "../gristMap";
 import { fetchAllowlistedTable } from "../security/fetchTableAllowlist";
 
@@ -29,41 +28,28 @@ async function loadMissionsAndEnfants(): Promise<{
     fetchAllowlistedTable("Missions_enfants"),
   ]);
 
-  const pick = <T>(
-    index: number,
-    map: (raw: GristFetchTableResult) => T[],
-    required: boolean,
-  ): T[] => {
-    const result = settled[index];
-    if (result?.status === "fulfilled") {
-      return map(result.value);
-    }
-    if (required) {
-      const reason = result?.status === "rejected" ? result.reason : undefined;
-      throw reason instanceof Error
-        ? reason
-        : new Error("Lecture Missions / Missions_enfants impossible.");
-    }
-    return [];
-  };
+  const missionsResult = settled[0];
+  if (missionsResult?.status !== "fulfilled") {
+    const reason =
+      missionsResult?.status === "rejected" ? missionsResult.reason : undefined;
+    throw reason instanceof Error
+      ? reason
+      : new Error("Lecture Missions impossible.");
+  }
 
-  // Missions obligatoire ; enfants sans missions = section vide plutôt qu’erreur dure.
-  const missions = pick(0, (raw) => recordsFromFetchTable(raw).map(toMission), true);
-  const missionEnfants = pick(
-    1,
-    (raw) => recordsFromFetchTable(raw).map(toMissionEnfant),
-    false,
-  );
-
-  if (settled[1]?.status === "rejected" && missions.length > 0) {
-    // Prestations indisponibles : on remonte une erreur explicite.
-    const reason = settled[1].reason;
+  const enfantsResult = settled[1];
+  if (enfantsResult?.status !== "fulfilled") {
+    const reason =
+      enfantsResult?.status === "rejected" ? enfantsResult.reason : undefined;
     throw reason instanceof Error
       ? reason
       : new Error("Lecture Missions_enfants impossible.");
   }
 
-  return { missions, missionEnfants };
+  return {
+    missions: recordsFromFetchTable(missionsResult.value).map(toMission),
+    missionEnfants: recordsFromFetchTable(enfantsResult.value).map(toMissionEnfant),
+  };
 }
 
 /**

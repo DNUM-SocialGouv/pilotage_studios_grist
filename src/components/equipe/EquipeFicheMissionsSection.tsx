@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination";
@@ -29,6 +29,11 @@ export function EquipeFicheMissionsSection({
   const data = useEquipeMemberMissionsData(enabled);
   const [filter, setFilter] = useState<EquipePrestationsFilter>("en-cours");
   const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    setFilter("en-cours");
+    setPage(1);
+  }, [memberId]);
 
   const allRows = useMemo(
     () => buildEquipePrestationRows(memberId, data.missionEnfants, data.missions),
@@ -167,6 +172,7 @@ export function EquipeFicheMissionsSection({
 
           {pageCount > 1 ? (
             <Pagination
+              key={`equipe-fiche-missions-page-${memberId}-${filter}-${safePage}`}
               id={`widget-equipe-fiche-missions-pagination-${memberId}`}
               count={pageCount}
               defaultPage={safePage}
