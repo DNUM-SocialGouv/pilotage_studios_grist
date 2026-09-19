@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { equipeAvatarUrl } from "../../utils/equipeAvatar";
 
 type EquipeAvatarProps = {
@@ -18,14 +18,12 @@ export function EquipeAvatar({ avatar, memberId, size = "sm" }: EquipeAvatarProp
     size === "lg" ? "equipe-avatar equipe-avatar--lg" : "equipe-avatar equipe-avatar--sm";
   const px = size === "lg" ? 64 : 32;
 
+  useEffect(() => {
+    setFailed(false);
+  }, [avatar, memberId]);
+
   if (failed) {
-    return (
-      <span
-        className={`${className} equipe-avatar--placeholder`}
-        style={{ width: px, height: px }}
-        aria-hidden="true"
-      />
-    );
+    return <span className={`${className} equipe-avatar--placeholder`} aria-hidden="true" />;
   }
 
   return (
