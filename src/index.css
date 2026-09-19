@@ -772,8 +772,9 @@ span.fr-tag.fr-tag--beige-gris-galet {
   margin-top: 0;
 }
 
+/* Restaure l’écart horizontal DSFR (écrasé par un margin:0 trop large) */
 .equipe-fiche-title-row .fr-badges-group .fr-badge {
-  margin: 0;
+  margin: 0 0.375rem;
 }
 
 .mission-fiche-title-row__title,
