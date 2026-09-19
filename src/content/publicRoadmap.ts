@@ -403,17 +403,17 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     themeId: "equipe",
     title: "Missions rattachées sur la fiche personne",
     summary:
-      "Lister les missions liées à une personne et ouvrir la fiche mission depuis Équipe.",
-    status: "later",
+      "Lister les prestations / missions liées à une personne et ouvrir la fiche mission depuis Équipe.",
+    status: "done",
     issueUrl:
       "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/62",
     guide: {
       lead: "Une fiche personne complète relie l’annuaire au pilotage des missions, sans remplacer l’écran Missions.",
-      stepsIntro: "Plus tard, vous pourrez :",
+      stepsIntro: "Sur la fiche, vous pouvez :",
       steps: [
-        "Voir une section Missions sur la fiche",
+        "Voir la section Missions & prestations",
+        "Filtrer En cours ou Toutes",
         "Ouvrir une mission liée en un clic",
-        "Ne voir que les missions déjà accessibles selon vos droits",
       ],
       pagePath: "/equipe",
       pageLinkLabel: "Ouvrir Équipe",

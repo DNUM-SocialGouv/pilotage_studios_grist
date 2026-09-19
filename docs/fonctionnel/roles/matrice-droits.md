@@ -95,6 +95,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-09-19 | Fiche Équipe : section Missions & prestations (lecture lazy `Missions` / `Missions_enfants`, liens `/missions/:id`) ; pas de changement nav / ACL tables | 5 | [#62](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/62) |
 | 2026-09-19 | Access Rules `Equipe.TJM,Total_TTC` : Admin toutes fiches + soi ; vérif MCP OK | 6 | [#60](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/60) HITL Owner |
 | 2026-09-19 | Fiche Équipe : affiche TJM / Total TTC si lisibles ; cible ACL Admin + soi (#60 HITL) | 5, 6 (doc) | [#61](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/61) / [#60](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/60) |
 | 2026-09-19 | `Acl_profil` : règle Owner/Admin `+CRUD` (ménage doublons) ; widget création auto fiche absente | 4, 5, 6 | [#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55) |

@@ -398,6 +398,11 @@ span.fr-tag.fr-tag--beige-gris-galet {
   white-space: nowrap;
 }
 
+.pilotage-col-statut-nowrap {
+  width: 9rem;
+  min-width: 9rem;
+}
+
 .pilotage-col-actions {
   width: 12.5rem;
   min-width: 12.5rem;
@@ -772,6 +777,10 @@ span.fr-tag.fr-tag--beige-gris-galet {
 .mission-fiche-meta-bandeau__label,
 .equipe-fiche-meta-bandeau__label {
   color: var(--text-mention-grey);
+}
+
+.equipe-fiche-missions__mission-cell {
+  vertical-align: top;
 }
 
 .mission-fiche-prose {
