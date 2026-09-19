@@ -5,7 +5,7 @@ Anonymisé — pas de noms ni d’emails.
 
 ## En clair
 
-La table **Équipe** a des règles par **rôle** : lecture seule pour la plupart, écriture Owner/Admin, e-mail protégé, et les **Freelances** ne voient que Prénom-Nom · département · Spécialité sur l’annuaire. **TJM** et **Total TTC** : aujourd’hui encore **Owners only** ; cible produit = Owner / Admin sur toutes les fiches, et **soi-même** sur sa fiche (HITL ci-dessous).
+La table **Équipe** a des règles par **rôle** : lecture seule pour la plupart, écriture Owner/Admin, e-mail protégé, et les **Freelances** ne voient que Prénom-Nom · département · Spécialité sur l’annuaire. **TJM** et **Total TTC** : Owner / Admin sur toutes les fiches, et **soi-même** sur sa fiche (#60 — appliqué 2026-09-19).
 
 ## Synthèse
 
@@ -13,7 +13,7 @@ La table **Équipe** a des règles par **rôle** : lecture seule pour la plupart
 |------------|--------|
 | User Attributes | **OK** — Name `Equipe`, `user.Email` → `Equipe.E_mail` |
 | Montants BDC / summaries… | **`-RU`** si non-Owner (inchangé) |
-| `Equipe.TJM`, `Total_TTC` | **À mettre à jour** — voir § HITL (cible Admin + soi) |
+| `Equipe.TJM`, `Total_TTC` | **Appliqué** — refus sauf Owner, Admin, ou soi (`user.Email == rec.E_mail`) |
 | `Equipe` table (`*`) | Owner **ou** `Role_ACL == Admin` → `+CRUD` ; `True` → `+R -CUD` |
 | `Equipe.E_mail` | non-(Owner\|Admin) → `-RU` |
 | `Equipe` colonnes « hors carte » | `Role_ACL == Freelance` → `-RU` (voir liste) |
@@ -31,27 +31,16 @@ La table **Équipe** a des règles par **rôle** : lecture seule pour la plupart
 
 | Colonnes | Condition | Droits | Mémo |
 |----------|-----------|--------|------|
-| `TJM`, `Total_TTC` | **État actuel** : `user.Access != "OWNER"` | `-RU` | Non-Owners : pas de lecture/modif |
-| `TJM`, `Total_TTC` | **Cible HITL** : `user.Access != "OWNER" and user.Equipe.Role_ACL != "Admin" and user.Email != rec.E_mail` | `-RU` | Refus sauf Owner, Admin, ou **sa** ligne |
+| `TJM`, `Total_TTC` | `user.Access != "OWNER" and user.Equipe.Role_ACL != "Admin" and user.Email != rec.E_mail` | `-RU` | Owner / Admin : toutes les fiches ; chacun lit sa ligne ; collègues non (**appliqué** 2026-09-19) |
 | `E_mail` | `user.Access != "OWNER" and user.Equipe.Role_ACL != "Admin"` | `-RU` | Seuls Owner et Admin voient ou modifient l’e-mail |
 | `Role_ACL` | idem (non-Owner et non-Admin) | `-RU` | Rôle réservé Owner/Admin |
 | Multi (voir ci-dessous) | `user.Equipe.Role_ACL == "Freelance"` | `-RU` | Freelances : seulement Prénom-Nom, Equipe, Spécialité |
 | `*` (Toutes) | `user.Access == "OWNER" or user.Equipe.Role_ACL == "Admin"` | `+CRUD` | Écriture complète |
 | `*` (Toutes) | `True` | `+R -CUD` | Autres : lecture seule |
 
-### HITL Owner — assouplir TJM / Total TTC (#60)
+**Vérif MCP** (règle ressource `Equipe` / `TJM,Total_TTC`) : condition et `-RU` conformes ; mémo UI : « Admin voit toutes les fiches ; chacun voit sa ligne ; les collègues non. »
 
-**Interdit** : mutation ACL via API / MCP. Uniquement UI Grist (Owner).
-
-1. Ouvrir le document → **Access Rules**
-2. Sur la ressource `Equipe` / colonnes `TJM,Total_TTC`, remplacer la condition actuelle  
-   `user.Access != "OWNER"`  
-   par :  
-   `user.Access != "OWNER" and user.Equipe.Role_ACL != "Admin" and user.Email != rec.E_mail`  
-   (permissions inchangées : `-RU`)
-3. Mémo suggéré : « Owner / Admin : toutes les fiches ; chacun lit son TJM et Total TTC ; les collègues non »
-4. Tester **Voir comme** : Freelance A sur sa fiche → montants visibles ; Freelance A sur fiche B → masqués ; Admin → toutes les fiches
-5. Mettre à jour ce snapshot + journal [`matrice-droits.md`](matrice-droits.md)
+**Point d’attention** : l’e-mail du compte Grist doit être **identique** à `Equipe.E_mail` (sinon « soi » ne matche pas — voir [prep-equipe.md](prep-equipe.md)).
 
 Le widget ([#61](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/61)) n’affiche TJM / Total TTC que si Grist les livre (nombre lisible).
 

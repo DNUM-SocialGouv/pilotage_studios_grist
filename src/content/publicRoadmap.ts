@@ -361,13 +361,13 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     themeId: "equipe",
     title: "Voir son TJM, pas celui des collègues",
     summary:
-      "Un freelance peut consulter son tarif journalier (et Total TTC) sur sa fiche ; les autres freelances ne les voient pas. Réglage Access Rules (Owner).",
-    status: "current",
+      "Un freelance peut consulter son tarif journalier (et Total TTC) sur sa fiche ; les autres freelances ne les voient pas.",
+    status: "done",
     issueUrl:
       "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/60",
     guide: {
       lead: "Le TJM est sensible : on le protège pour les collègues, tout en permettant à chacun de retrouver le sien sur sa propre fiche.",
-      stepsIntro: "Après réglage des droits dans le document (Owner) :",
+      stepsIntro: "Avec les droits du document :",
       steps: [
         "Sur ma fiche : mon TJM et mon Total TTC sont lisibles",
         "Sur la fiche d’un collègue : pas de montants",

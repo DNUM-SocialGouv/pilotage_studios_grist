@@ -35,14 +35,14 @@ Voir la carte d’identité d’une personne, en lecture seule — mise en page 
 
 ### TJM et Total TTC
 
-Le widget **n’invente pas** les droits : il affiche ces montants seulement quand Grist les livre (nombre lisible). Cible métier :
+Le widget **n’invente pas** les droits : il affiche ces montants seulement quand Grist les livre (nombre lisible).
 
 | Qui regarde | TJM / Total TTC |
 |-------------|-----------------|
 | Owner / Admin | Toutes les fiches |
-| Freelance sur **sa** fiche | Oui |
+| Freelance sur **sa** fiche | Oui (e-mail compte = `Equipe.E_mail`) |
 | Freelance sur une **autre** fiche | Non (masqué) |
 
-Règle Grist à appliquer par un **Owner** (UI Access Rules) : voir [access-rules.md](../roles/access-rules.md) § TJM / Total TTC. Tant que l’ancienne règle « non-Owner → refus » reste en place, seuls les Owners document voient ces champs.
+Règle Grist **appliquée** : voir [access-rules.md](../roles/access-rules.md).
 
 Mention « Consultation uniquement ». Pas de bouton créer / éditer. Pas d’e-mail dans le widget. Pas de TJM / Total TTC sur la **liste**.
