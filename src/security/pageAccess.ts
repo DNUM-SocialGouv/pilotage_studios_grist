@@ -12,7 +12,7 @@ export const PAGE_ACCESS_KEYS = [
   "Page_pv",
   "Page_produits",
   "Page_missions",
-  "Page_intervenants",
+  "Page_equipe",
   "Page_recap_porteurs",
 ] as const;
 
@@ -32,7 +32,7 @@ export const PAGE_ACCESS_FAIL_CLOSED: PageAccessFlags = {
   Page_pv: false,
   Page_produits: true,
   Page_missions: true,
-  Page_intervenants: true,
+  Page_equipe: true,
   Page_recap_porteurs: false,
 };
 
@@ -45,15 +45,15 @@ export const PAGE_ACCESS_ALL_OPEN: PageAccessFlags = {
   Page_pv: true,
   Page_produits: true,
   Page_missions: true,
-  Page_intervenants: true,
+  Page_equipe: true,
   Page_recap_porteurs: true,
 };
 
 /** Route (pathname) → clé `Page_*`. Routes hors map = non filtrées. */
 export const ROUTE_PAGE_ACCESS: ReadonlyArray<{ prefix: string; key: PageAccessKey }> = [
   { prefix: "/outils/recap-porteurs", key: "Page_recap_porteurs" },
-  { prefix: "/equipe", key: "Page_intervenants" },
-  { prefix: "/intervenants", key: "Page_intervenants" },
+  { prefix: "/equipe", key: "Page_equipe" },
+  { prefix: "/intervenants", key: "Page_equipe" },
   { prefix: "/missions", key: "Page_missions" },
   { prefix: "/produits", key: "Page_produits" },
   { prefix: "/bdc", key: "Page_bdc" },

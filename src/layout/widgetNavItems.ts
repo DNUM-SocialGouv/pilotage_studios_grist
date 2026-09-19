@@ -8,6 +8,8 @@ export type WidgetNavLink = {
   status?: WidgetNavStatus;
   /** Lien icône seule (libellé via `text` en `fr-sr-only`). */
   iconOnly?: "home";
+  /** Visible seulement si rôle Admin (indépendant des `Page_*`). */
+  adminOnly?: boolean;
 };
 
 export type WidgetNavGroup = {
@@ -40,6 +42,12 @@ export const WIDGET_NAV_ITEMS: WidgetNavItem[] = [
     text: "Outils",
     children: [
       { text: "Récap porteurs", href: "/outils/recap-porteurs", status: "in_progress" },
+      {
+        text: "Droits des pages",
+        href: "/outils/droits-pages",
+        status: "in_progress",
+        adminOnly: true,
+      },
     ],
   },
 ];
@@ -67,18 +75,31 @@ export function isGroupActive(pathname: string, group: WidgetNavGroup): boolean 
   return group.children.some((child) => isNavActive(pathname, child.href));
 }
 
-/** Filtre nav selon drapeaux `Page_*` (couche 5). */
+/**
+ * Filtre nav selon drapeaux `Page_*` (couche 5).
+ * `adminOnly` : lien réservé rôle Admin (indépendant de `Page_*`).
+ */
 export function filterNavItemsByPageAccess(
   items: WidgetNavItem[],
   canAccess: (href: string) => boolean,
+  options?: { isAdmin?: boolean },
 ): WidgetNavItem[] {
+  const isAdmin = options?.isAdmin === true;
   const out: WidgetNavItem[] = [];
   for (const item of items) {
     if (isWidgetNavGroup(item)) {
-      const children = item.children.filter((child) => canAccess(child.href));
+      const children = item.children.filter((child) => {
+        if (child.adminOnly && !isAdmin) {
+          return false;
+        }
+        return canAccess(child.href);
+      });
       if (children.length > 0) {
         out.push({ ...item, children });
       }
+      continue;
+    }
+    if (item.adminOnly && !isAdmin) {
       continue;
     }
     if (canAccess(item.href)) {
