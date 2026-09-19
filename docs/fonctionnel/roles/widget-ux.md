@@ -27,8 +27,10 @@ Suivi des cellules : [`matrice-droits.md`](matrice-droits.md) tableau **A**.
 ## Technique widget
 
 - Lecture `Acl_profil` **après** boot PA (`useGristPa` + `fetchAllowlistedTable` via `useAclProfilData` / `AclProfilProvider`) — retries si fetch précoce ; `refresh()` après update `Droits_pages`
+- Si aucune ligne visible : **création auto** (`createOwnAclProfilRecord` — `E_mail` = compte connecté via jeton session) puis relecture ; ACL serveur `+CR` soi obligatoire
+- Si plusieurs lignes pour le même e-mail : le widget garde la **plus ancienne** (id minimal) ; nettoyer les doublons à la main dans Grist
 - Pendant `loading` profil : **nav complète hors liens Admin** (pas de flash fail-closed ni flash lien Droits) ; gardes affichent « Vérification… »
-- Si profil `empty` / `error` : alerte sous la nav + fail-closed budget
+- Si profil `empty` / `error` (create ou lecture en échec) : alerte sous la nav + fail-closed budget
 - Filtre `WIDGET_NAV_ITEMS` : `filterNavItemsByPageAccess` + `canAccessHref` + option `isAdmin` (liens `adminOnly`)
 - Garde pages : `PageAccessGuard` sur les routes mappées (refus → `/`) ; `AdminRoleGuard` pour `/outils/droits-pages`
 - Helpers purs : `src/security/pageAccess.ts` ; thématiques Admin : `src/utils/droitsPagesThemes.ts`

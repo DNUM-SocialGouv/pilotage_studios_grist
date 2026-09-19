@@ -77,7 +77,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | `Realise.Calcul_TTC` | RU | — | — | — | **Appliqué (Owner)** | `-RU` si non-Owner |
 | `Missions` / `Missions_enfants` | CRUD | R/U dép. | R ses missions | R / — | Non (rôle) | |
 | `Retours` (feedback) | CR (widget liste) | C (+ R liste V1) | C (+ R liste V1) | C ? | Widget create + **Read liste V1** | Kanban Feedback : affichage **ouverts seulement** (hors Fait/Écarté) ; ACL Read partagée |
-| `Acl_profil` | CR soi | CR soi | CR soi | CR soi | **Appliqué** | `user.Email == rec.E_mail` → `+CR` ; `True` → `-CRUD` |
+| `Acl_profil` | CRUD | CRUD | CR soi | CR soi | **Appliqué** | Owner/Admin `+CRUD` ; `user.Email == rec.E_mail` → `+CR` ; `True` → `-CRUD` |
 | `Droits_pages` | CRUD (Owner / Admin) | — | — | — | **Appliqué** | Owner **ou** `Role_ACL == Admin` → `+CRUD` ; `True` → `-CRUD` |
 | Structure (S) | Owner | — | — | — | **Appliqué** | `-S` si non-Owner |
 
@@ -95,6 +95,8 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-09-19 | `Acl_profil` : règle Owner/Admin `+CRUD` (ménage doublons) ; widget création auto fiche absente | 4, 5, 6 | [#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55) |
+| 2026-09-19 | Widget : création auto `Acl_profil` si fiche absente (create allowlisté) ; doublons → id minimal | 4, 5 | [#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55) |
 | 2026-09-19 | Access Rules `Equipe` : CRUD Owner/Admin ; lecture seule ailleurs ; Freelance 3 colonnes ; widget annuaire adapté | 5, 6 | [#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55) |
 | 2026-09-19 | Renommage Grist `Page_intervenants` → `Page_equipe` (`Droits_pages` + `Acl_profil`) ; widget aligné | 4, 5 | [#54](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/54) |
 | 2026-09-19 | Page Admin `/outils/droits-pages` : édition `Droits_pages` par thématiques ; Équipe configurable via cette page | 4, 5 | [#54](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/54) |

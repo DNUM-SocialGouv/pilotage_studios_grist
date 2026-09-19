@@ -44,6 +44,16 @@ Colonnes **laissées visibles** aux Freelances : `Prenom_Nom`, `Equipe`, `Specia
 
 **UI Grist** : le CRUD se configure sur le bloc **Toutes** (`*`), pas dans un bloc colonnes (qui n’offre que R/U).
 
+## Table `Acl_profil` (pont droits pages)
+
+| Condition | Droits | Mémo (texte d’aide UI) |
+|-----------|--------|------------------------|
+| `user.Access == "OWNER" or user.Equipe.Role_ACL == "Admin"` | `+CRUD` | Owner du document ou Admin (rôle Équipe) : peuvent créer, lire, modifier et supprimer toutes les fiches — utile pour le ménage (doublons) et le dépannage. |
+| `user.Email == rec.E_mail` | `+CR` | Chaque personne peut créer et lire uniquement sa propre fiche (e-mail = compte connecté). Le widget s’en sert pour afficher les bons menus. Pas de modification ni de suppression par soi-même. |
+| `True` | `-CRUD` | Par défaut, personne d’autre ne voit ni n’écrit dans cette table. Sans cette règle de refus, les droits seraient trop ouverts. |
+
+Le widget crée automatiquement la fiche si elle manque (`E_mail` seulement ; `Role` / `Page_*` restent des formules Grist).
+
 ## Autres règles (inchangées, synthèse)
 
 | Table | Colonnes | Condition | Droits |
@@ -51,7 +61,7 @@ Colonnes **laissées visibles** aux Freelances : `Prenom_Nom`, `Equipe`, `Specia
 | `*` | `*` | `user.Access != OWNER` | `-S` |
 | `Previsionnel` / summaries / `Realise.Calcul_TTC` / `BDC` montants / Malt… | (sensibles) | non-Owner | `-RU` |
 | `Constatations` | `*` | `user.Access == "OWNER"` | `+CRUD` |
-| `Acl_profil` | `*` | `user.Email == rec.E_mail` → `+CR` ; `True` → `-CRUD` | |
+| `Acl_profil` | `*` | Owner **ou** Admin → `+CRUD` ; `user.Email == rec.E_mail` → `+CR` ; `True` → `-CRUD` | Ménage Owner/Admin ; create/read soi ; reste interdit |
 | `Droits_pages` | `*` | Owner **ou** Admin → `+CRUD` ; `True` → `-CRUD` | |
 
 ## Widget

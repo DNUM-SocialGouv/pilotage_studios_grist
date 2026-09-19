@@ -6,17 +6,20 @@
  * - `Missions` : create + update (drawer mission master — pas de delete).
  * - `Missions_enfants` : create + update (drawer prestation — pas de delete).
  * - `Droits_pages` : update only (page Admin droits des écrans — pas de create/delete).
+ * - `Acl_profil` : create only (fiche session auto si absente — pas d’update/delete).
  */
 
 export const RETOURS_TABLE_ID = "Retours";
 export const MISSIONS_TABLE_ID = "Missions";
 export const MISSIONS_ENFANTS_TABLE_ID = "Missions_enfants";
 export const DROITS_PAGES_TABLE_ID = "Droits_pages";
+export const ACL_PROFIL_TABLE_ID = "Acl_profil";
 
 export const WRITE_TABLE_ALLOWLIST = [
   RETOURS_TABLE_ID,
   MISSIONS_TABLE_ID,
   MISSIONS_ENFANTS_TABLE_ID,
+  ACL_PROFIL_TABLE_ID,
 ] as const;
 
 export type WritableTableId = (typeof WRITE_TABLE_ALLOWLIST)[number];

@@ -105,7 +105,7 @@ export function WidgetNav() {
           }
           description={
             status === "empty"
-              ? "Aucune fiche Acl_profil pour votre compte : les menus budget restent masqués (fail-closed). Contactez un administrateur Pilotage."
+              ? "Impossible de créer ou lire votre fiche d’accès (Acl_profil) : les menus budget restent masqués. Rechargez la page ou contactez un administrateur Pilotage."
               : `Impossible de lire vos droits d’écrans${error ? ` (${error})` : ""}. Les menus budget restent masqués. Réessayez ou contactez un administrateur.`
           }
         />

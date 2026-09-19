@@ -9,6 +9,7 @@ import {
   pageAccessFromRecord,
   type PageAccessFlags,
 } from "../security/pageAccess";
+import { createOwnAclProfilRecord } from "../utils/aclProfilGristWrite";
 
 export type AclProfilStatus = "loading" | "ok" | "empty" | "error" | "standalone";
 
@@ -51,9 +52,19 @@ function sleep(ms: number): Promise<void> {
   });
 }
 
+/** Parmi les lignes visibles (ACL soi), garder la plus ancienne. */
+function pickAclProfilRow(
+  rows: Array<Record<string, unknown> & { id: number }>,
+): (Record<string, unknown> & { id: number }) | null {
+  if (rows.length === 0) {
+    return null;
+  }
+  return [...rows].sort((a, b) => a.id - b.id)[0] ?? null;
+}
+
 /**
  * Charge la ligne `Acl_profil` visible pour l’utilisateur courant (ACL serveur).
- * Attend la fin du boot PA (`grist.ready`) avant le premier `fetchTable`.
+ * Si absente : crée automatiquement la fiche (E_mail = compte connecté), puis relit.
  * Hors iframe / standalone : tous les écrans ouverts (préview locale).
  */
 export function useAclProfilData(): AclProfilData {
@@ -97,7 +108,6 @@ export function useAclProfilData(): AclProfilData {
       return;
     }
 
-    // Attendre que useGristPaData ait appelé grist.ready (évite fetchTable trop tôt).
     if (pa.loading) {
       setState((prev) =>
         prev.status === "loading" ? prev : { ...INITIAL_WITHOUT_REFRESH },
@@ -114,6 +124,8 @@ export function useAclProfilData(): AclProfilData {
         error: null,
       }));
       let lastError: string | null = null;
+      let createdOnce = false;
+
       for (let attempt = 1; attempt <= FETCH_MAX_ATTEMPTS; attempt += 1) {
         try {
           const raw = await fetchAllowlistedTable("Acl_profil");
@@ -121,7 +133,35 @@ export function useAclProfilData(): AclProfilData {
             return;
           }
           const rows = recordsFromFetchTable(raw);
-          if (rows.length === 0) {
+          const row = pickAclProfilRow(rows);
+
+          if (!row) {
+            if (!createdOnce) {
+              createdOnce = true;
+              try {
+                await createOwnAclProfilRecord();
+              } catch (createErr) {
+                if (cancelled) {
+                  return;
+                }
+                setState({
+                  status: "empty",
+                  role: null,
+                  flags: PAGE_ACCESS_FAIL_CLOSED,
+                  error:
+                    createErr instanceof Error
+                      ? createErr.message
+                      : String(createErr),
+                });
+                return;
+              }
+              if (cancelled) {
+                return;
+              }
+              await sleep(FETCH_RETRY_MS);
+              // Relire après create (nouvelle tentative dans la boucle).
+              continue;
+            }
             setState({
               status: "empty",
               role: null,
@@ -130,7 +170,7 @@ export function useAclProfilData(): AclProfilData {
             });
             return;
           }
-          const row = rows[0]!;
+
           const fields: Record<string, unknown> = { ...row };
           delete fields.id;
           setState({

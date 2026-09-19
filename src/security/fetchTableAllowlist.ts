@@ -1,5 +1,5 @@
 import type { GristFetchTableResult } from "../gristTypes";
-import { DROITS_PAGES_TABLE_ID, RETOURS_TABLE_ID } from "./writeTableAllowlist.ts";
+import { DROITS_PAGES_TABLE_ID, RETOURS_TABLE_ID, ACL_PROFIL_TABLE_ID } from "./writeTableAllowlist.ts";
 
 /**
  * Allowlist des tableIds passés à `docApi.fetchTable`.
@@ -28,8 +28,9 @@ export const BDC_DEPENSES_TABLE_IDS = [
 /**
  * Pont droits pages (couche 4→5) : lu juste après le boot PA (nav / gardes).
  * Une ligne session via Access Rules ; formules `Page_*` ← `Droits_pages`.
+ * Create auto widget si absente — voir `aclProfilGristWrite`.
  */
-export const ACL_PROFIL_TABLE_ID = "Acl_profil" as const;
+export { ACL_PROFIL_TABLE_ID };
 
 /** Réexport pour les appelants lecture (page Admin). */
 export { DROITS_PAGES_TABLE_ID };
