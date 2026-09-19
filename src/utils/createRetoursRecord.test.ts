@@ -34,6 +34,16 @@ describe("feedbackAuteurOptionsFromEquipeTable", () => {
     assert.equal(options[0]?.value, "1");
     assert.equal(options[1]?.label, "Zoé (z@example.com)");
   });
+
+  it("ignore un e-mail CENSORED (ACL colonnes)", () => {
+    const table = {
+      id: [1],
+      Prenom_Nom: ["Alice"],
+      E_mail: ["CENSORED"],
+    } as GristFetchTableResult;
+    const options = feedbackAuteurOptionsFromEquipeTable(table);
+    assert.deepEqual(options, [{ value: "1", name: "Alice", email: "", label: "Alice" }]);
+  });
 });
 
 describe("buildRetoursFields", () => {

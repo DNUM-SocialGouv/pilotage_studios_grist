@@ -320,17 +320,19 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     title: "Table Équipe et accès Grist",
     summary:
       "Nettoyer la table des personnes et protéger les données selon les rôles, côté Grist.",
-    status: "later",
+    status: "done",
     issueUrl:
       "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55",
     guide: {
-      lead: "La table Équipe sert à la fois d’annuaire et de base pour les droits. Les règles Grist doivent coller aux rôles, sans exposer TJM ou e-mail à tout le monde.",
-      stepsIntro: "Ce travail, plus tard :",
+      lead: "La table Équipe sert d’annuaire et de base pour les droits. Les Freelances ne voient que nom, département et spécialité ; e-mail et TJM restent protégés.",
+      stepsIntro: "Vous pouvez :",
       steps: [
-        "Compléter rôles et e-mails utiles",
-        "Tester « voir comme » selon le rôle",
-        "Garder le widget sur la carte d’identité seulement",
+        "Ouvrir l’annuaire Équipe dans le widget",
+        "En « Voir comme » Freelance : seulement trois colonnes dans Grist et dans le widget",
+        "Constater que e-mail et TJM restent masqués hors Owner/Admin",
       ],
+      pagePath: "/equipe",
+      pageLinkLabel: "Ouvrir Équipe",
     },
   },
   {

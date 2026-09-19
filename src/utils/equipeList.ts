@@ -18,6 +18,29 @@ export function uniqueSortedLabels(values: readonly (string | undefined)[]): str
   return Array.from(set).sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
 }
 
+/** True si au moins une fiche a une valeur non vide pour ce champ. */
+export function equipeFieldReadable(
+  members: readonly EquipeMember[],
+  key: keyof EquipeMember,
+): boolean {
+  return members.some((member) => {
+    const raw = member[key];
+    return typeof raw === "string" && raw.trim() !== "";
+  });
+}
+
+/**
+ * Filtre statut initial : « Actif » seulement si la colonne Statut est lisible
+ * et contient cette valeur (sinon « tous » — cas Freelance / ACL colonnes).
+ */
+export function initialEquipeStatutFilter(members: readonly EquipeMember[]): string {
+  const options = uniqueSortedLabels(members.map((m) => m.Statut));
+  if (options.includes(EQUIPE_DEFAULT_STATUT)) {
+    return EQUIPE_DEFAULT_STATUT;
+  }
+  return "";
+}
+
 export type EquipeListFilters = {
   search: string;
   statut: string;

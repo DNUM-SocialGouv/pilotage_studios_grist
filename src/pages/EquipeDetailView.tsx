@@ -82,26 +82,36 @@ export function EquipeDetailView() {
           <dt className="fr-text--sm">Département</dt>
           <dd className="fr-mb-0">{dash(member.Equipe)}</dd>
         </div>
-        <div className="fr-col-6 fr-col-md-4">
-          <dt className="fr-text--sm">Portage</dt>
-          <dd className="fr-mb-0">{dash(member.Portage)}</dd>
-        </div>
-        <div className="fr-col-6 fr-col-md-4">
-          <dt className="fr-text--sm">Statut</dt>
-          <dd className="fr-mb-0">{dash(member.Statut)}</dd>
-        </div>
-        <div className="fr-col-6 fr-col-md-4">
-          <dt className="fr-text--sm">Spécialité</dt>
-          <dd className="fr-mb-0">{dash(member.Specialite)}</dd>
-        </div>
-        <div className="fr-col-6 fr-col-md-4">
-          <dt className="fr-text--sm">Rôle</dt>
-          <dd className="fr-mb-0">{dash(member.Role_ACL)}</dd>
-        </div>
-        <div className="fr-col-12">
-          <dt className="fr-text--sm">Missions en cours</dt>
-          <dd className="fr-mb-0">{dash(member.Missions_en_cours)}</dd>
-        </div>
+        {member.Portage?.trim() ? (
+          <div className="fr-col-6 fr-col-md-4">
+            <dt className="fr-text--sm">Portage</dt>
+            <dd className="fr-mb-0">{dash(member.Portage)}</dd>
+          </div>
+        ) : null}
+        {member.Statut?.trim() ? (
+          <div className="fr-col-6 fr-col-md-4">
+            <dt className="fr-text--sm">Statut</dt>
+            <dd className="fr-mb-0">{dash(member.Statut)}</dd>
+          </div>
+        ) : null}
+        {member.Specialite?.trim() ? (
+          <div className="fr-col-6 fr-col-md-4">
+            <dt className="fr-text--sm">Spécialité</dt>
+            <dd className="fr-mb-0">{dash(member.Specialite)}</dd>
+          </div>
+        ) : null}
+        {member.Role_ACL?.trim() ? (
+          <div className="fr-col-6 fr-col-md-4">
+            <dt className="fr-text--sm">Rôle</dt>
+            <dd className="fr-mb-0">{dash(member.Role_ACL)}</dd>
+          </div>
+        ) : null}
+        {member.Missions_en_cours?.trim() ? (
+          <div className="fr-col-12">
+            <dt className="fr-text--sm">Missions en cours</dt>
+            <dd className="fr-mb-0">{dash(member.Missions_en_cours)}</dd>
+          </div>
+        ) : null}
       </dl>
     </div>
   );

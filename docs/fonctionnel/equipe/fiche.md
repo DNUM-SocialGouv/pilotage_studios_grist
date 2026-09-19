@@ -25,6 +25,7 @@ Voir la carte d’identité d’une personne, en lecture seule.
 
 ## Champs
 
-Département, portage, statut, spécialité, rôle, missions en cours.
+Toujours : département.  
+Autres (portage, statut, spécialité, rôle, missions en cours) : affichés seulement s’ils sont lisibles (Access Rules).
 
 Pas de bouton créer / éditer. Pas de TJM, montant ni e-mail.

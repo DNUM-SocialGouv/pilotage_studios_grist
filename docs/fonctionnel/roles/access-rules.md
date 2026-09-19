@@ -1,85 +1,62 @@
 # Access Rules — état des lieux
 
-Snapshot **2026-09-18** (soir) — MCP `grist_get_acl_rules`, doc `nei9DeARs5Eo`.  
+Snapshot **2026-09-19** — MCP `grist_get_acl_rules`, doc `nei9DeARs5Eo`.  
 Anonymisé — pas de noms ni d’emails.
 
 ## En clair
 
-Les colonnes sensibles (montants, TJM, devis…) sont **refusées aux non-Owners** (`-RU`). La table **Constatations** est **Owners only** via une règle d’**autorisation** explicite (`user.Access == "OWNER"` → `+CRUD`). La propriété d’utilisateur Equipe reste en place.
+Les montants sensibles restent **Owners only**. La table **Équipe** a maintenant des règles par **rôle** : lecture seule pour la plupart, écriture Owner/Admin, e-mail et TJM protégés, et les **Freelances** ne voient que Prénom-Nom · département · Spécialité.
 
 ## Synthèse
 
 | Indicateur | Valeur |
 |------------|--------|
-| Règles actives (hors entrée User Attribute) | **16** |
-| User Attributes | **OK** — Name `Equipe`, lookup `user.Email` → `Equipe.E_mail` |
-| Pattern montants / colonnes sensibles | **`-RU`** si `user.Access != "OWNER"` → **Owners only** |
-| Distinction Admin / Resp. / Freelance / Invité dans les règles | **pas encore** (toujours Owner vs reste) |
-| Colonne `Equipe.Role` | 4 Admin — via `user.Equipe.Role` |
-| Ménage BDC | **fait** |
-| Correction sens des droits | **fait** (soir) — était `+RU` (erreur), maintenant `-RU` |
+| User Attributes | **OK** — Name `Equipe`, `user.Email` → `Equipe.E_mail` |
+| Montants / TJM / BDC… | **`-RU`** si non-Owner (inchangé) |
+| `Equipe` table (`*`) | Owner **ou** `Role_ACL == Admin` → `+CRUD` ; `True` → `+R -CUD` |
+| `Equipe.E_mail` | non-(Owner\|Admin) → `-RU` |
+| `Equipe` colonnes « hors carte » | `Role_ACL == Freelance` → `-RU` (voir liste) |
+| Distinction rôles sur `Realise` | **pas encore** (#47) |
 
 ## Lecture des permissions
 
-Légende : **R**ead · **U**pdate · **C**reate · **D**elete · **S**chema.
-
 | Préfixe | Sens |
 |---------|------|
-| `+RU` | **Accorder** lecture + modification |
-| `-RU` | **Refuser** lecture + modification |
-| `-S` | Refuser modification de structure |
+| `+RU` / `+CRUD` | Accorder |
+| `-RU` / `-CUD` | Refuser |
+| `-S` | Refuser structure |
 
-Forme typique des règles sensibles (corrigée) :
+## Table `Equipe` (détail #55)
 
-> Si la personne **n’est pas** Owner → **`-RU`** sur ces colonnes → seuls les Owners les voient / modifient.
+| Colonnes | Condition | Droits | Mémo |
+|----------|-----------|--------|------|
+| `TJM`, `Total_TTC` | `user.Access != "OWNER"` | `-RU` | Non-Owners : pas de lecture/modif |
+| `E_mail` | `user.Access != "OWNER" and user.Equipe.Role_ACL != "Admin"` | `-RU` | Seuls Owner et Admin voient ou modifient l’e-mail |
+| `Role_ACL` | idem (non-Owner et non-Admin) | `-RU` | Rôle réservé Owner/Admin |
+| Multi (voir ci-dessous) | `user.Equipe.Role_ACL == "Freelance"` | `-RU` | Freelances : seulement Prénom-Nom, Equipe, Spécialité |
+| `*` (Toutes) | `user.Access == "OWNER" or user.Equipe.Role_ACL == "Admin"` | `+CRUD` | Écriture complète |
+| `*` (Toutes) | `True` | `+R -CUD` | Autres : lecture seule |
 
-## Inventaire des 16 règles
+Colonnes du bloc Freelance (`-RU`) :  
+`Portage`, `Statut`, `Nb_Jours`, `Ordinateur2`, `Nom_BdC`, `BdC_Chorus`, `Droits_d_acces_aux_tables_budgets`, `Mode_recrutement`, `Missions_en_cours`, `Missions_en_cours2`, `Portage_en_cours`, `Role_ACL`.
 
-| # | Table | Colonnes | Condition | Droits |
-|---|-------|----------|-----------|--------|
-| 1 | `*` (tout le document) | `*` | `user.Access != OWNER` | **-S** |
-| 2 | `Equipe` | `TJM`, `Total_TTC` | `user.Access != "OWNER"` | **-RU** |
-| 3 | `Previsionnel` | `TTC` | idem | **-RU** |
-| 4 | `Realise` | `Calcul_TTC` | idem | **-RU** |
-| 5 | `BDC` | Devis, Montant_TTC, Nombre_de_CRA, Plateforme, SOFIANE, Solde_TTC_CRA, Solde_TTC_MALT, Total_TTC_CRA | idem | **-RU** |
-| 6 | `Previsionnel_summary_Freelance` | `TTC` | idem | **-RU** |
-| 7 | `Realise_summary_Periode` | Calcul_TTC, TTC, TTC_Design, TTC_Product, TTC_RGAA, TTC_RU, Total_TTC | idem | **-RU** |
-| 8 | `Realise_summary_Periode_Produit` | `Calcul_TTC` | idem | **-RU** |
-| 9 | `Realise_summary_Produit` | `Calcul_TTC` | idem | **-RU** |
-| 10 | `Realise_summary_Intervenants_Periode` | `Calcul_TTC` | idem | **-RU** |
-| 11 | `Realise_summary_Equipe_Periode_Produit` | `Calcul_TTC` | idem | **-RU** |
-| 12 | `Realise_summary_Equipe_Periode` | `Calcul_TTC` | idem | **-RU** |
-| 13 | `Realise_summary_Equipe_Financeur_Periode` | `Calcul_TTC` | idem | **-RU** |
-| 14 | `Realise_summary_Equipe` | Calcul_TTC, TTC, TJM, TTC_Design, TTC_Product, TTC_RGAA, TTC_RU, Total_TTC | idem | **-RU** |
-| 15 | `MARS_26_Export_Factures_Malt_` | `*` | idem | **-RU** |
-| 16 | `Constatations` | `*` | `user.Access == "OWNER"` | **+CRUD** (Owners only — pattern allow explicite) |
+Colonnes **laissées visibles** aux Freelances : `Prenom_Nom`, `Equipe`, `Specialite` (+ héritage lecture table).
 
-## Point d’attention
+**UI Grist** : le CRUD se configure sur le bloc **Toutes** (`*`), pas dans un bloc colonnes (qui n’offre que R/U).
 
-**Constatations** : pattern **allow Owners** (`user.Access == "OWNER"` → `+CRUD`). Les non-Owners n’ont pas de règle d’autorisation → pas d’accès.  
-Si la page disparaît pour un Owner : vérifier « Voir en tant que », puis que cette règle allow est bien présente (ne garder **pas** seulement un deny `!= OWNER` sans allow).
+## Autres règles (inchangées, synthèse)
 
-**App sœur** : la clé API agit comme un utilisateur Grist. Elle doit être un **Owner** (ou bénéficier d’une règle dédiée) pour lire/écrire Constatations et les tables protégées.
+| Table | Colonnes | Condition | Droits |
+|-------|----------|-----------|--------|
+| `*` | `*` | `user.Access != OWNER` | `-S` |
+| `Previsionnel` / summaries / `Realise.Calcul_TTC` / `BDC` montants / Malt… | (sensibles) | non-Owner | `-RU` |
+| `Constatations` | `*` | `user.Access == "OWNER"` | `+CRUD` |
+| `Acl_profil` | `*` | `user.Email == rec.E_mail` → `+CR` ; `True` → `-CRUD` | |
+| `Droits_pages` | `*` | Owner **ou** Admin → `+CRUD` ; `True` → `-CRUD` | |
 
-## Tables métier du widget **sans** règle ACL dédiée sur le reste
+## Widget
 
-`Plan_activite`, `Missions`, `Missions_enfants`, `Retours`, `Commandes_Sofiane`, `Equipe` hors TJM/TTC, `Realise` hors `Calcul_TTC`  
-→ Accès = partage document + **-S** global. Les lignes CRA hors montant restent lisibles pour les non-Owners (voulu pour plus tard / freelances).
-
-## Tranche UX « écrans selon rôle » — avancement
-
-1. ~~Propriété d’utilisateur `Equipe`~~ — **fait**
-2. ~~Sens des règles montants (`-RU`)~~ — **fait**
-3. ~~Pont `Acl_profil` + `Droits_pages`~~ — **fait**
-4. ~~Code widget nav + gardes~~ — **fait**
-5. Règles par `Equipe.Role_ACL` sur `Realise` — **plus tard**
-
-### Tables droits (2026-09-18 soir)
-
-| Table | Règles |
-|-------|--------|
-| `Acl_profil` | `user.Email == rec.E_mail` → `+CR` ; `True` → `-CRUD` |
-| `Droits_pages` | `user.Access == "OWNER" or user.Equipe.Role_ACL == "Admin"` → `+CRUD` ; `True` → `-CRUD` |
+L’annuaire `/equipe` s’adapte : si `Statut` / `Portage` / `Rôle` sont illisibles, pas de filtre Actif forcé, colonnes masquées. Feedback : e-mail `CENSORED` ignoré dans le select auteur.
 
 ## Qui peut modifier quoi
 
@@ -92,4 +69,4 @@ Si la page disparaît pour un Owner : vérifier « Voir en tant que », puis que
 ## Référence
 
 - [Intro Access Rules](https://support.getgrist.com/access-rules/)
-- MCP : `grist_get_acl_rules` · [matrice-droits.md](matrice-droits.md)
+- MCP : `grist_get_acl_rules` · [matrice-droits.md](matrice-droits.md) · issue [#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55)

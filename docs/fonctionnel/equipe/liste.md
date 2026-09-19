@@ -25,8 +25,12 @@ Consulter les personnes du pilotage, filtrer, ouvrir une fiche.
 
 ## Filtres
 
-Recherche (nom, département, portage, spécialité, rôle), **statut** (défaut **Actif**), **département**, **portage**, **rôle**. Lien **Réinitialiser les filtres** visible seulement si au moins un filtre diffère du défaut (revient au statut Actif). Combinables.
+Recherche (champs visibles), **département**.  
+**Statut** (défaut **Actif** si la colonne est lisible), **portage**, **rôle** : affichés seulement si au moins une valeur est lisible (sinon masqués — cas Freelance / ACL).
+
+Si `Statut` est illisible, aucun filtre Actif n’est appliqué (évite une liste vide).
 
 ## Colonnes
 
-Nom (lien `/equipe/:id`), département, portage, statut, spécialité, rôle.
+Toujours : Nom (lien), département.  
+Conditionnelles : portage, statut, spécialité, rôle — seulement si lisibles via Access Rules.

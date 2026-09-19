@@ -4,7 +4,9 @@ import type { EquipeMember } from "../types.ts";
 import {
   EQUIPE_DEFAULT_STATUT,
   equipeDisplayName,
+  equipeFieldReadable,
   filterEquipeMembers,
+  initialEquipeStatutFilter,
   uniqueSortedLabels,
 } from "./equipeList.ts";
 
@@ -45,6 +47,32 @@ describe("uniqueSortedLabels", () => {
       "Design",
       "Tech",
     ]);
+  });
+});
+
+describe("initialEquipeStatutFilter / equipeFieldReadable", () => {
+  it("propose Actif quand la colonne Statut est lisible", () => {
+    assert.equal(initialEquipeStatutFilter([alice, bob]), EQUIPE_DEFAULT_STATUT);
+    assert.equal(equipeFieldReadable([alice, bob], "Statut"), true);
+  });
+
+  it("laisse le filtre vide si Statut censuré (Freelance)", () => {
+    const restricted: EquipeMember[] = [
+      { id: 1, Prenom_Nom: "Alice", Equipe: "Design", Specialite: "UX" },
+      { id: 2, Prenom_Nom: "Bob", Equipe: "Tech", Specialite: "Dev" },
+    ];
+    assert.equal(initialEquipeStatutFilter(restricted), "");
+    assert.equal(equipeFieldReadable(restricted, "Statut"), false);
+    assert.equal(equipeFieldReadable(restricted, "Portage"), false);
+    assert.equal(equipeFieldReadable(restricted, "Equipe"), true);
+    const rows = filterEquipeMembers(restricted, {
+      search: "",
+      statut: "",
+      equipe: "",
+      portage: "",
+      role: "",
+    });
+    assert.equal(rows.length, 2);
   });
 });
 
