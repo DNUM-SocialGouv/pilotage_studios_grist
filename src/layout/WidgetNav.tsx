@@ -5,6 +5,7 @@ import { MainNavigation } from "@codegouvfr/react-dsfr/MainNavigation";
 import type { MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation";
 import { useAclProfil } from "../AclProfilContext";
 import { canAccessHref } from "../security/pageAccess";
+import { isAdminRole } from "../utils/droitsPagesThemes";
 import {
   WIDGET_NAV_ITEMS,
   filterNavItemsByPageAccess,
@@ -41,14 +42,19 @@ function navItemText(link: WidgetNavLink): ReactNode {
 export function WidgetNav() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { status, flags, error } = useAclProfil();
+  const { status, flags, error, role } = useAclProfil();
 
-  // Pendant le chargement : nav complète (évite flash Admin Budget → masqué → réouvert).
-  // Après résolution : filtre selon `Page_*` (fail-closed si empty/error).
+  // Pendant le chargement : nav complète hors liens adminOnly (évite flash non-Admin).
+  // Après résolution : filtre selon `Page_*` (fail-closed si empty/error) + Admin.
+  const isAdmin = status === "standalone" || isAdminRole(role);
   const navTree =
     status === "loading"
-      ? WIDGET_NAV_ITEMS
-      : filterNavItemsByPageAccess(WIDGET_NAV_ITEMS, (href) => canAccessHref(href, flags));
+      ? filterNavItemsByPageAccess(WIDGET_NAV_ITEMS, () => true, { isAdmin: false })
+      : filterNavItemsByPageAccess(
+          WIDGET_NAV_ITEMS,
+          (href) => canAccessHref(href, flags),
+          { isAdmin },
+        );
 
   const onNavClick = (href: string) => (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();

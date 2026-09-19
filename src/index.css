@@ -975,3 +975,38 @@ button.fr-link:disabled {
 .pilotage-drawer-dialog--sm .pilotage-drawer-dialog__panel {
   width: min(48rem, 94vw);
 }
+
+/* Matrice Admin Droits des pages : un tableau par thème, toggles alignés. */
+.droits-pages-matrix .fr-table__content > table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.droits-pages-matrix__col-screen {
+  width: 32%;
+}
+
+.droits-pages-matrix__col-role {
+  width: 17%;
+}
+
+.droits-pages-matrix__role-head,
+.droits-pages-matrix__cell {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.droits-pages-matrix__cell .fr-toggle {
+  margin: 0 auto;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.droits-pages-matrix__cell .fr-toggle__label {
+  margin-left: 0;
+  min-height: 1.5rem;
+}
+
+.droits-pages-matrix__cell .fr-toggle__label::before {
+  margin-top: 0;
+}

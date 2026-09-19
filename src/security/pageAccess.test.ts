@@ -41,7 +41,7 @@ describe("pageAccessFromRecord", () => {
       Page_pv: false,
       Page_produits: true,
       Page_missions: true,
-      Page_intervenants: true,
+      Page_equipe: true,
       Page_recap_porteurs: false,
     });
     assert.equal(flags.Page_cra, true);
@@ -57,8 +57,9 @@ describe("pageAccessKeyForPath / canAccessPath", () => {
     assert.equal(pageAccessKeyForPath("/bdc"), "Page_bdc");
     assert.equal(pageAccessKeyForPath("/cra"), "Page_cra");
     assert.equal(pageAccessKeyForPath("/outils/recap-porteurs"), "Page_recap_porteurs");
-    assert.equal(pageAccessKeyForPath("/equipe"), "Page_intervenants");
-    assert.equal(pageAccessKeyForPath("/equipe/4"), "Page_intervenants");
+    assert.equal(pageAccessKeyForPath("/outils/droits-pages"), null);
+    assert.equal(pageAccessKeyForPath("/equipe"), "Page_equipe");
+    assert.equal(pageAccessKeyForPath("/equipe/4"), "Page_equipe");
     assert.equal(pageAccessKeyForPath("/analyse"), null);
   });
 
@@ -66,6 +67,7 @@ describe("pageAccessKeyForPath / canAccessPath", () => {
     assert.equal(canAccessPath("/cra", PAGE_ACCESS_FAIL_CLOSED), false);
     assert.equal(canAccessPath("/missions", PAGE_ACCESS_FAIL_CLOSED), true);
     assert.equal(canAccessPath("/equipe", PAGE_ACCESS_FAIL_CLOSED), true);
+    assert.equal(canAccessPath("/outils/droits-pages", PAGE_ACCESS_FAIL_CLOSED), true);
     assert.equal(canAccessPath("/cra", PAGE_ACCESS_ALL_OPEN), true);
   });
 });

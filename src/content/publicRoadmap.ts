@@ -298,18 +298,20 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     themeId: "equipe",
     title: "Qui voit l’écran Équipe",
     summary:
-      "Décider, selon le rôle, si le menu et la page Équipe restent visibles.",
-    status: "next",
+      "Les Admin règlent, rôle par rôle, si le menu Équipe (et les autres écrans) restent visibles.",
+    status: "done",
     issueUrl:
       "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/54",
     guide: {
-      lead: "Aujourd’hui l’annuaire est ouvert à tous les rôles. Il faudra trancher si un freelance ou un invité doit le voir.",
-      stepsIntro: "Quand ce travail sera fait :",
+      lead: "Plus besoin d’ouvrir une table Grist obscure : une page Admin regroupe les cases par thèmes (Budget, Équipe…).",
+      stepsIntro: "Pour un Admin :",
       steps: [
-        "La matrice des droits dira oui ou non pour chaque rôle",
-        "Le menu suivra cette décision",
-        "Les montants et l’e-mail resteront hors de cet écran",
+        "Ouvrir Outils → Droits des pages",
+        "Cocher ou décocher Équipe (et les autres écrans) pour chaque rôle",
+        "Enregistrer : le menu suit ; les montants et l’e-mail restent hors de l’annuaire",
       ],
+      pagePath: "/outils/droits-pages",
+      pageLinkLabel: "Ouvrir Droits des pages",
     },
   },
   {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useGristPa } from "../GristPaContext";
 import { recordsFromFetchTable } from "../gristMap";
 import { getEmbedTrust } from "../security/embedTrust";
@@ -17,9 +17,11 @@ export type AclProfilData = {
   role: string | null;
   flags: PageAccessFlags;
   error: string | null;
+  /** Recharge la fiche session (après update `Droits_pages`). */
+  refresh: () => void;
 };
 
-const INITIAL: AclProfilData = {
+const INITIAL_WITHOUT_REFRESH: Omit<AclProfilData, "refresh"> = {
   status: "loading",
   role: null,
   flags: PAGE_ACCESS_FAIL_CLOSED,
@@ -56,7 +58,12 @@ function sleep(ms: number): Promise<void> {
  */
 export function useAclProfilData(): AclProfilData {
   const pa = useGristPa();
-  const [state, setState] = useState<AclProfilData>(INITIAL);
+  const [state, setState] = useState<Omit<AclProfilData, "refresh">>(INITIAL_WITHOUT_REFRESH);
+  const [reloadToken, setReloadToken] = useState(0);
+
+  const refresh = useCallback(() => {
+    setReloadToken((n) => n + 1);
+  }, []);
 
   useEffect(() => {
     const trust = getEmbedTrust();
@@ -92,13 +99,20 @@ export function useAclProfilData(): AclProfilData {
 
     // Attendre que useGristPaData ait appelé grist.ready (évite fetchTable trop tôt).
     if (pa.loading) {
-      setState((prev) => (prev.status === "loading" ? prev : INITIAL));
+      setState((prev) =>
+        prev.status === "loading" ? prev : { ...INITIAL_WITHOUT_REFRESH },
+      );
       return;
     }
 
     let cancelled = false;
 
     const load = async () => {
+      setState((prev) => ({
+        ...prev,
+        status: prev.status === "ok" ? "ok" : "loading",
+        error: null,
+      }));
       let lastError: string | null = null;
       for (let attempt = 1; attempt <= FETCH_MAX_ATTEMPTS; attempt += 1) {
         try {
@@ -151,7 +165,7 @@ export function useAclProfilData(): AclProfilData {
     return () => {
       cancelled = true;
     };
-  }, [pa.loading, pa.outsideGrist, pa.untrustedEmbed]);
+  }, [pa.loading, pa.outsideGrist, pa.untrustedEmbed, reloadToken]);
 
-  return state;
+  return { ...state, refresh };
 }

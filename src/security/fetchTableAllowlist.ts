@@ -1,5 +1,5 @@
 import type { GristFetchTableResult } from "../gristTypes";
-import { RETOURS_TABLE_ID } from "./writeTableAllowlist";
+import { DROITS_PAGES_TABLE_ID, RETOURS_TABLE_ID } from "./writeTableAllowlist.ts";
 
 /**
  * Allowlist des tableIds passés à `docApi.fetchTable`.
@@ -27,10 +27,12 @@ export const BDC_DEPENSES_TABLE_IDS = [
 
 /**
  * Pont droits pages (couche 4→5) : lu juste après le boot PA (nav / gardes).
- * Une ligne session via Access Rules ; formules `Page_*` ← `Droits_pages`
- * (table admin, hors allowlist widget).
+ * Une ligne session via Access Rules ; formules `Page_*` ← `Droits_pages`.
  */
 export const ACL_PROFIL_TABLE_ID = "Acl_profil" as const;
+
+/** Réexport pour les appelants lecture (page Admin). */
+export { DROITS_PAGES_TABLE_ID };
 
 /** `Retours` : colonne Feedback accueil — lu après boot PA (pas au même tick que `Plan_activite`). */
 
@@ -39,6 +41,7 @@ export const FETCH_TABLE_ALLOWLIST = [
   ...RELATED_TABLE_IDS,
   ...BDC_DEPENSES_TABLE_IDS,
   ACL_PROFIL_TABLE_ID,
+  DROITS_PAGES_TABLE_ID,
   RETOURS_TABLE_ID,
 ] as const;
 

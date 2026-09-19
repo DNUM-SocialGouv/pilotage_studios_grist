@@ -1,5 +1,6 @@
 import { MemoryRouter, Navigate, Route, Routes, useParams } from "react-router-dom";
 import { AclProfilProvider } from "./AclProfilContext";
+import { AdminRoleGuard } from "./components/AdminRoleGuard";
 import { PageAccessGuard } from "./components/PageAccessGuard";
 import { GristPaProvider } from "./GristPaContext";
 import { WidgetLayout } from "./layout/WidgetLayout";
@@ -12,6 +13,7 @@ import { PaDetailView } from "./pages/PaDetailView";
 import { PaListView } from "./pages/PaListView";
 import { CraListView } from "./pages/CraListView";
 import { CraRecapPorteursPage } from "./pages/CraRecapPorteursPage";
+import { DroitsPagesAdminPage } from "./pages/DroitsPagesAdminPage";
 import { EquipeDetailView } from "./pages/EquipeDetailView";
 import { EquipeLayout } from "./pages/EquipeLayout";
 import { EquipeListView } from "./pages/EquipeListView";
@@ -123,6 +125,14 @@ export default function App() {
                   <PageAccessGuard>
                     <CraRecapPorteursPage />
                   </PageAccessGuard>
+                }
+              />
+              <Route
+                path="outils/droits-pages"
+                element={
+                  <AdminRoleGuard>
+                    <DroitsPagesAdminPage />
+                  </AdminRoleGuard>
                 }
               />
               <Route

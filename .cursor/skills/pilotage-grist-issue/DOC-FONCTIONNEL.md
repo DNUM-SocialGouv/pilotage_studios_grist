@@ -27,6 +27,7 @@ Repérer si le module est **documenté**, **stub** ou **à documenter**.
 | `/equipe`, `/equipe/:id` | `equipe/` |
 | `/cra` | `cra/` |
 | `/outils/recap-porteurs` | `cra/` (récap porteurs) |
+| `/outils/droits-pages` | `roles/` ([droits-pages-admin.md](../../../docs/fonctionnel/roles/droits-pages-admin.md)) |
 | `/produits`… (stubs) | À créer au livrable |
 | `/analyse` | N/A — hors scope widget |
 

@@ -34,11 +34,11 @@ Allowlist lecture : `src/security/fetchTableAllowlist.ts`. Pas d’écriture `Eq
 | Liste | [liste.md](liste.md) | `/equipe` |
 | Fiche | [fiche.md](fiche.md) | `/equipe/:id` |
 
-Le menu dit **Équipe**. L’ancien chemin `/intervenants` redirige vers `/equipe`. Le drapeau de page Grist reste `Page_intervenants` (pas de renommage dans ce ticket).
+Le menu dit **Équipe**. L’ancien chemin `/intervenants` redirige vers `/equipe`. Le drapeau de page Grist est `Page_equipe` (`Droits_pages` / `Acl_profil`).
 
 ## Hors scope (widget)
 
 - Création / modification d’une fiche
-- Qui voit le menu (voir [#54](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/54))
+- Qui voit le menu : page Admin [Droits des pages](../roles/droits-pages-admin.md) ([#54](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/54))
 - Access Rules Grist sur la table (voir [#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55))
 - Missions ou CRA liées depuis la fiche

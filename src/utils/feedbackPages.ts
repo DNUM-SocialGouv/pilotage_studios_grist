@@ -9,6 +9,7 @@ export const FEEDBACK_PAGE_OPTIONS = [
   "Équipe",
   "Prestation / CRA",
   "Récap porteurs",
+  "Droits des pages",
   "Procès-verbaux",
   "Évaluations",
   "Analyse",
@@ -50,6 +51,12 @@ export function pageOptionFromPathname(pathname: string): FeedbackPageOption {
     pathname.startsWith("/outils/recap-porteurs/")
   ) {
     return "Récap porteurs";
+  }
+  if (
+    pathname === "/outils/droits-pages" ||
+    pathname.startsWith("/outils/droits-pages/")
+  ) {
+    return "Droits des pages";
   }
   if (pathname === "/pv" || pathname.startsWith("/pv/")) {
     return "Procès-verbaux";

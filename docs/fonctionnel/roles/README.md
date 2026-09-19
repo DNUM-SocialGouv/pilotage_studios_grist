@@ -29,6 +29,7 @@ Schéma canvas (IDE) : `roles-droits-schema.canvas.tsx`.
 | Fichier | Contenu |
 |---------|---------|
 | **[matrice-droits.md](matrice-droits.md)** | **Registre vivant** — écrans × rôles, tables × rôles, journal |
+| [droits-pages-admin.md](droits-pages-admin.md) | Page Admin `/outils/droits-pages` (édition `Droits_pages`) |
 | [access-rules.md](access-rules.md) | Snapshot ACL Grist + procédure |
 | [inventaire-partage.md](inventaire-partage.md) | Synthèse anonymisée du partage |
 | [prep-equipe.md](prep-equipe.md) | Colonne Role + backlog emails |

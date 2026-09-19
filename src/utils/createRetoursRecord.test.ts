@@ -10,10 +10,11 @@ import {
 import type { GristFetchTableResult } from "../gristTypes.ts";
 
 describe("writeTableAllowlist", () => {
-  it("autorise Retours, Missions et Missions_enfants", () => {
+  it("autorise Retours, Missions et Missions_enfants en create ; Droits_pages en update only", () => {
     assert.equal(isWritableTableId("Retours"), true);
     assert.equal(isWritableTableId("Missions"), true);
     assert.equal(isWritableTableId("Missions_enfants"), true);
+    assert.equal(isWritableTableId("Droits_pages"), false);
     assert.equal(isWritableTableId("Feedback_Identite"), false);
     assert.equal(isWritableTableId("BDC"), false);
     assert.throws(() => assertWritableTableId("Plan_activite"), /non autorisée/);
@@ -117,6 +118,7 @@ describe("pageOptionFromPathname", () => {
     assert.equal(pageOptionFromPathname("/equipe/2"), "Équipe");
     assert.equal(pageOptionFromPathname("/intervenants"), "Équipe");
     assert.equal(pageOptionFromPathname("/outils/recap-porteurs"), "Récap porteurs");
+    assert.equal(pageOptionFromPathname("/outils/droits-pages"), "Droits des pages");
     assert.equal(pageOptionFromPathname("/inconnu"), "Autre");
   });
 });
