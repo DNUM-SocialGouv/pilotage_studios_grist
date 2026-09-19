@@ -746,11 +746,19 @@ span.fr-tag.fr-tag--beige-gris-galet {
   min-width: 0;
 }
 
+/* Avatar 4rem : badges en haut, nom en bas — même emprise verticale */
+.equipe-fiche-title-row__identity {
+  align-items: flex-start;
+}
+
 .equipe-fiche-title-row__text {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  justify-content: space-between;
+  gap: 0.25rem;
+  min-height: 4rem;
   min-width: 0;
+  padding-block: 0;
 }
 
 .mission-fiche-title-row .fr-badges-group,
@@ -758,9 +766,23 @@ span.fr-tag.fr-tag--beige-gris-galet {
   margin-bottom: 0;
 }
 
+.equipe-fiche-title-row .fr-badges-group {
+  align-items: center;
+  line-height: 1;
+  margin-top: 0;
+}
+
+.equipe-fiche-title-row .fr-badges-group .fr-badge {
+  margin: 0;
+}
+
 .mission-fiche-title-row__title,
 .equipe-fiche-title-row__title {
   line-height: 1.2;
+}
+
+.equipe-fiche-title-row__title {
+  margin-top: auto;
 }
 
 .equipe-avatar {
