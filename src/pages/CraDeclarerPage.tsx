@@ -149,28 +149,47 @@ export function CraDeclarerPage() {
       const periodeTs = periodeTimestampForMonthKey(monthKey);
       let created = 0;
       let updated = 0;
-      for (const row of rows) {
-        const fields = buildRealiseDeclarerFields({
-          intervenantId: data.self.id,
-          missionId: row.missionId,
-          enfantId: row.enfantId,
-          nbJours: row.nbJours,
-          taches: row.taches,
-          periodeTs,
-          equipeLabel: data.self.equipeLabel,
-        });
-        if (row.existingRealiseId != null) {
-          await updateRealiseRecord(row.existingRealiseId, fields);
-          updated += 1;
-        } else {
-          await createRealiseRecord(fields);
-          created += 1;
+      let failedLabel: string | null = null;
+      try {
+        for (const row of rows) {
+          const label =
+            rowsByEnfantId.get(row.enfantId)?.prestationLibelle ??
+            `prestation #${row.enfantId}`;
+          failedLabel = label;
+          const fields = buildRealiseDeclarerFields({
+            intervenantId: data.self.id,
+            missionId: row.missionId,
+            enfantId: row.enfantId,
+            nbJours: row.nbJours,
+            taches: row.taches,
+            periodeTs,
+            equipeLabel: data.self.equipeLabel,
+          });
+          if (row.existingRealiseId != null) {
+            await updateRealiseRecord(row.existingRealiseId, fields);
+            updated += 1;
+          } else {
+            await createRealiseRecord(fields);
+            created += 1;
+          }
         }
+        failedLabel = null;
+        setSaveOk(
+          `Carnet enregistré : ${created} création${created > 1 ? "s" : ""}, ${updated} mise${updated > 1 ? "s" : ""} à jour.`,
+        );
+        await data.reload();
+      } catch (err) {
+        const done = created + updated;
+        const detail =
+          err instanceof Error ? err.message : "Enregistrement impossible.";
+        if (done > 0) {
+          await data.reload();
+          throw new Error(
+            `${done} ligne${done > 1 ? "s" : ""} enregistrée${done > 1 ? "s" : ""}${failedLabel ? `, puis échec sur « ${failedLabel} »` : ""} : ${detail}`,
+          );
+        }
+        throw err instanceof Error ? err : new Error(detail);
       }
-      setSaveOk(
-        `Carnet enregistré : ${created} création${created > 1 ? "s" : ""}, ${updated} mise${updated > 1 ? "s" : ""} à jour.`,
-      );
-      await data.reload();
     } catch (err) {
       setSaveError(
         err instanceof Error ? err.message : "Enregistrement impossible.",

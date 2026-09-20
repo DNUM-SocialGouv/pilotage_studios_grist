@@ -145,7 +145,8 @@ export function craDeclarerTotalHt(
 /**
  * Prépare les lignes à enregistrer.
  * Une ligne avec jours vide et description vide est ignorée (pas d’écriture).
- * Jours = 0 avec description est accepté (mise à jour explicite).
+ * Jours = 0 explicite avec description est accepté (mise à jour volontaire).
+ * Jours vide + description (ou ligne existante) → erreur (évite d’écraser à 0).
  */
 export function buildCraDeclarerSaveRows(
   drafts: CraDeclarerDraft[],
@@ -162,13 +163,12 @@ export function buildCraDeclarerSaveRows(
     if (!joursRaw && !taches && d.existingRealiseId == null) {
       continue;
     }
-    if (!joursRaw && !taches && d.existingRealiseId != null) {
-      // Ligne existante vidée : on exige au moins les jours pour update.
+    if (!joursRaw) {
       throw new Error(
         `Indiquez le nombre de jours pour « ${meta.prestationLibelle} » (ou laissez la saisie précédente).`,
       );
     }
-    const nbJours = parseCraDeclarerJours(joursRaw === "" ? "0" : joursRaw);
+    const nbJours = parseCraDeclarerJours(joursRaw);
     if (nbJours == null) {
       continue;
     }

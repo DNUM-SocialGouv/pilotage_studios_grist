@@ -176,6 +176,57 @@ describe("craDeclarer filtre + upsert", () => {
     assert.equal(save[0]?.nbJours, 2);
   });
 
+  it("refuse jours vides si description ou Realise existant (pas d’écrasement à 0)", () => {
+    const rowsByEnfantId = new Map(
+      craDeclarerPrestationGroups(5, enfants, missions)
+        .flatMap((g) => g.prestations)
+        .map((r) => [r.enfantId, r] as const),
+    );
+    assert.throws(
+      () =>
+        buildCraDeclarerSaveRows(
+          [
+            {
+              enfantId: 1,
+              nbJours: "",
+              taches: "Seule la description",
+              existingRealiseId: 50,
+            },
+          ],
+          rowsByEnfantId,
+        ),
+      /nombre de jours/,
+    );
+    assert.throws(
+      () =>
+        buildCraDeclarerSaveRows(
+          [
+            {
+              enfantId: 1,
+              nbJours: "",
+              taches: "Nouvelle saisie sans jours",
+              existingRealiseId: null,
+            },
+          ],
+          rowsByEnfantId,
+        ),
+      /nombre de jours/,
+    );
+    const zeroOk = buildCraDeclarerSaveRows(
+      [
+        {
+          enfantId: 1,
+          nbJours: "0",
+          taches: "Zéro volontaire",
+          existingRealiseId: 50,
+        },
+      ],
+      rowsByEnfantId,
+    );
+    assert.equal(zeroOk.length, 1);
+    assert.equal(zeroOk[0]?.nbJours, 0);
+  });
+
   it("construit les champs Realise sans montants", () => {
     const fields = buildRealiseDeclarerFields({
       intervenantId: 5,
