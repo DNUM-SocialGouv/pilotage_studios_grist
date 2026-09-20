@@ -58,6 +58,7 @@ export const ROUTE_PAGE_ACCESS: ReadonlyArray<{ prefix: string; key: PageAccessK
   { prefix: "/produits", key: "Page_produits" },
   { prefix: "/bdc", key: "Page_bdc" },
   { prefix: "/pa", key: "Page_pa" },
+  // `/cra/declarer` : hors Page_* (garde rôle Freelance/Admin) — doit précéder `/cra`.
   { prefix: "/cra", key: "Page_cra" },
   { prefix: "/pv", key: "Page_pv" },
   { prefix: "/", key: "Page_accueil" },
@@ -91,6 +92,10 @@ export function pageAccessFromRecord(
 
 export function pageAccessKeyForPath(pathname: string): PageAccessKey | null {
   const path = pathname.split("?")[0] || "/";
+  // Déclaration CRA : pas de drapeau Page_* (voir CraDeclarerRoleGuard).
+  if (path === "/cra/declarer" || path.startsWith("/cra/declarer/")) {
+    return null;
+  }
   for (const { prefix, key } of ROUTE_PAGE_ACCESS) {
     if (prefix === "/") {
       if (path === "/") {

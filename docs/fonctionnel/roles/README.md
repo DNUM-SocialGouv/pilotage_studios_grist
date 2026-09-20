@@ -2,7 +2,7 @@
 
 Documentation **métier / ACL** (*Access Control List* = règles de qui peut faire quoi) du document Grist `nei9DeARs5Eo` (Pilotage studio V2). Complète [`SECURITY.md`](../../../SECURITY.md).
 
-**Statut (2026-09-19)** : inventaire anonymisé · `Equipe.Role_ACL` · User Attribute `Equipe` **fait** · pont `Acl_profil` + UX nav/gardes **fait** · Access Rules **Equipe** par rôle **fait** (#55) · règles `Realise` **plus tard** (#47).
+**Statut (2026-09-19)** : inventaire anonymisé · `Equipe.Role_ACL` · User Attribute `Equipe` **fait** · pont `Acl_profil` + UX nav/gardes **fait** · Access Rules **Equipe** par rôle **fait** (#55) · déclaration CRA widget V1 **fait** (`/cra/declarer`) · règles `Realise` **plus tard** (#47).
 
 > **Repo public** — ne jamais committer de listes nominatives (noms, emails, inventaires `/access`). Utiliser le MCP en local ; ne garder dans `docs/` que des agrégats.
 

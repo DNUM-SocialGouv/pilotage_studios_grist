@@ -10,6 +10,11 @@ export type WidgetNavLink = {
   iconOnly?: "home";
   /** Visible seulement si rôle Admin (indépendant des `Page_*`). */
   adminOnly?: boolean;
+  /**
+   * Visible seulement si rôle Freelance ou Admin (déclaration CRA).
+   * Indépendant des `Page_*` — ne passe pas par `canAccess`.
+   */
+  craDeclarerOnly?: boolean;
 };
 
 export type WidgetNavGroup = {
@@ -32,6 +37,12 @@ export const WIDGET_NAV_ITEMS: WidgetNavItem[] = [
       { text: "Bons de commande", href: "/bdc", status: "in_progress" },
       { text: "Plans d’activité", href: "/pa", status: "in_progress" },
       { text: "Prestation / CRA", href: "/cra", status: "in_progress" },
+      {
+        text: "Déclarer mon CRA",
+        href: "/cra/declarer",
+        status: "in_progress",
+        craDeclarerOnly: true,
+      },
       { text: "Procès-verbaux", href: "/pv", status: "coming" },
     ],
   },
@@ -68,6 +79,10 @@ export function isNavActive(pathname: string, href: string): boolean {
   if (href === "/") {
     return pathname === "/";
   }
+  // Liste Admin CRA : ne pas rester active sur `/cra/declarer`.
+  if (href === "/cra") {
+    return pathname === "/cra";
+  }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -78,19 +93,24 @@ export function isGroupActive(pathname: string, group: WidgetNavGroup): boolean 
 /**
  * Filtre nav selon drapeaux `Page_*` (couche 5).
  * `adminOnly` : lien réservé rôle Admin (indépendant de `Page_*`).
+ * `craDeclarerOnly` : lien réservé Freelance / Admin (indépendant de `Page_*`).
  */
 export function filterNavItemsByPageAccess(
   items: WidgetNavItem[],
   canAccess: (href: string) => boolean,
-  options?: { isAdmin?: boolean },
+  options?: { isAdmin?: boolean; canDeclareCra?: boolean },
 ): WidgetNavItem[] {
   const isAdmin = options?.isAdmin === true;
+  const canDeclareCra = options?.canDeclareCra === true;
   const out: WidgetNavItem[] = [];
   for (const item of items) {
     if (isWidgetNavGroup(item)) {
       const children = item.children.filter((child) => {
         if (child.adminOnly && !isAdmin) {
           return false;
+        }
+        if (child.craDeclarerOnly) {
+          return canDeclareCra;
         }
         return canAccess(child.href);
       });
@@ -100,6 +120,12 @@ export function filterNavItemsByPageAccess(
       continue;
     }
     if (item.adminOnly && !isAdmin) {
+      continue;
+    }
+    if (item.craDeclarerOnly) {
+      if (canDeclareCra) {
+        out.push(item);
+      }
       continue;
     }
     if (canAccess(item.href)) {

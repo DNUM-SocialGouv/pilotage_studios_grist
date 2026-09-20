@@ -26,6 +26,7 @@ Repérer si le module est **documenté**, **stub** ou **à documenter**.
 | `/missions`, `/missions/:id` | `missions/` |
 | `/equipe`, `/equipe/:id` | `equipe/` |
 | `/cra` | `cra/` |
+| `/cra/declarer` | `cra/` (déclaration) |
 | `/outils/recap-porteurs` | `cra/` (récap porteurs) |
 | `/outils/droits-pages` | `roles/` ([droits-pages-admin.md](../../../docs/fonctionnel/roles/droits-pages-admin.md)) |
 | `/produits`… (stubs) | À créer au livrable |

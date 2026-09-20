@@ -15,9 +15,9 @@ La table **Équipe** a des règles par **rôle** : lecture seule pour la plupart
 | Montants BDC / summaries… | **`-RU`** si non-Owner (inchangé) |
 | `Equipe.TJM`, `Total_TTC` | **Appliqué** — refus sauf Owner, Admin, ou soi (`user.Email == rec.E_mail`) |
 | `Equipe` table (`*`) | Owner **ou** `Role_ACL == Admin` → `+CRUD` ; `True` → `+R -CUD` |
-| `Equipe.E_mail` | non-(Owner\|Admin) → `-RU` |
+| `Equipe.E_mail` | **HITL #33** : deny hors soi (comme TJM) — voir détail |
 | `Equipe` colonnes « hors carte » | `Role_ACL == Freelance` → `-RU` (voir liste) |
-| Distinction rôles sur `Realise` | **pas encore** (#47) |
+| Distinction rôles sur `Realise` | **pas encore** (#47) — après la V1 déclaration widget |
 
 ## Lecture des permissions
 
@@ -32,7 +32,8 @@ La table **Équipe** a des règles par **rôle** : lecture seule pour la plupart
 | Colonnes | Condition | Droits | Mémo |
 |----------|-----------|--------|------|
 | `TJM`, `Total_TTC` | `user.Access != "OWNER" and user.Equipe.Role_ACL != "Admin" and user.Email != rec.E_mail` | `-RU` | Owner / Admin : toutes les fiches ; chacun lit sa ligne ; collègues non (**appliqué** 2026-09-19) |
-| `E_mail` | `user.Access != "OWNER" and user.Equipe.Role_ACL != "Admin"` | `-RU` | Seuls Owner et Admin voient ou modifient l’e-mail |
+| `E_mail` (**HITL #33 — à poser comme le TJM**) | `user.Access != "OWNER" and user.Equipe.Role_ACL != "Admin" and user.Email != rec.E_mail` | `-RU` | **Une seule règle de refus**, calquée sur TJM. Owner / Admin voient tout ; chacun lit **sa** ligne ; collègues non. |
+| ~~`E_mail` deny global + `+R` soi~~ | — | — | **Ne pas** cumuler un `-RU` « non-Owner/Admin » **et** un `+R` soi : en Grist le refus l’emporte, le freelance ne lit toujours pas son e-mail. |
 | `Role_ACL` | idem (non-Owner et non-Admin) | `-RU` | Rôle réservé Owner/Admin |
 | Multi (voir ci-dessous) | `user.Equipe.Role_ACL == "Freelance"` | `-RU` | Freelances : seulement Prénom-Nom, Equipe, Spécialité |
 | `*` (Toutes) | `user.Access == "OWNER" or user.Equipe.Role_ACL == "Admin"` | `+CRUD` | Écriture complète |

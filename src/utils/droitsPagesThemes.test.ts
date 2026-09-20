@@ -11,6 +11,7 @@ import {
   DROITS_PAGES_THEMES,
   editablePageAccessKeys,
   isAdminRole,
+  isCraDeclarerRole,
 } from "./droitsPagesThemes.ts";
 import { pageOptionFromPathname } from "./feedbackPages.ts";
 import {
@@ -18,6 +19,7 @@ import {
   WIDGET_NAV_ITEMS,
   isWidgetNavGroup,
 } from "../layout/widgetNavItems.ts";
+import { PAGE_ACCESS_FAIL_CLOSED, canAccessHref } from "../security/pageAccess.ts";
 
 describe("Droits_pages allowlists", () => {
   it("autorise lecture et update, pas create", () => {
@@ -45,6 +47,13 @@ describe("droitsPagesThemes", () => {
     assert.equal(isAdminRole("Freelance"), false);
     assert.equal(isAdminRole(null), false);
   });
+
+  it("détecte les rôles déclaration CRA", () => {
+    assert.equal(isCraDeclarerRole("Admin"), true);
+    assert.equal(isCraDeclarerRole("Freelance"), true);
+    assert.equal(isCraDeclarerRole("Invité"), false);
+    assert.equal(isCraDeclarerRole(null), false);
+  });
 });
 
 describe("sanitizeDroitsPagesPatchField", () => {
@@ -69,6 +78,7 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
   it("masque Droits des pages si non Admin", () => {
     const filtered = filterNavItemsByPageAccess(WIDGET_NAV_ITEMS, () => true, {
       isAdmin: false,
+      canDeclareCra: true,
     });
     const outils = filtered.find(
       (item) => isWidgetNavGroup(item) && item.text === "Outils",
@@ -83,6 +93,7 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
   it("montre Droits des pages si Admin", () => {
     const filtered = filterNavItemsByPageAccess(WIDGET_NAV_ITEMS, () => true, {
       isAdmin: true,
+      canDeclareCra: true,
     });
     const outils = filtered.find(
       (item) => isWidgetNavGroup(item) && item.text === "Outils",
@@ -91,6 +102,37 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
     assert.equal(
       outils.children.some((c) => c.href === "/outils/droits-pages"),
       true,
+    );
+  });
+
+  it("montre Déclarer mon CRA pour Freelance même sans Page_cra", () => {
+    const filtered = filterNavItemsByPageAccess(
+      WIDGET_NAV_ITEMS,
+      (href) => canAccessHref(href, PAGE_ACCESS_FAIL_CLOSED),
+      { isAdmin: false, canDeclareCra: true },
+    );
+    const budget = filtered.find(
+      (item) => isWidgetNavGroup(item) && item.text === "Budget",
+    );
+    assert.ok(budget && isWidgetNavGroup(budget));
+    assert.deepEqual(
+      budget.children.map((c) => c.href),
+      ["/cra/declarer"],
+    );
+  });
+
+  it("masque Déclarer mon CRA si rôle non autorisé", () => {
+    const filtered = filterNavItemsByPageAccess(WIDGET_NAV_ITEMS, () => true, {
+      isAdmin: false,
+      canDeclareCra: false,
+    });
+    const budget = filtered.find(
+      (item) => isWidgetNavGroup(item) && item.text === "Budget",
+    );
+    assert.ok(budget && isWidgetNavGroup(budget));
+    assert.equal(
+      budget.children.some((c) => c.href === "/cra/declarer"),
+      false,
     );
   });
 });

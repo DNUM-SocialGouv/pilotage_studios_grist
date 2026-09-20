@@ -5,7 +5,7 @@ import { MainNavigation } from "@codegouvfr/react-dsfr/MainNavigation";
 import type { MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation";
 import { useAclProfil } from "../AclProfilContext";
 import { canAccessHref } from "../security/pageAccess";
-import { isAdminRole } from "../utils/droitsPagesThemes";
+import { isAdminRole, isCraDeclarerRole } from "../utils/droitsPagesThemes";
 import {
   WIDGET_NAV_ITEMS,
   filterNavItemsByPageAccess,
@@ -44,16 +44,20 @@ export function WidgetNav() {
   const navigate = useNavigate();
   const { status, flags, error, role } = useAclProfil();
 
-  // Pendant le chargement : nav complète hors liens adminOnly (évite flash non-Admin).
-  // Après résolution : filtre selon `Page_*` (fail-closed si empty/error) + Admin.
+  // Pendant le chargement : nav complète hors liens adminOnly / craDeclarerOnly (évite flash).
+  // Après résolution : filtre selon `Page_*` (fail-closed si empty/error) + rôles.
   const isAdmin = status === "standalone" || isAdminRole(role);
+  const canDeclareCra = status === "standalone" || isCraDeclarerRole(role);
   const navTree =
     status === "loading"
-      ? filterNavItemsByPageAccess(WIDGET_NAV_ITEMS, () => true, { isAdmin: false })
+      ? filterNavItemsByPageAccess(WIDGET_NAV_ITEMS, () => true, {
+          isAdmin: false,
+          canDeclareCra: false,
+        })
       : filterNavItemsByPageAccess(
           WIDGET_NAV_ITEMS,
           (href) => canAccessHref(href, flags),
-          { isAdmin },
+          { isAdmin, canDeclareCra },
         );
 
   const onNavClick = (href: string) => (e: MouseEvent<HTMLAnchorElement>) => {

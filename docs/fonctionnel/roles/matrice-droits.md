@@ -47,7 +47,8 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 | Accueil | `/` | oui | oui | oui | oui | **Appliqué** (widget + `Droits_pages`) | |
 | Plans d’activité | `/pa` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Couche 5 ; données encore ouvertes (couche 6 plus tard) |
 | Bons de commande | `/bdc` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Idem |
-| Prestation / CRA | `/cra` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Freelances : accès données fins plus tard (couche 6) |
+| Prestation / CRA (liste) | `/cra` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Freelances : déclaration via `/cra/declarer` |
+| Déclarer mon CRA | `/cra/declarer` | **oui** | **non** | **oui** | **non** | **Appliqué** UX (rôle) | Hors `Page_*` ; filtre prestations « moi » (UX) ; ACL `Realise` reportée |
 | Récap porteurs | `/outils/recap-porteurs` | **oui** | **non** | **non** | **non** | **Appliqué** UX | |
 | Procès-verbaux | `/pv` | **oui** | **non** | **non** | **non** | **Appliqué** UX (stub) | |
 | Missions | `/missions` | oui | oui | oui | oui | **Appliqué** UX | |
@@ -73,7 +74,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | `BDC` montants / Devis / Sofiane… | RU | — | — | — | **Appliqué (Owner)** | `-RU` si non-Owner |
 | `Constatations` | CRUD | — | — | — | **Appliqué (Owner)** | `user.Access == "OWNER"` → `+CRUD` |
 | `Commandes_Sofiane` | CRUD | R | — | — | Non (rôle) | |
-| `Realise` (CRA) hors montants | CRUD | R département | **R/U ses lignes** | — | **Non** | Lignes hors `Calcul_TTC` encore ouvertes |
+| `Realise` (CRA) hors montants | CRUD | R département | **R/U ses lignes** (cible) ; widget create/update V1 | — | **Non** (ACL) / **Partiel** (widget) | Écriture widget `#33` V1 ; mur Access Rules reporté (#47) |
 | `Realise.Calcul_TTC` | RU | — | — | — | **Appliqué (Owner)** | `-RU` si non-Owner |
 | `Missions` / `Missions_enfants` | CRUD | R/U dép. | R ses missions | R / — | Non (rôle) | |
 | `Retours` (feedback) | CR (widget liste) | C (+ R liste V1) | C (+ R liste V1) | C ? | Widget create + **Read liste V1** | Kanban Feedback : affichage **ouverts seulement** (hors Fait/Écarté) ; ACL Read partagée |
@@ -95,6 +96,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-09-19 | Déclarer mon CRA (`/cra/declarer`) : nav + garde Freelance/Admin ; filtre UX prestations soi ; écriture `Realise` allowlistée ; ACL `Realise` reportée ; HITL lecture `Equipe.E_mail` soi documentée | 5, 6 (doc) | [#33](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/33) V1 |
 | 2026-09-19 | Équipe : colonne `Avatar` (seed Pixelbot) + affichage liste/fiche ; CSP `img-src` DiceBear ; pas d’écriture widget ni changement ACL Freelance | 5 | [#67](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/pull/67) |
 | 2026-09-19 | Fiche Équipe : section Missions & prestations (lecture lazy `Missions` / `Missions_enfants`, liens `/missions/:id`) ; pas de changement nav / ACL tables | 5 | [#62](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/62) |
 | 2026-09-19 | Access Rules `Equipe.TJM,Total_TTC` : Admin toutes fiches + soi ; vérif MCP OK | 6 | [#60](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/60) HITL Owner |
@@ -119,7 +121,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 ## Questions ouvertes (atelier)
 
 1. Un **Resp. Product** voit-il les BDC Design / Tech, ou seulement Product ?
-2. Un **Freelance** peut-il éditer ses CRA (`Realise`) ou lecture seule au début ?
+2. Un **Freelance** peut-il éditer ses CRA (`Realise`) ? **V1 widget** : oui (jours + description, `/cra/declarer`). Mur Access Rules `Realise` : encore à poser (#47).
 3. Les **Invités** voient-ils le Custom Widget, ou seulement des pages Grist ?
 4. Table `Utilisateurs_ACL` séparée de `Equipe` ?
 5. Les 12 Owners actuels : tous `Admin`, ou réduire le partage Owner ?

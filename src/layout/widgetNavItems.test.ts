@@ -21,6 +21,9 @@ describe("isNavActive", () => {
     assert.equal(isNavActive("/pa/12", "/pa"), true);
     assert.equal(isNavActive("/bdc/3", "/bdc"), true);
     assert.equal(isNavActive("/produits", "/pa"), false);
+    assert.equal(isNavActive("/cra", "/cra"), true);
+    assert.equal(isNavActive("/cra/declarer", "/cra"), false);
+    assert.equal(isNavActive("/cra/declarer", "/cra/declarer"), true);
   });
 });
 
@@ -36,6 +39,7 @@ describe("isGroupActive", () => {
     assert.equal(isGroupActive("/pa", budget), true);
     assert.equal(isGroupActive("/pa/1", budget), true);
     assert.equal(isGroupActive("/cra", budget), true);
+    assert.equal(isGroupActive("/cra/declarer", budget), true);
     assert.equal(isGroupActive("/pv", budget), true);
   });
 
@@ -72,6 +76,7 @@ describe("flattenNavLinks", () => {
       "/bdc",
       "/pa",
       "/cra",
+      "/cra/declarer",
       "/pv",
       "/produits",
       "/missions",
@@ -90,6 +95,7 @@ describe("WIDGET_MODULE_LINKS", () => {
         { text: "Bons de commande", href: "/bdc", status: "in_progress" },
         { text: "Plans d’activité", href: "/pa", status: "in_progress" },
         { text: "Prestation / CRA", href: "/cra", status: "in_progress" },
+        { text: "Déclarer mon CRA", href: "/cra/declarer", status: "in_progress" },
         { text: "Procès-verbaux", href: "/pv", status: "coming" },
         { text: "Produits", href: "/produits", status: "coming" },
         { text: "Missions", href: "/missions", status: "in_progress" },
