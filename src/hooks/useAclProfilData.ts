@@ -16,6 +16,8 @@ export type AclProfilStatus = "loading" | "ok" | "empty" | "error" | "standalone
 export type AclProfilData = {
   status: AclProfilStatus;
   role: string | null;
+  /** E_mail de la fiche Acl_profil (session) — fiable même si le jeton REST n’expose pas l’e-mail. */
+  email: string | null;
   flags: PageAccessFlags;
   error: string | null;
   /** Recharge la fiche session (après update `Droits_pages`). */
@@ -25,6 +27,7 @@ export type AclProfilData = {
 const INITIAL_WITHOUT_REFRESH: Omit<AclProfilData, "refresh"> = {
   status: "loading",
   role: null,
+  email: null,
   flags: PAGE_ACCESS_FAIL_CLOSED,
   error: null,
 };
@@ -44,6 +47,18 @@ function roleFromRecord(fields: Record<string, unknown>): string | null {
     }
   }
   return null;
+}
+
+function emailFromRecord(fields: Record<string, unknown>): string | null {
+  const raw = fields.E_mail;
+  if (typeof raw !== "string") {
+    return null;
+  }
+  const t = raw.trim().toLowerCase();
+  if (!t || !t.includes("@") || t === "censored") {
+    return null;
+  }
+  return t;
 }
 
 function sleep(ms: number): Promise<void> {
@@ -82,6 +97,7 @@ export function useAclProfilData(): AclProfilData {
       setState({
         status: "standalone",
         role: null,
+        email: null,
         flags: PAGE_ACCESS_ALL_OPEN,
         error: null,
       });
@@ -92,6 +108,7 @@ export function useAclProfilData(): AclProfilData {
       setState({
         status: "error",
         role: null,
+        email: null,
         flags: PAGE_ACCESS_FAIL_CLOSED,
         error: "Embed non autorisé : profil d’accès indisponible.",
       });
@@ -102,6 +119,7 @@ export function useAclProfilData(): AclProfilData {
       setState({
         status: "standalone",
         role: null,
+        email: null,
         flags: PAGE_ACCESS_ALL_OPEN,
         error: null,
       });
@@ -147,6 +165,7 @@ export function useAclProfilData(): AclProfilData {
                 setState({
                   status: "empty",
                   role: null,
+                  email: null,
                   flags: PAGE_ACCESS_FAIL_CLOSED,
                   error:
                     createErr instanceof Error
@@ -165,6 +184,7 @@ export function useAclProfilData(): AclProfilData {
             setState({
               status: "empty",
               role: null,
+              email: null,
               flags: PAGE_ACCESS_FAIL_CLOSED,
               error: null,
             });
@@ -176,6 +196,7 @@ export function useAclProfilData(): AclProfilData {
           setState({
             status: "ok",
             role: roleFromRecord(fields),
+            email: emailFromRecord(fields),
             flags: pageAccessFromRecord(fields),
             error: null,
           });
@@ -196,6 +217,7 @@ export function useAclProfilData(): AclProfilData {
       setState({
         status: "error",
         role: null,
+        email: null,
         flags: PAGE_ACCESS_FAIL_CLOSED,
         error: lastError ?? "Lecture Acl_profil impossible.",
       });

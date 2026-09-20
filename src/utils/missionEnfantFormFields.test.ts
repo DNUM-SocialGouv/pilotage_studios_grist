@@ -17,9 +17,10 @@ import {
 import type { MissionEnfant } from "../types.ts";
 
 describe("writeTableAllowlist update", () => {
-  it("autorise update Missions, Missions_enfants et Droits_pages", () => {
+  it("autorise update Missions, Missions_enfants, Realise et Droits_pages", () => {
     assert.equal(isWritableUpdateTableId("Missions"), true);
     assert.equal(isWritableUpdateTableId("Missions_enfants"), true);
+    assert.equal(isWritableUpdateTableId("Realise"), true);
     assert.equal(isWritableUpdateTableId("Droits_pages"), true);
     assert.equal(isWritableUpdateTableId("Retours"), false);
     assert.throws(() => assertWritableUpdateTableId("Retours"), /non autorisée/);

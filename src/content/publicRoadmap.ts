@@ -200,18 +200,20 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     themeId: "cra",
     title: "Envoyer les CRA en fin de mois",
     summary:
-      "Soumettre un CRA, puis le faire relire par un manager — avec des droits adaptés.",
-    status: "next",
+      "Déclarer les jours et une description sur vos prestations — la relecture manager viendra ensuite.",
+    status: "current",
     issueUrl:
       "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/33",
     guide: {
-      lead: "En fin de mois, l’intervenant déclare son activité. Un manager la relit avant qu’elle compte pour le suivi.",
-      stepsIntro: "Quand ce parcours sera livré, vous pourrez :",
+      lead: "En fin de mois, l’intervenant déclare son activité sur ses prestations en cours. Une relecture manager et des droits Grist plus stricts suivront.",
+      stepsIntro: "Dès maintenant, vous pouvez :",
       steps: [
-        "Renseigner ou confirmer les jours réalisés sur vos prestations",
-        "Envoyer le CRA pour relecture (ce n’est plus un brouillon)",
-        "Faire valider ou corriger par un manager, selon les droits",
+        "Ouvrir Déclarer mon CRA et choisir le mois",
+        "Renseigner les jours et une description sur vos prestations en cours",
+        "Enregistrer (création ou mise à jour de vos lignes)",
       ],
+      pagePath: "/cra/declarer",
+      pageLinkLabel: "Ouvrir Déclarer mon CRA",
     },
   },
   {

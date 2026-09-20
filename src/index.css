@@ -1094,3 +1094,185 @@ button.fr-link:disabled {
 .droits-pages-matrix__cell .fr-toggle__label::before {
   margin-top: 0;
 }
+
+/* —— Déclarer mon CRA : carnet de bord (piste UX B) —— */
+/* Le bandeau sort du conteneur (fond pleine largeur, collé au menu)
+   sans déplacer le contenu : le padding compense la marge négative. */
+.cra-carnet.fr-container--fluid {
+  overflow: visible;
+}
+
+.cra-carnet__hero {
+  --cra-carnet-bleed: max(1rem, calc((100vw - 78rem) / 2 + 1rem));
+  margin-top: -1rem;
+  margin-left: calc(-1 * var(--cra-carnet-bleed));
+  margin-right: calc(-1 * var(--cra-carnet-bleed));
+  padding-left: var(--cra-carnet-bleed);
+  padding-right: var(--cra-carnet-bleed);
+  background-color: var(--background-contrast-blue-cumulus);
+}
+
+.cra-carnet__callout.fr-callout {
+  margin-bottom: 0;
+  background-color: transparent;
+  background-image: none;
+}
+
+/* Titre « Mon carnet » : taille + respiration sous le titre (aligné capture). */
+.cra-carnet__callout .fr-callout__title {
+  font-weight: 700;
+  font-size: 1.75rem;
+  line-height: 2.25rem;
+  margin: 0 0 1.5rem;
+  color: var(--text-title-grey);
+}
+
+@media (min-width: 48em) {
+  .cra-carnet__callout .fr-callout__title {
+    font-size: 2.5rem;
+    line-height: 3rem;
+    margin-bottom: 3.75rem; /* 60px */
+  }
+}
+
+.cra-carnet__meta.equipe-fiche-meta-bandeau {
+  background-color: var(--background-default-grey);
+}
+
+.cra-carnet__hero-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem 2rem;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.cra-carnet__hero-identity {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 1rem 1.25rem;
+  min-width: 0;
+  flex: 1 1 18rem;
+}
+
+.cra-carnet__hero-identity-text {
+  min-width: 0;
+  flex: 1 1 12rem;
+}
+
+.cra-carnet__hero-name {
+  line-height: 1.25;
+}
+
+.cra-carnet__hero-equipe {
+  margin-top: 0.15rem;
+}
+
+.cra-carnet__hero-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 0 1 17rem;
+  min-width: 13rem;
+}
+
+.cra-carnet__chapter {
+  border-left: 0.25rem solid var(--border-action-high-blue-france);
+  padding-left: 1rem;
+}
+
+.cra-carnet__chapter:nth-of-type(even) {
+  border-left-color: var(--border-default-grey);
+}
+
+.cra-carnet__entry {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 1rem 1.25rem;
+  padding: 0.75rem 1rem;
+  background: var(--background-alt-grey);
+}
+
+.cra-carnet__entry-jours {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex: 0 0 4.75rem;
+  width: 4.75rem;
+  padding-top: 0.15rem;
+}
+
+.cra-carnet__entry-jours .fr-label {
+  margin-bottom: 0.25rem;
+  font-size: 0.75rem;
+}
+
+.cra-carnet__jours-input.fr-input {
+  width: 100%;
+  max-width: 4.75rem;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 0.35rem 0.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Masque les flèches trop larges sur certains navigateurs sans perdre type=number */
+.cra-carnet__jours-input.fr-input::-webkit-outer-spin-button,
+.cra-carnet__jours-input.fr-input::-webkit-inner-spin-button {
+  margin: 0;
+}
+
+.cra-carnet__entry-jours-unit {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  text-align: center;
+  color: var(--text-mention-grey);
+}
+
+.cra-carnet__entry-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cra-carnet__entry-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.cra-carnet__footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+@media (max-width: 36em) {
+  .cra-carnet__entry {
+    flex-wrap: wrap;
+  }
+
+  .cra-carnet__entry-jours {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.5rem;
+    width: auto;
+    flex: 0 0 auto;
+  }
+
+  .cra-carnet__jours-input.fr-input {
+    width: 4.75rem;
+  }
+
+  .cra-carnet__entry-jours-unit {
+    margin-top: 0;
+  }
+}
+

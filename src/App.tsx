@@ -1,6 +1,7 @@
 import { MemoryRouter, Navigate, Route, Routes, useParams } from "react-router-dom";
 import { AclProfilProvider } from "./AclProfilContext";
 import { AdminRoleGuard } from "./components/AdminRoleGuard";
+import { CraDeclarerRoleGuard } from "./components/CraDeclarerRoleGuard";
 import { PageAccessGuard } from "./components/PageAccessGuard";
 import { GristPaProvider } from "./GristPaContext";
 import { WidgetLayout } from "./layout/WidgetLayout";
@@ -11,6 +12,7 @@ import { MissionsLayout } from "./pages/MissionsLayout";
 import { MissionsListView } from "./pages/MissionsListView";
 import { PaDetailView } from "./pages/PaDetailView";
 import { PaListView } from "./pages/PaListView";
+import { CraDeclarerPage } from "./pages/CraDeclarerPage";
 import { CraListView } from "./pages/CraListView";
 import { CraRecapPorteursPage } from "./pages/CraRecapPorteursPage";
 import { DroitsPagesAdminPage } from "./pages/DroitsPagesAdminPage";
@@ -111,6 +113,14 @@ export default function App() {
               </Route>
               <Route path="intervenants" element={<Navigate to="/equipe" replace />} />
               <Route path="intervenants/:id" element={<IntervenantsToEquipeRedirect />} />
+              <Route
+                path="cra/declarer"
+                element={
+                  <CraDeclarerRoleGuard>
+                    <CraDeclarerPage />
+                  </CraDeclarerRoleGuard>
+                }
+              />
               <Route
                 path="cra"
                 element={
