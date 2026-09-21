@@ -108,9 +108,10 @@ span.fr-tag.fr-tag--beige-gris-galet {
 
 .widget-nav .fr-nav__list {
   flex-direction: row;
-  flex-wrap: nowrap;
+  /* Wrap en iframe étroite (Admin : Accueil + Mon carnet + Budget + …) — pas d’overflow-x
+   * qui clipperait les menus absolute. */
+  flex-wrap: wrap;
   align-items: stretch;
-  /* Pas d’overflow ici : ça clippe les menus déroulants (position absolute). */
   overflow: visible;
 }
 

@@ -19,10 +19,10 @@ describe("equipeAvatarUrl", () => {
     assert.equal(
       equipeAvatarUrl("hello world", 1),
       "https://api.dicebear.com/10.x/glyphs/svg?seed=hello%20world",
-  );
-  assert.equal(
+    );
+    assert.equal(
       equipeAvatarUrl(undefined, 9),
       "https://api.dicebear.com/10.x/glyphs/svg?seed=equipe-9",
-  );
+    );
   });
 });
