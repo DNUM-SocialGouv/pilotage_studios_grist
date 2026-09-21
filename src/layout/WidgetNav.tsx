@@ -100,7 +100,7 @@ export function WidgetNav() {
   const showProfilIssue = status === "error" || status === "empty";
 
   return (
-    <div className="widget-nav fr-mb-2w">
+    <div className="widget-nav">
       <MainNavigation items={items} />
       {showProfilIssue ? (
         <Alert

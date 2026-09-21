@@ -22,7 +22,7 @@ Première page affichée à l’ouverture du Custom Widget dans Grist : titre + 
 | Carte | Titre, badge statut produit (Fait / En cours / À venir / Plus tard), thème, résumé, actions |
 | Comment ça marche ? | Ouvre un drawer SM (`RoadmapGuideDrawer`) avec lead, étapes (ou puces), lien optionnel vers l’écran (`pagePath`) — un guide par item. |
 | GitHub | Liens « Discuter sur GitHub » (`target=_blank`) si `issueUrl` |
-| Nav | `WidgetNav` : Accueil icône home ; **Budget** / **Outils** en menus |
+| Nav | `WidgetNav` : Accueil icône home ; **Mon carnet** (Freelance/Admin) ; **Budget** / **Outils** en menus |
 | Layout | Panneau large (`welcome-page__panel--wide`) pour 4 colonnes |
 | Fallback | Route `*` → redirection vers `/` |
 

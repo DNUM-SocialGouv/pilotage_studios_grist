@@ -393,12 +393,12 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
       lead: "En fin de mois, l’intervenant déclare déjà son activité sur ses prestations en cours. Une relecture manager et des droits Grist plus stricts suivront.",
       stepsIntro: "Vous pouvez :",
       steps: [
-        "Ouvrir Déclarer mon CRA et choisir le mois",
+        "Ouvrir Mon carnet et choisir le mois",
         "Renseigner les jours et une description sur vos prestations en cours",
         "Enregistrer (création ou mise à jour de vos lignes)",
       ],
       pagePath: "/cra/declarer",
-      pageLinkLabel: "Ouvrir Déclarer mon CRA",
+      pageLinkLabel: "Ouvrir Mon carnet",
     },
   },
   {

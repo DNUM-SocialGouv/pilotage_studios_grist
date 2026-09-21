@@ -37,17 +37,17 @@ export function isWidgetNavGroup(item: WidgetNavItem): item is WidgetNavGroup {
 export const WIDGET_NAV_ITEMS: WidgetNavItem[] = [
   { text: "Accueil", href: "/", iconOnly: "home" },
   {
+    text: "Mon carnet",
+    href: "/cra/declarer",
+    status: "in_progress",
+    craDeclarerOnly: true,
+  },
+  {
     text: "Budget",
     children: [
       { text: "Bons de commande", href: "/bdc", status: "in_progress" },
       { text: "Plans d’activité", href: "/pa", status: "in_progress" },
       { text: "Prestation / CRA", href: "/cra", status: "in_progress" },
-      {
-        text: "Déclarer mon CRA",
-        href: "/cra/declarer",
-        status: "in_progress",
-        craDeclarerOnly: true,
-      },
       {
         text: "Revue CRA équipe",
         href: "/cra/revue-equipe",

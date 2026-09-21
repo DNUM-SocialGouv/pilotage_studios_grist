@@ -113,20 +113,21 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
     );
   });
 
-  it("montre Déclarer mon CRA pour Freelance même sans Page_cra", () => {
+  it("montre Mon carnet en niveau 1 pour Freelance même sans Page_cra (sans Budget)", () => {
     const filtered = filterNavItemsByPageAccess(
       WIDGET_NAV_ITEMS,
       (href) => canAccessHref(href, PAGE_ACCESS_FAIL_CLOSED),
       { isAdmin: false, canDeclareCra: true, canRevueCraEquipe: false },
     );
-    const budget = filtered.find(
-      (item) => isWidgetNavGroup(item) && item.text === "Budget",
+    assert.equal(
+      filtered.some((item) => isWidgetNavGroup(item) && item.text === "Budget"),
+      false,
     );
-    assert.ok(budget && isWidgetNavGroup(budget));
-    assert.deepEqual(
-      budget.children.map((c) => c.href),
-      ["/cra/declarer"],
+    const carnet = filtered.find(
+      (item) => !isWidgetNavGroup(item) && item.href === "/cra/declarer",
     );
+    assert.ok(carnet && !isWidgetNavGroup(carnet));
+    assert.equal(carnet.text, "Mon carnet");
   });
 
   it("montre Revue CRA équipe pour Resp. même sans Page_cra", () => {
@@ -145,20 +146,22 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
     );
   });
 
-  it("masque Déclarer mon CRA si rôle non autorisé", () => {
+  it("masque Mon carnet si rôle non autorisé", () => {
     const filtered = filterNavItemsByPageAccess(WIDGET_NAV_ITEMS, () => true, {
       isAdmin: false,
       canDeclareCra: false,
       canRevueCraEquipe: false,
     });
+    assert.equal(
+      filtered.some(
+        (item) => !isWidgetNavGroup(item) && item.href === "/cra/declarer",
+      ),
+      false,
+    );
     const budget = filtered.find(
       (item) => isWidgetNavGroup(item) && item.text === "Budget",
     );
     assert.ok(budget && isWidgetNavGroup(budget));
-    assert.equal(
-      budget.children.some((c) => c.href === "/cra/declarer"),
-      false,
-    );
     assert.equal(
       budget.children.some((c) => c.href === "/cra/revue-equipe"),
       false,

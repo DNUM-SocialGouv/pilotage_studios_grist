@@ -50,7 +50,7 @@ Réduire la complexité ; pas d’ajout « au cas où ». Les agents **proposent
 | `/produits`, `/pv` | Stub « À venir » (nav) |
 | `/evaluations`, `/analyse` | Stub hors nav |
 
-Nav principale : Accueil, **Budget** (sous-menu Bons de commande · Plans d’activité · Prestation / CRA · Déclarer mon CRA · Revue CRA équipe · Procès-verbaux), Produits, Missions, **Équipe**, **Outils** (Récap porteurs · Droits des pages — Admin). Pas de route `/budget`. `/intervenants` redirige vers `/equipe`.
+Nav principale : Accueil, **Mon carnet** (Freelance/Admin, `/cra/declarer`), **Budget** (sous-menu Bons de commande · Plans d’activité · Prestation / CRA · Revue CRA équipe · Procès-verbaux — masqué si aucun enfant accessible, typiquement côté Freelance), Produits, Missions, **Équipe**, **Outils** (Récap porteurs · Droits des pages — Admin). Pas de route `/budget`. `/intervenants` redirige vers `/equipe`.
 
 Entrée MemoryRouter : `/` (`WelcomePage` — **feuille de route kanban** Backlog · En cours · Livré, contenu `src/content/publicRoadmap.ts`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
 
@@ -194,7 +194,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 | PA / finance | `docs/fonctionnel/pa/`, `paFinance.ts`, `PaListView` / `PaDetailView` |
 | BDC | `docs/fonctionnel/bdc/`, `BdcListView` / `BdcDetailView` |
 | Missions | `docs/fonctionnel/missions/`, `useMissionsData`, `MissionsListView` / `MissionsDetailView` |
-| Équipe | `docs/fonctionnel/equipe/`, `useEquipeData`, `useEquipeMemberMissionsData`, `EquipeLayout` / `EquipeListView` / `EquipeDetailView`, `EquipeAvatar` (seed `Equipe.Avatar` → DiceBear Pixelbot) |
+| Équipe | `docs/fonctionnel/equipe/`, `useEquipeData`, `useEquipeMemberMissionsData`, `EquipeLayout` / `EquipeListView` / `EquipeDetailView`, `EquipeAvatar` (seed `Equipe.Avatar` → DiceBear Glyphs) |
 | Feedback | `docs/fonctionnel/feedback/` (+ [`alertes.md`](docs/fonctionnel/feedback/alertes.md)), `FeedbackWidget`, `writeTableAllowlist` |
 | Tableau DSFR | rule `dsfr-tableaux.mdc`, MCP `user-dsfr` |
 | Embed / secrets | `embedTrust.ts`, `NothingHerePage`, `ensureFreshBuild`, SECURITY |

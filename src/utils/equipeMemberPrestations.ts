@@ -20,7 +20,10 @@ export type EquipePrestationRow = {
   enfantId: number;
   missionId: number;
   missionLibelle: string;
+  /** Statut de la mission parente (pas de la prestation). */
+  missionStatut: string;
   prestationLibelle: string;
+  /** Statut de la prestation (filtre en cours / passées). */
   statut: string;
   /** Pour le tri interne uniquement (non affiché). */
   dateDebut: number | undefined;
@@ -30,6 +33,7 @@ export type EquipePrestationRow = {
 export type EquipePrestationMissionGroup = {
   missionId: number;
   missionLibelle: string;
+  missionStatut: string;
   prestations: EquipePrestationRow[];
 };
 
@@ -81,6 +85,7 @@ export function buildEquipePrestationRows(
       enfantId: enfant.id,
       missionId,
       missionLibelle: mission ? missionLibelle(mission) : `Mission #${missionId}`,
+      missionStatut: mission?.Statut?.trim() || "—",
       prestationLibelle: missionEnfantLibelle(enfant),
       statut,
       dateDebut: enfant.Date_de_debut,
@@ -129,6 +134,7 @@ export function groupEquipePrestationRowsByMission(
       group = {
         missionId: row.missionId,
         missionLibelle: row.missionLibelle,
+        missionStatut: row.missionStatut,
         prestations: [],
       };
       byId.set(row.missionId, group);

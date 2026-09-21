@@ -25,6 +25,8 @@ Consulter les personnes du pilotage, filtrer, ouvrir une fiche.
 
 ## Filtres
 
+Bloc **accordéon** (même shell que Missions / CRA) : recherche + listes déroulantes sur **deux colonnes** (deux lignes en Admin).
+
 Recherche (champs visibles), **département**.  
 **Statut** (défaut **Actif** si la colonne est lisible), **portage**, **rôle** : affichés seulement si au moins une valeur est lisible (sinon masqués — cas Freelance / ACL).
 
@@ -32,7 +34,7 @@ Si `Statut` est illisible, aucun filtre Actif n’est appliqué (évite une list
 
 ## Colonnes
 
-Toujours : avatar Pixelbot + Nom (lien unique sur les deux), département.  
+Toujours : avatar Glyphs + Nom (lien unique sur les deux), département (tag coloré comme Missions).  
 Conditionnelles : portage, statut, spécialité, rôle — seulement si lisibles via Access Rules.
 
-L’avatar utilise le seed `Equipe.Avatar` (DiceBear Pixelbot) ; si vide, repli stable `equipe-{id}`. Si l’image ne charge pas, un placeholder gris conserve l’emprise.
+L’avatar utilise le seed `Equipe.Avatar` (DiceBear Glyphs) ; si vide, repli stable `equipe-{id}`. Si l’image ne charge pas, un placeholder gris conserve l’emprise.

@@ -32,7 +32,7 @@ Chargement **lazy** sur `/cra` et `/cra/declarer` (mêmes tables que `/missions`
 | Parcours | Fichier | Route |
 |----------|---------|-------|
 | Liste | [liste.md](liste.md) | `/cra` |
-| Déclarer mon CRA | [declaration.md](declaration.md) | `/cra/declarer` |
+| Déclarer mon CRA / Mon carnet | [declaration.md](declaration.md) | `/cra/declarer` |
 | Revue CRA équipe | [revue-equipe.md](revue-equipe.md) | `/cra/revue-equipe` |
 | Récap porteurs | [recap-porteurs.md](recap-porteurs.md) | `/outils/recap-porteurs` |
 

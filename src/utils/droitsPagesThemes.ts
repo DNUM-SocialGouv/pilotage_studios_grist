@@ -86,7 +86,7 @@ export function isAdminRole(role: string | null | undefined): boolean {
   return (role?.trim() ?? "") === "Admin";
 }
 
-/** Rôles autorisés à ouvrir « Déclarer mon CRA » (couche 5, hors Page_*). */
+/** Rôles autorisés à ouvrir « Mon carnet » / déclaration CRA (couche 5, hors Page_*). */
 export function isCraDeclarerRole(role: string | null | undefined): boolean {
   const t = role?.trim() ?? "";
   return t === "Admin" || t === "Freelance";

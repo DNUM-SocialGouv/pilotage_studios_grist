@@ -407,7 +407,7 @@ export function CraRevueEquipePage() {
                 <Alert
                   severity="info"
                   title="Aucune saisie ce mois"
-                  description="Ce collègue n’a pas encore de ligne CRA pour ce mois. La déclaration se fait via « Déclarer mon CRA »."
+                  description="Ce collègue n’a pas encore de ligne CRA pour ce mois. La déclaration se fait via « Mon carnet »."
                 />
               ) : (
                 <ul className="fr-raw-list cra-carnet__entries">
