@@ -154,90 +154,7 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     },
   },
   {
-    id: "cra-suivre",
-    themeId: "cra",
-    title: "Suivre les CRA dans le parcours de pilotage",
-    summary:
-      "Retrouver et lire les réalisations : page Prestation / CRA et lignes sous les missions.",
-    status: "done",
-    issueUrl:
-      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/32",
-    guide: {
-      lead: "Une réalisation (CRA) décrit le travail réalisé sur une période : jours, tâches et rattachements.",
-      stepsIntro: "Sur la page Prestation / CRA, vous pouvez :",
-      steps: [
-        "Filtrer par mois, équipe, intervenant, produit ou bon de commande",
-        "Consulter les jours et montants réalisés",
-        "Retrouver le lien avec la mission et le BDC",
-      ],
-      pagePath: "/cra",
-      pageLinkLabel: "Ouvrir Prestation / CRA",
-    },
-  },
-  {
-    id: "cra-recap-porteurs",
-    themeId: "cra",
-    title: "Générer le récap porteurs (Outils)",
-    summary:
-      "Préparer l’export mensuel groupé par portage pour envoi manuel aux ESN.",
-    status: "done",
-    issueUrl:
-      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/48",
-    guide: {
-      lead: "Le récap porteurs prépare l’export mensuel des CRA groupés par portage (MALT, OCTO…), pour envoi manuel.",
-      stepsIntro: "Sur la page Récap porteurs, vous pouvez :",
-      steps: [
-        "Choisir le mois (et éventuellement l’équipe ou le portage)",
-        "Voir le regroupement des CRA par porteur",
-        "Exporter en CSV ou copier en HTML / Markdown",
-      ],
-      pagePath: "/outils/recap-porteurs",
-      pageLinkLabel: "Ouvrir Récap porteurs",
-    },
-  },
-  {
-    id: "cra-envoyer",
-    themeId: "cra",
-    title: "Envoyer les CRA en fin de mois",
-    summary:
-      "Déclarer les jours et une description sur vos prestations — la relecture manager viendra ensuite.",
-    status: "current",
-    issueUrl:
-      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/33",
-    guide: {
-      lead: "En fin de mois, l’intervenant déclare son activité sur ses prestations en cours. Une relecture manager et des droits Grist plus stricts suivront.",
-      stepsIntro: "Dès maintenant, vous pouvez :",
-      steps: [
-        "Ouvrir Déclarer mon CRA et choisir le mois",
-        "Renseigner les jours et une description sur vos prestations en cours",
-        "Enregistrer (création ou mise à jour de vos lignes)",
-      ],
-      pagePath: "/cra/declarer",
-      pageLinkLabel: "Ouvrir Déclarer mon CRA",
-    },
-  },
-  {
-    id: "cra-qualifier",
-    themeId: "cra",
-    title: "Qualifier un CRA et le lier au bon de commande",
-    summary:
-      "Associer le CRA au bon de commande (chaîne jusqu’au plan d’activité).",
-    status: "next",
-    issueUrl:
-      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/34",
-    guide: {
-      lead: "Une fois le CRA relu, on le rattache au bon de commande pour que la dépense remonte correctement jusqu’au plan d’activité.",
-      stepsIntro: "Quand ce parcours sera livré, vous pourrez :",
-      steps: [
-        "Qualifier le CRA (prestation et période)",
-        "Le lier au bon de commande concerné",
-        "Garder le suivi budget cohérent (PA → BDC → réalisations)",
-      ],
-    },
-  },
-  {
-    id: "droits-menus",
-    themeId: "equipe",
+    id: "droits-menus",    themeId: "equipe",
     title: "Menus adaptés au rôle de chacun",
     summary:
       "Admin, responsable, freelance ou invité : le menu montre seulement les écrans autorisés (budget / CRA réservés).",
@@ -260,17 +177,17 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     themeId: "equipe",
     title: "Affiner les droits sur les réalisations (CRA)",
     summary:
-      "Avant l’envoi des CRA : qui peut lire ou modifier quelles lignes de réalisations — testé « voir comme ».",
+      "Maintenant que la déclaration est ouverte : qui peut lire ou modifier quelles lignes de réalisations — testé « voir comme ».",
     status: "current",
     issueUrl:
       "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/47",
     guide: {
-      lead: "Les menus sont filtrés. Reste à protéger les données de réalisations elles-mêmes, pour qu’un freelance ne voie ou ne modifie que son périmètre.",
+      lead: "Les menus sont filtrés et la déclaration CRA est déjà possible. Reste à protéger les lignes de réalisations elles-mêmes, pour qu’un freelance ne voie ou ne modifie que son périmètre.",
       stepsIntro: "Travail en cours :",
       steps: [
         "Définir qui lit / modifie quelles réalisations selon le rôle",
         "Tester avec « voir comme » (admin, responsable, freelance)",
-        "Débloquer ensuite l’envoi des CRA en fin de mois en confiance",
+        "Sécuriser la déclaration CRA déjà ouverte, avant relecture et qualification",
       ],
     },
   },
@@ -419,6 +336,88 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
       ],
       pagePath: "/equipe",
       pageLinkLabel: "Ouvrir Équipe",
+    },
+  },
+  {
+    id: "cra-suivre",
+    themeId: "cra",
+    title: "Suivre les CRA dans le parcours de pilotage",
+    summary:
+      "Retrouver et lire les réalisations : page Prestation / CRA et lignes sous les missions.",
+    status: "done",
+    issueUrl:
+      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/32",
+    guide: {
+      lead: "Une réalisation (CRA) décrit le travail réalisé sur une période : jours, tâches et rattachements.",
+      stepsIntro: "Sur la page Prestation / CRA, vous pouvez :",
+      steps: [
+        "Filtrer par mois, équipe, intervenant, produit ou bon de commande",
+        "Consulter les jours et montants réalisés",
+        "Retrouver le lien avec la mission et le BDC",
+      ],
+      pagePath: "/cra",
+      pageLinkLabel: "Ouvrir Prestation / CRA",
+    },
+  },
+  {
+    id: "cra-recap-porteurs",
+    themeId: "cra",
+    title: "Générer le récap porteurs (Outils)",
+    summary:
+      "Préparer l’export mensuel groupé par portage pour envoi manuel aux ESN.",
+    status: "done",
+    issueUrl:
+      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/48",
+    guide: {
+      lead: "Le récap porteurs prépare l’export mensuel des CRA groupés par portage (MALT, OCTO…), pour envoi manuel.",
+      stepsIntro: "Sur la page Récap porteurs, vous pouvez :",
+      steps: [
+        "Choisir le mois (et éventuellement l’équipe ou le portage)",
+        "Voir le regroupement des CRA par porteur",
+        "Exporter en CSV ou copier en HTML / Markdown",
+      ],
+      pagePath: "/outils/recap-porteurs",
+      pageLinkLabel: "Ouvrir Récap porteurs",
+    },
+  },
+  {
+    id: "cra-envoyer",
+    themeId: "cra",
+    title: "Envoyer les CRA en fin de mois",
+    summary:
+      "Saisie livrée : jours et description sur vos prestations ; relecture manager et qualification à venir.",
+    status: "done",
+    issueUrl:
+      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/33",
+    guide: {
+      lead: "En fin de mois, l’intervenant déclare déjà son activité sur ses prestations en cours. Une relecture manager et des droits Grist plus stricts suivront.",
+      stepsIntro: "Vous pouvez :",
+      steps: [
+        "Ouvrir Déclarer mon CRA et choisir le mois",
+        "Renseigner les jours et une description sur vos prestations en cours",
+        "Enregistrer (création ou mise à jour de vos lignes)",
+      ],
+      pagePath: "/cra/declarer",
+      pageLinkLabel: "Ouvrir Déclarer mon CRA",
+    },
+  },
+  {
+    id: "cra-qualifier",
+    themeId: "cra",
+    title: "Qualifier un CRA et le lier au bon de commande",
+    summary:
+      "Associer le CRA au bon de commande (chaîne jusqu’au plan d’activité).",
+    status: "next",
+    issueUrl:
+      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/34",
+    guide: {
+      lead: "Une fois le CRA relu, on le rattache au bon de commande pour que la dépense remonte correctement jusqu’au plan d’activité.",
+      stepsIntro: "Quand ce parcours sera livré, vous pourrez :",
+      steps: [
+        "Qualifier le CRA (prestation et période)",
+        "Le lier au bon de commande concerné",
+        "Garder le suivi budget cohérent (PA → BDC → réalisations)",
+      ],
     },
   },
   {
