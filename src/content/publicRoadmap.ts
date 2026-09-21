@@ -154,69 +154,7 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     },
   },
   {
-    id: "cra-suivre",
-    themeId: "cra",
-    title: "Suivre les CRA dans le parcours de pilotage",
-    summary:
-      "Retrouver et lire les réalisations : page Prestation / CRA et lignes sous les missions.",
-    status: "done",
-    issueUrl:
-      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/32",
-    guide: {
-      lead: "Une réalisation (CRA) décrit le travail réalisé sur une période : jours, tâches et rattachements.",
-      stepsIntro: "Sur la page Prestation / CRA, vous pouvez :",
-      steps: [
-        "Filtrer par mois, équipe, intervenant, produit ou bon de commande",
-        "Consulter les jours et montants réalisés",
-        "Retrouver le lien avec la mission et le BDC",
-      ],
-      pagePath: "/cra",
-      pageLinkLabel: "Ouvrir Prestation / CRA",
-    },
-  },
-  {
-    id: "cra-recap-porteurs",
-    themeId: "cra",
-    title: "Générer le récap porteurs (Outils)",
-    summary:
-      "Préparer l’export mensuel groupé par portage pour envoi manuel aux ESN.",
-    status: "done",
-    issueUrl:
-      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/48",
-    guide: {
-      lead: "Le récap porteurs prépare l’export mensuel des CRA groupés par portage (MALT, OCTO…), pour envoi manuel.",
-      stepsIntro: "Sur la page Récap porteurs, vous pouvez :",
-      steps: [
-        "Choisir le mois (et éventuellement l’équipe ou le portage)",
-        "Voir le regroupement des CRA par porteur",
-        "Exporter en CSV ou copier en HTML / Markdown",
-      ],
-      pagePath: "/outils/recap-porteurs",
-      pageLinkLabel: "Ouvrir Récap porteurs",
-    },
-  },
-  {
-    id: "cra-qualifier",
-    themeId: "cra",
-    title: "Qualifier un CRA et le lier au bon de commande",
-    summary:
-      "Associer le CRA au bon de commande (chaîne jusqu’au plan d’activité).",
-    status: "next",
-    issueUrl:
-      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/34",
-    guide: {
-      lead: "Une fois le CRA relu, on le rattache au bon de commande pour que la dépense remonte correctement jusqu’au plan d’activité.",
-      stepsIntro: "Quand ce parcours sera livré, vous pourrez :",
-      steps: [
-        "Qualifier le CRA (prestation et période)",
-        "Le lier au bon de commande concerné",
-        "Garder le suivi budget cohérent (PA → BDC → réalisations)",
-      ],
-    },
-  },
-  {
-    id: "droits-menus",
-    themeId: "equipe",
+    id: "droits-menus",    themeId: "equipe",
     title: "Menus adaptés au rôle de chacun",
     summary:
       "Admin, responsable, freelance ou invité : le menu montre seulement les écrans autorisés (budget / CRA réservés).",
@@ -401,11 +339,53 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     },
   },
   {
+    id: "cra-suivre",
+    themeId: "cra",
+    title: "Suivre les CRA dans le parcours de pilotage",
+    summary:
+      "Retrouver et lire les réalisations : page Prestation / CRA et lignes sous les missions.",
+    status: "done",
+    issueUrl:
+      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/32",
+    guide: {
+      lead: "Une réalisation (CRA) décrit le travail réalisé sur une période : jours, tâches et rattachements.",
+      stepsIntro: "Sur la page Prestation / CRA, vous pouvez :",
+      steps: [
+        "Filtrer par mois, équipe, intervenant, produit ou bon de commande",
+        "Consulter les jours et montants réalisés",
+        "Retrouver le lien avec la mission et le BDC",
+      ],
+      pagePath: "/cra",
+      pageLinkLabel: "Ouvrir Prestation / CRA",
+    },
+  },
+  {
+    id: "cra-recap-porteurs",
+    themeId: "cra",
+    title: "Générer le récap porteurs (Outils)",
+    summary:
+      "Préparer l’export mensuel groupé par portage pour envoi manuel aux ESN.",
+    status: "done",
+    issueUrl:
+      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/48",
+    guide: {
+      lead: "Le récap porteurs prépare l’export mensuel des CRA groupés par portage (MALT, OCTO…), pour envoi manuel.",
+      stepsIntro: "Sur la page Récap porteurs, vous pouvez :",
+      steps: [
+        "Choisir le mois (et éventuellement l’équipe ou le portage)",
+        "Voir le regroupement des CRA par porteur",
+        "Exporter en CSV ou copier en HTML / Markdown",
+      ],
+      pagePath: "/outils/recap-porteurs",
+      pageLinkLabel: "Ouvrir Récap porteurs",
+    },
+  },
+  {
     id: "cra-envoyer",
     themeId: "cra",
     title: "Envoyer les CRA en fin de mois",
     summary:
-      "Déclarer les jours et une description sur vos prestations — la relecture manager viendra ensuite.",
+      "Saisie livrée : jours et description sur vos prestations ; relecture manager et qualification à venir.",
     status: "done",
     issueUrl:
       "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/33",
@@ -419,6 +399,25 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
       ],
       pagePath: "/cra/declarer",
       pageLinkLabel: "Ouvrir Déclarer mon CRA",
+    },
+  },
+  {
+    id: "cra-qualifier",
+    themeId: "cra",
+    title: "Qualifier un CRA et le lier au bon de commande",
+    summary:
+      "Associer le CRA au bon de commande (chaîne jusqu’au plan d’activité).",
+    status: "next",
+    issueUrl:
+      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/34",
+    guide: {
+      lead: "Une fois le CRA relu, on le rattache au bon de commande pour que la dépense remonte correctement jusqu’au plan d’activité.",
+      stepsIntro: "Quand ce parcours sera livré, vous pourrez :",
+      steps: [
+        "Qualifier le CRA (prestation et période)",
+        "Le lier au bon de commande concerné",
+        "Garder le suivi budget cohérent (PA → BDC → réalisations)",
+      ],
     },
   },
   {
