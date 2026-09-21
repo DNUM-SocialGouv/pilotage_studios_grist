@@ -32,8 +32,8 @@ describe("isPrestationEnCours", () => {
 
 describe("buildEquipePrestationRows", () => {
   const missions: Mission[] = [
-    { id: 10, Nom_de_la_mission: "Portail national" },
-    { id: 20, Nom_de_la_mission: "Appui DSFR" },
+    { id: 10, Nom_de_la_mission: "Portail national", Statut: "A instruire" },
+    { id: 20, Nom_de_la_mission: "Appui DSFR", Statut: "En cours" },
   ];
 
   const enfants: MissionEnfant[] = [
@@ -86,7 +86,9 @@ describe("buildEquipePrestationRows", () => {
     const rows = buildEquipePrestationRows(5, enfants, missions);
     const first = rows[0]!;
     assert.equal(first.missionLibelle, "Portail national");
+    assert.equal(first.missionStatut, "A instruire");
     assert.equal(first.prestationLibelle, "Design sprint 3");
+    assert.equal(first.statut, "En cours");
     assert.equal(first.enCours, true);
     const termine = rows.find((r) => r.enfantId === 2)!;
     assert.equal(termine.enCours, false);
@@ -108,12 +110,14 @@ describe("buildEquipePrestationRows", () => {
     const groups = groupEquipePrestationRowsByMission(rows);
     assert.equal(groups.length, 2);
     const portail = groups.find((g) => g.missionId === 10)!;
+    assert.equal(portail.missionStatut, "A instruire");
     assert.equal(portail.prestations.length, 2);
     assert.deepEqual(
       portail.prestations.map((p) => p.enfantId),
       [1, 2],
     );
     const dsfr = groups.find((g) => g.missionId === 20)!;
+    assert.equal(dsfr.missionStatut, "En cours");
     assert.equal(dsfr.prestations.length, 1);
     assert.equal(dsfr.prestations[0]!.enfantId, 4);
   });

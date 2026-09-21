@@ -1,15 +1,14 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
-import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { CallOut } from "@codegouvfr/react-dsfr/CallOut";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
-import { Tag } from "@codegouvfr/react-dsfr/Tag";
 import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
 import { tdEquipeTag } from "../components/EquipeTags";
+import { StatutBadge } from "../components/StatutBadge";
 import { useGristPa } from "../GristPaContext";
 import { useCraDeclarerData } from "../hooks/useCraDeclarerData";
 import { NothingHerePage } from "../security/NothingHerePage";
@@ -350,14 +349,14 @@ export function CraDeclarerPage() {
                 {groups.map((group) => (
                 <section key={group.missionId} className="cra-carnet__chapter fr-mb-4w">
                   <div className="cra-carnet__chapter-head fr-mb-2w">
-                    <Tag as="span" nativeSpanProps={{}} className="fr-tag--sm">
-                      Mission
-                    </Tag>
-                    <h3 className="fr-h5 fr-mb-0 fr-mt-1w">
-                      <Link to={`/missions/${group.missionId}`}>
-                        {group.missionLibelle}
-                      </Link>
-                    </h3>
+                    <div className="cra-carnet__chapter-title">
+                      <h3 className="fr-h5 fr-mb-0">
+                        <Link to={`/missions/${group.missionId}`}>
+                          {group.missionLibelle}
+                        </Link>
+                      </h3>
+                      <StatutBadge statut={group.missionStatut} />
+                    </div>
                   </div>
 
                   <ul className="fr-raw-list cra-carnet__entries">
@@ -371,8 +370,8 @@ export function CraDeclarerPage() {
                       return (
                         <li key={presta.enfantId} className="cra-carnet__entry fr-mb-2w">
                           <div className="cra-carnet__entry-jours">
-                            <label className="fr-label" htmlFor={joursInputId}>
-                              Jours
+                            <label className="fr-label fr-sr-only" htmlFor={joursInputId}>
+                              Nombre de jours
                             </label>
                             <input
                               id={joursInputId}
@@ -393,7 +392,7 @@ export function CraDeclarerPage() {
                               className="cra-carnet__entry-jours-unit"
                               aria-hidden="true"
                             >
-                              j
+                              jours
                             </span>
                           </div>
                           <div className="cra-carnet__entry-body">
@@ -401,16 +400,13 @@ export function CraDeclarerPage() {
                               <p className="fr-text--bold fr-mb-0">
                                 {presta.prestationLibelle}
                               </p>
-                              <div className="cra-carnet__entry-meta">
-                                <Badge severity="info" small>
-                                  {presta.statut}
-                                </Badge>
-                                {draft.existingRealiseId != null ? (
+                              {draft.existingRealiseId != null ? (
+                                <div className="cra-carnet__entry-meta">
                                   <span className="fr-text--xs fr-hint-text">
                                     Déjà saisi ce mois
                                   </span>
-                                ) : null}
-                              </div>
+                                </div>
+                              ) : null}
                             </div>
                             <Input
                               label="Ce que vous avez fait"

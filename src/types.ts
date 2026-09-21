@@ -133,7 +133,7 @@ export interface EquipeMember {
   Specialite?: string;
   Role_ACL?: string;
   Missions_en_cours?: string;
-  /** Seed DiceBear Pixelbot (colonne Grist `Avatar`). */
+  /** Seed DiceBear Glyphs (colonne Grist `Avatar`). */
   Avatar?: string;
   /** Tarif journalier — uniquement si lisible côté Grist. */
   TJM?: number;

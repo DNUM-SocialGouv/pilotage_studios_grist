@@ -24,7 +24,7 @@ Selon les **Access Rules** Grist, un **Freelance** ne voit que **nom**, **dépar
 | `Equipe` | Liste et fiche (`fetchAllowlistedTable`) |
 | `Missions`, `Missions_enfants` | Fiche uniquement : section Missions & prestations (Intervenant → personne) |
 
-Colonnes widget (Admin / droits complets) : `Prenom_Nom`, `Equipe`, `Portage`, `Statut`, `Specialite`, `Role_ACL`, `Avatar` (seed image Pixelbot), `TJM` / `Total_TTC` (fiche, si Access Rules).
+Colonnes widget (Admin / droits complets) : `Prenom_Nom`, `Equipe`, `Portage`, `Statut`, `Specialite`, `Role_ACL`, `Avatar` (seed image Glyphs), `TJM` / `Total_TTC` (fiche, si Access Rules).
 
 **Jamais** dans le widget : `E_mail` (et autres champs budgétaires hors TJM / Total TTC autorisés). **Jamais** de TJM / Total TTC sur la liste. Pas d’édition `Avatar` dans le widget (changement du seed = Grist UI).
 

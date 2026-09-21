@@ -15,14 +15,14 @@ describe("equipeAvatarSeed", () => {
 });
 
 describe("equipeAvatarUrl", () => {
-  it("construit l’URL Pixelbot 10.x avec seed encodé", () => {
+  it("construit l’URL Glyphs 10.x avec seed encodé", () => {
     assert.equal(
       equipeAvatarUrl("hello world", 1),
-      "https://api.dicebear.com/10.x/pixelbot/svg?seed=hello%20world",
-    );
-    assert.equal(
+      "https://api.dicebear.com/10.x/glyphs/svg?seed=hello%20world",
+  );
+  assert.equal(
       equipeAvatarUrl(undefined, 9),
-      "https://api.dicebear.com/10.x/pixelbot/svg?seed=equipe-9",
-    );
+      "https://api.dicebear.com/10.x/glyphs/svg?seed=equipe-9",
+  );
   });
 });

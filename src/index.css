@@ -86,24 +86,39 @@ span.fr-tag.fr-tag--beige-gris-galet {
 .widget-nav {
   border-bottom: 1px solid var(--border-default-grey);
   background: var(--background-default-grey);
-  padding: 0 0.5rem;
+  /* Contexte de positionnement pour les menus déroulants (hors Header DSFR). */
+  position: relative;
+  overflow: visible;
+  z-index: 10;
+  /* Espace sous la barre : hors du bloc positionné, pour coller le déroulant à la nav. */
+  margin-bottom: 1rem;
 }
 
 /*
  * MainNavigation hors Header : sous le breakpoint lg (62em), DSFR empile
- * .fr-nav__list en colonne (parcours burger). Dans l’iframe Grist (souvent
- * étroite), ça occupe trop de hauteur. On force une barre horizontale compacte.
- * Sous-menus : position relative sur l’item (sinon top:100% vs viewport).
+ * .fr-nav__list en colonne (parcours burger). Dans l’iframe Grist on force
+ * le rendu desktop — tailles alignées sur navigation.main.css @media lg
+ * (min-height 3.5rem, padding 1rem, font 0.875rem).
+ * Ref : https://www.systeme-de-design.gouv.fr/.../navigation-principale
  */
+.widget-nav .fr-nav {
+  position: relative;
+  overflow: visible;
+}
+
 .widget-nav .fr-nav__list {
-  align-items: stretch;
   flex-direction: row;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  /* Pas d’overflow ici : ça clippe les menus déroulants (position absolute). */
+  overflow: visible;
 }
 
 .widget-nav .fr-nav__item {
+  /* Gagne sur DSFR lg (`position: initial`) — sinon top:100% = bas du viewport. */
+  position: relative !important;
   align-items: flex-start;
-  position: relative;
+  overflow: visible;
 }
 
 .widget-nav .fr-nav__item::before {
@@ -117,11 +132,11 @@ span.fr-tag.fr-tag--beige-gris-galet {
 
 .widget-nav .fr-nav__link,
 .widget-nav .fr-nav__btn {
+  min-height: 3.5rem;
+  padding: 1rem;
   font-size: 0.875rem;
-  font-weight: normal;
   line-height: 1.5rem;
-  min-height: 2.5rem;
-  padding: 0.5rem 0.75rem;
+  font-weight: normal;
 }
 
 .widget-nav .fr-nav__link[aria-current]:not([aria-current="false"]),
@@ -145,12 +160,44 @@ span.fr-tag.fr-tag--beige-gris-galet {
   justify-content: flex-start;
 }
 
+/*
+ * Sous-menus hors Header : le collapse DSFR (spacer ::before + marges mobile)
+ * décale le panneau loin du bouton (parfois en bas de page). Déroulant collé
+ * sous l’entrée, ancré sur l’item (position relative !important ci-dessus).
+ */
 .widget-nav .fr-menu {
+  --collapse: 0 !important;
+  --collapse-max-height: none !important;
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  right: auto;
+  bottom: auto;
+  margin: 0 !important;
+  padding: 0;
+  width: auto;
+  background-color: var(--background-overlap-grey);
   filter: drop-shadow(var(--overlap-shadow));
   pointer-events: none;
-  position: absolute;
-  top: 100%;
   z-index: calc(var(--ground) + 1000);
+}
+
+.widget-nav .fr-menu.fr-collapse::before {
+  content: none !important;
+  display: none !important;
+  margin-top: 0 !important;
+}
+
+.widget-nav .fr-menu.fr-collapse:not(.fr-collapse--expanded) {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.widget-nav .fr-menu.fr-collapse--expanded,
+.widget-nav .fr-menu.fr-collapsing {
+  visibility: visible;
+  overflow: visible !important;
+  max-height: none !important;
 }
 
 .widget-nav .fr-menu__list {
@@ -166,10 +213,18 @@ span.fr-tag.fr-tag--beige-gris-galet {
   background-position: 0 0;
   background-repeat: no-repeat;
   background-size: 100% 1px;
-  margin-bottom: 0.5rem;
-  padding: 0;
+  margin: 0 !important;
+  padding: 0 !important;
   pointer-events: auto;
-  width: 16rem;
+  width: 20rem;
+}
+
+.widget-nav .fr-menu .fr-nav__link {
+  width: 100%;
+  height: auto;
+  min-height: auto;
+  font-weight: normal;
+  padding: 0.75rem 1rem;
 }
 
 .widget-kpi {
@@ -1186,6 +1241,13 @@ button.fr-link:disabled {
   border-left-color: var(--border-default-grey);
 }
 
+.cra-carnet__chapter-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
 .cra-carnet__entry {
   display: flex;
   flex-wrap: nowrap;
@@ -1199,19 +1261,14 @@ button.fr-link:disabled {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  flex: 0 0 4.75rem;
-  width: 4.75rem;
+  flex: 0 0 5.5rem;
+  width: 5.5rem;
   padding-top: 0.15rem;
-}
-
-.cra-carnet__entry-jours .fr-label {
-  margin-bottom: 0.25rem;
-  font-size: 0.75rem;
 }
 
 .cra-carnet__jours-input.fr-input {
   width: 100%;
-  max-width: 4.75rem;
+  max-width: 5.5rem;
   text-align: center;
   font-size: 1.5rem;
   font-weight: 700;

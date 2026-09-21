@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { Accordion } from "@codegouvfr/react-dsfr/Accordion";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination";
+import { SearchBar } from "@codegouvfr/react-dsfr/SearchBar";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { TableShell } from "../components/FinanceRecap";
 import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
+import { tdEquipeTag } from "../components/EquipeTags";
 import {
   equipeDisplayName,
   equipeFieldReadable,
@@ -24,7 +27,7 @@ function dash(value: string | undefined): string {
 export function EquipeListView() {
   const { data } = useEquipeOutlet();
   const [search, setSearch] = useState("");
-  const [searchDraft, setSearchDraft] = useState("");
+  const [searchKey, setSearchKey] = useState(0);
   const [statutFilter, setStatutFilter] = useState("");
   const [equipeFilter, setEquipeFilter] = useState("");
   const [portageFilter, setPortageFilter] = useState("");
@@ -95,23 +98,39 @@ export function EquipeListView() {
   const paginated = rows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   const defaultStatut = initialEquipeStatutFilter(data.members);
-  const filtersActive = Boolean(
-    search.trim() ||
-      (showStatut && statutFilter !== defaultStatut) ||
-      equipeFilter ||
-      (showPortage && portageFilter) ||
-      (showRole && roleFilter),
-  );
+  const filtresActifsCount = useMemo(() => {
+    let n = 0;
+    if (search.trim()) n += 1;
+    if (showStatut && statutFilter !== defaultStatut) n += 1;
+    if (equipeFilter) n += 1;
+    if (showPortage && portageFilter) n += 1;
+    if (showRole && roleFilter) n += 1;
+    return n;
+  }, [
+    defaultStatut,
+    equipeFilter,
+    portageFilter,
+    roleFilter,
+    search,
+    showPortage,
+    showRole,
+    showStatut,
+    statutFilter,
+  ]);
 
   const resetFilters = () => {
     setSearch("");
-    setSearchDraft("");
+    setSearchKey((k) => k + 1);
     setStatutFilter(defaultStatut);
     setEquipeFilter("");
     setPortageFilter("");
     setRoleFilter("");
     setPage(1);
   };
+
+  const searchLabel = `Rechercher (nom, département${
+    showSpecialite ? ", spécialité" : ""
+  }${showPortage ? ", portage" : ""}${showRole ? ", rôle" : ""})`;
 
   const colCount =
     2 + (showPortage ? 1 : 0) + (showStatut ? 1 : 0) + (showSpecialite ? 1 : 0) + (showRole ? 1 : 0);
@@ -147,144 +166,138 @@ export function EquipeListView() {
   return (
     <div className="fr-py-1w">
       <h1 className="fr-h3">Équipe</h1>
-      <p className="fr-text--sm fr-mb-2w">
-        Annuaire des personnes du pilotage — consultation uniquement.
-      </p>
 
-      <div className="fr-grid-row fr-grid-row--gutters fr-grid-row--bottom fr-mb-1w">
-        <div className="fr-col-12">
-          <div className="fr-search-bar" role="search">
-            <label className="fr-label" htmlFor="equipe-widget-search">
-              Rechercher (nom, département
-              {showSpecialite ? ", spécialité" : ""}
-              {showPortage ? ", portage" : ""}
-              {showRole ? ", rôle" : ""})
-            </label>
-            <input
-              className="fr-input"
-              type="search"
-              id="equipe-widget-search"
-              value={searchDraft}
-              onChange={(e) => setSearchDraft(e.currentTarget.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  setSearch(searchDraft);
-                  setPage(1);
-                }
+      <Accordion
+        id="equipe-liste-filtres"
+        className="missions-liste-filtres fr-mb-2w"
+        titleAs="h2"
+        defaultExpanded
+        label={
+          filtresActifsCount > 0
+            ? `Filtres (${filtresActifsCount} actif${filtresActifsCount > 1 ? "s" : ""})`
+            : "Filtres"
+        }
+      >
+        <div className="fr-grid-row fr-grid-row--gutters fr-grid-row--bottom">
+          <div className="fr-col-12">
+            <SearchBar
+              key={searchKey}
+              label={searchLabel}
+              allowEmptySearch
+              onButtonClick={(text) => {
+                setSearch(text);
+                setPage(1);
               }}
             />
-            <button
-              type="button"
-              className="fr-btn"
-              title="Rechercher"
-              onClick={() => {
-                setSearch(searchDraft);
-                setPage(1);
-              }}
-            >
-              Rechercher
-            </button>
           </div>
-        </div>
-        {showStatut ? (
-          <div className="fr-col-12 fr-col-md-3">
+          {showStatut ? (
+            <div className="fr-col-12 fr-col-md-6">
+              <Select
+                label="Statut"
+                nativeSelectProps={{
+                  value: statutFilter,
+                  onChange: (e) => {
+                    setStatutFilter(e.currentTarget.value);
+                    setPage(1);
+                  },
+                }}
+              >
+                <option value="">Tous les statuts</option>
+                {statutOptions.map((statut) => (
+                  <option key={statut} value={statut}>
+                    {statut}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          ) : null}
+          <div className="fr-col-12 fr-col-md-6">
             <Select
-              label="Statut"
+              label="Département"
               nativeSelectProps={{
-                value: statutFilter,
+                value: equipeFilter,
                 onChange: (e) => {
-                  setStatutFilter(e.currentTarget.value);
+                  setEquipeFilter(e.currentTarget.value);
                   setPage(1);
                 },
               }}
             >
-              <option value="">Tous les statuts</option>
-              {statutOptions.map((statut) => (
-                <option key={statut} value={statut}>
-                  {statut}
+              <option value="">Tous les départements</option>
+              {equipeOptions.map((equipe) => (
+                <option key={equipe} value={equipe}>
+                  {equipe}
                 </option>
               ))}
             </Select>
           </div>
-        ) : null}
-        <div className="fr-col-12 fr-col-md-3">
-          <Select
-            label="Département"
-            nativeSelectProps={{
-              value: equipeFilter,
-              onChange: (e) => {
-                setEquipeFilter(e.currentTarget.value);
-                setPage(1);
-              },
+          {showPortage ? (
+            <div className="fr-col-12 fr-col-md-6">
+              <Select
+                label="Portage"
+                nativeSelectProps={{
+                  value: portageFilter,
+                  onChange: (e) => {
+                    setPortageFilter(e.currentTarget.value);
+                    setPage(1);
+                  },
+                }}
+              >
+                <option value="">Tous les portages</option>
+                {portageOptions.map((portage) => (
+                  <option key={portage} value={portage}>
+                    {portage}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          ) : null}
+          {showRole ? (
+            <div className="fr-col-12 fr-col-md-6">
+              <Select
+                label="Rôle"
+                nativeSelectProps={{
+                  value: roleFilter,
+                  onChange: (e) => {
+                    setRoleFilter(e.currentTarget.value);
+                    setPage(1);
+                  },
+                }}
+              >
+                <option value="">Tous les rôles</option>
+                {roleOptions.map((role) => (
+                  <option key={role} value={role}>
+                    {role}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          ) : null}
+        </div>
+      </Accordion>
+
+      {filtresActifsCount > 0 ? (
+        <div className="fr-mb-2w">
+          <a
+            href="#reinitialiser-filtres"
+            className="fr-link"
+            onClick={(e) => {
+              e.preventDefault();
+              resetFilters();
             }}
           >
-            <option value="">Tous les départements</option>
-            {equipeOptions.map((equipe) => (
-              <option key={equipe} value={equipe}>
-                {equipe}
-              </option>
-            ))}
-          </Select>
-        </div>
-        {showPortage ? (
-          <div className="fr-col-12 fr-col-md-3">
-            <Select
-              label="Portage"
-              nativeSelectProps={{
-                value: portageFilter,
-                onChange: (e) => {
-                  setPortageFilter(e.currentTarget.value);
-                  setPage(1);
-                },
-              }}
-            >
-              <option value="">Tous les portages</option>
-              {portageOptions.map((portage) => (
-                <option key={portage} value={portage}>
-                  {portage}
-                </option>
-              ))}
-            </Select>
-          </div>
-        ) : null}
-        {showRole ? (
-          <div className="fr-col-12 fr-col-md-3">
-            <Select
-              label="Rôle"
-              nativeSelectProps={{
-                value: roleFilter,
-                onChange: (e) => {
-                  setRoleFilter(e.currentTarget.value);
-                  setPage(1);
-                },
-              }}
-            >
-              <option value="">Tous les rôles</option>
-              {roleOptions.map((role) => (
-                <option key={role} value={role}>
-                  {role}
-                </option>
-              ))}
-            </Select>
-          </div>
-        ) : null}
-      </div>
-
-      {filtersActive ? (
-        <p className="fr-mb-2w">
-          <button type="button" className="fr-link" onClick={resetFilters}>
             Réinitialiser les filtres
-          </button>
-        </p>
+          </a>
+        </div>
       ) : null}
 
       <p className="fr-text--sm fr-mb-2w">
         {rows.length === 0
-          ? filtersActive
+          ? filtresActifsCount > 0
             ? "Aucune personne ne correspond aux filtres."
             : "Aucune personne."
-          : `${rows.length} personne${rows.length > 1 ? "s" : ""}.`}
+          : filtresActifsCount > 0
+            ? `${rows.length} personne${rows.length > 1 ? "s" : ""} correspondent aux filtres.`
+            : `${rows.length} personne${rows.length > 1 ? "s" : ""}.`}
       </p>
 
       <TableShell className="fr-mb-3w">
@@ -317,7 +330,7 @@ export function EquipeListView() {
                       {equipeDisplayName(member)}
                     </Link>
                   </th>
-                  <td>{dash(member.Equipe)}</td>
+                  <td>{tdEquipeTag(dash(member.Equipe))}</td>
                   {showPortage ? <td>{dash(member.Portage)}</td> : null}
                   {showStatut ? <td>{dash(member.Statut)}</td> : null}
                   {showSpecialite ? <td>{dash(member.Specialite)}</td> : null}

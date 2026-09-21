@@ -48,7 +48,7 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 | Plans d’activité | `/pa` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Couche 5 ; données encore ouvertes (couche 6 plus tard) |
 | Bons de commande | `/bdc` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Idem |
 | Prestation / CRA (liste) | `/cra` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Freelances : déclaration via `/cra/declarer` |
-| Déclarer mon CRA | `/cra/declarer` | **oui** | **non** | **oui** | **non** | **Appliqué** UX (rôle) | Hors `Page_*` ; filtre prestations « moi » (UX) ; ACL `Realise` reportée |
+| Déclarer mon CRA / **Mon carnet** | `/cra/declarer` | **oui** | **non** | **oui** | **non** | **Appliqué** UX (rôle) | Nav niveau 1 « Mon carnet » (Freelance/Admin) ; pas sous Budget ; hors `Page_*` ; filtre prestations « moi » (UX) |
 | Revue CRA équipe | `/cra/revue-equipe` | **oui*** | **oui*** | **non** | **non** | **Appliqué** UX (rôle + dép.) | *Uniquement si `Equipe.Equipe` renseigné ; périmètre = même département ; hors `Page_*` ; ACL `Realise` encore ouverte (#47) |
 | Récap porteurs | `/outils/recap-porteurs` | **oui** | **non** | **non** | **non** | **Appliqué** UX | |
 | Procès-verbaux | `/pv` | **oui** | **non** | **non** | **non** | **Appliqué** UX (stub) | |
@@ -97,10 +97,11 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-09-21 | Freelance : nav « Mon carnet » en niveau 1 (`/cra/declarer`) ; retrait du sous-menu Budget (Budget disparaît s’il ne reste aucun enfant accessible) | 5 | Ajustements UX carnet |
 | 2026-09-21 | Access Rules `Realise` : Owner/Admin CRUD ; Resp. RU département ; Freelance RU soi + C ; `Calcul_TTC` +R−U hors Owner (mémo) ; vérif MCP OK | 6 | [#47](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/47) / [#70](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/70) HITL Owner |
 | 2026-09-21 | Revue CRA équipe (`/cra/revue-equipe`) : nav + garde Admin/Resp. **avec** département ; filtre UX même `Equipe.Equipe` ; update `Nb_jours` / `Taches_realisees` / `BDC_cible` ; pas de workflow validation | 5, 6 (doc) | [#70](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/70) (suite [#34](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/34)) |
 | 2026-09-19 | Déclarer mon CRA (`/cra/declarer`) : nav + garde Freelance/Admin ; filtre UX prestations soi ; écriture `Realise` allowlistée ; ACL `Realise` reportée ; HITL lecture `Equipe.E_mail` soi documentée | 5, 6 (doc) | [#33](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/33) V1 |
-| 2026-09-19 | Équipe : colonne `Avatar` (seed Pixelbot) + affichage liste/fiche ; CSP `img-src` DiceBear ; pas d’écriture widget ni changement ACL Freelance | 5 | [#67](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/pull/67) |
+| 2026-09-19 | Équipe : colonne `Avatar` (seed DiceBear) + affichage liste/fiche ; CSP `img-src` DiceBear ; pas d’écriture widget ni changement ACL Freelance | 5 | [#67](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/pull/67) |
 | 2026-09-19 | Fiche Équipe : section Missions & prestations (lecture lazy `Missions` / `Missions_enfants`, liens `/missions/:id`) ; pas de changement nav / ACL tables | 5 | [#62](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/62) |
 | 2026-09-19 | Access Rules `Equipe.TJM,Total_TTC` : Admin toutes fiches + soi ; vérif MCP OK | 6 | [#60](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/60) HITL Owner |
 | 2026-09-19 | Fiche Équipe : affiche TJM / Total TTC si lisibles ; cible ACL Admin + soi (#60 HITL) | 5, 6 (doc) | [#61](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/61) / [#60](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/60) |

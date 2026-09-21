@@ -1,13 +1,13 @@
-# Déclarer mon CRA
+# Mon carnet (déclarer le CRA)
 
-[← CRA](README.md) › **Déclaration**
+[← CRA](README.md) › **Mon carnet**
 
 > **Route** : `/cra/declarer`  
-> **Nav** : Budget → Déclarer mon CRA (Freelance et Admin)
+> **Nav** : **Mon carnet** (niveau 1 — Freelance et Admin). Pas sous Budget.
 
 ## En clair
 
-En fin de mois, le freelance ouvre **Déclarer mon CRA**, choisit le mois, et ne voit **que ses prestations en cours** (groupées par mission). Pour chacune : nombre de jours + description courte, puis enregistrement. La page **Missions** reste ouverte pour tout le monde (contexte, documents) — ce n’est pas un filtre sur le catalogue.
+En fin de mois, le freelance ouvre **Mon carnet**, choisit le mois, et ne voit **que ses prestations en cours** (groupées par mission). Pour chacune : nombre de jours + description courte, puis enregistrement. La page **Missions** reste ouverte pour tout le monde (contexte, documents) — ce n’est pas un filtre sur le catalogue.
 
 Le haut de page montre l’identité (avatar, nom, **tag équipe** coloré) et le mois. Dans l’onglet **En cours**, un **cadre** reprend le modèle de la fiche Équipe : TJM (si lisible), nombre de prestations en cours, jours saisis du mois, et **Total HT** indicatif (= jours × TJM). L’onglet **Passées** est prévu ensuite (sans ce cadre, qui n’a de sens que pour la saisie du mois).
 
@@ -24,7 +24,7 @@ Pas de drapeau `Page_*` dédié : l’accès repose sur `Acl_profil.Role` (Freel
 ## Parcours
 
 1. Choisir le **mois** du carnet.
-2. Onglet **En cours** : pour chaque **mission**, renseigner les **jours** et une **description** par prestation.
+2. Onglet **En cours** : pour chaque **mission** (libellé + **statut mission**), renseigner les **jours** et une **description** par prestation.
 3. **Publier le carnet** → crée ou met à jour les lignes `Realise` du mois.
 
 Si une saisie existe déjà pour le mois / la prestation, le formulaire la préremplit.

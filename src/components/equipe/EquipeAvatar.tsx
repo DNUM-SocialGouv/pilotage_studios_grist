@@ -9,7 +9,7 @@ type EquipeAvatarProps = {
 };
 
 /**
- * Avatar Pixelbot décoratif (DiceBear) — seed Grist `Avatar` ou repli id.
+ * Avatar Glyphs décoratif (DiceBear) — seed Grist `Avatar` ou repli id.
  * Si l’image ne charge pas (CDN indisponible), affiche un placeholder gris.
  */
 export function EquipeAvatar({ avatar, memberId, size = "sm" }: EquipeAvatarProps) {

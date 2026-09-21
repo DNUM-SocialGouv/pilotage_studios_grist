@@ -39,12 +39,13 @@ describe("isGroupActive", () => {
     assert.equal(isGroupActive("/pa", budget), true);
     assert.equal(isGroupActive("/pa/1", budget), true);
     assert.equal(isGroupActive("/cra", budget), true);
-    assert.equal(isGroupActive("/cra/declarer", budget), true);
+    assert.equal(isGroupActive("/cra/revue-equipe", budget), true);
     assert.equal(isGroupActive("/pv", budget), true);
   });
 
   it("n’est pas actif hors Budget", () => {
     assert.equal(isGroupActive("/", budget), false);
+    assert.equal(isGroupActive("/cra/declarer", budget), false);
     assert.equal(isGroupActive("/produits", budget), false);
     assert.equal(isGroupActive("/missions", budget), false);
     assert.equal(isGroupActive("/outils/recap-porteurs", budget), false);
@@ -69,14 +70,14 @@ describe("groupe Outils", () => {
 });
 
 describe("flattenNavLinks", () => {
-  it("aplatit Accueil, sous-menu Budget, liens directs et Outils", () => {
+  it("aplatit Accueil, Mon carnet, sous-menu Budget, liens directs et Outils", () => {
     const hrefs = flattenNavLinks(WIDGET_NAV_ITEMS).map((link) => link.href);
     assert.deepEqual(hrefs, [
       "/",
+      "/cra/declarer",
       "/bdc",
       "/pa",
       "/cra",
-      "/cra/declarer",
       "/cra/revue-equipe",
       "/pv",
       "/produits",
@@ -93,10 +94,10 @@ describe("WIDGET_MODULE_LINKS", () => {
     assert.deepEqual(
       WIDGET_MODULE_LINKS.map(({ text, href, status }) => ({ text, href, status })),
       [
+        { text: "Mon carnet", href: "/cra/declarer", status: "in_progress" },
         { text: "Bons de commande", href: "/bdc", status: "in_progress" },
         { text: "Plans d’activité", href: "/pa", status: "in_progress" },
         { text: "Prestation / CRA", href: "/cra", status: "in_progress" },
-        { text: "Déclarer mon CRA", href: "/cra/declarer", status: "in_progress" },
         { text: "Revue CRA équipe", href: "/cra/revue-equipe", status: "in_progress" },
         { text: "Procès-verbaux", href: "/pv", status: "coming" },
         { text: "Produits", href: "/produits", status: "coming" },
