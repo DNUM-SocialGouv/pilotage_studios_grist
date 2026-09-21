@@ -19,7 +19,7 @@ export type CraRevueEquipeSaveRow = {
   realiseId: number;
   nbJours: number;
   taches: string;
-  /** null = effacer le rattachement BDC_cible. */
+  /** null = effacer le rattachement BDC (`BDC_cible` + `Bdc_Chorus2`). */
   bdcId: number | null;
 };
 
@@ -197,16 +197,21 @@ export function buildCraRevueEquipeSaveRows(
   return out;
 }
 
-/** Champs update Realise (jours, description, BDC_cible). */
+/**
+ * Champs update Realise (jours, description, BDC).
+ * On aligne `BDC_cible` et `Bdc_Chorus2` (0 = détacher) pour que lecture et badge
+ * « Sans BDC » restent cohérents quand une ligne n’avait que Chorus.
+ */
 export function buildRealiseRevueEquipeFields(input: {
   nbJours: number;
   taches: string;
   bdcId: number | null;
 }): Record<string, unknown> {
+  const bdcRef = input.bdcId ?? 0;
   return {
     Nb_jours: input.nbJours,
     Taches_realisees: input.taches,
-    // Ref Grist : 0 = non rattaché.
-    BDC_cible: input.bdcId ?? 0,
+    BDC_cible: bdcRef,
+    Bdc_Chorus2: bdcRef,
   };
 }

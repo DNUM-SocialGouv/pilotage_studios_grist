@@ -42,14 +42,16 @@ function navItemText(link: WidgetNavLink): ReactNode {
 export function WidgetNav() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { status, flags, error, role } = useAclProfil();
+  const { status, flags, error, role, equipeLabel } = useAclProfil();
 
   // Pendant le chargement : nav complète hors liens adminOnly / craDeclarerOnly / craRevueEquipeOnly (évite flash).
   // Après résolution : filtre selon `Page_*` (fail-closed si empty/error) + rôles.
   const isAdmin = status === "standalone" || isAdminRole(role);
   const canDeclareCra = status === "standalone" || isCraDeclarerRole(role);
+  // Revue : rôle manager + département renseigné (masque le cas Admin transverse sans équipe).
   const canRevueCraEquipe =
-    status === "standalone" || isCraRevueEquipeRole(role);
+    status === "standalone" ||
+    (isCraRevueEquipeRole(role) && Boolean(equipeLabel?.trim()));
   const navTree =
     status === "loading"
       ? filterNavItemsByPageAccess(WIDGET_NAV_ITEMS, () => true, {

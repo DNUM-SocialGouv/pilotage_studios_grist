@@ -157,7 +157,7 @@ export function CraRevueEquipePage() {
 
   const metaCells: { label: string; value: ReactNode }[] = [
     {
-      label: "Freelances avec saisie",
+      label: "Collègues avec saisie",
       value: String(kpis.freelanceCount),
     },
     {

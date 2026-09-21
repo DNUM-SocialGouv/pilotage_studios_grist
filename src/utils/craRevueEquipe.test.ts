@@ -113,10 +113,14 @@ describe("init / save / fields", () => {
     ]);
   });
 
-  it("buildRealiseRevueEquipeFields met 0 si pas de BDC", () => {
+  it("buildRealiseRevueEquipeFields aligne BDC_cible et Bdc_Chorus2", () => {
     assert.deepEqual(
       buildRealiseRevueEquipeFields({ nbJours: 1, taches: "x", bdcId: null }),
-      { Nb_jours: 1, Taches_realisees: "x", BDC_cible: 0 },
+      { Nb_jours: 1, Taches_realisees: "x", BDC_cible: 0, Bdc_Chorus2: 0 },
+    );
+    assert.deepEqual(
+      buildRealiseRevueEquipeFields({ nbJours: 2, taches: "y", bdcId: 12 }),
+      { Nb_jours: 2, Taches_realisees: "y", BDC_cible: 12, Bdc_Chorus2: 12 },
     );
   });
 });

@@ -97,7 +97,13 @@ export function findSelfEquipeFromTable(
   return null;
 }
 
-async function resolveSessionEmail(preferred?: string | null): Promise<string> {
+/**
+ * E-mail session : préfère `Acl_profil.E_mail` (ou e-mail déjà résolu),
+ * sinon jeton / profil Grist.
+ */
+export async function resolveGristUserEmailForSelf(
+  preferred?: string | null,
+): Promise<string> {
   const fromPreferred = preferred?.trim().toLowerCase() ?? "";
   if (fromPreferred.includes("@")) {
     return fromPreferred;
@@ -116,7 +122,7 @@ export async function resolveSelfEquipeIdentity(
   fetchEquipe: () => Promise<GristFetchTableResult>,
   sessionEmail?: string | null,
 ): Promise<SelfEquipeIdentity> {
-  const email = await resolveSessionEmail(sessionEmail);
+  const email = await resolveGristUserEmailForSelf(sessionEmail);
   const table = await fetchEquipe();
   const found = findSelfEquipeFromTable(table, email);
   if (!found) {

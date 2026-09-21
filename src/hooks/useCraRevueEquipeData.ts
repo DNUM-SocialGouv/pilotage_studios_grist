@@ -4,12 +4,19 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useAclProfil } from "../AclProfilContext";
-import { loadMissionsTables, type MissionsData } from "./useMissionsData";
 import { fetchAllowlistedTable } from "../security/fetchTableAllowlist";
-import { recordsFromFetchTable, toEquipeMember } from "../gristMap";
-import type { EquipeMember } from "../types";
 import {
-  resolveSelfEquipeIdentity,
+  recordsFromFetchTable,
+  toEquipeMember,
+  toMission,
+  toMissionEnfant,
+  toSuiviMensuel,
+} from "../gristMap";
+import type { GristFetchTableResult } from "../gristTypes";
+import type { EquipeMember, Mission, MissionEnfant, SuiviMensuel } from "../types";
+import {
+  findSelfEquipeFromTable,
+  resolveGristUserEmailForSelf,
   type SelfEquipeIdentity,
 } from "../utils/resolveSelfEquipeId";
 
@@ -21,9 +28,9 @@ export type CraRevueEquipeData = {
   refsError: string | null;
   manager: SelfEquipeIdentity | null;
   members: EquipeMember[];
-  missions: MissionsData["missions"];
-  missionEnfants: MissionsData["missionEnfants"];
-  suivi: MissionsData["suivi"];
+  missions: Mission[];
+  missionEnfants: MissionEnfant[];
+  suivi: SuiviMensuel[];
 };
 
 export type CraRevueEquipeDataState = CraRevueEquipeData & {
@@ -45,20 +52,71 @@ const EMPTY: CraRevueEquipeData = {
 async function loadCraRevueEquipeBundle(
   sessionEmail: string | null,
 ): Promise<Omit<CraRevueEquipeData, "status" | "error">> {
-  const manager = await resolveSelfEquipeIdentity(
-    () => fetchAllowlistedTable("Equipe"),
-    sessionEmail,
+  const email = await resolveGristUserEmailForSelf(sessionEmail);
+
+  const settled = await Promise.allSettled([
+    fetchAllowlistedTable("Equipe"),
+    fetchAllowlistedTable("Missions"),
+    fetchAllowlistedTable("Missions_enfants"),
+    fetchAllowlistedTable("Realise"),
+  ]);
+
+  const equipeResult = settled[0];
+  if (equipeResult?.status !== "fulfilled") {
+    const reason = equipeResult?.status === "rejected" ? equipeResult.reason : null;
+    throw reason instanceof Error
+      ? reason
+      : new Error("Lecture Équipe impossible.");
+  }
+
+  const manager = findSelfEquipeFromTable(equipeResult.value, email);
+  if (!manager) {
+    throw new Error(
+      "Impossible de retrouver votre fiche Équipe (e-mail du compte ≠ Equipe.E_mail, ou e-mail illisible). Demandez à un Owner d’aligner l’e-mail et de corriger la règle Access Rules E_mail (refus hors soi, comme pour le TJM).",
+    );
+  }
+
+  const members = recordsFromFetchTable(equipeResult.value).map(toEquipeMember);
+
+  const failed: string[] = [];
+  const pick = <T>(
+    index: number,
+    label: string,
+    map: (raw: GristFetchTableResult) => T[],
+  ): T[] => {
+    const result = settled[index];
+    if (result?.status === "fulfilled") {
+      return map(result.value);
+    }
+    failed.push(label);
+    return [];
+  };
+
+  const missions = pick(1, "Missions", (raw) =>
+    recordsFromFetchTable(raw).map(toMission),
   );
-  const equipeRaw = await fetchAllowlistedTable("Equipe");
-  const members = recordsFromFetchTable(equipeRaw).map(toEquipeMember);
-  const tables = await loadMissionsTables();
+  if (settled[1]?.status === "rejected") {
+    const reason = settled[1].reason;
+    throw reason instanceof Error ? reason : new Error("Lecture Missions impossible.");
+  }
+
+  const missionEnfants = pick(2, "Missions_enfants", (raw) =>
+    recordsFromFetchTable(raw).map(toMissionEnfant),
+  );
+  const suivi = pick(3, "Realise", (raw) =>
+    recordsFromFetchTable(raw).map(toSuiviMensuel),
+  );
+
   return {
-    refsError: tables.refsError,
+    refsError:
+      failed.length > 0
+        ? `Référentiels partiels : ${failed.join(", ")} indisponible(s).`
+        : null,
     manager,
     members,
-    missions: tables.missions,
-    missionEnfants: tables.missionEnfants,
-    suivi: tables.suivi,
+    missions,
+    missionEnfants,
+    suivi,
   };
 }
 
