@@ -5,7 +5,7 @@
  * - `Retours` : create only (feedback).
  * - `Missions` : create + update (drawer mission master — pas de delete).
  * - `Missions_enfants` : create + update (drawer prestation — pas de delete).
- * - `Realise` : create + update (déclaration CRA freelance — pas de delete).
+ * - `Realise` : create + update (déclaration CRA freelance + revue équipe manager — pas de delete).
  * - `Droits_pages` : update only (page Admin droits des écrans — pas de create/delete).
  * - `Acl_profil` : create only (fiche session auto si absente — pas d’update/delete).
  */

@@ -10,6 +10,12 @@ import {
   type PageAccessFlags,
 } from "../security/pageAccess";
 import { createOwnAclProfilRecord } from "../utils/aclProfilGristWrite";
+import {
+  emailFromAclProfilFields,
+  pickAclProfilRow,
+} from "../utils/aclProfilPick";
+import { resolveGristUserEmail } from "../utils/gristUserEmail";
+import { findSelfEquipeFromTable } from "../utils/resolveSelfEquipeId";
 
 export type AclProfilStatus = "loading" | "ok" | "empty" | "error" | "standalone";
 
@@ -18,6 +24,11 @@ export type AclProfilData = {
   role: string | null;
   /** E_mail de la fiche Acl_profil (session) — fiable même si le jeton REST n’expose pas l’e-mail. */
   email: string | null;
+  /**
+   * Département (`Equipe.Equipe`) de la fiche Équipe matchée — pour masquer
+   * « Revue CRA équipe » si vide (cas admin transverse).
+   */
+  equipeLabel: string | null;
   flags: PageAccessFlags;
   error: string | null;
   /** Recharge la fiche session (après update `Droits_pages`). */
@@ -28,6 +39,7 @@ const INITIAL_WITHOUT_REFRESH: Omit<AclProfilData, "refresh"> = {
   status: "loading",
   role: null,
   email: null,
+  equipeLabel: null,
   flags: PAGE_ACCESS_FAIL_CLOSED,
   error: null,
 };
@@ -49,32 +61,26 @@ function roleFromRecord(fields: Record<string, unknown>): string | null {
   return null;
 }
 
-function emailFromRecord(fields: Record<string, unknown>): string | null {
-  const raw = fields.E_mail;
-  if (typeof raw !== "string") {
-    return null;
-  }
-  const t = raw.trim().toLowerCase();
-  if (!t || !t.includes("@") || t === "censored") {
-    return null;
-  }
-  return t;
-}
-
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => {
     window.setTimeout(resolve, ms);
   });
 }
 
-/** Parmi les lignes visibles (ACL soi), garder la plus ancienne. */
-function pickAclProfilRow(
-  rows: Array<Record<string, unknown> & { id: number }>,
-): (Record<string, unknown> & { id: number }) | null {
-  if (rows.length === 0) {
+async function resolveEquipeLabelForEmail(
+  email: string | null,
+): Promise<string | null> {
+  if (!email?.includes("@")) {
     return null;
   }
-  return [...rows].sort((a, b) => a.id - b.id)[0] ?? null;
+  try {
+    const table = await fetchAllowlistedTable("Equipe");
+    const self = findSelfEquipeFromTable(table, email);
+    const label = self?.equipeLabel?.trim() ?? "";
+    return label || null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -98,6 +104,7 @@ export function useAclProfilData(): AclProfilData {
         status: "standalone",
         role: null,
         email: null,
+        equipeLabel: null,
         flags: PAGE_ACCESS_ALL_OPEN,
         error: null,
       });
@@ -109,6 +116,7 @@ export function useAclProfilData(): AclProfilData {
         status: "error",
         role: null,
         email: null,
+        equipeLabel: null,
         flags: PAGE_ACCESS_FAIL_CLOSED,
         error: "Embed non autorisé : profil d’accès indisponible.",
       });
@@ -120,6 +128,7 @@ export function useAclProfilData(): AclProfilData {
         status: "standalone",
         role: null,
         email: null,
+        equipeLabel: null,
         flags: PAGE_ACCESS_ALL_OPEN,
         error: null,
       });
@@ -144,6 +153,13 @@ export function useAclProfilData(): AclProfilData {
       let lastError: string | null = null;
       let createdOnce = false;
 
+      let sessionEmail: string | null = null;
+      try {
+        sessionEmail = await resolveGristUserEmail();
+      } catch {
+        sessionEmail = null;
+      }
+
       for (let attempt = 1; attempt <= FETCH_MAX_ATTEMPTS; attempt += 1) {
         try {
           const raw = await fetchAllowlistedTable("Acl_profil");
@@ -151,7 +167,7 @@ export function useAclProfilData(): AclProfilData {
             return;
           }
           const rows = recordsFromFetchTable(raw);
-          const row = pickAclProfilRow(rows);
+          const row = pickAclProfilRow(rows, sessionEmail);
 
           if (!row) {
             if (!createdOnce) {
@@ -166,6 +182,7 @@ export function useAclProfilData(): AclProfilData {
                   status: "empty",
                   role: null,
                   email: null,
+                  equipeLabel: null,
                   flags: PAGE_ACCESS_FAIL_CLOSED,
                   error:
                     createErr instanceof Error
@@ -178,13 +195,13 @@ export function useAclProfilData(): AclProfilData {
                 return;
               }
               await sleep(FETCH_RETRY_MS);
-              // Relire après create (nouvelle tentative dans la boucle).
               continue;
             }
             setState({
               status: "empty",
               role: null,
               email: null,
+              equipeLabel: null,
               flags: PAGE_ACCESS_FAIL_CLOSED,
               error: null,
             });
@@ -193,10 +210,16 @@ export function useAclProfilData(): AclProfilData {
 
           const fields: Record<string, unknown> = { ...row };
           delete fields.id;
+          const email = emailFromAclProfilFields(fields) ?? sessionEmail;
+          const equipeLabel = await resolveEquipeLabelForEmail(email);
+          if (cancelled) {
+            return;
+          }
           setState({
             status: "ok",
             role: roleFromRecord(fields),
-            email: emailFromRecord(fields),
+            email,
+            equipeLabel,
             flags: pageAccessFromRecord(fields),
             error: null,
           });
@@ -218,6 +241,7 @@ export function useAclProfilData(): AclProfilData {
         status: "error",
         role: null,
         email: null,
+        equipeLabel: null,
         flags: PAGE_ACCESS_FAIL_CLOSED,
         error: lastError ?? "Lecture Acl_profil impossible.",
       });

@@ -12,6 +12,7 @@ import {
   editablePageAccessKeys,
   isAdminRole,
   isCraDeclarerRole,
+  isCraRevueEquipeRole,
 } from "./droitsPagesThemes.ts";
 import { pageOptionFromPathname } from "./feedbackPages.ts";
 import {
@@ -53,6 +54,13 @@ describe("droitsPagesThemes", () => {
     assert.equal(isCraDeclarerRole("Freelance"), true);
     assert.equal(isCraDeclarerRole("Invité"), false);
     assert.equal(isCraDeclarerRole(null), false);
+  });
+
+  it("détecte les rôles revue CRA équipe", () => {
+    assert.equal(isCraRevueEquipeRole("Admin"), true);
+    assert.equal(isCraRevueEquipeRole("Responsable de département"), true);
+    assert.equal(isCraRevueEquipeRole("Freelance"), false);
+    assert.equal(isCraRevueEquipeRole(null), false);
   });
 });
 
@@ -109,7 +117,7 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
     const filtered = filterNavItemsByPageAccess(
       WIDGET_NAV_ITEMS,
       (href) => canAccessHref(href, PAGE_ACCESS_FAIL_CLOSED),
-      { isAdmin: false, canDeclareCra: true },
+      { isAdmin: false, canDeclareCra: true, canRevueCraEquipe: false },
     );
     const budget = filtered.find(
       (item) => isWidgetNavGroup(item) && item.text === "Budget",
@@ -121,10 +129,27 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
     );
   });
 
+  it("montre Revue CRA équipe pour Resp. même sans Page_cra", () => {
+    const filtered = filterNavItemsByPageAccess(
+      WIDGET_NAV_ITEMS,
+      (href) => canAccessHref(href, PAGE_ACCESS_FAIL_CLOSED),
+      { isAdmin: false, canDeclareCra: false, canRevueCraEquipe: true },
+    );
+    const budget = filtered.find(
+      (item) => isWidgetNavGroup(item) && item.text === "Budget",
+    );
+    assert.ok(budget && isWidgetNavGroup(budget));
+    assert.deepEqual(
+      budget.children.map((c) => c.href),
+      ["/cra/revue-equipe"],
+    );
+  });
+
   it("masque Déclarer mon CRA si rôle non autorisé", () => {
     const filtered = filterNavItemsByPageAccess(WIDGET_NAV_ITEMS, () => true, {
       isAdmin: false,
       canDeclareCra: false,
+      canRevueCraEquipe: false,
     });
     const budget = filtered.find(
       (item) => isWidgetNavGroup(item) && item.text === "Budget",
@@ -132,6 +157,10 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
     assert.ok(budget && isWidgetNavGroup(budget));
     assert.equal(
       budget.children.some((c) => c.href === "/cra/declarer"),
+      false,
+    );
+    assert.equal(
+      budget.children.some((c) => c.href === "/cra/revue-equipe"),
       false,
     );
   });

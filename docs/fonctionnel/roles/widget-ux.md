@@ -32,8 +32,8 @@ Suivi des cellules : [`matrice-droits.md`](matrice-droits.md) tableau **A**.
 - **Limite test** : « Voir comme » en **lecture seule** bloque la création auto (écritures interdites). Pour valider le create : vrai compte utilisateur, ou provisionner la fiche en Owner puis « Voir comme » pour la lecture / menus
 - Pendant `loading` profil : **nav complète hors liens Admin** (pas de flash fail-closed ni flash lien Droits) ; gardes affichent « Vérification… »
 - Si profil `empty` / `error` (create ou lecture en échec) : alerte sous la nav + fail-closed budget
-- Filtre `WIDGET_NAV_ITEMS` : `filterNavItemsByPageAccess` + `canAccessHref` + option `isAdmin` (liens `adminOnly`)
-- Garde pages : `PageAccessGuard` sur les routes mappées (refus → `/`) ; `AdminRoleGuard` pour `/outils/droits-pages`
+- Filtre `WIDGET_NAV_ITEMS` : `filterNavItemsByPageAccess` + `canAccessHref` + options `isAdmin` / `canDeclareCra` / `canRevueCraEquipe`
+- Garde pages : `PageAccessGuard` sur les routes mappées (refus → `/`) ; `AdminRoleGuard` pour `/outils/droits-pages` ; `CraDeclarerRoleGuard` pour `/cra/declarer` ; `CraRevueEquipeRoleGuard` pour `/cra/revue-equipe`
 - Helpers purs : `src/security/pageAccess.ts` ; thématiques Admin : `src/utils/droitsPagesThemes.ts`
 - `Droits_pages` : lecture + **update** allowlistés (Owner / `Role_ACL` Admin côté ACL Grist)
 - `useAclProfil` hors provider → **throw** (comme `useGristPa`)

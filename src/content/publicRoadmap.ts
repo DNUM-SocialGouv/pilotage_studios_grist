@@ -406,18 +406,20 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     themeId: "cra",
     title: "Qualifier un CRA et le lier au bon de commande",
     summary:
-      "Associer le CRA au bon de commande (chaîne jusqu’au plan d’activité).",
-    status: "next",
+      "Revue manager par département : ajuster jours / description et rattacher chaque CRA au bon de commande.",
+    status: "done",
     issueUrl:
-      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/34",
+      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/70",
     guide: {
-      lead: "Une fois le CRA relu, on le rattache au bon de commande pour que la dépense remonte correctement jusqu’au plan d’activité.",
-      stepsIntro: "Quand ce parcours sera livré, vous pourrez :",
+      lead: "Le manager d’un département passe en revue les CRA de son équipe et rattache chaque ligne au bon de commande pour le suivi budget.",
+      stepsIntro: "Sur la page Revue CRA équipe, vous pouvez :",
       steps: [
-        "Qualifier le CRA (prestation et période)",
-        "Le lier au bon de commande concerné",
-        "Garder le suivi budget cohérent (PA → BDC → réalisations)",
+        "Choisir le mois et un freelance de votre département",
+        "Ajuster les jours ou la description si besoin",
+        "Choisir le bon de commande et enregistrer",
       ],
+      pagePath: "/cra/revue-equipe",
+      pageLinkLabel: "Ouvrir Revue CRA équipe",
     },
   },
   {

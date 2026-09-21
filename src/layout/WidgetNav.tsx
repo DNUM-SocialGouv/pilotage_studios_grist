@@ -5,7 +5,7 @@ import { MainNavigation } from "@codegouvfr/react-dsfr/MainNavigation";
 import type { MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation";
 import { useAclProfil } from "../AclProfilContext";
 import { canAccessHref } from "../security/pageAccess";
-import { isAdminRole, isCraDeclarerRole } from "../utils/droitsPagesThemes";
+import { isAdminRole, isCraDeclarerRole, isCraRevueEquipeRole } from "../utils/droitsPagesThemes";
 import {
   WIDGET_NAV_ITEMS,
   filterNavItemsByPageAccess,
@@ -42,22 +42,27 @@ function navItemText(link: WidgetNavLink): ReactNode {
 export function WidgetNav() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { status, flags, error, role } = useAclProfil();
+  const { status, flags, error, role, equipeLabel } = useAclProfil();
 
-  // Pendant le chargement : nav complète hors liens adminOnly / craDeclarerOnly (évite flash).
+  // Pendant le chargement : nav complète hors liens adminOnly / craDeclarerOnly / craRevueEquipeOnly (évite flash).
   // Après résolution : filtre selon `Page_*` (fail-closed si empty/error) + rôles.
   const isAdmin = status === "standalone" || isAdminRole(role);
   const canDeclareCra = status === "standalone" || isCraDeclarerRole(role);
+  // Revue : rôle manager + département renseigné (masque le cas Admin transverse sans équipe).
+  const canRevueCraEquipe =
+    status === "standalone" ||
+    (isCraRevueEquipeRole(role) && Boolean(equipeLabel?.trim()));
   const navTree =
     status === "loading"
       ? filterNavItemsByPageAccess(WIDGET_NAV_ITEMS, () => true, {
           isAdmin: false,
           canDeclareCra: false,
+          canRevueCraEquipe: false,
         })
       : filterNavItemsByPageAccess(
           WIDGET_NAV_ITEMS,
           (href) => canAccessHref(href, flags),
-          { isAdmin, canDeclareCra },
+          { isAdmin, canDeclareCra, canRevueCraEquipe },
         );
 
   const onNavClick = (href: string) => (e: MouseEvent<HTMLAnchorElement>) => {

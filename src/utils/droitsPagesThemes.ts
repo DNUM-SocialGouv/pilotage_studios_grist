@@ -92,6 +92,15 @@ export function isCraDeclarerRole(role: string | null | undefined): boolean {
   return t === "Admin" || t === "Freelance";
 }
 
+/**
+ * Rôles autorisés à ouvrir « Revue CRA équipe » (couche 5, hors Page_*).
+ * Le département (`Equipe.Equipe`) est contrôlé dans la page.
+ */
+export function isCraRevueEquipeRole(role: string | null | undefined): boolean {
+  const t = role?.trim() ?? "";
+  return t === "Admin" || t === "Responsable de département";
+}
+
 /** Clés éditables (tout sauf Accueil). */
 export function editablePageAccessKeys(): PageAccessKey[] {
   return DROITS_PAGES_THEMES.flatMap((theme) =>
