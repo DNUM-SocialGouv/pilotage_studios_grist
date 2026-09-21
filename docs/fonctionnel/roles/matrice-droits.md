@@ -32,7 +32,7 @@ Ce document est le **tableau de bord des droits** du Pilotage : pour chaque écr
 | 3 | Propriété d’utilisateur | Règles d’accès → propriétés | Qui est connecté → fiche Equipe | **Fait** (`Equipe` ← `user.Email` / `E_mail`) |
 | 4 | Pont vers le widget | Table `Acl_profil` | Rôle + `Page_*` (formules ← `Droits_pages`) | **Fait** |
 | 5 | Confort interface (widget) | Nav + gardes de route | Masquer / bloquer écrans | **Fait** (selon `Page_*`) |
-| 6 | Règles d’accès (tables) | Access Rules Grist | Protéger les données (fins) | **Partiel** — `Equipe` par rôle (#55) ; pas encore de mur sur `Realise` |
+| 6 | Règles d’accès (tables) | Access Rules Grist | Protéger les données (fins) | **Partiel** — `Equipe` par rôle (#55) ; `Realise` par rôle (#47/#70) ; montants BDC / summaries Owner |
 
 Détail technique des règles actuelles : [access-rules.md](access-rules.md).
 
@@ -49,6 +49,7 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 | Bons de commande | `/bdc` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Idem |
 | Prestation / CRA (liste) | `/cra` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Freelances : déclaration via `/cra/declarer` |
 | Déclarer mon CRA | `/cra/declarer` | **oui** | **non** | **oui** | **non** | **Appliqué** UX (rôle) | Hors `Page_*` ; filtre prestations « moi » (UX) ; ACL `Realise` reportée |
+| Revue CRA équipe | `/cra/revue-equipe` | **oui*** | **oui*** | **non** | **non** | **Appliqué** UX (rôle + dép.) | *Uniquement si `Equipe.Equipe` renseigné ; périmètre = même département ; hors `Page_*` ; ACL `Realise` encore ouverte (#47) |
 | Récap porteurs | `/outils/recap-porteurs` | **oui** | **non** | **non** | **non** | **Appliqué** UX | |
 | Procès-verbaux | `/pv` | **oui** | **non** | **non** | **non** | **Appliqué** UX (stub) | |
 | Missions | `/missions` | oui | oui | oui | oui | **Appliqué** UX | |
@@ -74,8 +75,8 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | `BDC` montants / Devis / Sofiane… | RU | — | — | — | **Appliqué (Owner)** | `-RU` si non-Owner |
 | `Constatations` | CRUD | — | — | — | **Appliqué (Owner)** | `user.Access == "OWNER"` → `+CRUD` |
 | `Commandes_Sofiane` | CRUD | R | — | — | Non (rôle) | |
-| `Realise` (CRA) hors montants | CRUD | R département | **R/U ses lignes** (cible) ; widget create/update V1 | — | **Non** (ACL) / **Partiel** (widget) | Écriture widget `#33` V1 ; mur Access Rules reporté (#47) |
-| `Realise.Calcul_TTC` | RU | — | — | — | **Appliqué (Owner)** | `-RU` si non-Owner |
+| `Realise` (CRA) hors montants | CRUD | R/U département | **R/U + C** ses lignes | — | **Appliqué** (ACL) + widget | Déclaration `#33` ; revue `#70` ; mur `#47` HITL 2026-09-21 |
+| `Realise.Calcul_TTC` | R ; U Owner | R | R | R | **Appliqué** | `+R -U` si non-Owner |
 | `Missions` / `Missions_enfants` | CRUD | R/U dép. | R ses missions | R / — | Non (rôle) | |
 | `Retours` (feedback) | CR (widget liste) | C (+ R liste V1) | C (+ R liste V1) | C ? | Widget create + **Read liste V1** | Kanban Feedback : affichage **ouverts seulement** (hors Fait/Écarté) ; ACL Read partagée |
 | `Acl_profil` | CRUD | CRUD | CR soi | CR soi | **Appliqué** | Owner/Admin `+CRUD` ; `user.Email == rec.E_mail` → `+CR` ; `True` → `-CRUD` |
@@ -96,6 +97,8 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-09-21 | Access Rules `Realise` : Owner/Admin CRUD ; Resp. RU département ; Freelance RU soi + C ; `Calcul_TTC` +R−U hors Owner (mémo) ; vérif MCP OK | 6 | [#47](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/47) / [#70](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/70) HITL Owner |
+| 2026-09-21 | Revue CRA équipe (`/cra/revue-equipe`) : nav + garde Admin/Resp. **avec** département ; filtre UX même `Equipe.Equipe` ; update `Nb_jours` / `Taches_realisees` / `BDC_cible` ; pas de workflow validation | 5, 6 (doc) | [#70](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/70) (suite [#34](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/34)) |
 | 2026-09-19 | Déclarer mon CRA (`/cra/declarer`) : nav + garde Freelance/Admin ; filtre UX prestations soi ; écriture `Realise` allowlistée ; ACL `Realise` reportée ; HITL lecture `Equipe.E_mail` soi documentée | 5, 6 (doc) | [#33](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/33) V1 |
 | 2026-09-19 | Équipe : colonne `Avatar` (seed Pixelbot) + affichage liste/fiche ; CSP `img-src` DiceBear ; pas d’écriture widget ni changement ACL Freelance | 5 | [#67](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/pull/67) |
 | 2026-09-19 | Fiche Équipe : section Missions & prestations (lecture lazy `Missions` / `Missions_enfants`, liens `/missions/:id`) ; pas de changement nav / ACL tables | 5 | [#62](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/62) |

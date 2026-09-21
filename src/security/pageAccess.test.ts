@@ -57,6 +57,7 @@ describe("pageAccessKeyForPath / canAccessPath", () => {
     assert.equal(pageAccessKeyForPath("/bdc"), "Page_bdc");
     assert.equal(pageAccessKeyForPath("/cra"), "Page_cra");
     assert.equal(pageAccessKeyForPath("/cra/declarer"), null);
+    assert.equal(pageAccessKeyForPath("/cra/revue-equipe"), null);
     assert.equal(pageAccessKeyForPath("/outils/recap-porteurs"), "Page_recap_porteurs");
     assert.equal(pageAccessKeyForPath("/outils/droits-pages"), null);
     assert.equal(pageAccessKeyForPath("/equipe"), "Page_equipe");
@@ -64,9 +65,10 @@ describe("pageAccessKeyForPath / canAccessPath", () => {
     assert.equal(pageAccessKeyForPath("/analyse"), null);
   });
 
-  it("refuse CRA liste en fail-closed ; déclaration hors Page_*", () => {
+  it("refuse CRA liste en fail-closed ; déclaration / revue hors Page_*", () => {
     assert.equal(canAccessPath("/cra", PAGE_ACCESS_FAIL_CLOSED), false);
     assert.equal(canAccessPath("/cra/declarer", PAGE_ACCESS_FAIL_CLOSED), true);
+    assert.equal(canAccessPath("/cra/revue-equipe", PAGE_ACCESS_FAIL_CLOSED), true);
     assert.equal(canAccessPath("/missions", PAGE_ACCESS_FAIL_CLOSED), true);
     assert.equal(canAccessPath("/equipe", PAGE_ACCESS_FAIL_CLOSED), true);
     assert.equal(canAccessPath("/outils/droits-pages", PAGE_ACCESS_FAIL_CLOSED), true);

@@ -2,6 +2,7 @@ import { MemoryRouter, Navigate, Route, Routes, useParams } from "react-router-d
 import { AclProfilProvider } from "./AclProfilContext";
 import { AdminRoleGuard } from "./components/AdminRoleGuard";
 import { CraDeclarerRoleGuard } from "./components/CraDeclarerRoleGuard";
+import { CraRevueEquipeRoleGuard } from "./components/CraRevueEquipeRoleGuard";
 import { PageAccessGuard } from "./components/PageAccessGuard";
 import { GristPaProvider } from "./GristPaContext";
 import { WidgetLayout } from "./layout/WidgetLayout";
@@ -15,6 +16,7 @@ import { PaListView } from "./pages/PaListView";
 import { CraDeclarerPage } from "./pages/CraDeclarerPage";
 import { CraListView } from "./pages/CraListView";
 import { CraRecapPorteursPage } from "./pages/CraRecapPorteursPage";
+import { CraRevueEquipePage } from "./pages/CraRevueEquipePage";
 import { DroitsPagesAdminPage } from "./pages/DroitsPagesAdminPage";
 import { EquipeDetailView } from "./pages/EquipeDetailView";
 import { EquipeLayout } from "./pages/EquipeLayout";
@@ -119,6 +121,14 @@ export default function App() {
                   <CraDeclarerRoleGuard>
                     <CraDeclarerPage />
                   </CraDeclarerRoleGuard>
+                }
+              />
+              <Route
+                path="cra/revue-equipe"
+                element={
+                  <CraRevueEquipeRoleGuard>
+                    <CraRevueEquipePage />
+                  </CraRevueEquipeRoleGuard>
                 }
               />
               <Route

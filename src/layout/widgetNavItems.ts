@@ -15,6 +15,11 @@ export type WidgetNavLink = {
    * Indépendant des `Page_*` — ne passe pas par `canAccess`.
    */
   craDeclarerOnly?: boolean;
+  /**
+   * Visible seulement si rôle Admin ou Responsable de département
+   * (revue CRA équipe). Indépendant des `Page_*`.
+   */
+  craRevueEquipeOnly?: boolean;
 };
 
 export type WidgetNavGroup = {
@@ -42,6 +47,12 @@ export const WIDGET_NAV_ITEMS: WidgetNavItem[] = [
         href: "/cra/declarer",
         status: "in_progress",
         craDeclarerOnly: true,
+      },
+      {
+        text: "Revue CRA équipe",
+        href: "/cra/revue-equipe",
+        status: "in_progress",
+        craRevueEquipeOnly: true,
       },
       { text: "Procès-verbaux", href: "/pv", status: "coming" },
     ],
@@ -79,7 +90,7 @@ export function isNavActive(pathname: string, href: string): boolean {
   if (href === "/") {
     return pathname === "/";
   }
-  // Liste Admin CRA : ne pas rester active sur `/cra/declarer`.
+  // Liste Admin CRA : ne pas rester active sur `/cra/declarer` ni `/cra/revue-equipe`.
   if (href === "/cra") {
     return pathname === "/cra";
   }
@@ -94,14 +105,20 @@ export function isGroupActive(pathname: string, group: WidgetNavGroup): boolean 
  * Filtre nav selon drapeaux `Page_*` (couche 5).
  * `adminOnly` : lien réservé rôle Admin (indépendant de `Page_*`).
  * `craDeclarerOnly` : lien réservé Freelance / Admin (indépendant de `Page_*`).
+ * `craRevueEquipeOnly` : lien réservé Admin / Resp. (indépendant de `Page_*`).
  */
 export function filterNavItemsByPageAccess(
   items: WidgetNavItem[],
   canAccess: (href: string) => boolean,
-  options?: { isAdmin?: boolean; canDeclareCra?: boolean },
+  options?: {
+    isAdmin?: boolean;
+    canDeclareCra?: boolean;
+    canRevueCraEquipe?: boolean;
+  },
 ): WidgetNavItem[] {
   const isAdmin = options?.isAdmin === true;
   const canDeclareCra = options?.canDeclareCra === true;
+  const canRevueCraEquipe = options?.canRevueCraEquipe === true;
   const out: WidgetNavItem[] = [];
   for (const item of items) {
     if (isWidgetNavGroup(item)) {
@@ -111,6 +128,9 @@ export function filterNavItemsByPageAccess(
         }
         if (child.craDeclarerOnly) {
           return canDeclareCra;
+        }
+        if (child.craRevueEquipeOnly) {
+          return canRevueCraEquipe;
         }
         return canAccess(child.href);
       });
@@ -124,6 +144,12 @@ export function filterNavItemsByPageAccess(
     }
     if (item.craDeclarerOnly) {
       if (canDeclareCra) {
+        out.push(item);
+      }
+      continue;
+    }
+    if (item.craRevueEquipeOnly) {
+      if (canRevueCraEquipe) {
         out.push(item);
       }
       continue;

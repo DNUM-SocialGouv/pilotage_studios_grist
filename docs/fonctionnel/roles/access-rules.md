@@ -1,11 +1,13 @@
 # Access Rules — état des lieux
 
-Snapshot **2026-09-19** — MCP `grist_get_acl_rules`, doc `nei9DeARs5Eo`.  
+Snapshot **2026-09-21** — MCP `grist_get_acl_rules`, doc `nei9DeARs5Eo`.  
 Anonymisé — pas de noms ni d’emails.
 
 ## En clair
 
 La table **Équipe** a des règles par **rôle** : lecture seule pour la plupart, écriture Owner/Admin, e-mail protégé, et les **Freelances** ne voient que Prénom-Nom · département · Spécialité sur l’annuaire. **TJM** et **Total TTC** : Owner / Admin sur toutes les fiches, et **soi-même** sur sa fiche (#60 — appliqué 2026-09-19).
+
+La table **Realise** (CRA) a un **mur par rôle** (#47 / suite #70) : Owner/Admin tout ; Responsable son département ; Freelance ses lignes (+ create) ; `Calcul_TTC` lecture seule hors Owner.
 
 ## Synthèse
 
@@ -17,7 +19,7 @@ La table **Équipe** a des règles par **rôle** : lecture seule pour la plupart
 | `Equipe` table (`*`) | Owner **ou** `Role_ACL == Admin` → `+CRUD` ; `True` → `+R -CUD` |
 | `Equipe.E_mail` | **HITL #33** : deny hors soi (comme TJM) — voir détail |
 | `Equipe` colonnes « hors carte » | `Role_ACL == Freelance` → `-RU` (voir liste) |
-| Distinction rôles sur `Realise` | **pas encore** (#47) — après la V1 déclaration widget |
+| Distinction rôles sur `Realise` | **Appliqué** (#47 / #70) — voir détail table `Realise` |
 
 ## Lecture des permissions
 
@@ -51,6 +53,26 @@ Colonnes du bloc Freelance (`-RU`) :
 Colonnes **laissées visibles** aux Freelances : `Prenom_Nom`, `Equipe`, `Specialite`, `Avatar` (+ héritage lecture table).
 
 **UI Grist** : le CRUD se configure sur le bloc **Toutes** (`*`), pas dans un bloc colonnes (qui n’offre que R/U).
+
+## Table `Realise` (détail #47 / #70 — appliqué 2026-09-21)
+
+### Colonne `Calcul_TTC`
+
+| Colonnes | Condition | Droits | Mémo |
+|----------|-----------|--------|------|
+| `Calcul_TTC` | `user.Access != "OWNER"` | `+R -U` | Tout le monde sauf Owner peut **lire** le montant TTC ; **seul un Owner** peut le modifier. |
+
+### Table `*` (Toutes)
+
+| Condition | Droits | Mémo |
+|-----------|--------|------|
+| `user.Access == "OWNER" or user.Equipe.Role_ACL == "Admin"` | `+CRUD` | Owner / Admin : lecture et écriture complètes — pilotage, dépannage, rattachement BDC. |
+| `user.Equipe.Role_ACL == "Responsable de département" and user.Equipe.Equipe == rec.Equipe` | `+RU` | Responsable : CRA du même département (`Realise.Equipe`). Pas de delete. |
+| `user.Equipe.Role_ACL == "Freelance" and user.Equipe.id == rec.Intervenants` | `+RU` | Freelance : uniquement ses lignes. |
+| `user.Equipe.Role_ACL == "Freelance"` | `+C` | Freelance : création (déclaration). |
+| `True` | `-CRUD` | Refus par défaut. |
+
+**Vérif MCP** (2026-09-21) : 5 règles `Realise` `*` + mémo `Calcul_TTC` conformes.
 
 ## Table `Acl_profil` (pont droits pages)
 
