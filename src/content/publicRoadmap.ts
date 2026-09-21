@@ -196,27 +196,6 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     },
   },
   {
-    id: "cra-envoyer",
-    themeId: "cra",
-    title: "Envoyer les CRA en fin de mois",
-    summary:
-      "Déclarer les jours et une description sur vos prestations — la relecture manager viendra ensuite.",
-    status: "current",
-    issueUrl:
-      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/33",
-    guide: {
-      lead: "En fin de mois, l’intervenant déclare son activité sur ses prestations en cours. Une relecture manager et des droits Grist plus stricts suivront.",
-      stepsIntro: "Dès maintenant, vous pouvez :",
-      steps: [
-        "Ouvrir Déclarer mon CRA et choisir le mois",
-        "Renseigner les jours et une description sur vos prestations en cours",
-        "Enregistrer (création ou mise à jour de vos lignes)",
-      ],
-      pagePath: "/cra/declarer",
-      pageLinkLabel: "Ouvrir Déclarer mon CRA",
-    },
-  },
-  {
     id: "cra-qualifier",
     themeId: "cra",
     title: "Qualifier un CRA et le lier au bon de commande",
@@ -260,17 +239,17 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     themeId: "equipe",
     title: "Affiner les droits sur les réalisations (CRA)",
     summary:
-      "Avant l’envoi des CRA : qui peut lire ou modifier quelles lignes de réalisations — testé « voir comme ».",
+      "Maintenant que la déclaration est ouverte : qui peut lire ou modifier quelles lignes de réalisations — testé « voir comme ».",
     status: "current",
     issueUrl:
       "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/47",
     guide: {
-      lead: "Les menus sont filtrés. Reste à protéger les données de réalisations elles-mêmes, pour qu’un freelance ne voie ou ne modifie que son périmètre.",
+      lead: "Les menus sont filtrés et la déclaration CRA est déjà possible. Reste à protéger les lignes de réalisations elles-mêmes, pour qu’un freelance ne voie ou ne modifie que son périmètre.",
       stepsIntro: "Travail en cours :",
       steps: [
         "Définir qui lit / modifie quelles réalisations selon le rôle",
         "Tester avec « voir comme » (admin, responsable, freelance)",
-        "Débloquer ensuite l’envoi des CRA en fin de mois en confiance",
+        "Sécuriser la déclaration CRA déjà ouverte, avant relecture et qualification",
       ],
     },
   },
@@ -419,6 +398,27 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
       ],
       pagePath: "/equipe",
       pageLinkLabel: "Ouvrir Équipe",
+    },
+  },
+  {
+    id: "cra-envoyer",
+    themeId: "cra",
+    title: "Envoyer les CRA en fin de mois",
+    summary:
+      "Déclarer les jours et une description sur vos prestations — la relecture manager viendra ensuite.",
+    status: "done",
+    issueUrl:
+      "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/33",
+    guide: {
+      lead: "En fin de mois, l’intervenant déclare déjà son activité sur ses prestations en cours. Une relecture manager et des droits Grist plus stricts suivront.",
+      stepsIntro: "Vous pouvez :",
+      steps: [
+        "Ouvrir Déclarer mon CRA et choisir le mois",
+        "Renseigner les jours et une description sur vos prestations en cours",
+        "Enregistrer (création ou mise à jour de vos lignes)",
+      ],
+      pagePath: "/cra/declarer",
+      pageLinkLabel: "Ouvrir Déclarer mon CRA",
     },
   },
   {
