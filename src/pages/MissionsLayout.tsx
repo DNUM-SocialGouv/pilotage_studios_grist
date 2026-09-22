@@ -93,6 +93,8 @@ function MissionDrawersHost({ missionsState }: { missionsState: MissionsDataStat
         statutOptions={statutOptions}
         produitOptions={produitOptions}
         intervenantOptions={intervenantOptions}
+        missions={missionsState.missions}
+        missionEnfants={missionsState.missionEnfants}
         onRecordsChanged={missionsState.reloadMissions}
       />
       <MissionEnfantDrawer

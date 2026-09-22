@@ -7,6 +7,7 @@ import {
 import {
   buildMissionEnfantCreateFields,
   buildMissionEnfantPatch,
+  buildMissionEnfantReassignParentFields,
   dateInputToGristTimestamp,
   DEFAULT_MISSION_ENFANT_STATUT,
   DEFAULT_MISSION_ENFANT_TYPE,
@@ -80,6 +81,12 @@ describe("buildMissionEnfantCreateFields", () => {
     assert.equal(fields.Statut, "En pause");
     assert.equal(fields.Date_de_debut, dateInputToGristTimestamp("2026-01-10"));
     assert.equal(fields.Type_prestation, "Freelance_jours");
+  });
+});
+
+describe("buildMissionEnfantReassignParentFields", () => {
+  it("n’écrit que Mission_parent", () => {
+    assert.deepEqual(buildMissionEnfantReassignParentFields(88), { Mission_parent: 88 });
   });
 });
 

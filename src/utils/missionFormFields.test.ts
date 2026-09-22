@@ -5,6 +5,9 @@ import {
   buildMissionPatch,
   emptyMissionCreateForm,
   missionToFormValues,
+  parseOptionalPositiveId,
+  wantsCreatePrestation,
+  wantsReassignPrestation,
 } from "./missionFormFields.ts";
 import type { Mission } from "../types.ts";
 
@@ -18,6 +21,31 @@ describe("missionFormFields", () => {
     assert.equal(fields.Nom_de_la_mission, "Rivage");
     assert.equal(fields.Statut, "A instruire");
     assert.equal(fields.Produit_SDPC, 42);
+  });
+
+  it("emptyMissionCreateForm inclut les champs réaffectation vides", () => {
+    const empty = emptyMissionCreateForm();
+    assert.equal(empty.missionSource, "");
+    assert.equal(empty.prestationExistante, "");
+  });
+
+  it("parseOptionalPositiveId et parcours create / réaffecter", () => {
+    assert.equal(parseOptionalPositiveId(""), null);
+    assert.equal(parseOptionalPositiveId("0"), null);
+    assert.equal(parseOptionalPositiveId("12"), 12);
+    const reassign = {
+      ...emptyMissionCreateForm(),
+      prestationExistante: "9",
+      prestationIntervenant: "3",
+    };
+    assert.equal(wantsReassignPrestation(reassign), true);
+    assert.equal(wantsCreatePrestation(reassign), false);
+    const createOnly = {
+      ...emptyMissionCreateForm(),
+      prestationIntervenant: "3",
+    };
+    assert.equal(wantsReassignPrestation(createOnly), false);
+    assert.equal(wantsCreatePrestation(createOnly), true);
   });
 
   it("buildMissionPatch ne retourne que les champs modifiés", () => {
@@ -48,5 +76,7 @@ describe("missionFormFields", () => {
     const v = missionToFormValues(m);
     assert.equal(v.Produit_SDPC, "7");
     assert.equal(v.Statut, "En pause");
+    assert.equal(v.missionSource, "");
+    assert.equal(v.prestationExistante, "");
   });
 });
