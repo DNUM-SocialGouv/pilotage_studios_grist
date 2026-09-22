@@ -143,7 +143,8 @@ function SingleAttachmentDownloadLink({
     };
   }, [attachmentId]);
 
-  const displayLabel = label ?? (fileName || "Télécharger");
+  const displayLabel =
+    label ?? (metaLoading ? "…" : fileName || "Télécharger");
   const detail =
     fileName != null && fileSize != null
       ? `${fileExtensionLabel(fileName)} – ${formatFileSizeFr(fileSize)}`
