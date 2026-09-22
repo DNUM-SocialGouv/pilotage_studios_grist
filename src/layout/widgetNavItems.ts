@@ -57,7 +57,7 @@ export const WIDGET_NAV_ITEMS: WidgetNavItem[] = [
       { text: "Procès-verbaux", href: "/pv", status: "coming" },
     ],
   },
-  { text: "Produits", href: "/produits", status: "coming" },
+  { text: "Produits", href: "/produits", status: "in_progress" },
   { text: "Missions", href: "/missions", status: "in_progress" },
   { text: "Équipe", href: "/equipe", status: "in_progress" },
   {

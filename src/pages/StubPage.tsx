@@ -4,14 +4,6 @@ const STUB_COPY: Record<
   string,
   { title: string; description: string; severity?: "info" | "warning" }
 > = {
-  produits: {
-    title: "Produits SDPC",
-    description: "Écran à venir. Disponible dans l’app Pilotage studios (`/produits`).",
-  },
-  missions: {
-    title: "Missions",
-    description: "Écran à venir. Disponible dans l’app Pilotage studios (`/missions`).",
-  },
   pv: {
     title: "Procès-verbaux",
     description: "Écran à venir. Disponible dans l’app Pilotage studios (`/pv`).",

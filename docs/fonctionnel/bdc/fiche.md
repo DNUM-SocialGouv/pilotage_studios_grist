@@ -58,7 +58,7 @@ Lignes `Realise` liées au BDC (`BDC_cible` ou `Bdc_Chorus2`), chargées **uniqu
 | Filtres sans résultat | « Aucune ligne ne correspond à ces filtres. » |
 | Référentiels partiels | Alerte warning + tableau / barre quand même (regroupement éventuellement incomplet) |
 
-Pas de bouton **Ajouter une dépense**, pas d’actions Dupliquer / Modifier (écriture Grist hors scope V1). Libellés produit en texte (pas de lien `/produits/:id` tant que l’écran Produits n’est pas livré).
+Pas de bouton **Ajouter une dépense**, pas d’actions Dupliquer / Modifier (écriture Grist hors scope V1). Libellés produit en texte dans le panneau Dépenses (liens catalogue disponibles depuis Missions / `/produits`).
 
 Tables : `Realise` (REST `readOnly` + filtre), `Missions`, `Missions_enfants`, `Equipe`, `Tableau_de_pilotage_SDPC_Produits_SDPC`.
 

@@ -22,10 +22,11 @@ App sœur (hors iframe) : [pilotage_studios](https://github.com/DNUM-SocialGouv/
 | **CRA** | [fonctionnel/cra/](fonctionnel/cra/) — [liste](fonctionnel/cra/liste.md) · [déclaration](fonctionnel/cra/declaration.md) · [revue équipe](fonctionnel/cra/revue-equipe.md) · [récap porteurs](fonctionnel/cra/recap-porteurs.md) | Documenté (liste `/cra` · déclaration `/cra/declarer` [#33](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/33) · revue [#70](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/70) · récap [#48](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/48)) |
 | **Feedback** | [fonctionnel/feedback/](fonctionnel/feedback/) — [alertes](fonctionnel/feedback/alertes.md) | Documenté (bouton → `Retours` ; alertes = fallback / webhook HITL) |
 | **Équipe** | [fonctionnel/equipe/](fonctionnel/equipe/) — [liste](fonctionnel/equipe/liste.md) · [fiche](fonctionnel/equipe/fiche.md) | Documenté (lecture `/equipe` ; [#53](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/53)) |
+| **Produits** | [fonctionnel/produits/](fonctionnel/produits/) — [liste](fonctionnel/produits/liste.md) · [fiche](fonctionnel/produits/fiche.md) | Documenté (lecture `/produits` ; [#3](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3)) |
 | **Rôles & droits Grist** | [fonctionnel/roles/](fonctionnel/roles/) — **[matrice](fonctionnel/roles/matrice-droits.md)** (registre vivant) · [Droits des pages Admin](fonctionnel/roles/droits-pages-admin.md) · [ACL](fonctionnel/roles/access-rules.md) · [inventaire](fonctionnel/roles/inventaire-partage.md) | 6 couches + tableaux écrans/données ; prep [#47](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/47) ; Admin [#54](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/54) |
 | **Issues publiques** | [issues-publiques.md](issues-publiques.md) | Template rédaction (repo public) |
 | **Portage → app sœur** | [portage/](portage/) | Opt-in handoff agents |
-| Produits, PV | — | Stub « À venir » (nav) — ordre : voir AGENTS §2 |
+| PV | — | Stub « À venir » (nav) — ordre : voir AGENTS §2 |
 | Évaluations, Analyse | — | Stub hors nav |
 
 ## Organisation des fichiers

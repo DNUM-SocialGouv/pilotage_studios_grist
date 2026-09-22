@@ -56,7 +56,7 @@ Jours / Montant TTC d’un **lot** = somme des CRA de ses **prestations** unique
 | Colonne | Lot | Prestation | CRA |
 |---------|-----|------------|-----|
 | Mission | Lien `/missions/:id` + badge nb prestations | Libellé + badge CRA ; meta équipe + intervenant | Période mois/année + tâches |
-| Produit | Lien `/produits/:id` (stub) | — | — |
+| Produit | Lien `/produits/:id` | — | — |
 | Statut | Badge `noIcon` | Badge propre | — |
 | Début | `formatGristMonthYear` | — | — |
 | Jours / TTC | Σ CRA prestations | CRA prestation | ligne CRA |

@@ -21,6 +21,9 @@ import { DroitsPagesAdminPage } from "./pages/DroitsPagesAdminPage";
 import { EquipeDetailView } from "./pages/EquipeDetailView";
 import { EquipeLayout } from "./pages/EquipeLayout";
 import { EquipeListView } from "./pages/EquipeListView";
+import { ProduitsDetailView } from "./pages/ProduitsDetailView";
+import { ProduitsLayout } from "./pages/ProduitsLayout";
+import { ProduitsListView } from "./pages/ProduitsListView";
 import { StubPage } from "./pages/StubPage";
 import { WelcomePage } from "./pages/WelcomePage";
 import { getEmbedTrust } from "./security/embedTrust";
@@ -87,10 +90,13 @@ export default function App() {
                 path="produits"
                 element={
                   <PageAccessGuard>
-                    <StubPage slug="produits" />
+                    <ProduitsLayout />
                   </PageAccessGuard>
                 }
-              />
+              >
+                <Route index element={<ProduitsListView />} />
+                <Route path=":id" element={<ProduitsDetailView />} />
+              </Route>
               <Route
                 path="missions"
                 element={

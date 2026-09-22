@@ -444,19 +444,37 @@ export const PUBLIC_ROADMAP_ITEMS: PublicRoadmapItem[] = [
     },
   },
   {
-    id: "produits-pv",
+    id: "catalogue-produits",
     themeId: "suite",
-    title: "Catalogue Produits, procès-verbaux, évaluations",
+    title: "Catalogue Produits",
     summary:
-      "Écrans utiles, mais après le cœur pilotage missions / CRA / droits.",
-    status: "later",
+      "Consulter le référentiel SDPC et les missions rattachées à chaque produit.",
+    status: "done",
     issueUrl:
       "https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3",
     guide: {
-      lead: "Après le cœur missions / CRA / droits, d’autres écrans enrichiront le pilotage.",
+      lead: "Le catalogue Produits reprend le référentiel SDPC lié aux missions.",
+      stepsIntro: "Vous pouvez :",
+      steps: [
+        "Parcourir et filtrer les produits (département, statut, en production)",
+        "Ouvrir une fiche pour le contexte et les liens utiles",
+        "Voir les missions rattachées à un produit",
+      ],
+      pagePath: "/produits",
+      pageLinkLabel: "Ouvrir Produits",
+    },
+  },
+  {
+    id: "pv-evaluations",
+    themeId: "suite",
+    title: "Procès-verbaux et évaluations",
+    summary:
+      "Écrans utiles après le cœur pilotage et le catalogue Produits.",
+    status: "later",
+    guide: {
+      lead: "Après le catalogue Produits, d’autres écrans enrichiront le pilotage.",
       stepsIntro: "À venir, notamment :",
       steps: [
-        "Le catalogue Produits lié aux missions",
         "Les procès-verbaux pour formaliser les étapes d’un accompagnement",
         "Les évaluations pour capitaliser le retour d’expérience",
       ],

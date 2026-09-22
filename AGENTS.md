@@ -47,7 +47,8 @@ Réduire la complexité ; pas d’ajout « au cas où ». Les agents **proposent
 | `/outils/recap-porteurs` | Implémenté (récap mensuel par portage) |
 | `/outils/droits-pages` | Implémenté (Admin : matrice `Droits_pages`) |
 | `/equipe`, `/equipe/:id` | Implémenté (liste + fiche lecture) |
-| `/produits`, `/pv` | Stub « À venir » (nav) |
+| `/produits`, `/produits/:id` | Implémenté (liste + fiche lecture) |
+| `/pv` | Stub « À venir » (nav) |
 | `/evaluations`, `/analyse` | Stub hors nav |
 
 Nav principale : Accueil, **Mon carnet** (Freelance/Admin, `/cra/declarer`), **Budget** (sous-menu Bons de commande · Plans d’activité · Prestation / CRA · Revue CRA équipe · Procès-verbaux — masqué si aucun enfant accessible, typiquement côté Freelance), Produits, Missions, **Équipe**, **Outils** (Récap porteurs · Droits des pages — Admin). Pas de route `/budget`. `/intervenants` redirige vers `/equipe`.
@@ -62,7 +63,7 @@ Entrée MemoryRouter : `/` (`WelcomePage` — **feuille de route kanban** Backlo
 2. **CRUD prestations** ([#31](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/31)) — **livré**
 3. **CRA** en tranches : suivre ([#32](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/32)) — **livré (lecture)** → récap porteurs ([#48](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/48)) — **livré** (`/outils/recap-porteurs`) · déclarer ([#33](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/33)) — **livré V1** (`/cra/declarer`, saisie seule) → revue équipe + BDC ([#70](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/70), suite [#34](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/34)) — **livré V1** (`/cra/revue-equipe`) → Access Rules `Realise` (#47)
 4. **Droits Grist** : préparation ([#47](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/47)) en amont de l’écriture CRA ; Équipe liste/fiche ([#53](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/53)) — droits écran ([#54](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/54)) et Access Rules table ([#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55)) ensuite ; UX « page freelance » **après** Access Rules serveur
-5. Plus tard : Produits ([#3](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3)), forfait ([#36](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/36)), dates←CRA ([#37](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/37)), PV, Évaluations
+5. **Produits** ([#3](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3)) — **livré** (liste + fiche lecture) ; plus tard : forfait ([#36](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/36)), dates←CRA ([#37](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/37)), PV, Évaluations
 6. Analyse : rester stub (hors scope widget)
 
 Visibilité users : section roadmap sur `/` + issues rédigées selon [`docs/issues-publiques.md`](docs/issues-publiques.md).
@@ -80,7 +81,7 @@ Visibilité users : section roadmap sur `/` + issues rédigées selon [`docs/iss
 |------|----------|
 | Routes | `src/App.tsx` |
 | Nav | `src/layout/WidgetNav.tsx` + [`widgetNavItems.ts`](src/layout/widgetNavItems.ts) (`WIDGET_NAV_ITEMS`, groupe Budget) |
-| Pages | `src/pages/WelcomePage.tsx`, `Pa*.tsx`, `Bdc*.tsx`, `Missions*.tsx`, `Equipe*.tsx`, `CraListView.tsx`, `CraDeclarerPage.tsx`, `CraRevueEquipePage.tsx`, `CraRecapPorteursPage.tsx`, `DroitsPagesAdminPage.tsx`, `StubPage.tsx` |
+| Pages | `src/pages/WelcomePage.tsx`, `Pa*.tsx`, `Bdc*.tsx`, `Missions*.tsx`, `Equipe*.tsx`, `Produits*.tsx`, `CraListView.tsx`, `CraDeclarerPage.tsx`, `CraRevueEquipePage.tsx`, `CraRecapPorteursPage.tsx`, `DroitsPagesAdminPage.tsx`, `StubPage.tsx` |
 | Contenu public | [`src/content/publicRoadmap.ts`](src/content/publicRoadmap.ts) (feuille de route accueil) |
 | Données | `src/hooks/useGristPaData.ts`, `useBdcDepensesData.ts`, `useMissionsData.ts`, `useEquipeData.ts`, `useEquipeMemberMissionsData.ts`, `GristPaContext.tsx`, `gristMap.ts`, `gristRest.ts`, `gristAccessToken.ts` |
 | Sécu | `src/security/embedTrust.ts`, `NothingHerePage.tsx`, `ensureFreshBuild.ts`, `fetchTableAllowlist.ts`, `writeTableAllowlist.ts` |
@@ -99,8 +100,9 @@ Visibilité users : section roadmap sur `/` + issues rédigées selon [`docs/iss
 |-------|---------|
 | Ancre widget + liste PA | `Plan_activite` |
 | Finance PA + écrans BDC (accès full) | `BDC`, `Constatations`, `Commandes_Sofiane` |
-| Onglet Dépenses fiche BDC **ou** écrans `/missions` **ou** `/cra` **ou** `/cra/declarer` **ou** `/cra/revue-equipe` **ou** `/outils/recap-porteurs` **ou** `/equipe` (lazy, lecture) | `Realise`, `Missions`, `Missions_enfants` (`Mission_parent` + `Titre_de_la_prestation`, fallbacks lecture `Libelle` / texte `Mission_enfant`), `Equipe` (annuaire `/equipe` + `Portage` récap porteurs + identité déclaration / revue), `Tableau_de_pilotage_SDPC_Produits_SDPC` |
+| Onglet Dépenses fiche BDC **ou** écrans `/missions` **ou** `/cra` **ou** `/cra/declarer` **ou** `/cra/revue-equipe` **ou** `/outils/recap-porteurs` **ou** `/equipe` **ou** `/produits` (lazy, lecture) | `Realise`, `Missions`, `Missions_enfants` (`Mission_parent` + `Titre_de_la_prestation`, fallbacks lecture `Libelle` / texte `Mission_enfant`), `Equipe` (annuaire `/equipe` + `Portage` récap porteurs + identité déclaration / revue), `Tableau_de_pilotage_SDPC_Produits_SDPC` (catalogue `/produits`) |
 | Fiche `/equipe/:id` (lazy, lecture — section Missions & prestations) | `Missions`, `Missions_enfants` (filtre `Intervenant` = personne) ; avatar = `Equipe.Avatar` (seed) |
+| Fiche `/produits/:id` (lazy, lecture — section Missions liées) | `Missions` (filtre `Produit_SDPC` = produit) |
 | Feedback widget (écriture create + lecture liste accueil) | `Retours` |
 | Droits pages session (nav + gardes) | `Acl_profil` (lecture ; create auto si absente ; `Page_*` formules ← `Droits_pages`) |
 | Matrice écrans Admin (`/outils/droits-pages`) | `Droits_pages` (lecture + update ; Owner / Admin ACL) |
@@ -195,6 +197,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 | BDC | `docs/fonctionnel/bdc/`, `BdcListView` / `BdcDetailView` |
 | Missions | `docs/fonctionnel/missions/`, `useMissionsData`, `MissionsListView` / `MissionsDetailView` |
 | Équipe | `docs/fonctionnel/equipe/`, `useEquipeData`, `useEquipeMemberMissionsData`, `EquipeLayout` / `EquipeListView` / `EquipeDetailView`, `EquipeAvatar` (seed `Equipe.Avatar` → DiceBear Glyphs) |
+| Produits | `docs/fonctionnel/produits/`, `useProduitsData`, `useProduitMissionsData`, `ProduitsLayout` / `ProduitsListView` / `ProduitsDetailView`, `produitsList` |
 | Feedback | `docs/fonctionnel/feedback/` (+ [`alertes.md`](docs/fonctionnel/feedback/alertes.md)), `FeedbackWidget`, `writeTableAllowlist` |
 | Tableau DSFR | rule `dsfr-tableaux.mdc`, MCP `user-dsfr` |
 | Embed / secrets | `embedTrust.ts`, `NothingHerePage`, `ensureFreshBuild`, SECURITY |
