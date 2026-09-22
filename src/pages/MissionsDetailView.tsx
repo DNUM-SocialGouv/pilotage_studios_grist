@@ -563,10 +563,7 @@ function MissionNotesPanel({ mission }: { mission: Mission }) {
       </div>
       <div>
         <h2 className="fr-h5 fr-mb-2w">Pièces jointes</h2>
-        <p className="fr-text--sm fr-text-mention--grey fr-mb-2w">
-          Documents rattachés à cette mission (`Docs` dans Grist). Lecture seule.
-        </p>
-        <GristAttachmentDownloadLink value={mission.Docs} label="Télécharger le document" />
+        <GristAttachmentDownloadLink value={mission.Docs} />
       </div>
     </>
   );
