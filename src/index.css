@@ -1436,7 +1436,7 @@ button.fr-link:disabled {
   min-width: 0;
 }
 
-/* Le `.fr-link` DSFR force une taille corps ; on garde la hiérarchie visuelle h2 > h3. */
+/* Le `.fr-link` DSFR force une taille corps ; on garde la hiérarchie visuelle du titre. */
 .produit-fiche__mission-title .fr-link {
   font-size: inherit;
   font-weight: inherit;

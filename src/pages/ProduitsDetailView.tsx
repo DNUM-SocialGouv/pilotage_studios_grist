@@ -91,14 +91,14 @@ function ProduitMissionBlock({
       aria-labelledby={`produit-mission-heading-${mission.id}`}
     >
       <div className="produit-fiche__mission-heading fr-mb-3w">
-        <h2
+        <h3
           id={`produit-mission-heading-${mission.id}`}
           className="fr-h4 fr-mb-0 produit-fiche__mission-title"
         >
           <Link className="fr-link" to={`/missions/${mission.id}`}>
             {titre}
           </Link>
-        </h2>
+        </h3>
         {mission.Statut?.trim() ? (
           <StatutBadge statut={mission.Statut} />
         ) : (

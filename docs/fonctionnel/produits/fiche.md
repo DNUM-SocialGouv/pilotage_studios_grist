@@ -41,7 +41,7 @@ référentiel SDPC (~37 champs sync), et missions rattachées.
 
 | Onglet | Contenu |
 |--------|---------|
-| **Missions** (1er) | Pour chaque mission liée : titre (`h2`) + badge statut, puis bloc « Équipe & prestations » **sans filtres**, colonnes orientées réalisé (jours CRA) — lecture seule |
+| **Missions** (1er) | Pour chaque mission liée : titre (`h3`, sous le nom produit en `h2` CallOut) + badge statut, puis bloc « Équipe & prestations » **sans filtres**, colonnes orientées réalisé (jours CRA) — lecture seule |
 | Identité | Identité et gouvernance (~11 champs) + description longue si présente |
 | Sécurité | Sécurité et conformité |
 | Utilisateurs | Utilisateurs et exploitation |
