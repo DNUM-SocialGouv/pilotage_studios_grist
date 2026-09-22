@@ -20,15 +20,15 @@ import {
   buildMissionEnfantCreateFields,
   buildMissionEnfantReassignParentFields,
 } from "../../utils/missionEnfantFormFields.ts";
-import { missionEnfantLibelle } from "../../utils/missionEnfants.ts";
+import { missionEnfantReassignOptionLabel } from "../../utils/missionEnfants.ts";
 import {
   buildMissionCreateFields,
   buildMissionPatch,
   emptyMissionCreateForm,
   missionToFormValues,
   parseOptionalPositiveId,
+  resolveReassignPrestationId,
   wantsCreatePrestation,
-  wantsReassignPrestation,
   type MissionFormValues,
 } from "../../utils/missionFormFields.ts";
 import {
@@ -174,7 +174,7 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
             ivId != null && ivId !== 0 ? intervenantLabelById.get(ivId) : undefined;
           return {
             value: String(e.id),
-            label: missionEnfantLibelle(e, ivLabel),
+            label: missionEnfantReassignOptionLabel(e, ivLabel),
           };
         })
         .sort((a, b) => a.label.localeCompare(b.label, "fr", { sensitivity: "base" }));
@@ -295,9 +295,7 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
           return;
         }
 
-        const reassignId = wantsReassignPrestation(values)
-          ? parseOptionalPositiveId(values.prestationExistante)
-          : null;
+        const reassignId = resolveReassignPrestationId(values, missionEnfants);
         if (reassignId != null) {
           try {
             await updateMissionEnfantRecord(
@@ -310,7 +308,7 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
             setCreatedMasterId(masterId);
             setIsSuccess(true);
             setPrestationWarning(
-              `La mission existe déjà. Réaffectez la prestation depuis la fiche (${detail}).`,
+              `La mission existe déjà, mais la prestation n’a pas pu être rattachée (${detail}). Rouvrez « Nouvelle mission » pour réessayer la réaffectation, ou corrigez le rattachement dans Grist.`,
             );
             reset(emptyMissionCreateForm());
             return;
@@ -318,6 +316,19 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
           await refreshAfterWrite();
           close();
           void navigate(`/missions/${masterId}`);
+          return;
+        }
+
+        if (parseOptionalPositiveId(values.prestationExistante) != null) {
+          // Prestation sélectionnée mais hors mission source / absente des données :
+          // ne pas basculer silencieusement vers une création neuve.
+          await refreshAfterWrite();
+          setCreatedMasterId(masterId);
+          setIsSuccess(true);
+          setPrestationWarning(
+            "La mission existe déjà. La prestation choisie n’appartient plus à la mission source — rouvrez « Nouvelle mission » pour réessayer.",
+          );
+          reset(emptyMissionCreateForm());
           return;
         }
 

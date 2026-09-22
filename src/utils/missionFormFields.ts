@@ -63,6 +63,29 @@ export function wantsCreatePrestation(values: MissionFormValues): boolean {
   return parseOptionalPositiveId(values.prestationIntervenant) != null;
 }
 
+/**
+ * Id prestation à réaffecter si elle appartient bien à la mission source.
+ * Sinon `null` (état formulaire incohérent ou sélection absente).
+ */
+export function resolveReassignPrestationId(
+  values: MissionFormValues,
+  missionEnfants: { id: number; Mission?: unknown }[],
+): number | null {
+  const prestaId = parseOptionalPositiveId(values.prestationExistante);
+  const sourceId = parseOptionalPositiveId(values.missionSource);
+  if (prestaId == null || sourceId == null) {
+    return null;
+  }
+  const enfant = missionEnfants.find((e) => e.id === prestaId);
+  if (enfant == null) {
+    return null;
+  }
+  if (extractGristReferenceId(enfant.Mission) !== sourceId) {
+    return null;
+  }
+  return prestaId;
+}
+
 export function buildMissionCreateFields(
   values: MissionFormValues,
 ): Partial<Omit<Mission, "id">> {

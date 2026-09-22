@@ -5,6 +5,7 @@ import {
   enfantExpandPrimary,
   enfantsOfMaster,
   missionEnfantFromGrist,
+  missionEnfantReassignOptionLabel,
   typePrestationLabel,
 } from "./missionEnfants.ts";
 
@@ -89,6 +90,18 @@ describe("typePrestationLabel", () => {
 
   it("laisse une clé inconnue inchangée", () => {
     assert.equal(typePrestationLabel("Autre_type"), "Autre_type");
+  });
+});
+
+describe("missionEnfantReassignOptionLabel", () => {
+  it("concatène titre et intervenant distincts", () => {
+    const e: MissionEnfant = { id: 1, Libelle: "Audit RGPD" };
+    assert.equal(missionEnfantReassignOptionLabel(e, "Alice Dupont"), "Audit RGPD — Alice Dupont");
+  });
+
+  it("ne double pas si le titre est déjà le nom d’intervenant", () => {
+    const e: MissionEnfant = { id: 1, Libelle: "Alice Dupont" };
+    assert.equal(missionEnfantReassignOptionLabel(e, "Alice Dupont"), "Alice Dupont");
   });
 });
 

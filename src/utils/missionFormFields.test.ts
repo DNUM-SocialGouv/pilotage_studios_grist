@@ -6,6 +6,7 @@ import {
   emptyMissionCreateForm,
   missionToFormValues,
   parseOptionalPositiveId,
+  resolveReassignPrestationId,
   wantsCreatePrestation,
   wantsReassignPrestation,
 } from "./missionFormFields.ts";
@@ -46,6 +47,23 @@ describe("missionFormFields", () => {
     };
     assert.equal(wantsReassignPrestation(createOnly), false);
     assert.equal(wantsCreatePrestation(createOnly), true);
+  });
+
+  it("resolveReassignPrestationId exige parent = mission source", () => {
+    const values = {
+      ...emptyMissionCreateForm(),
+      missionSource: "10",
+      prestationExistante: "5",
+    };
+    assert.equal(
+      resolveReassignPrestationId(values, [{ id: 5, Mission: 10 }]),
+      5,
+    );
+    assert.equal(
+      resolveReassignPrestationId(values, [{ id: 5, Mission: 99 }]),
+      null,
+    );
+    assert.equal(resolveReassignPrestationId(values, []), null);
   });
 
   it("buildMissionPatch ne retourne que les champs modifiés", () => {
