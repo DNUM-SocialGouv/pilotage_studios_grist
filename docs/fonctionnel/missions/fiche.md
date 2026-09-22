@@ -45,8 +45,8 @@ Après succès : Alert in-drawer (edit) ou fermeture (create) + rechargement des
 
 | Onglet | Contenu |
 |--------|---------|
-| **Contexte** | Champs narratifs (demande, enjeux, historique, utilisateurs / périmètre, liens FIGMA/Notion) : paragraphes, listes `*` / `-`, gras `**…**`, liens Markdown `[libellé](https://…)` |
+| **Contexte** | Champs narratifs (demande, enjeux, historique, utilisateurs / périmètre, liens FIGMA/Notion) : titres `#`–`######`, paragraphes, listes `*` / `-`, gras `**…**`, liens Markdown `[libellé](https://…)` |
 | **Équipe & prestations** | Filtres **équipe** + **période CRA** (Du mois / Au mois, bornes inclusives sur `Realise.Periode`) + **barre empilée** % TTC par équipe (totaux Nb CRA / TTC / jours **suivent la plage** ; tranche **Hors prestation** si CRA sans enfant dans la plage) ; CTA **Ajouter une prestation** ; tableau prestations avec **CRA dépliables** (chevron si ≥1 CRA dans la plage, sinon spacer ; sous-lignes période / tâches / jours / TTC) — colonnes : **titre de la prestation**, intervenant, équipe, **date de début**, **jours envisagés**, Nb CRA, TTC, statut, action **Modifier**. Si une borne période est active : seules les prestations avec ≥1 CRA dans la plage apparaissent. |
-| **Note & pièces jointes** | `Suivi_resp_studio` (lecture) + téléchargement `Docs` (`GristAttachmentDownloadLink`) — pas d’ajout / suppression |
+| **Note & pièces jointes** | `Suivi_resp_studio` (même formatage Markdown léger) + téléchargement `Docs` avec **nom de fichier** affiché (`GristAttachmentDownloadLink`) — pas d’ajout / suppression |
 
 Les CRA sont consultés via les lignes dépliables de l’onglet Équipe (plus d’onglet Réalisations dédié).

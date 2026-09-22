@@ -143,7 +143,8 @@ function SingleAttachmentDownloadLink({
     };
   }, [attachmentId]);
 
-  const displayLabel = label ?? (fileName || "Télécharger");
+  const displayLabel =
+    label ?? (metaLoading ? "…" : fileName || "Télécharger");
   const detail =
     fileName != null && fileSize != null
       ? `${fileExtensionLabel(fileName)} – ${formatFileSizeFr(fileSize)}`
@@ -199,6 +200,7 @@ function SingleAttachmentDownloadLink({
 /**
  * Lien(s) DSFR de téléchargement pour une colonne Attachments.
  * Auth via `getAccessToken` (pas de clé API dans le bundle).
+ * Sans `label` : affiche le nom de fichier dès que les métadonnées sont chargées.
  */
 export function GristAttachmentDownloadLink({
   value,

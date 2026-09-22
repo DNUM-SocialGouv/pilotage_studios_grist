@@ -910,17 +910,40 @@ a.equipe-list-name-cell:focus-visible {
   word-break: break-word;
 }
 
-.mission-fiche-prose > p:last-child {
+.mission-fiche-prose > p:last-child,
+.mission-fiche-prose > .mission-fiche-prose__heading:last-child,
+.mission-fiche-prose > .mission-fiche-prose__list:last-child {
   margin-bottom: 0;
+}
+
+.mission-fiche-prose__heading {
+  margin: 0 0 0.5rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text-title-grey);
+}
+
+.mission-fiche-prose__heading--1,
+.mission-fiche-prose__heading--2 {
+  font-size: 1.25rem;
+}
+
+.mission-fiche-prose__heading--3 {
+  font-size: 1.125rem;
+}
+
+.mission-fiche-prose__heading--4 {
+  font-size: 1rem;
+}
+
+.mission-fiche-prose__heading--5,
+.mission-fiche-prose__heading--6 {
+  font-size: 0.9375rem;
 }
 
 .mission-fiche-prose__list {
   margin: 0 0 1rem;
   padding-left: 1.25rem;
-}
-
-.mission-fiche-prose__list:last-child {
-  margin-bottom: 0;
 }
 
 .mission-fiche-prose__list li {

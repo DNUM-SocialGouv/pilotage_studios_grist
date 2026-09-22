@@ -76,4 +76,26 @@ describe("parseMissionProse", () => {
     }
     assert.equal(blocks[2]!.type, "list");
   });
+
+  it("reconnaît les titres Markdown et les listes sans ligne vide", () => {
+    const blocks = parseMissionProse(
+      "### Backlog rien\n##### Stratégie : Alice\n### ChangeLog\n* 20260715 Atelier\n* 20250905 Suite",
+    );
+    assert.equal(blocks.length, 4);
+    assert.deepEqual(blocks[0], {
+      type: "heading",
+      level: 3,
+      inlines: [{ type: "text", value: "Backlog rien" }],
+    });
+    assert.deepEqual(blocks[1], {
+      type: "heading",
+      level: 5,
+      inlines: [{ type: "text", value: "Stratégie : Alice" }],
+    });
+    assert.equal(blocks[2]!.type, "heading");
+    assert.equal(blocks[3]!.type, "list");
+    if (blocks[3]!.type === "list") {
+      assert.equal(blocks[3].items.length, 2);
+    }
+  });
 });
