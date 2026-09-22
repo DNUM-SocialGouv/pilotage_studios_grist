@@ -4,7 +4,8 @@
 
 ## Objet
 
-Voir l’essentiel d’un produit du catalogue SDPC, en lecture seule, et les missions qui y sont rattachées.
+Voir un produit du catalogue SDPC en lecture seule : identité (hero type Mon carnet),
+référentiel SDPC (~37 champs sync), et missions rattachées.
 
 ## Parcours
 
@@ -22,27 +23,43 @@ Voir l’essentiel d’un produit du catalogue SDPC, en lecture seule, et les mi
 | Chargement | Alerte « Connexion à Grist… » |
 | Erreur Grist | Alerte erreur |
 | Id inconnu | Alerte « Produit introuvable » + retour liste |
-| OK | Badges · titre · bandeau · description · liens · missions liées |
+| OK | Hero · référentiel · missions liées |
 
 ## Affichage
 
+### Hero (style Mon carnet)
+
 | Zone | Contenu |
 |------|---------|
-| Badges | Statut actuel · En production (si vrai) · Obsolescence (si vrai) |
 | Titre | Libellé `Produit` |
-| Bandeau | Département · type · chef de produit · équipe produit · statut cible (si renseignés) |
-| Description | `Description`, sinon `Description_longue` |
-| Liens | URLs http(s) produit / FO / BO / espace collab (nouvel onglet) |
-| Section | **Missions liées** : Nom (lien `/missions/:id`) · Statut |
+| Sous-titre | `Description` si distincte du nom (nom complet) |
+| Badges | Statut actuel · Statut cible · En production · Obsolescence |
+| Meta | Département · direction métier (`D_Metier`) · type |
+| Chef | `Chef_de_produit` |
+| Liens rapides | Site (`URLs_du_produit` ou FO) · espace collab. |
+
+### Référentiel SDPC
+
+Lecture seule. Indicateurs : champs non remplis + taux de complétion (calcul UI sur les
+37 champs sync, pas les formules Grist source).
+
+| Bloc | Contenu |
+|------|---------|
+| Essentiel — identité | Toujours visible : 11 champs (nom, statut, équipe, URLs, dépôts, feuille de route…) |
+| Accordéons | Sécurité et conformité · Utilisateurs et exploitation · Cycle de vie |
+| Description longue | `Description_longue` si renseignée (hors compteur sync) |
+
+Mapping et libellés : `src/utils/produitReferentiel.ts` (aligné sync app sœur).
 
 ### Missions liées
 
 - Source : table `Missions` (chargement lazy sur la fiche uniquement).
 - Filtre : `Produit_SDPC` = id du produit.
-- Pagination 10. Pas de prestations / CRA sur cette page.
+- Colonnes : Nom (lien `/missions/:id`) · Statut. Pagination 10.
 - On n’affiche que ce que Grist laisse déjà lire.
 
 ## Hors scope
 
-- Édition du produit
-- Colonnes techniques (SCORE, RGAA, stack…)
+- Édition du produit / sync vers Grist
+- Onglets Prestations / Maturité (app sœur)
+- Colonnes techniques hors périmètre sync (stack, SCORE hors RGAA sync, etc.)

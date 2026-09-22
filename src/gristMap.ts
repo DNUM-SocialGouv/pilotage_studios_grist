@@ -253,5 +253,61 @@ export function toProduitSdpc(record: GristRecord): ProduitSdpc {
       asString(record.Lien_Espace_Collaboratif_Projet) ??
       asGristChoice(record.Lien_Espace_Collaboratif_Projet),
     Obsolescence: asBoolean(record.Obsolescence),
+    UUID: asString(record.UUID),
+    D_Metier: asGristChoice(record.D_Metier) ?? asString(record.D_Metier),
+    Fonctionnalites_et_contexte: asMultilineText(record.Fonctionnalites_et_contexte),
+    Liens_repos_depots:
+      asString(record.Liens_repos_depots) ?? asGristChoice(record.Liens_repos_depots),
+    Actions_de_la_feuille_de_route: asMultilineText(record.Actions_de_la_feuille_de_route),
+    Statut_d_homologation_de_securite:
+      asGristChoice(record.Statut_d_homologation_de_securite) ??
+      asString(record.Statut_d_homologation_de_securite),
+    Debut_validite_homologation: asNumber(record.Debut_validite_homologation),
+    Fin_de_validite_d_homologation: asNumber(record.Fin_de_validite_d_homologation),
+    Besoin_DICT_Disponibilite:
+      asGristChoice(record.Besoin_DICT_Disponibilite) ??
+      asString(record.Besoin_DICT_Disponibilite),
+    Besoin_DICT_Integrite:
+      asGristChoice(record.Besoin_DICT_Integrite) ?? asString(record.Besoin_DICT_Integrite),
+    Besoin_DICT_Confidentialite:
+      asGristChoice(record.Besoin_DICT_Confidentialite) ??
+      asString(record.Besoin_DICT_Confidentialite),
+    Besoin_DICT_Tracabilite:
+      asGristChoice(record.Besoin_DICT_Tracabilite) ??
+      asString(record.Besoin_DICT_Tracabilite),
+    SCORE_RGAA_Declaration_reglementaire:
+      asGristChoice(record.SCORE_RGAA_Declaration_reglementaire) ??
+      asString(record.SCORE_RGAA_Declaration_reglementaire),
+    RGAA_Date_declaration: asNumber(record.RGAA_Date_declaration),
+    RGAA_Tx_conformite: asNumber(record.RGAA_Tx_conformite),
+    Cibles_du_produit:
+      asGristChoice(record.Cibles_du_produit) ?? asString(record.Cibles_du_produit),
+    Volumetrie_utilisateurs_par_an:
+      asGristChoice(record.Volumetrie_utilisateurs_par_an) ??
+      asString(record.Volumetrie_utilisateurs_par_an),
+    Nature_de_l_application:
+      asGristChoice(record.Nature_de_l_application) ??
+      asString(record.Nature_de_l_application),
+    Criticite: asGristChoice(record.Criticite) ?? asString(record.Criticite),
+    Typologie_d_application:
+      asGristChoice(record.Typologie_d_application) ??
+      asString(record.Typologie_d_application),
+    Bouton_JDMA: asBoolean(record.Bouton_JDMA),
+    Lien_stats_JDMA:
+      asString(record.Lien_stats_JDMA) ?? asGristChoice(record.Lien_stats_JDMA),
+    Hebergement: asGristChoice(record.Hebergement) ?? asString(record.Hebergement),
+    Marche_DEV_TMA:
+      asGristChoice(record.Marche_DEV_TMA) ?? asString(record.Marche_DEV_TMA),
+    Prestataire_de_developpement:
+      asGristChoice(record.Prestataire_de_developpement) ??
+      asString(record.Prestataire_de_developpement),
+    Enjeux_Chiffres_cles: asMultilineText(record.Enjeux_Chiffres_cles),
+    Editeur: asGristChoice(record.Editeur) ?? asString(record.Editeur),
+    Date_de_demande_de_decomissionnement: asNumber(
+      record.Date_de_demande_de_decomissionnement,
+    ),
+    Retrait_de_service: asNumber(record.Retrait_de_service),
+    Projet_strategique:
+      asGristChoice(record.Projet_strategique) ?? asString(record.Projet_strategique),
   };
 }

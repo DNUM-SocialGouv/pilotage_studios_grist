@@ -1357,3 +1357,66 @@ button.fr-link:disabled {
   }
 }
 
+/* —— Fiche produit : hero type Mon carnet + tuiles référentiel —— */
+.produit-fiche.fr-container--fluid {
+  overflow: visible;
+}
+
+.produit-fiche__hero {
+  --produit-fiche-bleed: max(1rem, calc((100vw - 78rem) / 2 + 1rem));
+  margin-top: -0.5rem;
+  margin-left: calc(-1 * var(--produit-fiche-bleed));
+  margin-right: calc(-1 * var(--produit-fiche-bleed));
+  padding-left: var(--produit-fiche-bleed);
+  padding-right: var(--produit-fiche-bleed);
+  background-color: var(--background-contrast-blue-cumulus);
+}
+
+.produit-fiche__callout.fr-callout {
+  margin-bottom: 0;
+  background-color: transparent;
+  background-image: none;
+}
+
+.produit-fiche__callout .fr-callout__title {
+  font-weight: 700;
+  font-size: 1.75rem;
+  line-height: 2.25rem;
+  margin: 0 0 1rem;
+  color: var(--text-title-grey);
+}
+
+@media (min-width: 48em) {
+  .produit-fiche__callout .fr-callout__title {
+    font-size: 2.5rem;
+    line-height: 3rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.produit-fiche__hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+}
+
+.produit-fiche__hero-meta-item {
+  display: inline-flex;
+}
+
+.produit-referentiel-tile {
+  height: 100%;
+  padding: 0.75rem 1rem;
+  background-color: var(--background-default-grey);
+  border: 1px solid var(--border-default-grey);
+}
+
+.produit-referentiel-tile__label {
+  color: var(--text-mention-grey);
+}
+
+.produit-referentiel-tile__value {
+  word-break: break-word;
+}
+
