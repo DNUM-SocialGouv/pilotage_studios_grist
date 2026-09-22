@@ -55,7 +55,7 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 | Missions | `/missions` | oui | oui | oui | oui | **Appliqué** UX | |
 | Équipe | `/equipe` | oui | oui | oui | oui | **Configurable** Admin | Flag `Page_equipe` ; réglé via `/outils/droits-pages` ([#54](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/54)) |
 | Droits des pages | `/outils/droits-pages` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Garde rôle Admin (pas de `Page_*`) ; édite `Droits_pages` |
-| Produits | stub | oui | oui | oui | oui | **Appliqué** UX (stub) | |
+| Produits | `/produits`, `/produits/:id` | oui | oui | oui | oui | **Appliqué** UX (liste + fiche lecture) | Flag `Page_produits` |
 
 ---
 
@@ -97,6 +97,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-09-22 | Produits : liste + fiche lecture (`/produits`, `/produits/:id`) ; nav hors stub ; missions liées sur fiche ; pas d’écriture catalogue | 5 | [#3](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3) |
 | 2026-09-21 | Freelance : nav « Mon carnet » en niveau 1 (`/cra/declarer`) ; retrait du sous-menu Budget (Budget disparaît s’il ne reste aucun enfant accessible) | 5 | Ajustements UX carnet |
 | 2026-09-21 | Access Rules `Realise` : Owner/Admin CRUD ; Resp. RU département ; Freelance RU soi + C ; `Calcul_TTC` +R−U hors Owner (mémo) ; vérif MCP OK | 6 | [#47](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/47) / [#70](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/70) HITL Owner |
 | 2026-09-21 | Revue CRA équipe (`/cra/revue-equipe`) : nav + garde Admin/Resp. **avec** département ; filtre UX même `Equipe.Equipe` ; update `Nb_jours` / `Taches_realisees` / `BDC_cible` ; pas de workflow validation | 5, 6 (doc) | [#70](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/70) (suite [#34](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/34)) |

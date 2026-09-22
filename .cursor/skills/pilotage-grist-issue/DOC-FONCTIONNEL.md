@@ -29,7 +29,7 @@ Repérer si le module est **documenté**, **stub** ou **à documenter**.
 | `/cra/declarer` | `cra/` (déclaration) |
 | `/outils/recap-porteurs` | `cra/` (récap porteurs) |
 | `/outils/droits-pages` | `roles/` ([droits-pages-admin.md](../../../docs/fonctionnel/roles/droits-pages-admin.md)) |
-| `/produits`… (stubs) | À créer au livrable |
+| `/produits`, `/produits/:id` | `produits/` |
 | `/analyse` | N/A — hors scope widget |
 
 Croiser avec **AGENTS.md §2** et `src/pages/`.

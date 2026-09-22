@@ -100,7 +100,7 @@ describe("WIDGET_MODULE_LINKS", () => {
         { text: "Prestation / CRA", href: "/cra", status: "in_progress" },
         { text: "Revue CRA équipe", href: "/cra/revue-equipe", status: "in_progress" },
         { text: "Procès-verbaux", href: "/pv", status: "coming" },
-        { text: "Produits", href: "/produits", status: "coming" },
+        { text: "Produits", href: "/produits", status: "in_progress" },
         { text: "Missions", href: "/missions", status: "in_progress" },
         { text: "Équipe", href: "/equipe", status: "in_progress" },
         { text: "Récap porteurs", href: "/outils/recap-porteurs", status: "in_progress" },

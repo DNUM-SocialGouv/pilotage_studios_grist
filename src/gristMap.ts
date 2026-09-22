@@ -215,11 +215,43 @@ export function toEquipeMember(record: GristRecord): EquipeMember {
   };
 }
 
+function asBoolean(value: unknown): boolean | undefined {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (value === 1 || value === "1" || value === "true" || value === "True") {
+    return true;
+  }
+  if (value === 0 || value === "0" || value === "false" || value === "False") {
+    return false;
+  }
+  return undefined;
+}
+
 export function toProduitSdpc(record: GristRecord): ProduitSdpc {
   return {
     id: record.id,
     Produit: record.Produit,
     departement_sdpc: record.departement_sdpc,
     Departement_sdpc: record.Departement_sdpc,
+    Statut_actuel: asGristChoice(record.Statut_actuel) ?? asString(record.Statut_actuel),
+    Statut_cible: asGristChoice(record.Statut_cible) ?? asString(record.Statut_cible),
+    En_prod: asBoolean(record.En_prod),
+    Chef_de_produit:
+      asString(record.Chef_de_produit) ?? asGristChoice(record.Chef_de_produit),
+    Equipe: asGristChoice(record.Equipe) ?? asString(record.Equipe),
+    Type_de_produit:
+      asGristChoice(record.Type_de_produit) ?? asString(record.Type_de_produit),
+    Description: asMultilineText(record.Description),
+    Description_longue: asMultilineText(record.Description_longue),
+    URLs_du_produit: asString(record.URLs_du_produit) ?? asGristChoice(record.URLs_du_produit),
+    URL_Front_Office:
+      asString(record.URL_Front_Office) ?? asGristChoice(record.URL_Front_Office),
+    URL_Back_Office:
+      asString(record.URL_Back_Office) ?? asGristChoice(record.URL_Back_Office),
+    Lien_Espace_Collaboratif_Projet:
+      asString(record.Lien_Espace_Collaboratif_Projet) ??
+      asGristChoice(record.Lien_Espace_Collaboratif_Projet),
+    Obsolescence: asBoolean(record.Obsolescence),
   };
 }

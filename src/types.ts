@@ -148,4 +148,18 @@ export type ProduitSdpc = {
   /** Département SDPC (`departement_sdpc` / alias). */
   departement_sdpc?: unknown;
   Departement_sdpc?: unknown;
+  Statut_actuel?: string;
+  Statut_cible?: string;
+  /** `true` / `false` si lisible ; `undefined` si censuré / absent. */
+  En_prod?: boolean;
+  Chef_de_produit?: string;
+  Equipe?: string;
+  Type_de_produit?: string;
+  Description?: string;
+  Description_longue?: string;
+  URLs_du_produit?: string;
+  URL_Front_Office?: string;
+  URL_Back_Office?: string;
+  Lien_Espace_Collaboratif_Projet?: string;
+  Obsolescence?: boolean;
 };
