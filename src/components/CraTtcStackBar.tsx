@@ -10,15 +10,22 @@ export type CraTtcStackBarSlice = {
 
 export type CraTtcStackBarProps = {
   slices: CraTtcStackBarSlice[];
+  /** Omit ou chaîne vide : pas de titre au-dessus de la barre. */
   title?: string;
   /**
-   * Texte après le total TTC (ex. `283,55 jours` → `269 213,85 € · 283,55 jours`).
+   * Texte après le total (ex. `283,55 jours` → `269 213,85 € · 283,55 jours`,
+   * ou `269 213,85 € TTC · …` si `showTtcOnAmount`).
    * Omit pour le total seul (comportement BDC).
    */
   amountsExtra?: string;
+  /** Suffixe « TTC » après le montant € (fiche mission / produit). */
+  showTtcOnAmount?: boolean;
 };
 
-function emptyMessageForTitle(title: string): string {
+function emptyMessageForTitle(title: string | undefined): string {
+  if (!title?.trim()) {
+    return "Aucun TTC CRA à répartir.";
+  }
   const suffix = title.replace(/^TTC par /i, "").trim();
   return suffix ? `Aucun TTC CRA à répartir par ${suffix}.` : "Aucun TTC CRA à répartir.";
 }
@@ -29,14 +36,18 @@ function emptyMessageForTitle(title: string): string {
  */
 export function CraTtcStackBar({
   slices,
-  title = "TTC par produit",
+  title,
   amountsExtra,
+  showTtcOnAmount = false,
 }: CraTtcStackBarProps) {
   const titleId = useId();
+  const titleTrimmed = title?.trim() ?? "";
   const total = slices.reduce((sum, s) => sum + s.value, 0);
   if (total <= 0 || slices.length === 0) {
     return (
-      <p className="fr-text--sm fr-text-mention--grey fr-mb-0">{emptyMessageForTitle(title)}</p>
+      <p className="fr-text--sm fr-text-mention--grey fr-mb-0">
+        {emptyMessageForTitle(titleTrimmed || undefined)}
+      </p>
     );
   }
 
@@ -53,24 +64,30 @@ export function CraTtcStackBar({
   });
 
   const pctLabelPlain = segments.map((s) => `${s.label} ${s.pct} %`).join(" · ");
+  const amountCore = showTtcOnAmount
+    ? `${formatMontantEur(total)} TTC`
+    : formatMontantEur(total);
   const amountsExtraTrimmed = amountsExtra?.trim();
   const amounts = amountsExtraTrimmed
-    ? `${formatMontantEur(total)} · ${amountsExtraTrimmed}`
-    : formatMontantEur(total);
+    ? `${amountCore} · ${amountsExtraTrimmed}`
+    : amountCore;
   const ariaLabel = segments
     .map((s) => `${s.label} : ${s.pct} % (${formatMontantEur(s.value)})`)
     .join(" · ");
+  const repartitionLabel = titleTrimmed || "TTC";
 
   return (
     <div className="cra-ttc-stack-bar">
-      <p id={titleId} className="fr-text--sm fr-mb-1w">
-        <strong>{title}</strong>
-      </p>
+      {titleTrimmed ? (
+        <p id={titleId} className="fr-text--sm fr-mb-1w">
+          <strong>{titleTrimmed}</strong>
+        </p>
+      ) : null}
       <div
         className="widget-usage-bar"
         role="img"
-        aria-labelledby={titleId}
-        aria-label={`Répartition ${title} — ${ariaLabel} — ${amounts}`}
+        aria-labelledby={titleTrimmed ? titleId : undefined}
+        aria-label={`Répartition ${repartitionLabel} — ${ariaLabel} — ${amounts}`}
         title={`${pctLabelPlain} — ${amounts}`}
       >
         <div className="widget-usage-bar__header">

@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import type { ReactNode } from "react";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
@@ -6,9 +6,12 @@ import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
 import { EquipeFicheMissionsSection } from "../components/equipe/EquipeFicheMissionsSection";
 import { StatutBadge } from "../components/StatutBadge";
 import { tdEquipeTag } from "../components/EquipeTags";
+import { WidgetBreadcrumb } from "../components/WidgetBreadcrumb";
 import { equipeDisplayName, equipeMontantLisible } from "../utils/equipeList";
 import { formatMontantEur } from "../utils/formatMontant";
 import { useEquipeOutlet } from "./EquipeLayout";
+
+const EQUIPE_CRUMB = [{ label: "Équipe", to: "/equipe" }] as const;
 
 function readable(value: string | undefined): string | undefined {
   const t = value?.trim();
@@ -31,11 +34,11 @@ export function EquipeDetailView() {
   if (data.status === "loading" || data.status === "idle") {
     return (
       <div className="fr-py-1w">
-        <p className="fr-mb-2w">
-          <Link className="fr-link" to="/equipe">
-            ← Retour à la liste
-          </Link>
-        </p>
+        <WidgetBreadcrumb
+          className="fr-mb-2w"
+          segments={[...EQUIPE_CRUMB]}
+          currentPageLabel="Chargement"
+        />
         <Alert
           severity="info"
           small
@@ -50,11 +53,11 @@ export function EquipeDetailView() {
   if (data.status === "error") {
     return (
       <div className="fr-py-1w">
-        <p className="fr-mb-2w">
-          <Link className="fr-link" to="/equipe">
-            ← Retour à la liste
-          </Link>
-        </p>
+        <WidgetBreadcrumb
+          className="fr-mb-2w"
+          segments={[...EQUIPE_CRUMB]}
+          currentPageLabel="Erreur"
+        />
         <Alert
           severity="error"
           title="Erreur"
@@ -67,11 +70,11 @@ export function EquipeDetailView() {
   if (!member) {
     return (
       <div className="fr-py-1w">
-        <p className="fr-mb-2w">
-          <Link className="fr-link" to="/equipe">
-            ← Retour à la liste
-          </Link>
-        </p>
+        <WidgetBreadcrumb
+          className="fr-mb-2w"
+          segments={[...EQUIPE_CRUMB]}
+          currentPageLabel="Introuvable"
+        />
         <Alert
           severity="warning"
           title="Personne introuvable"
@@ -81,6 +84,7 @@ export function EquipeDetailView() {
     );
   }
 
+  const name = equipeDisplayName(member);
   const statut = readable(member.Statut);
   const role = readable(member.Role_ACL);
   const portage = readable(member.Portage);
@@ -113,11 +117,11 @@ export function EquipeDetailView() {
 
   return (
     <div className="fr-py-1w">
-      <p className="fr-mb-2w">
-        <Link className="fr-link" to="/equipe">
-          ← Retour à la liste
-        </Link>
-      </p>
+      <WidgetBreadcrumb
+        className="fr-mb-2w"
+        segments={[...EQUIPE_CRUMB]}
+        currentPageLabel={name}
+      />
 
       <div className="equipe-fiche-title-row fr-mb-2w">
         <div className="equipe-fiche-title-row__identity">
@@ -146,9 +150,7 @@ export function EquipeDetailView() {
                 ) : null}
               </ul>
             ) : null}
-            <h1 className="fr-mb-0 fr-h3 equipe-fiche-title-row__title">
-              {equipeDisplayName(member)}
-            </h1>
+            <h1 className="fr-mb-0 fr-h3 equipe-fiche-title-row__title">{name}</h1>
           </div>
         </div>
       </div>

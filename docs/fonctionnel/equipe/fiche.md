@@ -12,7 +12,7 @@ Voir la carte d’identité d’une personne, en lecture seule — mise en page 
 |---------|--------|
 | Route | `/equipe/:id` |
 | Page | `src/pages/EquipeDetailView.tsx` (sous `EquipeLayout`) |
-| Retour | Lien vers `/equipe` |
+| Retour | Fil d’Ariane : Accueil › Équipe › nom de la personne |
 | Issues | [#59](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/59) (UX) · [#60](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/60) / [#61](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/61) (TJM / Total TTC) · [#62](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/62) (missions) |
 
 ## États

@@ -94,6 +94,11 @@ span.fr-tag.fr-tag--beige-gris-galet {
   margin-bottom: 1rem;
 }
 
+/* Fiche produit : le hero beige doit coller au menu (pas de bandeau blanc). */
+.widget-shell:has(.produit-fiche) .widget-nav {
+  margin-bottom: 0;
+}
+
 /*
  * MainNavigation hors Header : sous le breakpoint lg (62em), DSFR empile
  * .fr-nav__list en colonne (parcours burger). Dans l’iframe Grist on force
@@ -455,8 +460,8 @@ span.fr-tag.fr-tag--beige-gris-galet {
 }
 
 .pilotage-col-statut-nowrap {
-  width: 9rem;
-  min-width: 9rem;
+  width: 10.5rem;
+  min-width: 10.5rem;
 }
 
 .pilotage-col-actions {
@@ -1355,5 +1360,133 @@ button.fr-link:disabled {
   .cra-carnet__entry-jours-unit {
     margin-top: 0;
   }
+}
+
+/* —— Fiche produit : hero type Mon carnet + tuiles référentiel —— */
+.produit-fiche.fr-container--fluid {
+  overflow: visible;
+}
+
+/* Fond hero fiche produit (beige gris galet DSFR). */
+.produit-fiche__hero,
+.produit-fiche__hero .fr-callout {
+  background-color: var(--background-alt-beige-gris-galet);
+}
+
+/* Ne pas coller le fil d’Ariane au menu (annule le margin-top négatif Mon carnet). */
+.produit-fiche__hero.cra-carnet__hero {
+  margin-top: 0;
+  padding-top: 1.5rem;
+}
+
+.produit-fiche__callout.fr-callout {
+  margin-bottom: 0;
+  background-image: none;
+}
+
+.produit-fiche__breadcrumb.fr-breadcrumb {
+  margin-bottom: 0.75rem;
+}
+
+.produit-fiche__breadcrumb .fr-breadcrumb__button,
+.produit-fiche__breadcrumb .fr-breadcrumb__link {
+  background-color: transparent;
+}
+
+.produit-fiche__callout .fr-callout__title {
+  font-weight: 700;
+  font-size: 1.75rem;
+  line-height: 2.25rem;
+  margin: 0 0 1rem;
+  color: var(--text-title-grey);
+}
+
+.produit-fiche__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.5rem 0.75rem;
+}
+
+.produit-fiche__title-text {
+  min-width: 0;
+}
+
+.produit-fiche__title-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.35rem 0.5rem;
+  /* Alignement haut avec le titre (compense un peu la hauteur de ligne). */
+  padding-top: 0.35rem;
+}
+
+.produit-fiche__title-tag {
+  display: inline-flex;
+}
+
+.produit-fiche__mission-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.produit-fiche__mission-title {
+  min-width: 0;
+}
+
+/* Le `.fr-link` DSFR force une taille corps ; on garde la hiérarchie visuelle du titre. */
+.produit-fiche__mission-title .fr-link {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
+/* Respire entre barre d’investissement et tableau (fiche produit). */
+.produit-fiche__mission-block .mission-equipe-recap {
+  margin-bottom: 1.5rem;
+}
+
+.produit-fiche__mission-block .mission-equipe-prestations-table {
+  margin-top: 0.25rem;
+}
+
+@media (min-width: 48em) {
+  .produit-fiche__callout .fr-callout__title {
+    font-size: 2.5rem;
+    line-height: 3rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .produit-fiche__title-tags {
+    padding-top: 0.55rem;
+  }
+}
+
+.produit-fiche__hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+}
+
+.produit-fiche__hero-meta-item {
+  display: inline-flex;
+}
+
+.produit-referentiel-tile {
+  height: 100%;
+  padding: 0.75rem 1rem;
+  background-color: var(--background-default-grey);
+  border: 1px solid var(--border-default-grey);
+}
+
+.produit-referentiel-tile__label {
+  color: var(--text-mention-grey);
+}
+
+.produit-referentiel-tile__value {
+  word-break: break-word;
 }
 

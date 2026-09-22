@@ -1,35 +1,19 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { useEffect, useMemo } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
-import { Select } from "@codegouvfr/react-dsfr/Select";
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
-import { CraTtcStackBar, type CraTtcStackBarSlice } from "../components/CraTtcStackBar";
-import { ExpandToggle, useExpandableRowIds } from "../components/expandable";
-import { tdEquipeTag } from "../components/EquipeTags";
-import { TableShell } from "../components/FinanceRecap";
 import { GristAttachmentDownloadLink } from "../components/GristAttachmentDownloadLink";
 import { useMissionEnfantDrawerRef } from "../components/missions/MissionEnfantDrawerContext";
 import { useMissionFormDrawerRef } from "../components/missions/MissionFormDrawerContext";
+import { MissionEquipePrestationsPanel } from "../components/missions/MissionEquipePrestationsPanel";
 import { MissionProse } from "../components/missions/MissionProse";
-import { MissionsListeCraRows } from "../components/missions/MissionsListeCraRows";
 import { StatutBadge } from "../components/StatutBadge";
-import type { Mission, MissionEnfant, SuiviMensuel } from "../types";
-import {
-  aggregateCraByEnfantId,
-  groupSuiviRowsByEnfantId,
-  sumSuiviTtcHorsPrestationForMission,
-} from "../utils/craByMission";
-import { formatGristDate, formatGristDateTime } from "../utils/formatGristDate";
-import { formatMontantEur } from "../utils/formatMontant";
-import {
-  collectPeriodeMonthKeys,
-  formatGristPeriodeMonthKeyLabel,
-  suiviInPeriodeRange,
-} from "../utils/gristPeriode";
+import { WidgetBreadcrumb } from "../components/WidgetBreadcrumb";
+import type { Mission } from "../types";
+import { formatGristDateTime } from "../utils/formatGristDate";
 import { extractGristReferenceId } from "../utils/gristReferences";
 import {
   enfantsOfMaster,
-  missionEnfantLibelle,
   suiviBelongsToMasterMission,
 } from "../utils/missionEnfants";
 import {
@@ -37,14 +21,10 @@ import {
   missionLibelle,
   produitsByIdFromRows,
 } from "../utils/missionsList";
-import { craRowsSorted, equipeLabelForEnfant } from "../utils/missionsListeTotaux";
 import { departementProduitSdpc } from "../utils/pilotageProduits";
 import { useMissionsOutlet } from "./MissionsLayout";
 
 type MissionTabId = "contexte" | "equipe" | "notes";
-
-const EQUIPE_SANS_LABEL = "Sans équipe";
-const EQUIPE_HORS_PRESTATION_LABEL = "Hors prestation";
 
 const NARRATIVE_SECTIONS: { title: string; keys: (keyof Mission)[] }[] = [
   { title: "Contexte et demande", keys: ["Demande", "Enjeux", "Historique"] },
@@ -91,50 +71,6 @@ function isTextFilled(value: unknown): boolean {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-function formatDecimalFr2(value: number): string {
-  return value.toLocaleString("fr-FR", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  });
-}
-
-function equipeKeyForEnfant(
-  e: MissionEnfant,
-  equipesByIntervenantId: Map<number, string>,
-): string {
-  return equipeLabelForEnfant(e, equipesByIntervenantId) ?? EQUIPE_SANS_LABEL;
-}
-
-/**
- * Agrège le TTC CRA des prestations par libellé d’équipe (barre empilée).
- * `horsPrestationTtc` : CRA legacy du master.
- */
-function aggregateTtcByEquipe(
-  enfants: MissionEnfant[],
-  ttcByEnfantId: Map<number, number>,
-  equipesByIntervenantId: Map<number, string>,
-  horsPrestationTtc = 0,
-): CraTtcStackBarSlice[] {
-  const map = new Map<string, number>();
-  for (const e of enfants) {
-    const eq = equipeKeyForEnfant(e, equipesByIntervenantId);
-    map.set(eq, (map.get(eq) ?? 0) + (ttcByEnfantId.get(e.id) ?? 0));
-  }
-  if (horsPrestationTtc > 0) {
-    map.set(
-      EQUIPE_HORS_PRESTATION_LABEL,
-      (map.get(EQUIPE_HORS_PRESTATION_LABEL) ?? 0) + horsPrestationTtc,
-    );
-  }
-  return Array.from(map.entries())
-    .map(([label, value]) => ({ label, value }))
-    .filter((s) => s.value > 0)
-    .sort(
-      (a, b) =>
-        b.value - a.value || a.label.localeCompare(b.label, "fr", { sensitivity: "base" }),
-    );
-}
-
 function MissionContextePanel({ mission }: { mission: Mission }) {
   const sections = NARRATIVE_SECTIONS.map((section) => ({
     ...section,
@@ -175,379 +111,6 @@ function MissionContextePanel({ mission }: { mission: Mission }) {
   );
 }
 
-function MissionEquipePanel({
-  missionId,
-  missionTitre,
-  enfants,
-  realisations,
-  intervenantsById,
-  equipesByIntervenantId,
-}: {
-  missionId: number;
-  missionTitre: string;
-  enfants: MissionEnfant[];
-  realisations: SuiviMensuel[];
-  intervenantsById: Map<number, string>;
-  equipesByIntervenantId: Map<number, string>;
-}) {
-  const [equipeFilter, setEquipeFilter] = useState("");
-  const [periodeDebut, setPeriodeDebut] = useState("");
-  const [periodeFin, setPeriodeFin] = useState("");
-  const expandResetKey = `${equipeFilter}|${periodeDebut}|${periodeFin}`;
-  const { isExpanded, toggle } = useExpandableRowIds<string>(undefined, expandResetKey);
-  const enfantDrawerRef = useMissionEnfantDrawerRef();
-
-  const periodeFilterActive = Boolean(periodeDebut || periodeFin);
-
-  const periodeOptions = useMemo(
-    () => collectPeriodeMonthKeys(realisations),
-    [realisations],
-  );
-
-  const realisationsFiltrees = useMemo(
-    () =>
-      realisations.filter((row) => suiviInPeriodeRange(row, periodeDebut, periodeFin)),
-    [realisations, periodeDebut, periodeFin],
-  );
-
-  const suiviByEnfantId = useMemo(
-    () => groupSuiviRowsByEnfantId(realisationsFiltrees),
-    [realisationsFiltrees],
-  );
-
-  const craParEnfant = useMemo(
-    () => aggregateCraByEnfantId(realisationsFiltrees),
-    [realisationsFiltrees],
-  );
-
-  const ttcByEnfantId = useMemo(() => {
-    const map = new Map<number, number>();
-    for (const [eid, totaux] of craParEnfant) {
-      map.set(eid, totaux.ttc);
-    }
-    return map;
-  }, [craParEnfant]);
-
-  const craCountByEnfantId = useMemo(() => {
-    const map = new Map<number, number>();
-    for (const [eid, totaux] of craParEnfant) {
-      map.set(eid, totaux.count);
-    }
-    return map;
-  }, [craParEnfant]);
-
-  const horsPrestationTtc = useMemo(
-    () => sumSuiviTtcHorsPrestationForMission(realisationsFiltrees, missionId, enfants),
-    [realisationsFiltrees, missionId, enfants],
-  );
-
-  const joursLabel = useMemo(() => {
-    let jours = 0;
-    for (const s of realisationsFiltrees) {
-      if (typeof s.Nb_jours === "number" && Number.isFinite(s.Nb_jours)) {
-        jours += s.Nb_jours;
-      }
-    }
-    return jours.toLocaleString("fr-FR", { maximumFractionDigits: 4 });
-  }, [realisationsFiltrees]);
-
-  const enfantsApresPeriode = useMemo(() => {
-    if (!periodeFilterActive) {
-      return enfants;
-    }
-    return enfants.filter((e) => (craCountByEnfantId.get(e.id) ?? 0) > 0);
-  }, [enfants, periodeFilterActive, craCountByEnfantId]);
-
-  const equipesPresentes = useMemo(() => {
-    const set = new Set<string>();
-    let hasSansEquipe = false;
-    for (const e of enfantsApresPeriode) {
-      const eq = equipeLabelForEnfant(e, equipesByIntervenantId);
-      if (eq) {
-        set.add(eq);
-      } else {
-        hasSansEquipe = true;
-      }
-    }
-    if (hasSansEquipe) {
-      set.add(EQUIPE_SANS_LABEL);
-    }
-    if (horsPrestationTtc > 0) {
-      set.add(EQUIPE_HORS_PRESTATION_LABEL);
-    }
-    return Array.from(set).sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
-  }, [enfantsApresPeriode, equipesByIntervenantId, horsPrestationTtc]);
-
-  const enfantsFiltres = useMemo(() => {
-    if (!equipeFilter || equipeFilter === EQUIPE_HORS_PRESTATION_LABEL) {
-      return equipeFilter === EQUIPE_HORS_PRESTATION_LABEL ? [] : enfantsApresPeriode;
-    }
-    return enfantsApresPeriode.filter(
-      (e) => equipeKeyForEnfant(e, equipesByIntervenantId) === equipeFilter,
-    );
-  }, [enfantsApresPeriode, equipeFilter, equipesByIntervenantId]);
-
-  const ttcParEquipe = useMemo(() => {
-    if (!equipeFilter) {
-      return aggregateTtcByEquipe(
-        enfantsApresPeriode,
-        ttcByEnfantId,
-        equipesByIntervenantId,
-        horsPrestationTtc,
-      );
-    }
-    if (equipeFilter === EQUIPE_HORS_PRESTATION_LABEL) {
-      return aggregateTtcByEquipe([], ttcByEnfantId, equipesByIntervenantId, horsPrestationTtc);
-    }
-    return aggregateTtcByEquipe(enfantsFiltres, ttcByEnfantId, equipesByIntervenantId, 0);
-  }, [
-    enfantsApresPeriode,
-    enfantsFiltres,
-    equipeFilter,
-    ttcByEnfantId,
-    equipesByIntervenantId,
-    horsPrestationTtc,
-  ]);
-
-  const emptyMessage = (() => {
-    if (enfants.length === 0) {
-      return null;
-    }
-    if (enfantsFiltres.length > 0) {
-      return null;
-    }
-    if (equipeFilter === EQUIPE_HORS_PRESTATION_LABEL) {
-      return "Les CRA hors prestation n’apparaissent pas dans le tableau des prestations.";
-    }
-    if (periodeFilterActive && enfantsApresPeriode.length === 0) {
-      return "Aucune prestation avec CRA sur cette période.";
-    }
-    if (equipeFilter) {
-      return `Aucune prestation pour l’équipe « ${equipeFilter} ».`;
-    }
-    return null;
-  })();
-
-  return (
-    <>
-      {horsPrestationTtc > 0 ? (
-        <p className="fr-text--xs fr-text-mention--grey fr-mb-2w">
-          Dont {formatMontantEur(horsPrestationTtc)} hors prestation (CRA sans rattachement
-          enfant)
-          {equipeFilter && equipeFilter !== EQUIPE_HORS_PRESTATION_LABEL
-            ? " — masqué du graphique avec ce filtre"
-            : ""}
-          .
-        </p>
-      ) : null}
-      <div className="fr-grid-row fr-grid-row--gutters mission-equipe-recap fr-mb-2w">
-        <div className="fr-col-12 fr-col-md-4">
-          <Select
-            label="Équipe"
-            nativeSelectProps={{
-              value: equipeFilter,
-              onChange: (e) => setEquipeFilter(e.currentTarget.value),
-            }}
-          >
-            <option value="">Toutes les équipes</option>
-            {equipesPresentes.map((eq) => (
-              <option key={eq} value={eq}>
-                {eq}
-              </option>
-            ))}
-          </Select>
-        </div>
-        <div className="fr-col-12 fr-col-md-4">
-          <Select
-            label="Du mois"
-            nativeSelectProps={{
-              value: periodeDebut,
-              onChange: (e) => setPeriodeDebut(e.currentTarget.value),
-            }}
-          >
-            <option value="">Tous</option>
-            {periodeOptions.map((key) => (
-              <option key={key} value={key}>
-                {formatGristPeriodeMonthKeyLabel(key)}
-              </option>
-            ))}
-          </Select>
-        </div>
-        <div className="fr-col-12 fr-col-md-4">
-          <Select
-            label="Au mois"
-            nativeSelectProps={{
-              value: periodeFin,
-              onChange: (e) => setPeriodeFin(e.currentTarget.value),
-            }}
-          >
-            <option value="">Tous</option>
-            {periodeOptions.map((key) => (
-              <option key={key} value={key}>
-                {formatGristPeriodeMonthKeyLabel(key)}
-              </option>
-            ))}
-          </Select>
-        </div>
-        <div className="fr-col-12">
-          <CraTtcStackBar
-            slices={ttcParEquipe}
-            title="TTC par équipe"
-            amountsExtra={`${joursLabel} jours`}
-          />
-        </div>
-      </div>
-
-      <div className="fr-grid-row fr-grid-row--gutters fr-grid-row--middle fr-mb-2w">
-        <div className="fr-col">
-          <h2 className="fr-h5 fr-mb-0">Prestations</h2>
-        </div>
-        <div className="fr-col-auto">
-          <button
-            type="button"
-            className="fr-btn fr-btn--secondary fr-btn--sm fr-icon-add-line fr-btn--icon-left"
-            onClick={() => enfantDrawerRef.current?.openCreate(missionId)}
-          >
-            Ajouter une prestation
-          </button>
-        </div>
-      </div>
-
-      {enfants.length === 0 ? (
-        <p className="fr-mb-0">Aucune prestation rattachée à cette mission.</p>
-      ) : null}
-
-      {emptyMessage ? <p className="fr-mb-0">{emptyMessage}</p> : null}
-
-      {enfantsFiltres.length > 0 ? (
-        <TableShell multiline className="fr-mb-0">
-          <table>
-            <caption className="fr-sr-only">
-              Prestations de la mission {missionTitre}
-              {equipeFilter ? ` — équipe ${equipeFilter}` : ""}
-              {periodeFilterActive
-                ? ` — période CRA${periodeDebut ? ` du ${formatGristPeriodeMonthKeyLabel(periodeDebut)}` : ""}${periodeFin ? ` au ${formatGristPeriodeMonthKeyLabel(periodeFin)}` : ""}`
-                : ""}
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col" className="pilotage-col-mission-libelle">
-                  Titre de la prestation
-                </th>
-                <th scope="col">Intervenant</th>
-                <th scope="col" className="pilotage-col-equipe-nowrap">
-                  Équipe
-                </th>
-                <th scope="col">Date de début</th>
-                <th scope="col" className="fr-cell--right">
-                  Jours envisagés
-                </th>
-                <th scope="col" className="fr-cell--right">
-                  Nb CRA
-                </th>
-                <th scope="col" className="fr-cell--right">
-                  TTC CRA
-                </th>
-                <th scope="col">Statut</th>
-                <th scope="col">
-                  <span className="fr-sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {enfantsFiltres.map((e) => {
-                const intervenantId = extractGristReferenceId(e.Intervenant);
-                const intervenantLabel =
-                  intervenantId != null && intervenantId !== 0
-                    ? (intervenantsById.get(intervenantId) ?? `#${intervenantId}`)
-                    : undefined;
-                const equipe = equipeLabelForEnfant(e, equipesByIntervenantId);
-                const ttc = ttcByEnfantId.get(e.id) ?? 0;
-                const nbCra = craCountByEnfantId.get(e.id) ?? 0;
-                const libelle = missionEnfantLibelle(e, intervenantLabel);
-                const craKey = `cra-${e.id}`;
-                const craRows = craRowsSorted(suiviByEnfantId.get(e.id) ?? []);
-                const hasCra = craRows.length > 0;
-                const craOpen = hasCra && isExpanded(craKey);
-                const enfantControlsId = `mission-fiche-enfant-cra-${e.id}`;
-                return (
-                  <Fragment key={e.id}>
-                    <tr
-                      className={
-                        craOpen
-                          ? "pilotage-expandable-parent-row pilotage-expandable-parent-row--open"
-                          : hasCra
-                            ? "pilotage-expandable-parent-row"
-                            : undefined
-                      }
-                    >
-                      <th scope="row" className="pilotage-col-mission-libelle">
-                        <div className="pilotage-expandable-parent-label">
-                          {hasCra ? (
-                            <ExpandToggle
-                              expanded={craOpen}
-                              childCount={craRows.length}
-                              controlsId={enfantControlsId}
-                              showCount={false}
-                              titleExpand={`Afficher les CRA de ${libelle}`}
-                              titleCollapse={`Masquer les CRA de ${libelle}`}
-                              onClick={() => toggle(craKey)}
-                            />
-                          ) : (
-                            <span
-                              className="pilotage-expand-toggle-spacer"
-                              aria-hidden="true"
-                            />
-                          )}
-                          <span className="fr-text--bold pilotage-expandable-parent-label__title">
-                            {libelle}
-                          </span>
-                        </div>
-                      </th>
-                      <td>{intervenantLabel ?? "—"}</td>
-                      <td className="pilotage-col-equipe-nowrap">
-                        {equipe ? tdEquipeTag(equipe) : "—"}
-                      </td>
-                      <td>{formatGristDate(e.Date_de_debut)}</td>
-                      <td className="fr-cell--right">
-                        {typeof e.Jours_envisages === "number" &&
-                        Number.isFinite(e.Jours_envisages)
-                          ? formatDecimalFr2(e.Jours_envisages)
-                          : "—"}
-                      </td>
-                      <td className="fr-cell--right">{nbCra.toLocaleString("fr-FR")}</td>
-                      <td className="fr-cell--right">{formatMontantEur(ttc)}</td>
-                      <td>{e.Statut?.trim() || "—"}</td>
-                      <td className="pilotage-col-actions">
-                        <button
-                          type="button"
-                          className="fr-btn fr-btn--tertiary fr-btn--sm fr-icon-edit-line fr-btn--icon-left"
-                          title={`Modifier la prestation ${libelle}`}
-                          onClick={() => enfantDrawerRef.current?.openEdit(e)}
-                        >
-                          Modifier
-                        </button>
-                      </td>
-                    </tr>
-                    {craOpen ? (
-                      <MissionsListeCraRows
-                        rows={craRows}
-                        firstRowId={enfantControlsId}
-                        indentLevel={1}
-                        layout="fiche"
-                      />
-                    ) : null}
-                  </Fragment>
-                );
-              })}
-            </tbody>
-          </table>
-        </TableShell>
-      ) : null}
-    </>
-  );
-}
-
 function MissionNotesPanel({ mission }: { mission: Mission }) {
   return (
     <>
@@ -569,11 +132,14 @@ function MissionNotesPanel({ mission }: { mission: Mission }) {
   );
 }
 
+const MISSIONS_CRUMB = [{ label: "Missions", to: "/missions" }] as const;
+
 export function MissionsDetailView() {
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data, isReloading } = useMissionsOutlet();
   const missionFormDrawerRef = useMissionFormDrawerRef();
+  const enfantDrawerRef = useMissionEnfantDrawerRef();
   const missionTabId = parseMissionTabId(searchParams);
   const rawOnglet = searchParams.get("onglet") ?? searchParams.get("tab");
   const missionId = id ? Number.parseInt(id, 10) : Number.NaN;
@@ -635,11 +201,11 @@ export function MissionsDetailView() {
   if (!Number.isFinite(missionId)) {
     return (
       <div className="fr-py-1w">
-        <p className="fr-mb-2w">
-          <Link className="fr-link" to="/missions">
-            ← Retour à la liste
-          </Link>
-        </p>
+        <WidgetBreadcrumb
+          className="fr-mb-2w"
+          segments={[...MISSIONS_CRUMB]}
+          currentPageLabel="Introuvable"
+        />
         <Alert
           severity="warning"
           title="Mission introuvable"
@@ -653,11 +219,11 @@ export function MissionsDetailView() {
     if (isReloading) {
       return (
         <div className="fr-py-1w">
-          <p className="fr-mb-2w">
-            <Link className="fr-link" to="/missions">
-              ← Retour à la liste
-            </Link>
-          </p>
+          <WidgetBreadcrumb
+            className="fr-mb-2w"
+            segments={[...MISSIONS_CRUMB]}
+            currentPageLabel="Chargement"
+          />
           <Alert
             severity="info"
             small
@@ -670,11 +236,11 @@ export function MissionsDetailView() {
     }
     return (
       <div className="fr-py-1w">
-        <p className="fr-mb-2w">
-          <Link className="fr-link" to="/missions">
-            ← Retour à la liste
-          </Link>
-        </p>
+        <WidgetBreadcrumb
+          className="fr-mb-2w"
+          segments={[...MISSIONS_CRUMB]}
+          currentPageLabel="Introuvable"
+        />
         <Alert
           severity="warning"
           title="Mission introuvable"
@@ -706,11 +272,11 @@ export function MissionsDetailView() {
 
   return (
     <div className="fr-py-1w">
-      <p className="fr-mb-2w">
-        <Link className="fr-link" to="/missions">
-          ← Retour à la liste
-        </Link>
-      </p>
+      <WidgetBreadcrumb
+        className="fr-mb-2w"
+        segments={[...MISSIONS_CRUMB]}
+        currentPageLabel={titre}
+      />
 
       <div className="mission-fiche-title-row fr-mb-2w">
         <div className="mission-fiche-title-row__identity">
@@ -778,7 +344,7 @@ export function MissionsDetailView() {
       >
         {missionTabId === "contexte" ? <MissionContextePanel mission={mission} /> : null}
         {missionTabId === "equipe" ? (
-          <MissionEquipePanel
+          <MissionEquipePrestationsPanel
             key={mission.id}
             missionId={mission.id}
             missionTitre={titre}
@@ -786,6 +352,8 @@ export function MissionsDetailView() {
             realisations={realisations}
             intervenantsById={intervenantsById}
             equipesByIntervenantId={equipesByIntervenantId}
+            onAddPrestation={(mid) => enfantDrawerRef.current?.openCreate(mid)}
+            onEditPrestation={(enfant) => enfantDrawerRef.current?.openEdit(enfant)}
           />
         ) : null}
         {missionTabId === "notes" ? <MissionNotesPanel mission={mission} /> : null}

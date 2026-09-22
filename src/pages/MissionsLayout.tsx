@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { MissionEnfantDrawer } from "../components/missions/MissionEnfantDrawer";
 import {
   MissionEnfantDrawerProvider,
@@ -11,6 +11,7 @@ import {
   MissionFormDrawerProvider,
   useMissionFormDrawerRef,
 } from "../components/missions/MissionFormDrawerContext";
+import { WidgetBreadcrumb } from "../components/WidgetBreadcrumb";
 import { useGristPa } from "../GristPaContext";
 import { useMissionsData, type MissionsData, type MissionsDataState } from "../hooks/useMissionsData";
 import type { GristPaData } from "../hooks/useGristPaData";
@@ -158,11 +159,11 @@ function MissionsGate({ children }: { children: ReactNode }) {
     return (
       <div className="fr-py-1w">
         {isMissionDetailPath(pathname) ? (
-          <p className="fr-mb-2w">
-            <Link className="fr-link" to="/missions">
-              ← Retour à la liste
-            </Link>
-          </p>
+          <WidgetBreadcrumb
+            className="fr-mb-2w"
+            segments={[{ label: "Missions", to: "/missions" }]}
+            currentPageLabel="Erreur"
+          />
         ) : null}
         <h1 className="fr-h3">Missions</h1>
         <Alert

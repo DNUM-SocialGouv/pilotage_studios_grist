@@ -1,24 +1,32 @@
 import { useEffect, useState } from "react";
-import type { Mission } from "../types";
-import { recordsFromFetchTable, toMission } from "../gristMap";
-import { fetchAllowlistedTable } from "../security/fetchTableAllowlist";
+import type { Intervenant, Mission, MissionEnfant, SuiviMensuel } from "../types";
+import { loadMissionsTables } from "./useMissionsData";
 
 export type ProduitMissionsStatus = "idle" | "loading" | "ok" | "error";
 
 export type ProduitMissionsData = {
   status: ProduitMissionsStatus;
   error: string | null;
+  refsError: string | null;
   missions: Mission[];
+  missionEnfants: MissionEnfant[];
+  intervenants: Intervenant[];
+  suivi: SuiviMensuel[];
 };
 
 const EMPTY: ProduitMissionsData = {
   status: "idle",
   error: null,
+  refsError: null,
   missions: [],
+  missionEnfants: [],
+  intervenants: [],
+  suivi: [],
 };
 
 /**
- * Missions — lazy sur la fiche `/produits/:id` uniquement (filtre Produit_SDPC côté UI).
+ * Missions + prestations + CRA + Equipe — lazy fiche `/produits/:id`
+ * (filtre Produit_SDPC côté UI pour l’onglet Missions).
  */
 export function useProduitMissionsData(enabled: boolean): ProduitMissionsData {
   const [state, setState] = useState<ProduitMissionsData>(EMPTY);
@@ -34,14 +42,18 @@ export function useProduitMissionsData(enabled: boolean): ProduitMissionsData {
 
     void (async () => {
       try {
-        const raw = await fetchAllowlistedTable("Missions");
+        const loaded = await loadMissionsTables();
         if (cancelled) {
           return;
         }
         setState({
           status: "ok",
           error: null,
-          missions: recordsFromFetchTable(raw).map(toMission),
+          refsError: loaded.refsError,
+          missions: loaded.missions,
+          missionEnfants: loaded.missionEnfants,
+          intervenants: loaded.intervenants,
+          suivi: loaded.suivi,
         });
       } catch (err) {
         if (cancelled) {

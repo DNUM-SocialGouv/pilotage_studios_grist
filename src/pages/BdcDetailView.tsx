@@ -1,16 +1,19 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
 import { BdcDepensesPanel } from "../components/BdcDepensesPanel";
 import { BdcFinanceRecap } from "../components/BdcFinanceRecap";
 import { BdcInformationsPanel } from "../components/BdcInformationsPanel";
+import { WidgetBreadcrumb } from "../components/WidgetBreadcrumb";
 import { useGristPa } from "../GristPaContext";
 import { useBdcDepensesData } from "../hooks/useBdcDepensesData";
 import { NothingHerePage } from "../security/NothingHerePage";
 import { bdcPaRefId, financeForPlanActivite, financePaOnly } from "../utils/paFinance";
 
 type BdcTabId = "depenses" | "informations" | "pv";
+
+const BDC_CRUMB = [{ label: "Bons de commande", to: "/bdc" }] as const;
 
 export function BdcDetailView() {
   const { id } = useParams();
@@ -42,11 +45,11 @@ export function BdcDetailView() {
   if (data.error) {
     return (
       <div className="fr-py-1w">
-        <p className="fr-mb-2w">
-          <Link className="fr-link" to="/bdc">
-            ← Retour à la liste
-          </Link>
-        </p>
+        <WidgetBreadcrumb
+          className="fr-mb-2w"
+          segments={[...BDC_CRUMB]}
+          currentPageLabel="Erreur"
+        />
         <Alert severity="error" title="Erreur" description={data.error} />
       </div>
     );
@@ -55,11 +58,11 @@ export function BdcDetailView() {
   if (data.relatedStatus === "denied" || data.relatedStatus === "error") {
     return (
       <div className="fr-py-1w">
-        <p className="fr-mb-2w">
-          <Link className="fr-link" to="/bdc">
-            ← Retour à la liste
-          </Link>
-        </p>
+        <WidgetBreadcrumb
+          className="fr-mb-2w"
+          segments={[...BDC_CRUMB]}
+          currentPageLabel="Accès limité"
+        />
         <Alert
           severity="warning"
           title="Accès multi-tables indisponible"
@@ -89,11 +92,11 @@ export function BdcDetailView() {
   if (!bdc) {
     return (
       <div className="fr-py-1w">
-        <p className="fr-mb-2w">
-          <Link className="fr-link" to="/bdc">
-            ← Retour à la liste
-          </Link>
-        </p>
+        <WidgetBreadcrumb
+          className="fr-mb-2w"
+          segments={[...BDC_CRUMB]}
+          currentPageLabel="Introuvable"
+        />
         <Alert
           severity="warning"
           title="BDC introuvable"
@@ -111,16 +114,17 @@ export function BdcDetailView() {
         ? financeForPlanActivite(linkedPa, data.bdcList, data.constatations, data.commandes)
         : financePaOnly(linkedPa)
       : null;
+  const titre = bdc.Nom_BdC?.trim() || `BDC #${bdc.id}`;
 
   return (
     <div className="fr-py-1w">
-      <p className="fr-mb-2w">
-        <Link className="fr-link" to="/bdc">
-          ← Retour à la liste
-        </Link>
-      </p>
+      <WidgetBreadcrumb
+        className="fr-mb-2w"
+        segments={[...BDC_CRUMB]}
+        currentPageLabel={titre}
+      />
       <p className="fr-text--sm fr-mb-1v">{bdc.Statut?.trim() || "Sans statut"}</p>
-      <h1 className="fr-h3">{bdc.Nom_BdC?.trim() || `BDC #${bdc.id}`}</h1>
+      <h1 className="fr-h3">{titre}</h1>
 
       <BdcFinanceRecap
         budgetTtc={bdc.Montant_TTC}

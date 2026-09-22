@@ -162,4 +162,38 @@ export type ProduitSdpc = {
   URL_Back_Office?: string;
   Lien_Espace_Collaboratif_Projet?: string;
   Obsolescence?: boolean;
+  /** Clé sync référentiel SDPC (UUID source). */
+  UUID?: string;
+  /** Direction métier / portefeuilles (tags texte). */
+  D_Metier?: string;
+  Fonctionnalites_et_contexte?: string;
+  Liens_repos_depots?: string;
+  Actions_de_la_feuille_de_route?: string;
+  Statut_d_homologation_de_securite?: string;
+  /** Timestamp Grist (secondes). */
+  Debut_validite_homologation?: number;
+  Fin_de_validite_d_homologation?: number;
+  Besoin_DICT_Disponibilite?: string;
+  Besoin_DICT_Integrite?: string;
+  Besoin_DICT_Confidentialite?: string;
+  Besoin_DICT_Tracabilite?: string;
+  SCORE_RGAA_Declaration_reglementaire?: string;
+  RGAA_Date_declaration?: number;
+  /** Ratio 0–1 ou pourcentage. */
+  RGAA_Tx_conformite?: number;
+  Cibles_du_produit?: string;
+  Volumetrie_utilisateurs_par_an?: string;
+  Nature_de_l_application?: string;
+  Criticite?: string;
+  Typologie_d_application?: string;
+  Bouton_JDMA?: boolean;
+  Lien_stats_JDMA?: string;
+  Hebergement?: string;
+  Marche_DEV_TMA?: string;
+  Prestataire_de_developpement?: string;
+  Enjeux_Chiffres_cles?: string;
+  Editeur?: string;
+  Date_de_demande_de_decomissionnement?: number;
+  Retrait_de_service?: number;
+  Projet_strategique?: string;
 };

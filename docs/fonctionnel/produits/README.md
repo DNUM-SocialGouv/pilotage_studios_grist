@@ -9,13 +9,14 @@
 
 Le **catalogue Produits** reprend le référentiel SDPC (table Grist `Tableau_de_pilotage_SDPC_Produits_SDPC`). Le widget affiche une **liste** et une **fiche** en consultation. Pas d’édition depuis le widget.
 
-Les missions pointent vers un produit (`Missions.Produit_SDPC`) : depuis la fiche produit, on voit les missions liées.
+Les missions pointent vers un produit (`Missions.Produit_SDPC`) : depuis la fiche produit,
+l’onglet Missions reprend le bloc « Équipe & prestations » de chaque mission (lecture seule).
 
 | Outil | Rôle |
 |-------|------|
 | **Grist** (catalogue SDPC) | Référentiel produit |
 | **Ce widget** | Liste / fiche lecture (`ProduitsLayout`) |
-| **App sœur** | Hors scope de ce livrable |
+| **App sœur** | Sync référentiel + onglets Prestations / Maturité (hors scope widget) |
 
 ## Données Grist
 
@@ -26,16 +27,16 @@ Les missions pointent vers un produit (`Missions.Produit_SDPC`) : depuis la fich
 
 Colonnes widget (liste) : `Produit`, `departement_sdpc`, `Statut_actuel`, `En_prod`, `Chef_de_produit`.
 
-Colonnes fiche en plus : `Description` / `Description_longue`, `Statut_cible`, `Type_de_produit`, `Equipe`, URLs (`URLs_du_produit`, FO/BO, espace collab), `Obsolescence`.
+Colonnes fiche : périmètre **sync référentiel** (~37 champs — identité, sécurité/RGAA/DICT, utilisateurs, cycle de vie) + badges `En_prod` / `Obsolescence` / `Statut_cible` / `Type_de_produit` / `Description_longue` / liens FO & collab. Détail : [fiche.md](fiche.md), `src/utils/produitReferentiel.ts`.
 
-**Hors scope widget** : colonnes techniques SCORE / RGAA / technos, écriture, PV, évaluations.
+**Hors scope widget** : édition catalogue, stack technique hors sync, PV, évaluations, onglets Prestations / Maturité.
 
 Allowlist lecture : `src/security/fetchTableAllowlist.ts` (table déjà listée). Pas d’écriture catalogue.
 
 ## Parcours
 
 | Parcours | Fichier | Route |
-|----------|---------|-------|
+|----------|---------|------|
 | Liste | [liste.md](liste.md) | `/produits` |
 | Fiche | [fiche.md](fiche.md) | `/produits/:id` |
 
@@ -44,5 +45,6 @@ Le drapeau de page Grist est `Page_produits` ([Droits des pages](../roles/droits
 ## Hors scope (widget)
 
 - Création / modification d’un produit
-- SCORE, RGAA, stack technique, homologation
+- Sync différentielle (côté app sœur)
+- Stack / SCORE hors champs sync affichés
 - Procès-verbaux et évaluations
