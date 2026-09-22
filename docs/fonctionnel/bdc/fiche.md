@@ -12,7 +12,7 @@ Détail d’un BDC : récap financier (KPI + barre) toujours visible, puis ongle
 |---------|--------|
 | Route | `/bdc/:id` |
 | Page | `src/pages/BdcDetailView.tsx` |
-| Retour | Lien vers `/bdc` |
+| Retour | Fil d’Ariane : Accueil › Bons de commande › nom du BDC |
 
 ## États
 

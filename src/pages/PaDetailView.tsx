@@ -1,6 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { FinanceRecap, TableShell } from "../components/FinanceRecap";
+import { WidgetBreadcrumb } from "../components/WidgetBreadcrumb";
 import { useGristPa } from "../GristPaContext";
 import { formatMontantEur } from "../utils/formatMontant";
 import {
@@ -9,6 +10,8 @@ import {
   financePaOnly,
   libellePlanActivite,
 } from "../utils/paFinance";
+
+const PA_CRUMB = [{ label: "Plans d’activité", to: "/pa" }] as const;
 
 export function PaDetailView() {
   const { id } = useParams();
@@ -20,11 +23,11 @@ export function PaDetailView() {
   if (!pa) {
     return (
       <div className="fr-py-1w">
-        <p className="fr-mb-2w">
-          <Link className="fr-link" to="/pa">
-            ← Retour à la liste
-          </Link>
-        </p>
+        <WidgetBreadcrumb
+          className="fr-mb-2w"
+          segments={[...PA_CRUMB]}
+          currentPageLabel="Introuvable"
+        />
         <Alert
           severity="warning"
           title="PA introuvable"
@@ -40,15 +43,16 @@ export function PaDetailView() {
   const paBdcs = useFullFinance
     ? data.bdcList.filter((bdc) => bdcPaRefId(bdc) === pa.id)
     : [];
+  const titre = libellePlanActivite(pa);
 
   return (
     <div className="fr-py-1w">
-      <p className="fr-mb-2w">
-        <Link className="fr-link" to="/pa">
-          ← Retour à la liste
-        </Link>
-      </p>
-      <h1 className="fr-h3">{libellePlanActivite(pa)}</h1>
+      <WidgetBreadcrumb
+        className="fr-mb-2w"
+        segments={[...PA_CRUMB]}
+        currentPageLabel={titre}
+      />
+      <h1 className="fr-h3">{titre}</h1>
 
       <dl className="fr-grid-row fr-grid-row--gutters fr-mb-3w">
         <div className="fr-col-6 fr-col-md-3">

@@ -12,18 +12,25 @@ export type MissionsListeCraRowsLayout = "liste" | "fiche";
 /**
  * Sous-lignes CRA sous une prestation.
  * - `liste` : colonnes liste missions (libellé, —, —, —, jours, TTC, actions).
- * - `fiche` : colonnes fiche Équipe (période colspan 4, jours, —, TTC, —, actions).
+ * - `fiche` : colonnes fiche Équipe & prestations
+ *   (période colspan 4 = titre+statut+intervenant+équipe, [date], jours, —, TTC, [actions]).
  */
 export function MissionsListeCraRows({
   rows,
   firstRowId,
   indentLevel,
   layout = "liste",
+  showDateColumn = false,
+  showActions = true,
 }: {
   rows: SuiviMensuel[];
   firstRowId: string;
   indentLevel: 1 | 2;
   layout?: MissionsListeCraRowsLayout;
+  /** Colonne « Date de début » (mode planifié fiche mission). */
+  showDateColumn?: boolean;
+  /** Colonne actions (édition prestation). */
+  showActions?: boolean;
 }) {
   return (
     <>
@@ -68,11 +75,13 @@ export function MissionsListeCraRows({
               >
                 {periodeEtTaches}
               </ExpandableChildCell>
+              {showDateColumn ? <ExpandableChildCell>—</ExpandableChildCell> : null}
               {joursCell}
               <ExpandableChildCell>—</ExpandableChildCell>
               {ttcCell}
-              <ExpandableChildCell>—</ExpandableChildCell>
-              <td className="pilotage-col-actions pilotage-expandable-child-cell" />
+              {showActions ? (
+                <td className="pilotage-col-actions pilotage-expandable-child-cell" />
+              ) : null}
             </ExpandableChildRow>
           );
         }

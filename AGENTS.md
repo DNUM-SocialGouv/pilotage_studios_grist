@@ -102,7 +102,7 @@ Visibilité users : section roadmap sur `/` + issues rédigées selon [`docs/iss
 | Finance PA + écrans BDC (accès full) | `BDC`, `Constatations`, `Commandes_Sofiane` |
 | Onglet Dépenses fiche BDC **ou** écrans `/missions` **ou** `/cra` **ou** `/cra/declarer` **ou** `/cra/revue-equipe` **ou** `/outils/recap-porteurs` **ou** `/equipe` **ou** `/produits` (lazy, lecture) | `Realise`, `Missions`, `Missions_enfants` (`Mission_parent` + `Titre_de_la_prestation`, fallbacks lecture `Libelle` / texte `Mission_enfant`), `Equipe` (annuaire `/equipe` + `Portage` récap porteurs + identité déclaration / revue), `Tableau_de_pilotage_SDPC_Produits_SDPC` (catalogue `/produits`) |
 | Fiche `/equipe/:id` (lazy, lecture — section Missions & prestations) | `Missions`, `Missions_enfants` (filtre `Intervenant` = personne) ; avatar = `Equipe.Avatar` (seed) |
-| Fiche `/produits/:id` (lazy, lecture — section Missions liées) | `Missions` (filtre `Produit_SDPC` = produit) |
+| Fiche `/produits/:id` (lazy, lecture — onglet Missions : prestations + CRA) | `Missions` (filtre `Produit_SDPC`), `Missions_enfants`, `Equipe`, `Realise` (via `loadMissionsTables`) |
 | Feedback widget (écriture create + lecture liste accueil) | `Retours` |
 | Droits pages session (nav + gardes) | `Acl_profil` (lecture ; create auto si absente ; `Page_*` formules ← `Droits_pages`) |
 | Matrice écrans Admin (`/outils/droits-pages`) | `Droits_pages` (lecture + update ; Owner / Admin ACL) |

@@ -12,7 +12,7 @@ Détail d’un PA : métadonnées, récap financier, liste des BDC rattachés (l
 |---------|--------|
 | Route | `/pa/:id` (`id` = row id Grist) |
 | Page | `src/pages/PaDetailView.tsx` |
-| Retour | Lien vers `/pa` |
+| Retour | Fil d’Ariane : Accueil › Plans d’activité › libellé du PA |
 
 ## États
 

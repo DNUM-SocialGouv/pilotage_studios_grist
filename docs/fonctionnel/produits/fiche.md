@@ -13,7 +13,7 @@ référentiel SDPC (~37 champs sync), et missions rattachées.
 |---------|--------|
 | Route | `/produits/:id` |
 | Page | `src/pages/ProduitsDetailView.tsx` (sous `ProduitsLayout`) |
-| Retour | Lien vers `/produits` |
+| Retour | Fil d’Ariane : Accueil › Produits › nom du produit (intégré au hero) |
 | Issue | [#3](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3) |
 
 ## États
@@ -23,7 +23,7 @@ référentiel SDPC (~37 champs sync), et missions rattachées.
 | Chargement | Alerte « Connexion à Grist… » |
 | Erreur Grist | Alerte erreur |
 | Id inconnu | Alerte « Produit introuvable » + retour liste |
-| OK | Hero · référentiel · missions liées |
+| OK | Hero · onglets (Missions en premier, puis référentiel) |
 
 ## Affichage
 
@@ -31,35 +31,28 @@ référentiel SDPC (~37 champs sync), et missions rattachées.
 
 | Zone | Contenu |
 |------|---------|
-| Titre | Libellé `Produit` |
+| Titre | Libellé `Produit` + pastilles département / direction métier à droite (alignées en haut) |
+| Badges | Statut actuel · Statut cible · En production · Obsolescence (sous le titre) |
 | Sous-titre | `Description` si distincte du nom (nom complet) |
-| Badges | Statut actuel · Statut cible · En production · Obsolescence |
-| Meta | Département · direction métier (`D_Metier`) · type |
-| Chef | `Chef_de_produit` |
+| Type | `Type_de_produit` si renseigné |
 | Liens rapides | Site (`URLs_du_produit` ou FO) · espace collab. |
 
-### Référentiel SDPC
+### Onglets
 
-Lecture seule. Indicateurs : champs non remplis + taux de complétion (calcul UI sur les
-37 champs sync, pas les formules Grist source).
+| Onglet | Contenu |
+|--------|---------|
+| **Missions** (1er) | Pour chaque mission liée : titre (`h2`) + badge statut, puis bloc « Équipe & prestations » **sans filtres**, colonnes orientées réalisé (jours CRA) — lecture seule |
+| Identité | Identité et gouvernance (~11 champs) + description longue si présente |
+| Sécurité | Sécurité et conformité |
+| Utilisateurs | Utilisateurs et exploitation |
+| Cycle de vie | Cycle de vie |
 
-| Bloc | Contenu |
-|------|---------|
-| Essentiel — identité | Toujours visible : 11 champs (nom, statut, équipe, URLs, dépôts, feuille de route…) |
-| Accordéons | Sécurité et conformité · Utilisateurs et exploitation · Cycle de vie |
-| Description longue | `Description_longue` si renseignée (hors compteur sync) |
-
-Mapping et libellés : `src/utils/produitReferentiel.ts` (aligné sync app sœur).
-
-### Missions liées
-
-- Source : table `Missions` (chargement lazy sur la fiche uniquement).
-- Filtre : `Produit_SDPC` = id du produit.
-- Colonnes : Nom (lien `/missions/:id`) · Statut. Pagination 10.
-- On n’affiche que ce que Grist laisse déjà lire.
+Mapping et libellés référentiel : `src/utils/produitReferentiel.ts` (aligné sync app sœur).
+Composant partagé : `MissionEquipePrestationsPanel` (fiche mission en édition ; fiche produit sans CTA).
 
 ## Hors scope
 
 - Édition du produit / sync vers Grist
+- Création / édition de prestations depuis la fiche produit (passer par la fiche mission)
 - Onglets Prestations / Maturité (app sœur)
 - Colonnes techniques hors périmètre sync (stack, SCORE hors RGAA sync, etc.)

@@ -13,7 +13,7 @@ Détail d’une mission master : en-tête P2 (bandeau), onglets — aligné UI s
 | Route | `/missions/:id` |
 | Onglet | Query `?onglet=contexte` \| `equipe` \| `notes` (alias : `note-studio`, `pieces-jointes`, `tab`). Alias legacy `realisations` → **Équipe & prestations** |
 | Page | `src/pages/MissionsDetailView.tsx` |
-| Retour | Lien vers `/missions` |
+| Retour | Fil d’Ariane : Accueil › Missions › nom de la mission |
 
 ## États
 

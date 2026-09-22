@@ -9,7 +9,8 @@
 
 Le **catalogue Produits** reprend le référentiel SDPC (table Grist `Tableau_de_pilotage_SDPC_Produits_SDPC`). Le widget affiche une **liste** et une **fiche** en consultation. Pas d’édition depuis le widget.
 
-Les missions pointent vers un produit (`Missions.Produit_SDPC`) : depuis la fiche produit, on voit les missions liées.
+Les missions pointent vers un produit (`Missions.Produit_SDPC`) : depuis la fiche produit,
+l’onglet Missions reprend le bloc « Équipe & prestations » de chaque mission (lecture seule).
 
 | Outil | Rôle |
 |-------|------|
