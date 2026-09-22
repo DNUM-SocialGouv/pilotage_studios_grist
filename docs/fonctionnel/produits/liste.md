@@ -32,7 +32,7 @@ Bloc **accordéon** (même shell que Missions / Équipe) : recherche + listes d�
 | Recherche | Nom, département, statut, chef de produit |
 | Département | Valeurs présentes |
 | Statut actuel | Valeurs présentes |
-| En production | Tous · Oui · Non — **défaut Oui** s’il existe au moins un produit en prod |
+| En production | Tous · Oui · Non — **défaut Oui** dès le premier affichage s’il existe au moins un produit en prod (pas de flash catalogue complet) |
 
 Réinitialiser hors accordéon **uniquement si au moins un filtre est actif** (écart au défaut En production compte).
 

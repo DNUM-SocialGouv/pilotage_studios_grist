@@ -119,6 +119,7 @@ function ProduitMissionsSection({
           </TableShell>
           {pageCount > 1 ? (
             <Pagination
+              key={safePage}
               id={`widget-produit-missions-pagination-${produitId}`}
               count={pageCount}
               defaultPage={safePage}
@@ -317,7 +318,7 @@ export function ProduitsDetailView() {
           </h2>
           <ul className="fr-mb-0">
             {links.map((link) => (
-              <li key={link.href}>
+              <li key={`${link.label}-${link.href}`}>
                 <a
                   className="fr-link"
                   href={link.href}

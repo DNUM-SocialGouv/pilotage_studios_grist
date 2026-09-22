@@ -142,4 +142,16 @@ describe("safeHttpUrl", () => {
     assert.equal(safeHttpUrl("not a url"), undefined);
     assert.equal(safeHttpUrl(""), undefined);
   });
+
+  it("extrait la première URL http(s) d’un texte multi-valeurs", () => {
+    assert.equal(
+      safeHttpUrl("Voir https://a.gouv.fr/ et aussi https://b.gouv.fr/"),
+      "https://a.gouv.fr/",
+    );
+    assert.equal(
+      safeHttpUrl("https://example.gouv.fr/\nhttps://autre.gouv.fr/"),
+      "https://example.gouv.fr/",
+    );
+    assert.equal(safeHttpUrl("lien: https://example.gouv.fr/."), "https://example.gouv.fr/");
+  });
 });

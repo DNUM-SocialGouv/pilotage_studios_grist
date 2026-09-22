@@ -121,19 +121,36 @@ export function missionsLieesAuProduit(
     );
 }
 
-/** URL http(s) sûre pour liens externes fiche ; sinon `undefined`. */
+/** URL http(s) sûre pour liens externes fiche ; sinon `undefined`.
+ * Accepte une URL seule ou extrait la première `http(s)://…` d’un texte multi-valeurs.
+ */
 export function safeHttpUrl(raw: string | undefined): string | undefined {
   const t = raw?.trim();
   if (!t) {
     return undefined;
   }
-  try {
-    const url = new URL(t);
-    if (url.protocol === "http:" || url.protocol === "https:") {
-      return url.href;
+
+  const tryParse = (candidate: string): string | undefined => {
+    try {
+      const url = new URL(candidate);
+      if (url.protocol === "http:" || url.protocol === "https:") {
+        return url.href;
+      }
+    } catch {
+      return undefined;
     }
-  } catch {
     return undefined;
+  };
+
+  // Premier token http(s) (stop aux espaces / retours ligne) — évite de coller plusieurs URLs.
+  const match = t.match(/https?:\/\/[^\s<>"']+/i);
+  if (match?.[0]) {
+    const token = match[0].replace(/[.,);]+$/u, "");
+    const fromToken = tryParse(token);
+    if (fromToken) {
+      return fromToken;
+    }
   }
-  return undefined;
+
+  return tryParse(t);
 }

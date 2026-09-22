@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
@@ -11,6 +11,7 @@ import { tdEquipeTag } from "../components/EquipeTags";
 import {
   filterProduits,
   initialProduitsEnProdFilter,
+  PRODUITS_DEFAULT_EN_PROD,
   produitDepartement,
   produitDepartementOptions,
   produitDisplayName,
@@ -33,19 +34,15 @@ export function ProduitsListView() {
   const [searchKey, setSearchKey] = useState(0);
   const [departementFilter, setDepartementFilter] = useState("");
   const [statutFilter, setStatutFilter] = useState("");
-  const [enProdFilter, setEnProdFilter] = useState<ProduitsEnProdFilter>("");
+  /** `null` = suivre le défaut métier (évite le flash catalogue complet au 1er rendu). */
+  const [enProdOverride, setEnProdOverride] = useState<ProduitsEnProdFilter | null>(null);
   const [page, setPage] = useState(1);
-  const enProdInitialized = useRef(false);
 
-  useEffect(() => {
-    if (data.status !== "ok" || enProdInitialized.current) {
-      return;
-    }
-    setEnProdFilter(initialProduitsEnProdFilter(data.produits));
-    enProdInitialized.current = true;
-  }, [data.status, data.produits]);
-
-  const defaultEnProd = initialProduitsEnProdFilter(data.produits);
+  const defaultEnProd =
+    data.status === "ok"
+      ? initialProduitsEnProdFilter(data.produits)
+      : PRODUITS_DEFAULT_EN_PROD;
+  const enProdFilter = enProdOverride ?? defaultEnProd;
 
   const departementOptions = useMemo(
     () => produitDepartementOptions(data.produits),
@@ -85,7 +82,7 @@ export function ProduitsListView() {
     setSearchKey((k) => k + 1);
     setDepartementFilter("");
     setStatutFilter("");
-    setEnProdFilter(defaultEnProd);
+    setEnProdOverride(null);
     setPage(1);
   };
 
@@ -188,7 +185,7 @@ export function ProduitsListView() {
               nativeSelectProps={{
                 value: enProdFilter,
                 onChange: (e) => {
-                  setEnProdFilter(e.currentTarget.value as ProduitsEnProdFilter);
+                  setEnProdOverride(e.currentTarget.value as ProduitsEnProdFilter);
                   setPage(1);
                 },
               }}
@@ -281,6 +278,7 @@ export function ProduitsListView() {
 
       {pageCount > 1 ? (
         <Pagination
+          key={safePage}
           id="widget-produits-list-pagination"
           count={pageCount}
           defaultPage={safePage}
