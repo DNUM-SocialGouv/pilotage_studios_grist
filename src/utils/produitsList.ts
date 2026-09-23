@@ -1,7 +1,13 @@
 import type { Mission, ProduitSdpc } from "../types.ts";
+import { isPrestationEnCours } from "./equipeMemberPrestations.ts";
 import { extractGristReferenceId } from "./gristReferences.ts";
 import { departementProduitSdpc, libelleProduitGrist } from "./pilotageProduits.ts";
 import { uniqueSortedLabels } from "./equipeList.ts";
+
+/** True si la mission n’est pas terminée / close / archivée / annulée. */
+export function isMissionEnCours(statut: string | undefined): boolean {
+  return isPrestationEnCours(statut);
+}
 
 /** Filtre « En production » : Oui par défaut (réduit le bruit du catalogue). */
 export const PRODUITS_DEFAULT_EN_PROD = "oui";
@@ -105,20 +111,29 @@ export function filterProduits(
     );
 }
 
-/** Missions rattachées au produit (réf. `Produit_SDPC`). */
+function missionNomSortKey(mission: Mission): string {
+  return mission.Nom_de_la_mission ?? `Mission #${mission.id}`;
+}
+
+/** Missions rattachées au produit (réf. `Produit_SDPC`).
+ * Tri métier : en cours d’abord, puis terminées ; alpha dans chaque groupe.
+ */
 export function missionsLieesAuProduit(
   missions: readonly Mission[],
   produitId: number,
 ): Mission[] {
   return missions
     .filter((m) => extractGristReferenceId(m.Produit_SDPC) === produitId)
-    .sort((a, b) =>
-      (a.Nom_de_la_mission ?? `Mission #${a.id}`).localeCompare(
-        b.Nom_de_la_mission ?? `Mission #${b.id}`,
-        "fr",
-        { sensitivity: "base" },
-      ),
-    );
+    .sort((a, b) => {
+      const aActive = isMissionEnCours(a.Statut) ? 0 : 1;
+      const bActive = isMissionEnCours(b.Statut) ? 0 : 1;
+      if (aActive !== bActive) {
+        return aActive - bActive;
+      }
+      return missionNomSortKey(a).localeCompare(missionNomSortKey(b), "fr", {
+        sensitivity: "base",
+      });
+    });
 }
 
 /** URL http(s) sûre pour liens externes fiche ; sinon `undefined`.
