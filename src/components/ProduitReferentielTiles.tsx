@@ -73,15 +73,29 @@ export function ReferentielFieldValue({
 
 export function ReferentielTilesGrid({
   items,
+  columns = 2,
+  dictStyle = false,
 }: {
   items: { key: string; label: string; value: ProduitReferentielDisplayValue; wide?: boolean }[];
+  /** Colonnes desktop (2 par défaut, 3 conformité/technique, 4 DICT). */
+  columns?: 2 | 3 | 4;
+  /** Tuiles centrées (besoins DICT). */
+  dictStyle?: boolean;
 }) {
   const visible = items.filter((i) => i.value.kind !== "empty");
   if (visible.length === 0) {
     return (
-      <p className="fr-text--sm fr-hint-text fr-mb-0">Aucun champ renseigné dans ce thème.</p>
+      <p className="fr-text--sm fr-hint-text fr-mb-0">Aucun champ renseigné.</p>
     );
   }
+
+  const colClass =
+    columns === 4
+      ? "fr-col-12 fr-col-sm-6 fr-col-md-3"
+      : columns === 3
+        ? "fr-col-12 fr-col-md-4"
+        : "fr-col-12 fr-col-md-6";
+
   return (
     <div className="fr-grid-row fr-grid-row--gutters produit-referentiel-grid">
       {visible.map((item) => (
@@ -90,10 +104,16 @@ export function ReferentielTilesGrid({
           className={
             item.wide || item.value.kind === "longtext"
               ? "fr-col-12"
-              : "fr-col-12 fr-col-md-6"
+              : colClass
           }
         >
-          <div className="produit-referentiel-tile">
+          <div
+            className={
+              dictStyle
+                ? "produit-referentiel-tile produit-referentiel-tile--dict"
+                : "produit-referentiel-tile"
+            }
+          >
             <div className="fr-text--xs fr-mb-1v produit-referentiel-tile__label">
               {item.label}
             </div>

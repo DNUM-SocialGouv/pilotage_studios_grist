@@ -1561,11 +1561,32 @@ button.fr-link:disabled {
   border: 1px solid var(--border-default-grey);
 }
 
+.produit-referentiel-tile--dict {
+  text-align: center;
+}
+
 .produit-referentiel-tile__label {
   color: var(--text-mention-grey);
 }
 
 .produit-referentiel-tile__value {
   word-break: break-word;
+}
+
+.produit-infos-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.produit-infos-section + .produit-infos-section {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-default-grey);
+}
+
+.produit-infos-presentation {
+  padding: 1rem 1.25rem;
+  background-color: var(--background-alt-grey);
+  border: 1px solid var(--border-default-grey);
 }
 
