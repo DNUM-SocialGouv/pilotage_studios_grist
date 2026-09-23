@@ -49,7 +49,7 @@ référentiel SDPC (~37 champs sync), et missions rattachées.
 
 Mapping et libellés référentiel : `src/utils/produitReferentiel.ts` (aligné sync app sœur).
 Composant partagé : `MissionEquipePrestationsPanel` (fiche mission en édition ; fiche produit sans CTA).
-Tri / statut « en cours » : `missionsLieesAuProduit` + `isMissionEnCours` (`src/utils/produitsList.ts`).
+Tri / statut « en cours » : `missionsLieesAuProduit` + `isMissionEnCours` (`src/utils/produitsList.ts`) — statut vide = pas « en cours » (pas d’ouverture forcée).
 
 ## Hors scope
 

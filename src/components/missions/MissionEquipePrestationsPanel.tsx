@@ -432,13 +432,25 @@ export function MissionEquipePrestationsPanel({
                   </>
                 ) : (
                   <>
-                    <th scope="col" className="fr-cell--right">
+                    <th
+                      scope="col"
+                      className="fr-cell--right"
+                      title="Jours réalisés"
+                    >
                       Jours
                     </th>
-                    <th scope="col" className="fr-cell--right">
+                    <th
+                      scope="col"
+                      className="fr-cell--right"
+                      title="Nombre de CRA"
+                    >
                       CRA
                     </th>
-                    <th scope="col" className="fr-cell--right">
+                    <th
+                      scope="col"
+                      className="fr-cell--right"
+                      title="TTC CRA"
+                    >
                       TTC
                     </th>
                   </>

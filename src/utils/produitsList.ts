@@ -4,8 +4,13 @@ import { extractGristReferenceId } from "./gristReferences.ts";
 import { departementProduitSdpc, libelleProduitGrist } from "./pilotageProduits.ts";
 import { uniqueSortedLabels } from "./equipeList.ts";
 
-/** True si la mission n’est pas terminée / close / archivée / annulée. */
+/** True si la mission a un statut actif (pas terminé / clos / archivé / annulé).
+ * Statut vide → false (pas d’ouverture forcée ni priorité de tri sur la fiche produit).
+ */
 export function isMissionEnCours(statut: string | undefined): boolean {
+  if (!statut?.trim()) {
+    return false;
+  }
   return isPrestationEnCours(statut);
 }
 

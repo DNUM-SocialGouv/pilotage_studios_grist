@@ -1425,17 +1425,6 @@ button.fr-link:disabled {
   display: inline-flex;
 }
 
-.produit-fiche__mission-heading {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 0.75rem;
-}
-
-.produit-fiche__mission-title {
-  min-width: 0;
-}
-
 /* Label d’accordéon Missions (fiche produit) : titre + badge + résumé. */
 .produit-fiche__mission-accordion-label {
   display: inline-flex;
@@ -1458,13 +1447,6 @@ button.fr-link:disabled {
     flex-basis: auto;
     margin-left: 0.25rem;
   }
-}
-
-/* Le `.fr-link` DSFR force une taille corps ; on garde la hiérarchie visuelle du titre. */
-.produit-fiche__mission-title .fr-link {
-  font-size: inherit;
-  font-weight: inherit;
-  line-height: inherit;
 }
 
 /* Respire entre barre d’investissement et tableau (fiche produit). */
