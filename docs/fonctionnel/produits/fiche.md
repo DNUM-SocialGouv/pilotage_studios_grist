@@ -48,7 +48,7 @@ référentiel SDPC (~37 champs sync) regroupé en page document, et missions rat
 
 | Groupe | Contenu |
 |--------|---------|
-| Présentation | Nom · Nom complet · Fonctionnalités et contexte · description longue si présente (bloc narratif) |
+| Présentation | Nom · Nom complet · Fonctionnalités et contexte (prose markdown légère) · **description longue** en texte brut (`pre-wrap`) si présente |
 | Gouvernance | Statut · Département · Direction · Équipe · Chef de produit · Projet stratégique · Feuille de route · sous-bloc Fin de vie (dates) |
 | Usagers & impact | Cibles · Volumétrie · Criticité · JDMA · Stats JDMA · Enjeux |
 | Conformité | Homologation (+ dates) · RGAA · Besoins DICT (4 cases) |

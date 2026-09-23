@@ -3,6 +3,7 @@ import { ReferentielTilesGrid } from "./ProduitReferentielTiles";
 import { MissionProse } from "./missions/MissionProse";
 import type { ProduitSdpc } from "../types";
 import {
+  PRODUIT_REFERENTIEL_GROUPES_ORDER,
   PRODUIT_REFERENTIEL_GROUPE_LABELS,
   fieldsForGroupe,
   formatReferentielField,
@@ -12,6 +13,7 @@ import {
   isRgaaField,
   type ProduitReferentielDisplayValue,
   type ProduitReferentielFieldDef,
+  type ProduitReferentielGroupe,
 } from "../utils/produitReferentiel";
 
 type TileItem = {
@@ -53,7 +55,7 @@ function SectionHeading({
 }
 
 function SubHeading({ children }: { children: ReactNode }) {
-  return <p className="fr-text--sm fr-mb-1w fr-text--bold">{children}</p>;
+  return <h4 className="fr-text--sm fr-text--bold fr-mb-1w">{children}</h4>;
 }
 
 function PresentationSection({ produit }: { produit: ProduitSdpc }) {
@@ -112,7 +114,9 @@ function PresentationSection({ produit }: { produit: ProduitSdpc }) {
         {longDesc ? (
           <div>
             <p className="fr-text--xs fr-mb-1v fr-hint-text">Description longue</p>
-            <MissionProse value={longDesc} />
+            <p className="fr-text--sm fr-mb-0" style={{ whiteSpace: "pre-wrap" }}>
+              {longDesc}
+            </p>
           </div>
         ) : null}
       </div>
@@ -239,15 +243,30 @@ function TechniqueSection({ produit }: { produit: ProduitSdpc }) {
   );
 }
 
+const SECTION_BY_GROUPE: Record<
+  ProduitReferentielGroupe,
+  (produit: ProduitSdpc) => ReactNode
+> = {
+  presentation: (produit) => <PresentationSection produit={produit} />,
+  gouvernance: (produit) => <GouvernanceSection produit={produit} />,
+  usagers: (produit) => <UsagersSection produit={produit} />,
+  conformite: (produit) => <ConformiteSection produit={produit} />,
+  technique: (produit) => <TechniqueSection produit={produit} />,
+};
+
 /** Onglet Informations — gabarit A (page document, groupes métier). */
 export function ProduitReferentielInfosPanel({ produit }: { produit: ProduitSdpc }) {
-  return (
-    <div className="produit-infos-panel">
-      <PresentationSection produit={produit} />
-      <GouvernanceSection produit={produit} />
-      <UsagersSection produit={produit} />
-      <ConformiteSection produit={produit} />
-      <TechniqueSection produit={produit} />
-    </div>
-  );
+  const sections = PRODUIT_REFERENTIEL_GROUPES_ORDER.map((groupe) =>
+    SECTION_BY_GROUPE[groupe](produit),
+  ).filter((node) => node != null);
+
+  if (sections.length === 0) {
+    return (
+      <p className="fr-text--sm fr-hint-text fr-mb-0">
+        Aucune information renseignée pour ce produit.
+      </p>
+    );
+  }
+
+  return <div className="produit-infos-panel">{sections}</div>;
 }
