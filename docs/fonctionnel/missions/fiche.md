@@ -37,7 +37,7 @@ Champs **Nom · Produit · Statut** uniquement. Prestations : renvoi vers l’on
 | Mode | Champs |
 |------|--------|
 | **Ajouter** / **Modifier** | **Titre de la prestation** (fallback nom intervenant ; colonne Grist `Titre_de_la_prestation`) · Intervenant (obligatoire) · Jours envisagés (optionnel) · Statut (défaut « En cours ») · Date de début (optionnel) |
-| Figé / hors formulaire | `Type_prestation` = `Freelance_jours` à la création seulement ; jamais édité ni affiché ; `Mission_parent` figé ; pas de date de fin ni suppression |
+| Figé / hors formulaire | `Type_prestation` = `Freelance_jours` à la création seulement ; jamais édité ni affiché ; `Mission_parent` figé **dans ce drawer** (réaffectation possible uniquement à la création d’une mission — voir [liste](liste.md)) ; pas de date de fin ni suppression |
 
 Après succès : Alert in-drawer (edit) ou fermeture (create) + rechargement des données missions.
 

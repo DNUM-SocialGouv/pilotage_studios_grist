@@ -131,6 +131,16 @@ export function buildMissionEnfantCreateFields(
 }
 
 /**
+ * Réaffectation migration : seul `Mission_parent` change.
+ * Ne pas utiliser dans le drawer edit prestation (parent figé hors create mission).
+ */
+export function buildMissionEnfantReassignParentFields(masterId: number): {
+  Mission_parent: number;
+} {
+  return missionEnfantParentWriteField(masterId);
+}
+
+/**
  * Patch différentiel — n’inclut jamais `Type_prestation` ni `Mission_parent`.
  * Clear date / jours → `null` pour Grist.
  */

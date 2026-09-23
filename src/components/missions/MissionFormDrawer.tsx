@@ -14,19 +14,27 @@ import { z } from "zod";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { Select } from "@codegouvfr/react-dsfr/Select";
-import type { Mission } from "../../types.ts";
+import type { Mission, MissionEnfant } from "../../types.ts";
 import { extractGristReferenceId } from "../../utils/gristReferences.ts";
-import { buildMissionEnfantCreateFields } from "../../utils/missionEnfantFormFields.ts";
+import {
+  buildMissionEnfantCreateFields,
+  buildMissionEnfantReassignParentFields,
+} from "../../utils/missionEnfantFormFields.ts";
+import { missionEnfantReassignOptionLabel } from "../../utils/missionEnfants.ts";
 import {
   buildMissionCreateFields,
   buildMissionPatch,
   emptyMissionCreateForm,
   missionToFormValues,
+  parseOptionalPositiveId,
+  resolveReassignPrestationId,
+  wantsCreatePrestation,
   type MissionFormValues,
 } from "../../utils/missionFormFields.ts";
 import {
   createMissionEnfantRecord,
   createMissionRecord,
+  updateMissionEnfantRecord,
   updateMissionRecord,
 } from "../../utils/missionGristWrite.ts";
 import { DsfrSelectRichMulti } from "../dsfr/DsfrSelectRichMulti.tsx";
@@ -39,6 +47,8 @@ const formSchema = z.object({
   Nom_de_la_mission: z.string().trim().min(1, "Le nom de la mission est obligatoire"),
   Produit_SDPC: z.string(),
   Statut: z.string(),
+  missionSource: z.string(),
+  prestationExistante: z.string(),
   prestationIntervenant: z.string(),
   prestationLibelle: z.string(),
   prestationJoursEnvisages: z.string(),
@@ -54,12 +64,21 @@ export type MissionFormDrawerProps = {
   statutOptions: string[];
   produitOptions: { id: number; label: string }[];
   intervenantOptions: { id: number; label: string }[];
+  missions: Mission[];
+  missionEnfants: MissionEnfant[];
   onRecordsChanged: () => Promise<void>;
 };
 
 export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionFormDrawerProps>(
   function MissionFormDrawer(
-    { statutOptions, produitOptions, intervenantOptions, onRecordsChanged },
+    {
+      statutOptions,
+      produitOptions,
+      intervenantOptions,
+      missions,
+      missionEnfants,
+      onRecordsChanged,
+    },
     ref,
   ) {
     const dialogRef = useRef<HTMLDialogElement>(null);
@@ -76,13 +95,20 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
     const [prestationWarning, setPrestationWarning] = useState<string>();
     const [savePending, setSavePending] = useState(false);
 
-    const { register, handleSubmit, reset, control, formState } = useForm<MissionFormValues>({
-      resolver: zodResolver(formSchema),
-      defaultValues: emptyMissionCreateForm(),
-    });
+    const { register, handleSubmit, reset, control, formState, setValue } =
+      useForm<MissionFormValues>({
+        resolver: zodResolver(formSchema),
+        defaultValues: emptyMissionCreateForm(),
+      });
 
     const nomWatch = useWatch({ control, name: "Nom_de_la_mission" }) ?? "";
+    const missionSourceWatch = useWatch({ control, name: "missionSource" }) ?? "";
+    const prestationExistanteWatch = useWatch({ control, name: "prestationExistante" }) ?? "";
+    const prestationIntervenantWatch =
+      useWatch({ control, name: "prestationIntervenant" }) ?? "";
     const nomOk = nomWatch.trim().length > 0;
+    const reassignActive = parseOptionalPositiveId(prestationExistanteWatch) != null;
+    const createPrestaActive = parseOptionalPositiveId(prestationIntervenantWatch) != null;
 
     const statutChoices = useMemo(() => {
       const set = new Set<string>([DEFAULT_STATUT]);
@@ -114,6 +140,45 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
       () => intervenantOptions.map((o) => ({ value: String(o.id), label: o.label })),
       [intervenantOptions],
     );
+
+    const intervenantLabelById = useMemo(() => {
+      const map = new Map<number, string>();
+      for (const o of intervenantOptions) {
+        map.set(o.id, o.label);
+      }
+      return map;
+    }, [intervenantOptions]);
+
+    const missionSourceSelectOptions = useMemo(
+      () =>
+        [...missions]
+          .map((m) => ({
+            value: String(m.id),
+            label: m.Nom_de_la_mission?.trim() || `Mission #${m.id}`,
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label, "fr", { sensitivity: "base" })),
+      [missions],
+    );
+
+    const sourceMissionId = parseOptionalPositiveId(missionSourceWatch);
+
+    const prestationExistanteSelectOptions = useMemo(() => {
+      if (sourceMissionId == null) {
+        return [];
+      }
+      return missionEnfants
+        .filter((e) => extractGristReferenceId(e.Mission) === sourceMissionId)
+        .map((e) => {
+          const ivId = extractGristReferenceId(e.Intervenant);
+          const ivLabel =
+            ivId != null && ivId !== 0 ? intervenantLabelById.get(ivId) : undefined;
+          return {
+            value: String(e.id),
+            label: missionEnfantReassignOptionLabel(e, ivLabel),
+          };
+        })
+        .sort((a, b) => a.label.localeCompare(b.label, "fr", { sensitivity: "base" }));
+    }, [missionEnfants, sourceMissionId, intervenantLabelById]);
 
     const openCreate = useCallback(() => {
       setMode("create");
@@ -230,11 +295,49 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
           return;
         }
 
-        const intervenantId = Number.parseInt(values.prestationIntervenant.trim(), 10);
-        const wantsPrestation = Number.isFinite(intervenantId) && intervenantId !== 0;
-        if (wantsPrestation) {
+        const reassignId = resolveReassignPrestationId(values, missionEnfants);
+        if (reassignId != null) {
+          try {
+            await updateMissionEnfantRecord(
+              reassignId,
+              buildMissionEnfantReassignParentFields(masterId),
+            );
+          } catch (e) {
+            const detail = e instanceof Error ? e.message : "Erreur inconnue";
+            await refreshAfterWrite();
+            setCreatedMasterId(masterId);
+            setIsSuccess(true);
+            setPrestationWarning(
+              `La mission existe déjà, mais la prestation n’a pas pu être rattachée (${detail}). Rouvrez « Nouvelle mission » pour réessayer la réaffectation, ou corrigez le rattachement dans Grist.`,
+            );
+            reset(emptyMissionCreateForm());
+            return;
+          }
+          await refreshAfterWrite();
+          close();
+          void navigate(`/missions/${masterId}`);
+          return;
+        }
+
+        if (parseOptionalPositiveId(values.prestationExistante) != null) {
+          // Prestation sélectionnée mais hors mission source / absente des données :
+          // ne pas basculer silencieusement vers une création neuve.
+          await refreshAfterWrite();
+          setCreatedMasterId(masterId);
+          setIsSuccess(true);
+          setPrestationWarning(
+            "La mission existe déjà. La prestation choisie n’appartient plus à la mission source — rouvrez « Nouvelle mission » pour réessayer.",
+          );
+          reset(emptyMissionCreateForm());
+          return;
+        }
+
+        if (wantsCreatePrestation(values)) {
+          const intervenantId = parseOptionalPositiveId(values.prestationIntervenant);
           const ivLabel =
-            intervenantOptions.find((o) => o.id === intervenantId)?.label?.trim() ?? "";
+            intervenantId != null
+              ? (intervenantOptions.find((o) => o.id === intervenantId)?.label?.trim() ?? "")
+              : "";
           try {
             await createMissionEnfantRecord(
               buildMissionEnfantCreateFields({
@@ -428,16 +531,97 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
                                 </span>
                               </h3>
                               <p className="fr-text--sm fr-mb-0">
-                                Prestation rattachée à cette mission. Vous pourrez aussi ajouter
-                                des prestations plus tard depuis la fiche de la mission, onglet «
-                                Équipe &amp; prestations ». Renseignez un intervenant pour
-                                qu&apos;une prestation soit créée en même temps que la mission.
+                                Rattachez une prestation déjà présente (découpage après migration)
+                                ou créez-en une nouvelle. Les deux parcours sont exclusifs. Vous
+                                pourrez aussi ajouter des prestations plus tard depuis la fiche,
+                                onglet « Équipe &amp; prestations ».
+                              </p>
+                            </div>
+                            <div className="fr-col-12">
+                              <Controller
+                                name="missionSource"
+                                control={control}
+                                render={({ field }) => (
+                                  <DsfrSelectRichMulti
+                                    label="Mission source"
+                                    hintText="Lot d’origine dont vous voulez récupérer une prestation."
+                                    placeholderWhenEmpty="Rechercher une mission…"
+                                    options={missionSourceSelectOptions}
+                                    selectedValues={field.value.trim() ? [field.value] : []}
+                                    onSelectedValuesChange={(values) => {
+                                      const next = values[0] ?? "";
+                                      field.onChange(next);
+                                      setValue("prestationExistante", "");
+                                      if (next) {
+                                        setValue("prestationIntervenant", "");
+                                        setValue("prestationLibelle", "");
+                                        setValue("prestationJoursEnvisages", "");
+                                      }
+                                    }}
+                                    searchable
+                                    searchLabel="Rechercher"
+                                    searchPlaceholder="Nom de la mission…"
+                                    showBulkActions={false}
+                                    maxSelections={1}
+                                    pluralEntityLabel="missions"
+                                    disabled={savePending || createPrestaActive}
+                                  />
+                                )}
+                              />
+                            </div>
+                            <div className="fr-col-12">
+                              <Controller
+                                name="prestationExistante"
+                                control={control}
+                                render={({ field }) => (
+                                  <DsfrSelectRichMulti
+                                    label="Prestation existante"
+                                    hintText={
+                                      sourceMissionId == null
+                                        ? "Choisissez d’abord une mission source."
+                                        : "Cette prestation sera rattachée à la nouvelle mission."
+                                    }
+                                    placeholderWhenEmpty={
+                                      sourceMissionId == null
+                                        ? "Mission source requise…"
+                                        : "Rechercher une prestation…"
+                                    }
+                                    options={prestationExistanteSelectOptions}
+                                    selectedValues={field.value.trim() ? [field.value] : []}
+                                    onSelectedValuesChange={(values) => {
+                                      const next = values[0] ?? "";
+                                      field.onChange(next);
+                                      if (next) {
+                                        setValue("prestationIntervenant", "");
+                                        setValue("prestationLibelle", "");
+                                        setValue("prestationJoursEnvisages", "");
+                                      }
+                                    }}
+                                    searchable
+                                    searchLabel="Rechercher"
+                                    searchPlaceholder="Titre ou intervenant…"
+                                    showBulkActions={false}
+                                    maxSelections={1}
+                                    pluralEntityLabel="prestations"
+                                    disabled={
+                                      savePending ||
+                                      createPrestaActive ||
+                                      sourceMissionId == null
+                                    }
+                                  />
+                                )}
+                              />
+                            </div>
+                            <div className="fr-col-12">
+                              <p className="fr-text--sm fr-text--bold fr-mb-1w">
+                                ou créer une nouvelle prestation
                               </p>
                             </div>
                             <div className="fr-col-12">
                               <Input
                                 label="Titre de la prestation"
                                 hintText="Vide → nom de l’intervenant."
+                                disabled={savePending || reassignActive}
                                 nativeInputProps={register("prestationLibelle")}
                               />
                             </div>
@@ -452,16 +636,21 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
                                     placeholderWhenEmpty="Rechercher un intervenant…"
                                     options={intervenantSelectOptions}
                                     selectedValues={field.value.trim() ? [field.value] : []}
-                                    onSelectedValuesChange={(values) =>
-                                      field.onChange(values[0] ?? "")
-                                    }
+                                    onSelectedValuesChange={(values) => {
+                                      const next = values[0] ?? "";
+                                      field.onChange(next);
+                                      if (next) {
+                                        setValue("missionSource", "");
+                                        setValue("prestationExistante", "");
+                                      }
+                                    }}
                                     searchable
                                     searchLabel="Rechercher"
                                     searchPlaceholder="Nom…"
                                     showBulkActions={false}
                                     maxSelections={1}
                                     pluralEntityLabel="intervenants"
-                                    disabled={savePending}
+                                    disabled={savePending || reassignActive}
                                   />
                                 )}
                               />
@@ -469,6 +658,7 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
                             <div className="fr-col-12 fr-col-md-6">
                               <Input
                                 label="Jours envisagés (prestation)"
+                                disabled={savePending || reassignActive}
                                 nativeInputProps={{
                                   ...register("prestationJoursEnvisages"),
                                   inputMode: "decimal",

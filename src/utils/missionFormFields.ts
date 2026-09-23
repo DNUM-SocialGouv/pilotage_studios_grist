@@ -7,6 +7,10 @@ export type MissionFormValues = {
   Nom_de_la_mission: string;
   Produit_SDPC: string;
   Statut: string;
+  /** Id mission master source (réaffectation d’une prestation existante). */
+  missionSource: string;
+  /** Id `Missions_enfants` à rattacher au nouveau lot. */
+  prestationExistante: string;
   prestationIntervenant: string;
   prestationLibelle: string;
   prestationJoursEnvisages: string;
@@ -17,6 +21,8 @@ export function emptyMissionCreateForm(): MissionFormValues {
     Nom_de_la_mission: "",
     Produit_SDPC: "",
     Statut: DEFAULT_MISSION_STATUT,
+    missionSource: "",
+    prestationExistante: "",
     prestationIntervenant: "",
     prestationLibelle: "",
     prestationJoursEnvisages: "",
@@ -30,10 +36,54 @@ export function missionToFormValues(m: Mission): MissionFormValues {
     Produit_SDPC:
       prodId != null && Number.isFinite(prodId) && prodId !== 0 ? String(prodId) : "",
     Statut: m.Statut?.trim() || DEFAULT_MISSION_STATUT,
+    missionSource: "",
+    prestationExistante: "",
     prestationIntervenant: "",
     prestationLibelle: "",
     prestationJoursEnvisages: "",
   };
+}
+
+/** Id numérique positif depuis une chaîne formulaire, sinon `null`. */
+export function parseOptionalPositiveId(raw: string): number | null {
+  const n = Number.parseInt(raw.trim(), 10);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+/** Parcours réaffectation actif si une prestation existante est choisie. */
+export function wantsReassignPrestation(values: MissionFormValues): boolean {
+  return parseOptionalPositiveId(values.prestationExistante) != null;
+}
+
+/** Parcours création neuve actif si un intervenant est choisi (et pas de réaffectation). */
+export function wantsCreatePrestation(values: MissionFormValues): boolean {
+  if (wantsReassignPrestation(values)) {
+    return false;
+  }
+  return parseOptionalPositiveId(values.prestationIntervenant) != null;
+}
+
+/**
+ * Id prestation à réaffecter si elle appartient bien à la mission source.
+ * Sinon `null` (état formulaire incohérent ou sélection absente).
+ */
+export function resolveReassignPrestationId(
+  values: MissionFormValues,
+  missionEnfants: { id: number; Mission?: unknown }[],
+): number | null {
+  const prestaId = parseOptionalPositiveId(values.prestationExistante);
+  const sourceId = parseOptionalPositiveId(values.missionSource);
+  if (prestaId == null || sourceId == null) {
+    return null;
+  }
+  const enfant = missionEnfants.find((e) => e.id === prestaId);
+  if (enfant == null) {
+    return null;
+  }
+  if (extractGristReferenceId(enfant.Mission) !== sourceId) {
+    return null;
+  }
+  return prestaId;
 }
 
 export function buildMissionCreateFields(

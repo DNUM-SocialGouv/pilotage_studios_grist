@@ -56,6 +56,22 @@ export function missionEnfantLibelle(enfant: MissionEnfant, intervenantLabel?: s
   return `Prestation #${enfant.id}`;
 }
 
+/**
+ * Libellé select réaffectation : titre + intervenant si distinct
+ * (ex. « Audit RGPD — Alice Dupont »).
+ */
+export function missionEnfantReassignOptionLabel(
+  enfant: MissionEnfant,
+  intervenantLabel?: string,
+): string {
+  const title = missionEnfantLibelle(enfant, intervenantLabel);
+  const iv = intervenantLabel?.trim();
+  if (iv && iv !== title) {
+    return `${title} — ${iv}`;
+  }
+  return title;
+}
+
 /** Titre prestation optionnel (champ interne mappé depuis Grist). */
 export function enfantLibelleOptionnel(e: MissionEnfant): string | undefined {
   const lib = e.Libelle?.trim();

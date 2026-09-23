@@ -74,7 +74,12 @@ Bouton **« Nouvelle mission »** sous le titre → `MissionFormDrawer` mode **c
 
 Champs : **Nom** (obligatoire) · **Produit (SDPC)** · **Statut**. Largeur fixe **SM** (pas de sélecteur de largeur côté widget).
 
-**Create** — section optionnelle **première prestation** : si un intervenant est choisi, une ligne `Missions_enfants` est créée (`Mission_parent`, `Titre_de_la_prestation`, `Intervenant`, …). Succès total → redirection `/missions/:id`. Mission créée sans prestation → avertissement + lien fiche (pas de redirect).
+**Create** — section optionnelle **première prestation**, deux parcours **exclusifs** :
+
+1. **Réaffecter** (migration / découpage) : **Mission source** puis **Prestation existante** (enfants de cette mission uniquement) → après création du lot, `Missions_enfants.Mission_parent` pointe vers le nouveau lot.
+2. **Créer** : titre + intervenant + jours envisagés → nouvelle ligne `Missions_enfants` (`Mission_parent`, `Titre_de_la_prestation`, `Intervenant`, …).
+
+Succès total → redirection `/missions/:id`. Mission créée mais prestation (create ou réaffectation) en échec → avertissement + lien fiche (pas de redirect).
 
 **Edit** — pas de champs prestation ; lien vers onglet Équipe & prestations. Succès → Alert in-drawer (drawer reste ouvert).
 
