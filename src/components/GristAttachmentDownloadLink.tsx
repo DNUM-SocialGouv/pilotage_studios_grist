@@ -1,5 +1,9 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { extractGristAttachmentIds } from "../utils/gristAttachments";
+import {
+  extractGristAttachmentIds,
+  fileExtensionLabel,
+  formatFileSizeFr,
+} from "../utils/gristAttachments";
 import {
   getGristAccessToken,
   gristAuthedUrl,
@@ -11,6 +15,13 @@ type GristAttachmentDownloadLinkProps = {
   /** Libellé générique (ex. « Télécharger le devis »). */
   label?: string;
   className?: string;
+  /** Texte si aucune pièce jointe (défaut : tiret cadratin). */
+  emptyLabel?: string;
+  /**
+   * Liste verticale DSFR (`fr-links-group`) — adapté aux panneaux
+   * (ex. colonne PJ fiche mission). Sinon liste simple / lien unique.
+   */
+  asLinksGroup?: boolean;
 };
 
 function triggerBrowserDownload(blob: Blob, fileName: string) {
@@ -23,29 +34,6 @@ function triggerBrowserDownload(blob: Blob, fileName: string) {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
-}
-
-function formatFileSizeFr(bytes: number): string {
-  if (!Number.isFinite(bytes) || bytes < 0) {
-    return "—";
-  }
-  if (bytes < 1024) {
-    return `${bytes} o`;
-  }
-  if (bytes < 1024 * 1024) {
-    const ko = bytes / 1024;
-    return `${ko.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} ko`;
-  }
-  const mo = bytes / (1024 * 1024);
-  return `${mo.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} Mo`;
-}
-
-function fileExtensionLabel(fileName: string): string {
-  const i = fileName.lastIndexOf(".");
-  if (i < 0 || i === fileName.length - 1) {
-    return "Fichier";
-  }
-  return fileName.slice(i + 1).toUpperCase();
 }
 
 function parseContentDispositionFileName(header: string | null): string | undefined {
@@ -206,14 +194,20 @@ export function GristAttachmentDownloadLink({
   value,
   label,
   className,
+  emptyLabel = "—",
+  asLinksGroup = false,
 }: GristAttachmentDownloadLinkProps) {
   const attachmentIds = extractGristAttachmentIds(value);
 
   if (attachmentIds.length === 0) {
-    return <>—</>;
+    return (
+      <p className={["fr-text--sm fr-text-mention--grey fr-mb-0", className].filter(Boolean).join(" ")}>
+        {emptyLabel}
+      </p>
+    );
   }
 
-  if (attachmentIds.length === 1) {
+  if (attachmentIds.length === 1 && !asLinksGroup) {
     return (
       <div className={className}>
         <SingleAttachmentDownloadLink attachmentId={attachmentIds[0]!} label={label} />
@@ -221,10 +215,17 @@ export function GristAttachmentDownloadLink({
     );
   }
 
+  const listClass = [
+    asLinksGroup ? "fr-links-group fr-links-group--download" : "fr-mb-0 fr-pl-0 grist-attachment-list",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <ul className={["fr-mb-0 fr-pl-0", className].filter(Boolean).join(" ")}>
+    <ul className={listClass}>
       {attachmentIds.map((id, index) => (
-        <li key={id} className={index > 0 ? "fr-mt-2w" : undefined}>
+        <li key={id} className={!asLinksGroup && index > 0 ? "fr-mt-2w" : undefined}>
           <SingleAttachmentDownloadLink
             attachmentId={id}
             label={label ? `${label} (${index + 1})` : undefined}
@@ -233,6 +234,11 @@ export function GristAttachmentDownloadLink({
       ))}
     </ul>
   );
+}
+
+/** Nombre d’ids piece jointe dans une valeur Attachments Grist. */
+export function countGristAttachments(value: unknown): number {
+  return extractGristAttachmentIds(value).length;
 }
 
 /** Lien externe Sofiane si URL HTTP(S), sinon texte. */
