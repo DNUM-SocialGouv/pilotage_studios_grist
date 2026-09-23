@@ -2,10 +2,11 @@ import { useEffect, useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
-import { GristAttachmentDownloadLink } from "../components/GristAttachmentDownloadLink";
 import { useMissionEnfantDrawerRef } from "../components/missions/MissionEnfantDrawerContext";
 import { useMissionFormDrawerRef } from "../components/missions/MissionFormDrawerContext";
+import { MissionContexteDocsPanel } from "../components/missions/MissionContexteDocsPanel";
 import { MissionEquipePrestationsPanel } from "../components/missions/MissionEquipePrestationsPanel";
+import { MissionNoteStudioEditor } from "../components/missions/MissionNoteStudioEditor";
 import { MissionProse } from "../components/missions/MissionProse";
 import { StatutBadge } from "../components/StatutBadge";
 import { WidgetBreadcrumb } from "../components/WidgetBreadcrumb";
@@ -56,13 +57,12 @@ function parseMissionTabId(params: URLSearchParams): MissionTabId {
   if (raw === "equipe" || raw === "equipe-prestations" || raw === "realisations") {
     return "equipe";
   }
-  if (
-    raw === "notes" ||
-    raw === "note-studio" ||
-    raw === "pieces-jointes" ||
-    raw === "note-pieces-jointes"
-  ) {
+  if (raw === "notes" || raw === "note-studio") {
     return "notes";
+  }
+  // Alias legacy PJ → Contexte (les pièces jointes y sont désormais)
+  if (raw === "pieces-jointes" || raw === "note-pieces-jointes") {
+    return "contexte";
   }
   return "contexte";
 }
@@ -71,7 +71,13 @@ function isTextFilled(value: unknown): boolean {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-function MissionContextePanel({ mission }: { mission: Mission }) {
+function MissionContextePanel({
+  mission,
+  onDocsChanged,
+}: {
+  mission: Mission;
+  onDocsChanged: () => Promise<void>;
+}) {
   const sections = NARRATIVE_SECTIONS.map((section) => ({
     ...section,
     fields: section.keys
@@ -79,56 +85,61 @@ function MissionContextePanel({ mission }: { mission: Mission }) {
       .filter((f) => isTextFilled(f.value)),
   })).filter((s) => s.fields.length > 0);
   const liens = isTextFilled(mission.Liens_FIGMA_Notion) ? mission.Liens_FIGMA_Notion : null;
-
-  if (sections.length === 0 && !liens) {
-    return (
-      <p className="fr-text--sm fr-text-mention--grey fr-mb-0">
-        Aucun contenu détaillé renseigné pour cette mission.
-      </p>
-    );
-  }
+  const hasNarrative = sections.length > 0 || liens != null;
 
   return (
-    <>
-      {sections.map((section) => (
-        <section key={section.title} className="fr-mb-4w">
-          <h2 className="fr-h5 fr-mb-3w">{section.title}</h2>
-          {section.fields.map(({ key, value }) => (
-            <div key={key} className="fr-mb-3w">
-              <h3 className="fr-h6 fr-mb-1w">{FIELD_LABELS[key] ?? key}</h3>
-              <MissionProse value={String(value)} />
-            </div>
-          ))}
-        </section>
-      ))}
-      {liens ? (
-        <div className="fr-mb-0">
-          <h3 className="fr-h6 fr-mb-1w">{FIELD_LABELS.Liens_FIGMA_Notion}</h3>
-          <MissionProse value={liens} />
-        </div>
-      ) : null}
-    </>
-  );
-}
-
-function MissionNotesPanel({ mission }: { mission: Mission }) {
-  return (
-    <>
-      <div className="fr-mb-4w">
-        <h2 className="fr-h5 fr-mb-2w">Note studio</h2>
-        {isTextFilled(mission.Suivi_resp_studio) ? (
-          <MissionProse value={mission.Suivi_resp_studio!} />
+    <div className="fr-grid-row fr-grid-row--gutters mission-contexte-layout">
+      <div className="fr-col-12 fr-col-md-8 mission-contexte-layout__main">
+        {hasNarrative ? (
+          <>
+            {sections.map((section) => (
+              <section key={section.title} className="fr-mb-4w">
+                <h2 className="fr-h5 fr-mb-3w">{section.title}</h2>
+                {section.fields.map(({ key, value }) => (
+                  <div key={key} className="fr-mb-3w">
+                    <h3 className="fr-h6 fr-mb-1w">{FIELD_LABELS[key] ?? key}</h3>
+                    <MissionProse value={String(value)} />
+                  </div>
+                ))}
+              </section>
+            ))}
+            {liens ? (
+              <div className="fr-mb-0">
+                <h3 className="fr-h6 fr-mb-1w">{FIELD_LABELS.Liens_FIGMA_Notion}</h3>
+                <MissionProse value={liens} />
+              </div>
+            ) : null}
+          </>
         ) : (
           <p className="fr-text--sm fr-text-mention--grey fr-mb-0">
-            Aucune note studio renseignée.
+            Aucun contenu détaillé renseigné pour cette mission.
           </p>
         )}
       </div>
-      <div>
-        <h2 className="fr-h5 fr-mb-2w">Pièces jointes</h2>
-        <GristAttachmentDownloadLink value={mission.Docs} />
-      </div>
-    </>
+      <aside className="fr-col-12 fr-col-md-4 mission-contexte-layout__aside">
+        <MissionContexteDocsPanel
+          missionId={mission.id}
+          docs={mission.Docs}
+          onChanged={onDocsChanged}
+        />
+      </aside>
+    </div>
+  );
+}
+
+function MissionNotesPanel({
+  mission,
+  onNoteSaved,
+}: {
+  mission: Mission;
+  onNoteSaved: () => Promise<void>;
+}) {
+  return (
+    <MissionNoteStudioEditor
+      missionId={mission.id}
+      value={mission.Suivi_resp_studio}
+      onSaved={onNoteSaved}
+    />
   );
 }
 
@@ -137,7 +148,7 @@ const MISSIONS_CRUMB = [{ label: "Missions", to: "/missions" }] as const;
 export function MissionsDetailView() {
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { data, isReloading } = useMissionsOutlet();
+  const { data, isReloading, reloadMissions } = useMissionsOutlet();
   const missionFormDrawerRef = useMissionFormDrawerRef();
   const enfantDrawerRef = useMissionEnfantDrawerRef();
   const missionTabId = parseMissionTabId(searchParams);
@@ -148,6 +159,10 @@ export function MissionsDetailView() {
   useEffect(() => {
     if (rawOnglet === "realisations") {
       setSearchParams({ onglet: "equipe" }, { replace: true });
+      return;
+    }
+    if (rawOnglet === "pieces-jointes" || rawOnglet === "note-pieces-jointes") {
+      setSearchParams({ onglet: "contexte" }, { replace: true });
     }
   }, [rawOnglet, setSearchParams]);
 
@@ -337,12 +352,14 @@ export function MissionsDetailView() {
           },
           {
             tabId: "notes",
-            label: "Note & pièces jointes",
-            iconId: "fr-icon-attachment-line",
+            label: "Note studio",
+            iconId: "fr-icon-draft-line",
           },
         ]}
       >
-        {missionTabId === "contexte" ? <MissionContextePanel mission={mission} /> : null}
+        {missionTabId === "contexte" ? (
+          <MissionContextePanel mission={mission} onDocsChanged={reloadMissions} />
+        ) : null}
         {missionTabId === "equipe" ? (
           <MissionEquipePrestationsPanel
             key={mission.id}
@@ -356,7 +373,9 @@ export function MissionsDetailView() {
             onEditPrestation={(enfant) => enfantDrawerRef.current?.openEdit(enfant)}
           />
         ) : null}
-        {missionTabId === "notes" ? <MissionNotesPanel mission={mission} /> : null}
+        {missionTabId === "notes" ? (
+          <MissionNotesPanel mission={mission} onNoteSaved={reloadMissions} />
+        ) : null}
       </Tabs>
     </div>
   );

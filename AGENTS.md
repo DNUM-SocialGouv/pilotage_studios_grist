@@ -228,7 +228,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 ## 10. Hors scope (ne pas recréer sans demande)
 
 - Features IA / assistant
-- Écriture Grist hors allowlist (`Retours`, drawer `Missions` / `Missions_enfants` create+update, `Realise` create+update déclaration, `Acl_profil` create auto, `Droits_pages` update Admin) — pas d’update/delete retours, pas de delete missions/prestations/CRA, pas d’édition `Type_prestation` / `Date_de_fin` prestation, pas d’update/delete `Acl_profil`, pas de create/delete lignes `Droits_pages`
+- Écriture Grist hors allowlist (`Retours`, drawer `Missions` / `Missions_enfants` create+update, Note studio `Suivi_resp_studio`, Docs mission upload/détachement, `Realise` create+update déclaration, `Acl_profil` create auto, `Droits_pages` update Admin) — pas d’update/delete retours, pas de delete missions/prestations/CRA, pas d’édition `Type_prestation` / `Date_de_fin` prestation, pas d’update/delete `Acl_profil`, pas de create/delete lignes `Droits_pages`
 - Imports CSV Sofiane
 - Remplacer l’app `pilotage_studios`
 - Kanban / notifs / mails **dans le widget** ; alertes ops = hors bundle ([`docs/fonctionnel/feedback/alertes.md`](docs/fonctionnel/feedback/alertes.md) — pas d’URL webhook dans git)

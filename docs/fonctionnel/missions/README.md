@@ -19,7 +19,7 @@ Une **mission master** (`Missions`) est un lot d’accompagnement (contexte, pro
 
 | Table | Usage |
 |-------|--------|
-| `Missions` | Lignes liste / fiche (masters) ; **écriture** create + update (drawer) |
+| `Missions` | Lignes liste / fiche (masters) ; **écriture** create + update (drawer Nom / Produit / Statut ; Note studio `Suivi_resp_studio` ; Docs `Docs` via panneau Contexte) |
 | `Missions_enfants` | Prestations ; **écriture** create + update (drawer fiche ; 1ʳᵉ prestation optionnelle à la création mission) |
 | `Equipe` | Libellés intervenants / équipe |
 | `Tableau_de_pilotage_SDPC_Produits_SDPC` | Libellés produit |
@@ -39,7 +39,7 @@ Chargement **lazy** sur `/missions` uniquement (`useMissionsData`) — pas au bo
 
 ## Écarts vs l’app
 
-- Drawer master **slim** (Nom · Produit · Statut) ; drawer prestation **slim** (Titre · Intervenant · Jours · Statut · Date de début) — pas d’édition inline contexte / PJ
+- Drawer master **slim** (Nom · Produit · Statut) ; drawer prestation **slim** (Titre · Intervenant · Jours · Statut · Date de début) — pas d’édition inline des champs **Contexte** ; **Note studio** éditable sur place (textarea Markdown) ; **Docs** ajout / détachement dans la colonne Contexte
 - `Type_prestation` figé Freelance à la création, non éditable / non affiché (forfait = [#36](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/36))
 - Pas de `Date_de_fin` prestation (hypothèse CRA = [#37](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/37))
 - Pas d’IA (rapport d’investissement, CR, estimation)
@@ -48,4 +48,4 @@ Chargement **lazy** sur `/missions` uniquement (`useMissionsData`) — pas au bo
 - Liste ISO #216/#218/#219 + drawer [#227](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/227)
 - Fiche ISO #222 / #224 / #225 + bouton **modifier** (drawer edit) + CRUD prestations [#31](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/31)
 - Produits encore stub ; écran **Équipe** = `/equipe` (lien croisé depuis la fiche personne vers `/missions/:id` ; pas encore l’inverse depuis la fiche mission)
-- Contexte / note studio : formatage léger (titres `#`–`######`, paragraphes, listes, gras `**…**`, liens Markdown http(s) — pas de HTML brut) ; pièces jointes `Docs` affichées avec le nom de fichier
+- Contexte / note studio : formatage léger (titres `#`–`######`, paragraphes, listes, gras `**…**`, liens Markdown http(s) — pas de HTML brut) ; pièces jointes `Docs` dans l’onglet **Contexte** (colonne droite) : télécharger, ajouter, détacher (pas de purge fichier document) ; note éditable sur place (pas de WYSIWYG)

@@ -97,6 +97,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-09-23 | Fiche mission Contexte : panneau PJ = télécharger + ajouter + détacher `Docs` (upload jeton non-readonly) ; Note studio éditable ; pas de changement ACL tables | 5 | Note studio + Docs Contexte |
 | 2026-09-23 | Fiche produit : 4 onglets référentiel → 1 onglet Informations (groupes métier, page document) ; pas de compteurs ; mêmes droits lecture | 5 | Gabarit A canvas infos produit |
 | 2026-09-22 | Produits : liste + fiche lecture (`/produits`, `/produits/:id`) ; nav hors stub ; missions liées sur fiche ; pas d’écriture catalogue | 5 | [#3](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3) |
 | 2026-09-21 | Freelance : nav « Mon carnet » en niveau 1 (`/cra/declarer`) ; retrait du sous-menu Budget (Budget disparaît s’il ne reste aucun enfant accessible) | 5 | Ajustements UX carnet |
