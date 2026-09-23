@@ -6,7 +6,7 @@ import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import { CallOut } from "@codegouvfr/react-dsfr/CallOut";
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
 import { MissionEquipePrestationsPanel } from "../components/missions/MissionEquipePrestationsPanel";
-import { ReferentielTilesGrid } from "../components/ProduitReferentielTiles";
+import { ProduitReferentielInfosPanel } from "../components/ProduitReferentielInfosPanel";
 import { WidgetBreadcrumb } from "../components/WidgetBreadcrumb";
 import { tdEquipeTag } from "../components/EquipeTags";
 import { StatutBadge } from "../components/StatutBadge";
@@ -21,13 +21,7 @@ import {
   suiviBelongsToMasterMission,
 } from "../utils/missionEnfants";
 import { missionLibelle } from "../utils/missionsList";
-import {
-  fieldsForTheme,
-  formatReferentielField,
-  produitNomComplet,
-  themeFilledCount,
-  type ProduitReferentielTheme,
-} from "../utils/produitReferentiel";
+import { produitNomComplet } from "../utils/produitReferentiel";
 import {
   isMissionEnCours,
   missionsLieesAuProduit,
@@ -42,30 +36,10 @@ const PRODUITS_CRUMB = [{ label: "Produits", to: "/produits" }] as const;
 
 const TTC_BAR_TITLE_PRODUIT = "Répartition du TTC par équipe";
 
-const REFERENTIEL_THEMES: ProduitReferentielTheme[] = [
-  "identite",
-  "securite",
-  "utilisateurs",
-  "cycle",
-];
-
-const REFERENTIEL_TAB_SHORT: Record<ProduitReferentielTheme, string> = {
-  identite: "Identité",
-  securite: "Sécurité",
-  utilisateurs: "Utilisateurs",
-  cycle: "Cycle de vie",
-};
-
-type ProduitFicheTabId = "missions" | ProduitReferentielTheme;
+type ProduitFicheTabId = "missions" | "informations";
 
 function isProduitFicheTabId(id: string): id is ProduitFicheTabId {
-  return (
-    id === "missions" ||
-    id === "identite" ||
-    id === "securite" ||
-    id === "utilisateurs" ||
-    id === "cycle"
-  );
+  return id === "missions" || id === "informations";
 }
 
 function formatJoursFr(jours: number): string {
@@ -253,15 +227,6 @@ function ProduitMissionsPanel({
   );
 }
 
-function themeTiles(produit: ProduitSdpc, theme: ProduitReferentielTheme) {
-  return fieldsForTheme(theme).map((field) => ({
-    key: String(field.key),
-    label: field.label,
-    value: formatReferentielField(produit, field),
-    wide: field.kind === "longtext" || field.kind === "urls",
-  }));
-}
-
 function ProduitFicheTabs({
   produit,
   missionsEnabled,
@@ -270,20 +235,11 @@ function ProduitFicheTabs({
   missionsEnabled: boolean;
 }) {
   const [tabId, setTabId] = useState<ProduitFicheTabId>("missions");
-  const longDesc = produit.Description_longue?.trim();
   const missionsData = useProduitMissionsData(missionsEnabled);
   const missionsCount =
     missionsData.status === "ok"
       ? missionsLieesAuProduit(missionsData.missions, produit.id).length
       : null;
-
-  const referentielTabs = REFERENTIEL_THEMES.map((theme) => {
-    const counts = themeFilledCount(produit, theme);
-    return {
-      tabId: theme,
-      label: `${REFERENTIEL_TAB_SHORT[theme]} (${counts.filled}/${counts.total})`,
-    };
-  });
 
   return (
     <section className="fr-mb-4w" aria-label="Fiche produit">
@@ -304,23 +260,16 @@ function ProduitFicheTabs({
                 ? "Missions"
                 : `Missions (${missionsCount})`,
           },
-          ...referentielTabs,
+          {
+            tabId: "informations",
+            label: "Informations",
+          },
         ]}
       >
         {tabId === "missions" ? (
           <ProduitMissionsPanel produitId={produit.id} data={missionsData} />
         ) : (
-          <>
-            <ReferentielTilesGrid items={themeTiles(produit, tabId)} />
-            {tabId === "identite" && longDesc ? (
-              <div className="fr-mt-3w">
-                <h3 className="fr-h6 fr-mb-1w">Description longue</h3>
-                <p className="fr-text--sm" style={{ whiteSpace: "pre-wrap" }}>
-                  {longDesc}
-                </p>
-              </div>
-            ) : null}
-          </>
+          <ProduitReferentielInfosPanel produit={produit} />
         )}
       </Tabs>
     </section>

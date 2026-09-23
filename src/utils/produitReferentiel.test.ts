@@ -3,7 +3,9 @@ import { describe, it } from "node:test";
 import type { ProduitSdpc } from "../types.ts";
 import {
   PRODUIT_REFERENTIEL_FIELDS,
+  PRODUIT_REFERENTIEL_GROUPES_ORDER,
   computeReferentielCompletion,
+  fieldsForGroupe,
   formatReferentielField,
   formatReferentielPercent,
   produitNomComplet,
@@ -115,5 +117,28 @@ describe("themeFilledCount / produitNomComplet", () => {
   it("extrait le nom complet", () => {
     assert.equal(produitNomComplet(vao), "Vacances Adaptées Organisées");
     assert.equal(produitNomComplet({ id: 1, Produit: "X", Description: "X" }), "");
+  });
+});
+
+describe("groupes métier (onglet Informations)", () => {
+  it("couvre les 37 champs sans trou ni doublon", () => {
+    const seen = new Set<string>();
+    for (const groupe of PRODUIT_REFERENTIEL_GROUPES_ORDER) {
+      for (const f of fieldsForGroupe(groupe)) {
+        assert.equal(f.groupe, groupe);
+        assert.ok(!seen.has(String(f.key)), `doublon ${String(f.key)}`);
+        seen.add(String(f.key));
+      }
+    }
+    assert.equal(seen.size, PRODUIT_REFERENTIEL_FIELDS.length);
+    assert.equal(seen.size, 37);
+  });
+
+  it("place la présentation, la conformité et la technique aux bons effectifs", () => {
+    assert.equal(fieldsForGroupe("presentation").length, 3);
+    assert.equal(fieldsForGroupe("conformite").length, 10);
+    assert.equal(fieldsForGroupe("technique").length, 9);
+    assert.equal(fieldsForGroupe("gouvernance").length, 9);
+    assert.equal(fieldsForGroupe("usagers").length, 6);
   });
 });

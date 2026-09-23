@@ -2,12 +2,23 @@ import type { ProduitSdpc } from "../types.ts";
 import { formatGristDate } from "./formatGristDate.ts";
 import { safeHttpUrl } from "./produitsList.ts";
 
-/** Thèmes alignés sur la sync app sœur (`PRODUIT_SDPC_SYNC_FIELDS`). */
+/** Thèmes sync app sœur (`PRODUIT_SDPC_SYNC_FIELDS`) — conservés pour alignement catalogue. */
 export type ProduitReferentielTheme =
   | "identite"
   | "securite"
   | "utilisateurs"
   | "cycle";
+
+/**
+ * Groupes métier fiche produit (onglet Informations — gabarit page document).
+ * Remplacent les 4 onglets SDPC pour l’affichage widget.
+ */
+export type ProduitReferentielGroupe =
+  | "presentation"
+  | "gouvernance"
+  | "usagers"
+  | "conformite"
+  | "technique";
 
 export type ProduitReferentielFieldKind =
   | "text"
@@ -24,6 +35,8 @@ export type ProduitReferentielFieldDef = {
   key: keyof ProduitSdpc;
   label: string;
   theme: ProduitReferentielTheme;
+  /** Regroupement UI widget (indépendant du thème sync). */
+  groupe: ProduitReferentielGroupe;
   kind: ProduitReferentielFieldKind;
 };
 
@@ -32,148 +45,266 @@ export type ProduitReferentielFieldDef = {
  * Libellés métier pour la fiche produit.
  */
 export const PRODUIT_REFERENTIEL_FIELDS: readonly ProduitReferentielFieldDef[] = [
-  // Identité et gouvernance (11)
-  { key: "Produit", label: "Nom du produit", theme: "identite", kind: "text" },
-  { key: "Description", label: "Nom complet", theme: "identite", kind: "text" },
+  // Présentation
+  {
+    key: "Produit",
+    label: "Nom du produit",
+    theme: "identite",
+    groupe: "presentation",
+    kind: "text",
+  },
+  {
+    key: "Description",
+    label: "Nom complet",
+    theme: "identite",
+    groupe: "presentation",
+    kind: "text",
+  },
   {
     key: "Fonctionnalites_et_contexte",
     label: "Fonctionnalités et contexte",
     theme: "identite",
+    groupe: "presentation",
     kind: "longtext",
   },
-  { key: "Statut_actuel", label: "Statut", theme: "identite", kind: "text" },
-  { key: "departement_sdpc", label: "Département SDPC", theme: "identite", kind: "text" },
-  { key: "D_Metier", label: "Direction métier / portefeuilles", theme: "identite", kind: "tags" },
-  { key: "Equipe", label: "Équipe", theme: "identite", kind: "text" },
-  { key: "Chef_de_produit", label: "Chef de produit", theme: "identite", kind: "text" },
-  { key: "URLs_du_produit", label: "Site / URL du produit", theme: "identite", kind: "url" },
-  { key: "Liens_repos_depots", label: "Dépôts", theme: "identite", kind: "urls" },
+
+  // Gouvernance (+ fin de vie)
+  {
+    key: "Statut_actuel",
+    label: "Statut",
+    theme: "identite",
+    groupe: "gouvernance",
+    kind: "text",
+  },
+  {
+    key: "departement_sdpc",
+    label: "Département SDPC",
+    theme: "identite",
+    groupe: "gouvernance",
+    kind: "text",
+  },
+  {
+    key: "D_Metier",
+    label: "Direction métier / portefeuilles",
+    theme: "identite",
+    groupe: "gouvernance",
+    kind: "tags",
+  },
+  { key: "Equipe", label: "Équipe", theme: "identite", groupe: "gouvernance", kind: "text" },
+  {
+    key: "Chef_de_produit",
+    label: "Chef de produit",
+    theme: "identite",
+    groupe: "gouvernance",
+    kind: "text",
+  },
+  {
+    key: "Projet_strategique",
+    label: "Projet stratégique",
+    theme: "cycle",
+    groupe: "gouvernance",
+    kind: "tags",
+  },
   {
     key: "Actions_de_la_feuille_de_route",
     label: "Feuille de route",
     theme: "identite",
+    groupe: "gouvernance",
     kind: "longtext",
   },
-
-  // Sécurité et conformité (10)
-  {
-    key: "Statut_d_homologation_de_securite",
-    label: "Statut d’homologation",
-    theme: "securite",
-    kind: "text",
-  },
-  {
-    key: "Debut_validite_homologation",
-    label: "Début de validité d’homologation",
-    theme: "securite",
-    kind: "date",
-  },
-  {
-    key: "Fin_de_validite_d_homologation",
-    label: "Fin de validité d’homologation",
-    theme: "securite",
-    kind: "date",
-  },
-  {
-    key: "Besoin_DICT_Disponibilite",
-    label: "DICT — Disponibilité",
-    theme: "securite",
-    kind: "text",
-  },
-  {
-    key: "Besoin_DICT_Integrite",
-    label: "DICT — Intégrité",
-    theme: "securite",
-    kind: "text",
-  },
-  {
-    key: "Besoin_DICT_Confidentialite",
-    label: "DICT — Confidentialité",
-    theme: "securite",
-    kind: "text",
-  },
-  {
-    key: "Besoin_DICT_Tracabilite",
-    label: "DICT — Traçabilité",
-    theme: "securite",
-    kind: "text",
-  },
-  {
-    key: "SCORE_RGAA_Declaration_reglementaire",
-    label: "Déclaration RGAA",
-    theme: "securite",
-    kind: "text",
-  },
-  {
-    key: "RGAA_Date_declaration",
-    label: "Date déclaration RGAA",
-    theme: "securite",
-    kind: "date",
-  },
-  {
-    key: "RGAA_Tx_conformite",
-    label: "Taux de conformité RGAA",
-    theme: "securite",
-    kind: "percent",
-  },
-
-  // Utilisateurs et exploitation (13)
-  { key: "Cibles_du_produit", label: "Cibles du produit", theme: "utilisateurs", kind: "tags" },
-  {
-    key: "Volumetrie_utilisateurs_par_an",
-    label: "Volumétrie utilisateurs / an",
-    theme: "utilisateurs",
-    kind: "text",
-  },
-  {
-    key: "Nature_de_l_application",
-    label: "Nature de l’application",
-    theme: "utilisateurs",
-    kind: "tags",
-  },
-  { key: "Criticite", label: "Criticité", theme: "utilisateurs", kind: "text" },
-  {
-    key: "Typologie_d_application",
-    label: "Typologie d’application",
-    theme: "utilisateurs",
-    kind: "tags",
-  },
-  { key: "Bouton_JDMA", label: "Je Donne Mon Avis (JDMA)", theme: "utilisateurs", kind: "bool" },
-  { key: "Lien_stats_JDMA", label: "Lien stats JDMA", theme: "utilisateurs", kind: "url" },
-  { key: "Hebergement", label: "Hébergement", theme: "utilisateurs", kind: "tags" },
-  { key: "URL_Back_Office", label: "URL back-office", theme: "utilisateurs", kind: "url" },
-  { key: "Marche_DEV_TMA", label: "Marché DEV / TMA", theme: "utilisateurs", kind: "text" },
-  {
-    key: "Prestataire_de_developpement",
-    label: "Prestataire de développement",
-    theme: "utilisateurs",
-    kind: "tags",
-  },
-  {
-    key: "Enjeux_Chiffres_cles",
-    label: "Enjeux / chiffres clés",
-    theme: "utilisateurs",
-    kind: "longtext",
-  },
-  { key: "Editeur", label: "Éditeur", theme: "utilisateurs", kind: "tags" },
-
-  // Cycle de vie (3)
   {
     key: "Date_de_demande_de_decomissionnement",
     label: "Date de demande de décommissionnement",
     theme: "cycle",
+    groupe: "gouvernance",
     kind: "date",
   },
   {
     key: "Retrait_de_service",
     label: "Date de retrait de service",
     theme: "cycle",
+    groupe: "gouvernance",
+    kind: "date",
+  },
+
+  // Usagers & impact
+  {
+    key: "Cibles_du_produit",
+    label: "Cibles du produit",
+    theme: "utilisateurs",
+    groupe: "usagers",
+    kind: "tags",
+  },
+  {
+    key: "Volumetrie_utilisateurs_par_an",
+    label: "Volumétrie utilisateurs / an",
+    theme: "utilisateurs",
+    groupe: "usagers",
+    kind: "text",
+  },
+  {
+    key: "Criticite",
+    label: "Criticité",
+    theme: "utilisateurs",
+    groupe: "usagers",
+    kind: "text",
+  },
+  {
+    key: "Bouton_JDMA",
+    label: "Je Donne Mon Avis (JDMA)",
+    theme: "utilisateurs",
+    groupe: "usagers",
+    kind: "bool",
+  },
+  {
+    key: "Lien_stats_JDMA",
+    label: "Lien stats JDMA",
+    theme: "utilisateurs",
+    groupe: "usagers",
+    kind: "url",
+  },
+  {
+    key: "Enjeux_Chiffres_cles",
+    label: "Enjeux / chiffres clés",
+    theme: "utilisateurs",
+    groupe: "usagers",
+    kind: "longtext",
+  },
+
+  // Conformité
+  {
+    key: "Statut_d_homologation_de_securite",
+    label: "Statut d’homologation",
+    theme: "securite",
+    groupe: "conformite",
+    kind: "text",
+  },
+  {
+    key: "Debut_validite_homologation",
+    label: "Début de validité d’homologation",
+    theme: "securite",
+    groupe: "conformite",
     kind: "date",
   },
   {
-    key: "Projet_strategique",
-    label: "Projet stratégique",
-    theme: "cycle",
+    key: "Fin_de_validite_d_homologation",
+    label: "Fin de validité d’homologation",
+    theme: "securite",
+    groupe: "conformite",
+    kind: "date",
+  },
+  {
+    key: "SCORE_RGAA_Declaration_reglementaire",
+    label: "Déclaration RGAA",
+    theme: "securite",
+    groupe: "conformite",
+    kind: "text",
+  },
+  {
+    key: "RGAA_Date_declaration",
+    label: "Date déclaration RGAA",
+    theme: "securite",
+    groupe: "conformite",
+    kind: "date",
+  },
+  {
+    key: "RGAA_Tx_conformite",
+    label: "Taux de conformité RGAA",
+    theme: "securite",
+    groupe: "conformite",
+    kind: "percent",
+  },
+  {
+    key: "Besoin_DICT_Disponibilite",
+    label: "Disponibilité",
+    theme: "securite",
+    groupe: "conformite",
+    kind: "text",
+  },
+  {
+    key: "Besoin_DICT_Integrite",
+    label: "Intégrité",
+    theme: "securite",
+    groupe: "conformite",
+    kind: "text",
+  },
+  {
+    key: "Besoin_DICT_Confidentialite",
+    label: "Confidentialité",
+    theme: "securite",
+    groupe: "conformite",
+    kind: "text",
+  },
+  {
+    key: "Besoin_DICT_Tracabilite",
+    label: "Traçabilité",
+    theme: "securite",
+    groupe: "conformite",
+    kind: "text",
+  },
+
+  // Technique & prestataires
+  {
+    key: "Nature_de_l_application",
+    label: "Nature de l’application",
+    theme: "utilisateurs",
+    groupe: "technique",
+    kind: "tags",
+  },
+  {
+    key: "Typologie_d_application",
+    label: "Typologie d’application",
+    theme: "utilisateurs",
+    groupe: "technique",
+    kind: "tags",
+  },
+  {
+    key: "Hebergement",
+    label: "Hébergement",
+    theme: "utilisateurs",
+    groupe: "technique",
+    kind: "tags",
+  },
+  {
+    key: "URLs_du_produit",
+    label: "Site / URL du produit",
+    theme: "identite",
+    groupe: "technique",
+    kind: "url",
+  },
+  {
+    key: "URL_Back_Office",
+    label: "URL back-office",
+    theme: "utilisateurs",
+    groupe: "technique",
+    kind: "url",
+  },
+  {
+    key: "Liens_repos_depots",
+    label: "Dépôts",
+    theme: "identite",
+    groupe: "technique",
+    kind: "urls",
+  },
+  {
+    key: "Marche_DEV_TMA",
+    label: "Marché DEV / TMA",
+    theme: "utilisateurs",
+    groupe: "technique",
+    kind: "text",
+  },
+  {
+    key: "Prestataire_de_developpement",
+    label: "Prestataire de développement",
+    theme: "utilisateurs",
+    groupe: "technique",
+    kind: "tags",
+  },
+  {
+    key: "Editeur",
+    label: "Éditeur",
+    theme: "utilisateurs",
+    groupe: "technique",
     kind: "tags",
   },
 ] as const;
@@ -184,6 +315,81 @@ export const PRODUIT_REFERENTIEL_THEME_LABELS: Record<ProduitReferentielTheme, s
   utilisateurs: "Utilisateurs et exploitation",
   cycle: "Cycle de vie",
 };
+
+export const PRODUIT_REFERENTIEL_GROUPE_LABELS: Record<
+  ProduitReferentielGroupe,
+  { titre: string; sousTitre: string }
+> = {
+  presentation: {
+    titre: "Présentation",
+    sousTitre: "Ce que c’est — nom et description.",
+  },
+  gouvernance: {
+    titre: "Gouvernance",
+    sousTitre: "Qui porte le produit, dans quel cadre.",
+  },
+  usagers: {
+    titre: "Usagers & impact",
+    sousTitre: "Pour qui, à quelle échelle, quels enjeux.",
+  },
+  conformite: {
+    titre: "Conformité",
+    sousTitre: "Homologation, accessibilité, besoins DICT.",
+  },
+  technique: {
+    titre: "Technique & prestataires",
+    sousTitre: "Où ça tourne, qui développe, liens utiles.",
+  },
+};
+
+/** Ordre d’affichage des sections onglet Informations. */
+export const PRODUIT_REFERENTIEL_GROUPES_ORDER: readonly ProduitReferentielGroupe[] = [
+  "presentation",
+  "gouvernance",
+  "usagers",
+  "conformite",
+  "technique",
+] as const;
+
+const FIN_DE_VIE_KEYS: ReadonlySet<keyof ProduitSdpc> = new Set([
+  "Date_de_demande_de_decomissionnement",
+  "Retrait_de_service",
+]);
+
+const HOMOLOGATION_KEYS: ReadonlySet<keyof ProduitSdpc> = new Set([
+  "Statut_d_homologation_de_securite",
+  "Debut_validite_homologation",
+  "Fin_de_validite_d_homologation",
+]);
+
+const RGAA_KEYS: ReadonlySet<keyof ProduitSdpc> = new Set([
+  "SCORE_RGAA_Declaration_reglementaire",
+  "RGAA_Date_declaration",
+  "RGAA_Tx_conformite",
+]);
+
+const DICT_KEYS: ReadonlySet<keyof ProduitSdpc> = new Set([
+  "Besoin_DICT_Disponibilite",
+  "Besoin_DICT_Integrite",
+  "Besoin_DICT_Confidentialite",
+  "Besoin_DICT_Tracabilite",
+]);
+
+export function isFinDeVieField(field: ProduitReferentielFieldDef): boolean {
+  return FIN_DE_VIE_KEYS.has(field.key);
+}
+
+export function isHomologationField(field: ProduitReferentielFieldDef): boolean {
+  return HOMOLOGATION_KEYS.has(field.key);
+}
+
+export function isRgaaField(field: ProduitReferentielFieldDef): boolean {
+  return RGAA_KEYS.has(field.key);
+}
+
+export function isDictField(field: ProduitReferentielFieldDef): boolean {
+  return DICT_KEYS.has(field.key);
+}
 
 export type ProduitReferentielDisplayValue =
   | { kind: "empty" }
@@ -381,6 +587,12 @@ export function fieldsForTheme(
   theme: ProduitReferentielTheme,
 ): ProduitReferentielFieldDef[] {
   return PRODUIT_REFERENTIEL_FIELDS.filter((f) => f.theme === theme);
+}
+
+export function fieldsForGroupe(
+  groupe: ProduitReferentielGroupe,
+): ProduitReferentielFieldDef[] {
+  return PRODUIT_REFERENTIEL_FIELDS.filter((f) => f.groupe === groupe);
 }
 
 export function themeFilledCount(
