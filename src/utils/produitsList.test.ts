@@ -120,16 +120,76 @@ describe("filterProduits", () => {
 });
 
 describe("missionsLieesAuProduit", () => {
-  it("filtre sur Produit_SDPC et trie", () => {
+  it("filtre sur Produit_SDPC et trie alpha si mêmes statuts", () => {
     const missions: Mission[] = [
-      { id: 2, Nom_de_la_mission: "Zulu", Produit_SDPC: 26 },
-      { id: 1, Nom_de_la_mission: "Alpha", Produit_SDPC: 26 },
-      { id: 3, Nom_de_la_mission: "Autre", Produit_SDPC: 1 },
+      { id: 2, Nom_de_la_mission: "Zulu", Produit_SDPC: 26, Statut: "En cours" },
+      { id: 1, Nom_de_la_mission: "Alpha", Produit_SDPC: 26, Statut: "En cours" },
+      { id: 3, Nom_de_la_mission: "Autre", Produit_SDPC: 1, Statut: "En cours" },
     ];
     const linked = missionsLieesAuProduit(missions, 26);
     assert.deepEqual(
       linked.map((m) => m.Nom_de_la_mission),
       ["Alpha", "Zulu"],
+    );
+  });
+
+  it("place les missions en cours avant les terminées (Accolade)", () => {
+    const missions: Mission[] = [
+      {
+        id: 1,
+        Nom_de_la_mission: "Audit accessibilité et accompagnement devs",
+        Produit_SDPC: 26,
+        Statut: "TERMINÉ",
+      },
+      {
+        id: 2,
+        Nom_de_la_mission: "Réalisation du produit Accolade",
+        Produit_SDPC: 26,
+        Statut: "EN COURS",
+      },
+      {
+        id: 3,
+        Nom_de_la_mission: "Renfort de l’équipe de développement",
+        Produit_SDPC: 26,
+        Statut: "TERMINÉ",
+      },
+    ];
+    const linked = missionsLieesAuProduit(missions, 26);
+    assert.deepEqual(
+      linked.map((m) => m.Nom_de_la_mission),
+      [
+        "Réalisation du produit Accolade",
+        "Audit accessibilité et accompagnement devs",
+        "Renfort de l’équipe de développement",
+      ],
+    );
+  });
+
+  it("ne traite pas un statut vide comme en cours", () => {
+    const missions: Mission[] = [
+      {
+        id: 1,
+        Nom_de_la_mission: "Sans statut",
+        Produit_SDPC: 26,
+        Statut: "",
+      },
+      {
+        id: 2,
+        Nom_de_la_mission: "Active",
+        Produit_SDPC: 26,
+        Statut: "EN COURS",
+      },
+      {
+        id: 3,
+        Nom_de_la_mission: "Finie",
+        Produit_SDPC: 26,
+        Statut: "TERMINÉ",
+      },
+    ];
+    const linked = missionsLieesAuProduit(missions, 26);
+    assert.deepEqual(
+      linked.map((m) => m.Nom_de_la_mission),
+      ["Active", "Finie", "Sans statut"],
     );
   });
 });

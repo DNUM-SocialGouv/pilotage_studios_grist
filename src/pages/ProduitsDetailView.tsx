@@ -1,5 +1,6 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { Link, useParams } from "react-router-dom";
+import { Accordion } from "@codegouvfr/react-dsfr/Accordion";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import { CallOut } from "@codegouvfr/react-dsfr/CallOut";
@@ -13,7 +14,8 @@ import {
   useProduitMissionsData,
   type ProduitMissionsData,
 } from "../hooks/useProduitMissionsData";
-import type { Mission, ProduitSdpc } from "../types";
+import type { Mission, ProduitSdpc, SuiviMensuel } from "../types";
+import { formatMontantEur } from "../utils/formatMontant";
 import {
   enfantsOfMaster,
   suiviBelongsToMasterMission,
@@ -27,14 +29,18 @@ import {
   type ProduitReferentielTheme,
 } from "../utils/produitReferentiel";
 import {
+  isMissionEnCours,
   missionsLieesAuProduit,
   produitDepartement,
   produitDisplayName,
   safeHttpUrl,
 } from "../utils/produitsList";
+import { montantTtcLigneSuivi } from "../utils/suiviMensuel";
 import { useProduitsOutlet } from "./ProduitsLayout";
 
 const PRODUITS_CRUMB = [{ label: "Produits", to: "/produits" }] as const;
+
+const TTC_BAR_TITLE_PRODUIT = "Répartition du TTC par équipe";
 
 const REFERENTIEL_THEMES: ProduitReferentielTheme[] = [
   "identite",
@@ -62,6 +68,35 @@ function isProduitFicheTabId(id: string): id is ProduitFicheTabId {
   );
 }
 
+function formatJoursFr(jours: number): string {
+  return jours.toLocaleString("fr-FR", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+}
+
+/** Résumé compact pour le label d’accordéon (lisible à l’état fermé). */
+function missionAccordionResume(
+  prestationCount: number,
+  realisations: readonly SuiviMensuel[],
+): string {
+  let jours = 0;
+  let ttc = 0;
+  for (const row of realisations) {
+    if (typeof row.Nb_jours === "number" && Number.isFinite(row.Nb_jours)) {
+      jours += row.Nb_jours;
+    }
+    ttc += montantTtcLigneSuivi(row);
+  }
+  const nPrest =
+    prestationCount === 0
+      ? "0 prestation"
+      : prestationCount === 1
+        ? "1 prestation"
+        : `${prestationCount} prestations`;
+  return `${nPrest} · ${formatJoursFr(jours)} j · ${formatMontantEur(ttc)} TTC`;
+}
+
 function ProduitMissionBlock({
   mission,
   data,
@@ -74,6 +109,7 @@ function ProduitMissionBlock({
   equipesByIntervenantId: Map<number, string>;
 }) {
   const titre = missionLibelle(mission);
+  const enCours = isMissionEnCours(mission.Statut);
   const enfants = useMemo(
     () => enfantsOfMaster(data.missionEnfants, mission.id),
     [data.missionEnfants, mission.id],
@@ -85,39 +121,52 @@ function ProduitMissionBlock({
     );
   }, [data.missionEnfants, data.suivi, mission.id]);
 
+  const resume = missionAccordionResume(enfants.length, realisations);
+
   return (
-    <section
-      className="produit-fiche__mission-block fr-mb-5w"
-      aria-labelledby={`produit-mission-heading-${mission.id}`}
+    <Accordion
+      id={`produit-mission-${mission.id}`}
+      titleAs="h3"
+      defaultExpanded={enCours}
+      label={
+        <span className="produit-fiche__mission-accordion-label">
+          <span className="produit-fiche__mission-accordion-title">{titre}</span>
+          {mission.Statut?.trim() ? (
+            <StatutBadge statut={mission.Statut} />
+          ) : (
+            <Badge small as="span" noIcon>
+              Sans statut
+            </Badge>
+          )}
+          <span className="fr-text--sm fr-text-mention--grey produit-fiche__mission-accordion-resume">
+            {resume}
+          </span>
+        </span>
+      }
     >
-      <div className="produit-fiche__mission-heading fr-mb-3w">
-        <h3
-          id={`produit-mission-heading-${mission.id}`}
-          className="fr-h4 fr-mb-0 produit-fiche__mission-title"
-        >
-          <Link className="fr-link" to={`/missions/${mission.id}`}>
-            {titre}
+      <div className="produit-fiche__mission-block fr-pt-1w">
+        <div className="fr-mb-2w">
+          <Link
+            className="fr-btn fr-btn--secondary fr-btn--sm fr-btn--icon-left fr-icon-arrow-right-line"
+            to={`/missions/${mission.id}`}
+          >
+            Ouvrir la fiche mission
           </Link>
-        </h3>
-        {mission.Statut?.trim() ? (
-          <StatutBadge statut={mission.Statut} />
-        ) : (
-          <Badge small as="span" noIcon>
-            Sans statut
-          </Badge>
-        )}
+        </div>
+        <MissionEquipePrestationsPanel
+          missionId={mission.id}
+          missionTitre={titre}
+          enfants={enfants}
+          realisations={realisations}
+          intervenantsById={intervenantsById}
+          equipesByIntervenantId={equipesByIntervenantId}
+          showFilters={false}
+          columns="realise"
+          ttcBarTitle={TTC_BAR_TITLE_PRODUIT}
+          tableSize="sm"
+        />
       </div>
-      <MissionEquipePrestationsPanel
-        missionId={mission.id}
-        missionTitre={titre}
-        enfants={enfants}
-        realisations={realisations}
-        intervenantsById={intervenantsById}
-        equipesByIntervenantId={equipesByIntervenantId}
-        showFilters={false}
-        columns="realise"
-      />
-    </section>
+    </Accordion>
   );
 }
 
@@ -188,15 +237,17 @@ function ProduitMissionsPanel({
       {linked.length === 0 ? (
         <p className="fr-text--sm fr-mb-0">Aucune mission rattachée à ce produit.</p>
       ) : (
-        linked.map((mission) => (
-          <ProduitMissionBlock
-            key={mission.id}
-            mission={mission}
-            data={data}
-            intervenantsById={intervenantsById}
-            equipesByIntervenantId={equipesByIntervenantId}
-          />
-        ))
+        <div className="fr-accordions-group">
+          {linked.map((mission) => (
+            <ProduitMissionBlock
+              key={mission.id}
+              mission={mission}
+              data={data}
+              intervenantsById={intervenantsById}
+              equipesByIntervenantId={equipesByIntervenantId}
+            />
+          ))}
+        </div>
       )}
     </>
   );

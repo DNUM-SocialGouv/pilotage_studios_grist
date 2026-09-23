@@ -1425,27 +1425,106 @@ button.fr-link:disabled {
   display: inline-flex;
 }
 
-.produit-fiche__mission-heading {
-  display: flex;
+/* Label d’accordéon Missions (fiche produit) : titre + badge + résumé. */
+.produit-fiche__mission-accordion-label {
+  display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 0.75rem;
+  gap: 0.35rem 0.75rem;
+  text-align: left;
 }
 
-.produit-fiche__mission-title {
-  min-width: 0;
+.produit-fiche__mission-accordion-title {
+  font-weight: 700;
 }
 
-/* Le `.fr-link` DSFR force une taille corps ; on garde la hiérarchie visuelle du titre. */
-.produit-fiche__mission-title .fr-link {
-  font-size: inherit;
-  font-weight: inherit;
-  line-height: inherit;
+.produit-fiche__mission-accordion-resume {
+  flex-basis: 100%;
+}
+
+@media (min-width: 48em) {
+  .produit-fiche__mission-accordion-resume {
+    flex-basis: auto;
+    margin-left: 0.25rem;
+  }
 }
 
 /* Respire entre barre d’investissement et tableau (fiche produit). */
 .produit-fiche__mission-block .mission-equipe-recap {
   margin-bottom: 1.5rem;
+}
+
+/*
+ * Tableau prestations dans l’accordéon produit.
+ * Stratégie anti-écrasement : les colonnes secondaires ont une largeur fixe
+ * étroite ; la colonne Prestation (sans largeur) absorbe tout le reste →
+ * elle devient la plus large et reste lisible. Overflow DSFR neutralisé.
+ */
+.produit-fiche__mission-block .mission-equipe-prestations-table.fr-table {
+  overflow: visible;
+  max-width: 100%;
+}
+
+.produit-fiche__mission-block .mission-equipe-prestations-table .fr-table__wrapper,
+.produit-fiche__mission-block .mission-equipe-prestations-table .fr-table__container,
+.produit-fiche__mission-block .mission-equipe-prestations-table .fr-table__content {
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
+.produit-fiche__mission-block .mission-equipe-prestations-table .fr-table__content > table {
+  table-layout: fixed;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Colgroup : largeurs des colonnes secondaires (Prestation = reste). */
+.produit-fiche__mission-block .mission-equipe-col--statut {
+  width: 7rem;
+}
+
+.produit-fiche__mission-block .mission-equipe-col--intervenant {
+  width: 8.5rem;
+}
+
+.produit-fiche__mission-block .mission-equipe-col--equipe {
+  width: 5rem;
+}
+
+.produit-fiche__mission-block .mission-equipe-col--jours {
+  width: 4rem;
+}
+
+.produit-fiche__mission-block .mission-equipe-col--cra {
+  width: 3.25rem;
+}
+
+.produit-fiche__mission-block .mission-equipe-col--ttc {
+  width: 5.5rem;
+}
+
+/* Annule le 28rem « liste » qui, sous table-layout:fixed + iframe étroite,
+   était réduit proportionnellement et écrasait Prestation. */
+.produit-fiche__mission-block .mission-equipe-prestations-table .pilotage-col-mission-libelle {
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+.produit-fiche__mission-block .mission-equipe-prestations-table .pilotage-col-statut-nowrap,
+.produit-fiche__mission-block .mission-equipe-prestations-table .pilotage-col-equipe-nowrap {
+  width: auto;
+  min-width: 0;
+  max-width: none;
+}
+
+.produit-fiche__mission-block .mission-equipe-prestations-table .fr-table__content > table th:not(.pilotage-col-mission-libelle),
+.produit-fiche__mission-block .mission-equipe-prestations-table .fr-table__content > table td:not(.pilotage-col-mission-libelle) {
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .produit-fiche__mission-block .mission-equipe-prestations-table {

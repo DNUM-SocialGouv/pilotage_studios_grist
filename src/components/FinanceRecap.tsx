@@ -74,13 +74,26 @@ type TableShellProps = {
   className?: string;
   /** Classe DSFR `fr-table--multiline` (liste missions). */
   multiline?: boolean;
+  /** Densité DSFR `fr-table--sm` (padding réduit). */
+  size?: "sm" | "md";
 };
 
 /** Enveloppe tableau DSFR minimale (spike — pas le DsfrTableShell de l’app). */
-export function TableShell({ children, className, multiline = false }: TableShellProps) {
+export function TableShell({
+  children,
+  className,
+  multiline = false,
+  size = "md",
+}: TableShellProps) {
   return (
     <div
-      className={["fr-table", "fr-table--bordered", multiline && "fr-table--multiline", className]
+      className={[
+        "fr-table",
+        "fr-table--bordered",
+        multiline && "fr-table--multiline",
+        size === "sm" && "fr-table--sm",
+        className,
+      ]
         .filter(Boolean)
         .join(" ")}
     >

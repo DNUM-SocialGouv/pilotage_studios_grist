@@ -41,7 +41,7 @@ référentiel SDPC (~37 champs sync), et missions rattachées.
 
 | Onglet | Contenu |
 |--------|---------|
-| **Missions** (1er) | Pour chaque mission liée : titre (`h3`, sous le nom produit en `h2` CallOut) + badge statut, puis bloc « Équipe & prestations » **sans filtres**, colonnes orientées réalisé (jours CRA) — lecture seule |
+| **Missions** (1er) | Liste en **accordéons DSFR** (`fr-accordions-group`) : une mission = un accordéon. Tri métier (**en cours d’abord**, puis terminées ; alpha dans chaque groupe). Les missions en cours sont **ouvertes par défaut** ; les terminées restent fermées. Label : titre · badge statut · résumé (`N prestations · X j · Y € TTC`). Contenu déplié : bouton secondaire « Ouvrir la fiche mission » + bloc « Équipe & prestations » **sans filtres**, colonnes orientées réalisé (en-têtes courts Jours / CRA / TTC, densité `fr-table--sm`) — lecture seule. Colonne **Prestation dominante** (les autres colonnes ont une largeur fixe étroite via `colgroup` ; Prestation prend le reste) ; pas de scroll horizontal. Barre TTC titrée « Répartition du TTC par équipe » (le % = part d’équipe dans le TTC CRA, **pas** un avancement de mission). |
 | Identité | Identité et gouvernance (~11 champs) + description longue si présente |
 | Sécurité | Sécurité et conformité |
 | Utilisateurs | Utilisateurs et exploitation |
@@ -49,6 +49,7 @@ référentiel SDPC (~37 champs sync), et missions rattachées.
 
 Mapping et libellés référentiel : `src/utils/produitReferentiel.ts` (aligné sync app sœur).
 Composant partagé : `MissionEquipePrestationsPanel` (fiche mission en édition ; fiche produit sans CTA).
+Tri / statut « en cours » : `missionsLieesAuProduit` + `isMissionEnCours` (`src/utils/produitsList.ts`) — statut vide = pas « en cours » (pas d’ouverture forcée).
 
 ## Hors scope
 

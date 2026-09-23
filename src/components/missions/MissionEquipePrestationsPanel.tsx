@@ -88,6 +88,13 @@ export type MissionEquipePrestationsPanelProps = {
    * - `realise` : jours réalisés CRA (fiche produit)
    */
   columns?: "planifie" | "realise";
+  /**
+   * Titre au-dessus de la barre TTC (ex. fiche produit :
+   * « Répartition du TTC par équipe » — clarifie que le % n’est pas un avancement).
+   */
+  ttcBarTitle?: string;
+  /** Densité du tableau prestations (`fr-table--sm`). */
+  tableSize?: "sm" | "md";
 };
 
 /**
@@ -105,6 +112,8 @@ export function MissionEquipePrestationsPanel({
   onEditPrestation,
   showFilters = true,
   columns = "planifie",
+  ttcBarTitle,
+  tableSize = "md",
 }: MissionEquipePrestationsPanelProps) {
   const canEdit = Boolean(onAddPrestation || onEditPrestation);
   const showPlanifie = columns === "planifie";
@@ -331,6 +340,7 @@ export function MissionEquipePrestationsPanel({
         <div className="fr-col-12">
           <CraTtcStackBar
             slices={ttcParEquipe}
+            title={ttcBarTitle}
             amountsExtra={`${joursLabel} jours`}
             showTtcOnAmount
           />
@@ -358,7 +368,11 @@ export function MissionEquipePrestationsPanel({
       {emptyMessage ? <p className="fr-mb-0">{emptyMessage}</p> : null}
 
       {enfantsFiltres.length > 0 ? (
-        <TableShell multiline className="fr-mb-0 mission-equipe-prestations-table">
+        <TableShell
+          multiline
+          size={tableSize}
+          className="fr-mb-0 mission-equipe-prestations-table"
+        >
           <table>
             <caption className="fr-sr-only">
               Prestations de la mission {missionTitre}
@@ -367,6 +381,30 @@ export function MissionEquipePrestationsPanel({
                 ? ` — période CRA${periodeDebut ? ` du ${formatGristPeriodeMonthKeyLabel(periodeDebut)}` : ""}${periodeFin ? ` au ${formatGristPeriodeMonthKeyLabel(periodeFin)}` : ""}`
                 : ""}
             </caption>
+            <colgroup>
+              {/* Prestation : prend le reste (colonne dominante). */}
+              <col className="mission-equipe-col mission-equipe-col--prestation" />
+              <col className="mission-equipe-col mission-equipe-col--statut" />
+              <col className="mission-equipe-col mission-equipe-col--intervenant" />
+              <col className="mission-equipe-col mission-equipe-col--equipe" />
+              {showPlanifie ? (
+                <>
+                  <col className="mission-equipe-col mission-equipe-col--date" />
+                  <col className="mission-equipe-col mission-equipe-col--jours" />
+                  <col className="mission-equipe-col mission-equipe-col--cra" />
+                  <col className="mission-equipe-col mission-equipe-col--ttc" />
+                </>
+              ) : (
+                <>
+                  <col className="mission-equipe-col mission-equipe-col--jours" />
+                  <col className="mission-equipe-col mission-equipe-col--cra" />
+                  <col className="mission-equipe-col mission-equipe-col--ttc" />
+                </>
+              )}
+              {canEdit ? (
+                <col className="mission-equipe-col mission-equipe-col--actions" />
+              ) : null}
+            </colgroup>
             <thead>
               <tr>
                 <th scope="col" className="pilotage-col-mission-libelle">
@@ -385,18 +423,38 @@ export function MissionEquipePrestationsPanel({
                     <th scope="col" className="fr-cell--right">
                       Jours envisagés
                     </th>
+                    <th scope="col" className="fr-cell--right">
+                      Nb CRA
+                    </th>
+                    <th scope="col" className="fr-cell--right">
+                      TTC CRA
+                    </th>
                   </>
                 ) : (
-                  <th scope="col" className="fr-cell--right">
-                    Jours réalisés
-                  </th>
+                  <>
+                    <th
+                      scope="col"
+                      className="fr-cell--right"
+                      title="Jours réalisés"
+                    >
+                      Jours
+                    </th>
+                    <th
+                      scope="col"
+                      className="fr-cell--right"
+                      title="Nombre de CRA"
+                    >
+                      CRA
+                    </th>
+                    <th
+                      scope="col"
+                      className="fr-cell--right"
+                      title="TTC CRA"
+                    >
+                      TTC
+                    </th>
+                  </>
                 )}
-                <th scope="col" className="fr-cell--right">
-                  Nb CRA
-                </th>
-                <th scope="col" className="fr-cell--right">
-                  TTC CRA
-                </th>
                 {canEdit ? (
                   <th scope="col" className="pilotage-col-actions">
                     <span className="fr-sr-only">Actions</span>
