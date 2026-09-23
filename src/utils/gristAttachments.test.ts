@@ -3,6 +3,8 @@ import { describe, it } from "node:test";
 import {
   buildGristAttachmentsList,
   extractGristAttachmentIds,
+  mergeAttachmentIds,
+  parseUploadedAttachmentIds,
   validateMissionDocFile,
 } from "./gristAttachments.ts";
 
@@ -59,5 +61,31 @@ describe("validateMissionDocFile", () => {
       type: "application/pdf",
     });
     assert.match(validateMissionDocFile(file) ?? "", /20 Mo/);
+  });
+});
+
+describe("parseUploadedAttachmentIds", () => {
+  it("lit un tableau de nombres", () => {
+    assert.deepEqual(parseUploadedAttachmentIds([12, 3]), [12, 3]);
+  });
+
+  it("accepte des ids en string", () => {
+    assert.deepEqual(parseUploadedAttachmentIds(["7"]), [7]);
+  });
+
+  it("ignore le reste", () => {
+    assert.deepEqual(parseUploadedAttachmentIds(null), []);
+    assert.deepEqual(parseUploadedAttachmentIds({}), []);
+    assert.deepEqual(parseUploadedAttachmentIds([0, -1, "x"]), []);
+  });
+});
+
+describe("mergeAttachmentIds", () => {
+  it("conserve l’ordre et déduplique", () => {
+    assert.deepEqual(mergeAttachmentIds([1, 2], [2, 3]), [1, 2, 3]);
+  });
+
+  it("ignore les ids invalides", () => {
+    assert.deepEqual(mergeAttachmentIds([1], [0, -2, 4]), [1, 4]);
   });
 });

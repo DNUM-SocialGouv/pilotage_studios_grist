@@ -146,3 +146,41 @@ export const MISSION_DOC_ACCEPT =
 
 export const MISSION_DOC_HINT =
   "PDF, Word, Excel, PowerPoint, Markdown, ODT ou image — 20 Mo max. par fichier. Les nouveaux fichiers s’ajoutent aux pièces existantes.";
+
+/** Ids renvoyés par `POST /attachments` (nombres ou strings). */
+export function parseUploadedAttachmentIds(payload: unknown): number[] {
+  if (!Array.isArray(payload)) {
+    return [];
+  }
+  const ids: number[] = [];
+  for (const item of payload) {
+    if (typeof item === "number" && Number.isFinite(item) && item > 0) {
+      ids.push(Math.trunc(item));
+      continue;
+    }
+    if (typeof item === "string") {
+      const n = Number.parseInt(item, 10);
+      if (Number.isFinite(n) && n > 0) {
+        ids.push(n);
+      }
+    }
+  }
+  return ids;
+}
+
+/** Fusionne ids existants + nouveaux sans doublon (ordre : existants puis nouveaux). */
+export function mergeAttachmentIds(
+  existing: readonly number[],
+  added: readonly number[],
+): number[] {
+  const out: number[] = [];
+  const seen = new Set<number>();
+  for (const id of [...existing, ...added]) {
+    if (!Number.isFinite(id) || id <= 0 || seen.has(id)) {
+      continue;
+    }
+    seen.add(id);
+    out.push(id);
+  }
+  return out;
+}

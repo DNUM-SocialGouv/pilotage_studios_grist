@@ -198,7 +198,7 @@ export function MissionContexteDocsPanel({
   const titleId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const attachmentIds = extractGristAttachmentIds(docs);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<"upload" | "remove" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function handleAdd(fileList: FileList | null) {
@@ -206,15 +206,15 @@ export function MissionContexteDocsPanel({
     if (!file || busy) {
       return;
     }
-    setBusy(true);
+    setBusy("upload");
     setError(null);
     try {
-      await addMissionDoc(missionId, docs, file);
+      await addMissionDoc(missionId, file);
       await onChanged();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ajout du document impossible.");
     } finally {
-      setBusy(false);
+      setBusy(null);
       if (inputRef.current) {
         inputRef.current.value = "";
       }
@@ -229,15 +229,15 @@ export function MissionContexteDocsPanel({
     if (!window.confirm(label)) {
       return;
     }
-    setBusy(true);
+    setBusy("remove");
     setError(null);
     try {
-      await removeMissionDoc(missionId, docs, attachmentId);
+      await removeMissionDoc(missionId, attachmentId);
       await onChanged();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Suppression impossible.");
     } finally {
-      setBusy(false);
+      setBusy(null);
     }
   }
 
@@ -260,7 +260,7 @@ export function MissionContexteDocsPanel({
             <MissionDocRow
               key={id}
               attachmentId={id}
-              busy={busy}
+              busy={busy != null}
               onRemove={(aid) => {
                 void handleRemove(aid);
               }}
@@ -288,7 +288,7 @@ export function MissionContexteDocsPanel({
         type="file"
         className="fr-sr-only"
         accept={MISSION_DOC_ACCEPT}
-        disabled={busy}
+        disabled={busy != null}
         onChange={(e) => {
           void handleAdd(e.target.files);
         }}
@@ -296,10 +296,10 @@ export function MissionContexteDocsPanel({
       <button
         type="button"
         className="fr-btn fr-btn--secondary fr-btn--sm fr-icon-upload-line fr-btn--icon-left"
-        disabled={busy}
+        disabled={busy != null}
         onClick={() => inputRef.current?.click()}
       >
-        {busy ? "Envoi…" : "Ajouter un document"}
+        {busy === "upload" ? "Envoi…" : busy === "remove" ? "Mise à jour…" : "Ajouter un document"}
       </button>
       <p className="fr-hint-text fr-mt-1w fr-mb-0">{MISSION_DOC_HINT}</p>
     </section>

@@ -2,34 +2,36 @@
  * Upload / rattachement de pièces jointes mission (`Missions.Docs`).
  * Upload via `getAccessToken({ readOnly: false })` + REST multipart ;
  * rattachement cellule via `updateMissionRecord` (plugin API).
+ *
+ * Avant chaque update de cellule : relecture de `Docs` pour limiter les courses
+ * (dernier geste gagne encore, mais on ne part plus d’un props stale).
  */
 
+import { recordsFromFetchTable, toMission } from "../gristMap.ts";
+import { fetchAllowlistedTable } from "../security/fetchTableAllowlist.ts";
 import {
   buildGristAttachmentsList,
   extractGristAttachmentIds,
+  mergeAttachmentIds,
+  parseUploadedAttachmentIds,
   validateMissionDocFile,
 } from "./gristAttachments.ts";
 import { getGristAccessToken, gristAuthedUrl } from "./gristAccessToken.ts";
 import { updateMissionRecord } from "./missionGristWrite.ts";
 
-function parseUploadedAttachmentIds(payload: unknown): number[] {
-  if (!Array.isArray(payload)) {
-    return [];
+/** Relit `Docs` depuis Grist (évite un props React périmé). */
+export async function fetchMissionDocs(missionId: number): Promise<unknown> {
+  if (!Number.isFinite(missionId) || missionId <= 0) {
+    throw new Error("Identifiant mission invalide.");
   }
-  const ids: number[] = [];
-  for (const item of payload) {
-    if (typeof item === "number" && Number.isFinite(item) && item > 0) {
-      ids.push(Math.trunc(item));
-      continue;
-    }
-    if (typeof item === "string") {
-      const n = Number.parseInt(item, 10);
-      if (Number.isFinite(n) && n > 0) {
-        ids.push(n);
-      }
-    }
+  const raw = await fetchAllowlistedTable("Missions");
+  const mission = recordsFromFetchTable(raw)
+    .map(toMission)
+    .find((m) => m.id === missionId);
+  if (!mission) {
+    throw new Error(`Mission #${missionId} introuvable pour mise à jour des pièces jointes.`);
   }
-  return ids;
+  return mission.Docs;
 }
 
 /** POST multipart `/attachments` — retourne les ids créés. */
@@ -71,23 +73,34 @@ export async function setMissionDocs(
   });
 }
 
-/** Ajoute un fichier aux Docs existants (validation type/taille). */
-export async function addMissionDoc(missionId: number, currentDocs: unknown, file: File): Promise<void> {
+function attachFailedMessage(uploadedIds: readonly number[]): string {
+  const ids = uploadedIds.join(", ");
+  return (
+    `Le fichier a été déposé dans Grist (id ${ids}) mais n’a pas pu être rattaché à la mission. ` +
+    `Réessayez « Ajouter un document », ou rattachez-le depuis Grist.`
+  );
+}
+
+/** Ajoute un fichier aux Docs existants (validation type/taille + relecture fraîche). */
+export async function addMissionDoc(missionId: number, file: File): Promise<void> {
   const validationError = validateMissionDocFile(file);
   if (validationError) {
     throw new Error(validationError);
   }
   const uploaded = await uploadGristAttachments([file]);
-  const next = [...extractGristAttachmentIds(currentDocs), ...uploaded];
-  await setMissionDocs(missionId, next);
+  try {
+    const freshDocs = await fetchMissionDocs(missionId);
+    const next = mergeAttachmentIds(extractGristAttachmentIds(freshDocs), uploaded);
+    await setMissionDocs(missionId, next);
+  } catch (err) {
+    const message = attachFailedMessage(uploaded);
+    throw err instanceof Error ? new Error(message, { cause: err }) : new Error(message);
+  }
 }
 
-/** Retire un id de la cellule Docs (ne purge pas le fichier du document). */
-export async function removeMissionDoc(
-  missionId: number,
-  currentDocs: unknown,
-  attachmentId: number,
-): Promise<void> {
-  const next = extractGristAttachmentIds(currentDocs).filter((id) => id !== attachmentId);
+/** Retire un id de la cellule Docs (relecture fraîche ; ne purge pas le fichier du document). */
+export async function removeMissionDoc(missionId: number, attachmentId: number): Promise<void> {
+  const freshDocs = await fetchMissionDocs(missionId);
+  const next = extractGristAttachmentIds(freshDocs).filter((id) => id !== attachmentId);
   await setMissionDocs(missionId, next);
 }
