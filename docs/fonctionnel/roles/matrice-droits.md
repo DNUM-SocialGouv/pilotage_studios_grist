@@ -78,8 +78,8 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | `Realise` (CRA) hors montants | CRUD | R/U département | **R/U + C** ses lignes | — | **Appliqué** (ACL) + widget | Déclaration `#33` ; revue `#70` ; mur `#47` HITL 2026-09-21 |
 | `Realise.Calcul_TTC` | R ; U Owner | R | R | R | **Appliqué** | `+R -U` si non-Owner |
 | `Missions` / `Missions_enfants` | CRUD | R/U dép. | R ses missions | R / — | Non (rôle) | |
-| `Kanban` (feedback + produit) | CRU (liste + colonne Admin) | C (+ R) ; U colonne Admin | C (+ R) | C (+ R) | Widget create Feedback + Read + **update colonne Admin** | Table unique ; `Nature` Feedback\|Produit ; ACL Update Owner/Admin HITL |
-| `Kanban_commentaires` | CR | C (+ R) | C (+ R) | C (+ R) | Widget create + Read | Conversation drawer ; `Cible_id` → `Kanban` ; update/delete Owner/Admin (HITL ACL) |
+| `Kanban` (feedback + produit) | CRU (liste + colonne Admin) | C (+ R) ; U colonne Admin | C (+ R) | C (+ R) | **Appliqué** (ACL) + widget | Owner/Admin `+CRUD` ; `True` → `+CR-UD` |
+| `Kanban_commentaires` | CR | C (+ R) | C (+ R) | C (+ R) | **Appliqué** (ACL) + widget | Owner/Admin `+CRUD` ; `True` → `+CR-UD` |
 | `Retours` / `Roadmap` (legacy) | — | — | — | — | **Hors widget** (migrées → `Kanban`) | Archivables Owner |
 | `Acl_profil` | CRUD | CRUD | CR soi | CR soi | **Appliqué** | Owner/Admin `+CRUD` ; `user.Email == rec.E_mail` → `+CR` ; `True` → `-CRUD` |
 | `Droits_pages` | CRUD (Owner / Admin) | — | — | — | **Appliqué** | Owner **ou** `Role_ACL == Admin` → `+CRUD` ; `True` → `-CRUD` |
@@ -99,6 +99,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-09-24 | Access Rules `Kanban` / `Kanban_commentaires` posées Owner UI (vérif MCP) | 6 | Post-merge #80 |
 | 2026-09-24 | Table unique `Kanban` (fusion Retours+Roadmap) ; drawer ordre lecture + select colonne Admin ; commentaires `Cible_id` ; create feedback → `Kanban` | 5, 6 (doc HITL ACL) | Kanban unifié drawer |
 | 2026-09-23 | Kanban accueil 100 % Grist : `Roadmap` + `Kanban_commentaires` ; drawer ticket + conversation pour tous ; GitHub optionnel ; plus de source `publicRoadmap.ts` | 5, 6 (doc HITL ACL) | Kanban conversation |
 | 2026-09-23 | Fiche mission Contexte : panneau PJ = télécharger + ajouter + détacher `Docs` (upload jeton non-readonly) ; Note studio éditable ; pas de changement ACL tables | 5 | Note studio + Docs Contexte |
