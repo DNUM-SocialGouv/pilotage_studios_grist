@@ -122,19 +122,23 @@ export interface Intervenant {
 /**
  * Fiche personne pour l’écran `/equipe` (carte d’identité).
  * TJM / Total_TTC : présents seulement si Access Rules les rendent lisibles
- * (Owner / Admin, ou soi-même — pas les collègues). Pas d’e-mail en consultation.
+ * (Owner / Admin, ou soi-même — pas les collègues).
+ * `E_mail` : lu pour préremplir le drawer Admin uniquement — jamais affiché
+ * en consultation liste / fiche.
  */
 export interface EquipeMember {
   id: number;
   Prenom_Nom?: string;
+  /** Présent si Access Rules le livrent (Admin) — drawer édition seulement. */
+  E_mail?: string;
   Equipe?: string;
   Portage?: string;
   Statut?: string;
   Specialite?: string;
   Role_ACL?: string;
-  /** Ordinateur fourni (Oui / Non) — options formulaire création. */
+  /** Ordinateur fourni (Oui / Non) — options formulaire création / édition. */
   Ordinateur2?: string;
-  /** Mode de recrutement — options formulaire création. */
+  /** Mode de recrutement — options formulaire création / édition. */
   Mode_recrutement?: string;
   Missions_en_cours?: string;
   /** Seed DiceBear Glyphs (colonne Grist `Avatar`). */

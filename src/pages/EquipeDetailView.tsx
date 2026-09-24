@@ -4,10 +4,13 @@ import type { ReactNode } from "react";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
+import { useEquipeFormDrawerRef } from "../components/equipe/EquipeFormDrawerContext";
 import { EquipeFicheMissionsSection } from "../components/equipe/EquipeFicheMissionsSection";
 import { StatutBadge } from "../components/StatutBadge";
 import { tdEquipeTag } from "../components/EquipeTags";
 import { WidgetBreadcrumb } from "../components/WidgetBreadcrumb";
+import { useAclProfil } from "../AclProfilContext";
+import { isAdminRole } from "../utils/droitsPagesThemes";
 import { equipeDisplayName, equipeMontantLisible } from "../utils/equipeList";
 import { formatMontantEur } from "../utils/formatMontant";
 import { useEquipeOutlet } from "./EquipeLayout";
@@ -29,6 +32,9 @@ function metaColClassForCount(count: number): string {
 export function EquipeDetailView() {
   const { id } = useParams();
   const { data } = useEquipeOutlet();
+  const equipeFormDrawerRef = useEquipeFormDrawerRef();
+  const { status: aclStatus, role: sessionRole } = useAclProfil();
+  const canEdit = aclStatus === "standalone" || isAdminRole(sessionRole);
   const memberId = id ? Number.parseInt(id, 10) : NaN;
   const member = data.members.find((m) => m.id === memberId);
   const missReloadTried = useRef(false);
@@ -173,6 +179,15 @@ export function EquipeDetailView() {
             <h1 className="fr-mb-0 fr-h3 equipe-fiche-title-row__title">{name}</h1>
           </div>
         </div>
+        {canEdit ? (
+          <button
+            type="button"
+            className="fr-btn fr-btn--primary fr-icon-edit-line fr-btn--icon-left"
+            onClick={() => equipeFormDrawerRef.current?.openEdit(member)}
+          >
+            Modifier
+          </button>
+        ) : null}
       </div>
 
       <div

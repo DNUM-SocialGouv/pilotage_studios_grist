@@ -24,6 +24,7 @@ Après enregistrement : rechargement de la liste et ouverture de `/equipe/:id`.
 
 Les freelances (et autres non-Admin) ne voient pas le bouton. Un **Owner** du document qui n’a pas le rôle Admin dans Équipe peut créer côté Grist (Access Rules) mais ne voit pas le bouton widget — aligné sur les autres écrans Admin. La sécurité réelle reste les Access Rules Grist (Owner / Admin seuls peuvent créer).
 
+L’**édition** d’une fiche existante se fait depuis la [fiche](fiche.md) (bouton Modifier), pas depuis la liste.
 ## États
 
 | État | UI |

@@ -14,15 +14,18 @@ import { z } from "zod";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { Select } from "@codegouvfr/react-dsfr/Select";
+import type { EquipeMember } from "../../types.ts";
 import {
   DEFAULT_EQUIPE_STATUT,
   EQUIPE_ROLE_ACL_CHOICES,
   buildEquipeCreateFields,
+  buildEquipeUpdateFields,
   emptyEquipeCreateForm,
+  memberToEquipeFormValues,
   parseOptionalTjm,
   type EquipeCreateFormValues,
 } from "../../utils/equipeFormFields.ts";
-import { createEquipeRecord } from "../../utils/equipeGristWrite.ts";
+import { createEquipeRecord, updateEquipeRecord } from "../../utils/equipeGristWrite.ts";
 
 const formSchema = z
   .object({
@@ -53,6 +56,7 @@ const formSchema = z
 
 export type EquipeFormDrawerHandle = {
   openCreate: () => void;
+  openEdit: (member: EquipeMember) => void;
   close: () => void;
 };
 
@@ -94,13 +98,17 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
     const titleId = useId();
     const navigate = useNavigate();
 
+    const [mode, setMode] = useState<"create" | "edit">("create");
+    const [editingId, setEditingId] = useState<number | null>(null);
     const [submitError, setSubmitError] = useState<string>();
     const [savePending, setSavePending] = useState(false);
 
-    const { register, handleSubmit, reset, formState } = useForm<EquipeCreateFormValues>({
+    const { register, handleSubmit, reset, watch, formState } = useForm<EquipeCreateFormValues>({
       resolver: zodResolver(formSchema),
       defaultValues: emptyEquipeCreateForm(),
     });
+
+    const watchedRole = watch("Role_ACL");
 
     const statutChoices = useMemo(
       () => mergeChoiceOptions([DEFAULT_EQUIPE_STATUT, "Inactif"], statutOptions),
@@ -126,12 +134,29 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
       () => mergeChoiceOptions([], modeRecrutementOptions),
       [modeRecrutementOptions],
     );
+    const roleChoices = useMemo(
+      () => mergeChoiceOptions([...EQUIPE_ROLE_ACL_CHOICES], [watchedRole]),
+      [watchedRole],
+    );
 
     const openCreate = useCallback(() => {
+      setMode("create");
+      setEditingId(null);
       setSubmitError(undefined);
       reset(emptyEquipeCreateForm());
       dialogRef.current?.showModal();
     }, [reset]);
+
+    const openEdit = useCallback(
+      (member: EquipeMember) => {
+        setMode("edit");
+        setEditingId(member.id);
+        setSubmitError(undefined);
+        reset(memberToEquipeFormValues(member));
+        dialogRef.current?.showModal();
+      },
+      [reset],
+    );
 
     const close = useCallback(() => {
       dialogRef.current?.close();
@@ -139,15 +164,21 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
 
     const onDialogClose = () => {
       setSubmitError(undefined);
+      setMode("create");
+      setEditingId(null);
     };
 
-    useImperativeHandle(ref, () => ({ openCreate, close }), [openCreate, close]);
+    useImperativeHandle(ref, () => ({ openCreate, openEdit, close }), [
+      openCreate,
+      openEdit,
+      close,
+    ]);
 
     const refreshAfterWrite = async () => {
       try {
         await onRecordsChanged();
       } catch {
-        // Write déjà réussi : on navigue quand même ; la fiche rechargera si besoin.
+        // Write déjà réussi : on navigue / reste sur la fiche ; rechargera si besoin.
       }
     };
 
@@ -156,6 +187,22 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
       setSavePending(true);
 
       try {
+        if (mode === "edit") {
+          // Jamais de create depuis l’UI « Modifier » (évite doublon e-mail).
+          if (editingId == null) {
+            setSubmitError("Édition incohérente : fermez le panneau et réessayez.");
+            return;
+          }
+          if (!values.Role_ACL.trim()) {
+            setSubmitError("Le rôle est obligatoire pour enregistrer la fiche.");
+            return;
+          }
+          await updateEquipeRecord(editingId, buildEquipeUpdateFields(values));
+          await refreshAfterWrite();
+          close();
+          return;
+        }
+
         const fields = buildEquipeCreateFields(values);
         const id = await createEquipeRecord(fields);
         await refreshAfterWrite();
@@ -167,6 +214,22 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
         setSavePending(false);
       }
     };
+
+    const isEdit = mode === "edit";
+    const title = isEdit ? "Modifier la personne" : "Nouvelle personne";
+    const description = isEdit
+      ? "Corrige la fiche dans l’annuaire Équipe. L’e-mail doit correspondre au compte Grist pour les droits. Laisser le TJM vide conserve la valeur actuelle."
+      : "Ajoute une fiche dans l’annuaire Équipe. Ne pas oublier d’inviter l’utilisateur sur le document Grist si nécessaire. L’e-mail doit correspondre au compte Grist pour les droits.";
+    const primaryLabel = isEdit
+      ? savePending
+        ? "Enregistrement…"
+        : "Enregistrer"
+      : savePending
+        ? "Enregistrement…"
+        : "Créer la personne";
+    const tjmHint = isEdit
+      ? "Optionnel. Laisser vide pour ne pas modifier le TJM actuel."
+      : "Optionnel. Tarif journalier en euros.";
 
     return (
       <dialog
@@ -183,12 +246,10 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
                 <div className="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
                   <div className="fr-col">
                     <h2 id={titleId} className="fr-h5 fr-mb-0">
-                      Nouvelle personne
+                      {title}
                     </h2>
                     <p className="fr-text--sm fr-text-mention--grey fr-mb-0 fr-mt-1w">
-                      Ajoute une fiche dans l’annuaire Équipe. Ne pas oublier d’inviter
-                      l’utilisateur sur le document Grist si nécessaire. L’e-mail doit
-                      correspondre au compte Grist pour les droits.
+                      {description}
                     </p>
                   </div>
                   <div className="fr-col-auto">
@@ -306,9 +367,12 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
                         </Select>
                       </div>
                       <div className="fr-col-12 fr-col-md-6">
-                        <Select label="Rôle" nativeSelectProps={register("Role_ACL")}>
+                        <Select
+                          label={isEdit ? "Rôle *" : "Rôle"}
+                          nativeSelectProps={register("Role_ACL")}
+                        >
                           <option value="">—</option>
-                          {EQUIPE_ROLE_ACL_CHOICES.map((v) => (
+                          {roleChoices.map((v) => (
                             <option key={v} value={v}>
                               {v}
                             </option>
@@ -318,7 +382,7 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
                       <div className="fr-col-12 fr-col-md-6">
                         <Input
                           label="TJM"
-                          hintText="Optionnel. Tarif journalier en euros."
+                          hintText={tjmHint}
                           nativeInputProps={{
                             inputMode: "decimal",
                             ...register("TJM"),
@@ -347,7 +411,7 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
                         className="fr-btn fr-btn--primary"
                         disabled={savePending}
                       >
-                        {savePending ? "Enregistrement…" : "Créer la personne"}
+                        {primaryLabel}
                       </button>
                     </div>
                   </div>

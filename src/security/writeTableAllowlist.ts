@@ -9,7 +9,7 @@
  * - `Realise` : create + update (déclaration CRA freelance + revue équipe manager — pas de delete).
  * - `Droits_pages` : update only (page Admin droits des écrans — pas de create/delete).
  * - `Acl_profil` : create only (fiche session auto si absente — pas d’update/delete).
- * - `Equipe` : create only (drawer Admin nouvelle personne — pas d’update/delete ; édition = #63).
+ * - `Equipe` : create + update (drawer Admin nouvelle / modifier personne — pas de delete).
  */
 
 export const KANBAN_TABLE_ID = "Kanban";
@@ -40,6 +40,7 @@ export const WRITE_TABLE_UPDATE_ALLOWLIST = [
   MISSIONS_ENFANTS_TABLE_ID,
   REALISE_TABLE_ID,
   DROITS_PAGES_TABLE_ID,
+  EQUIPE_TABLE_ID,
 ] as const;
 
 export type WritableUpdateTableId = (typeof WRITE_TABLE_UPDATE_ALLOWLIST)[number];
