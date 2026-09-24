@@ -3,9 +3,9 @@ import { useLocation } from "react-router-dom";
 import { DsfrSelectRichMulti } from "../dsfr/DsfrSelectRichMulti";
 import { fetchAllowlistedTable } from "../../security/fetchTableAllowlist";
 import {
-  createRetoursRecord,
+  createKanbanFeedbackRecord,
   type FeedbackType,
-} from "../../utils/createRetoursRecord";
+} from "../../utils/createKanbanFeedback";
 import {
   feedbackAuteurOptionsFromEquipeTable,
   type FeedbackAuteurOption,
@@ -87,7 +87,7 @@ function CheckIcon() {
 }
 
 /**
- * Bouton flottant + panneau de feedback → écriture table Grist `Retours`.
+ * Bouton flottant + panneau de feedback → écriture table Grist `Kanban` (Nature=Feedback).
  */
 export function FeedbackWidget() {
   const location = useLocation();
@@ -187,7 +187,7 @@ export function FeedbackWidget() {
     setSending(true);
     setError(null);
     try {
-      await createRetoursRecord({
+      await createKanbanFeedbackRecord({
         userName: selectedAuteur.name,
         userEmail: selectedAuteur.email,
         type,

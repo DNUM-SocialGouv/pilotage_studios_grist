@@ -2,7 +2,8 @@
  * Allowlist des tableIds autorisés pour une écriture widget (`getTable().create|update`).
  * Ne jamais accepter un id libre depuis l’UI — passer uniquement par les gardes dédiées.
  *
- * - `Retours` : create only (feedback).
+ * - `Kanban` : create (feedback) + update colonne (Admin).
+ * - `Kanban_commentaires` : create only (conversation tickets).
  * - `Missions` : create + update (drawer mission master — pas de delete).
  * - `Missions_enfants` : create + update (drawer prestation — pas de delete).
  * - `Realise` : create + update (déclaration CRA freelance + revue équipe manager — pas de delete).
@@ -10,7 +11,10 @@
  * - `Acl_profil` : create only (fiche session auto si absente — pas d’update/delete).
  */
 
+export const KANBAN_TABLE_ID = "Kanban";
+/** @deprecated Ancienne table feedback — plus utilisée par le widget (migrée vers `Kanban`). */
 export const RETOURS_TABLE_ID = "Retours";
+export const KANBAN_COMMENTAIRES_TABLE_ID = "Kanban_commentaires";
 export const MISSIONS_TABLE_ID = "Missions";
 export const MISSIONS_ENFANTS_TABLE_ID = "Missions_enfants";
 export const REALISE_TABLE_ID = "Realise";
@@ -18,7 +22,8 @@ export const DROITS_PAGES_TABLE_ID = "Droits_pages";
 export const ACL_PROFIL_TABLE_ID = "Acl_profil";
 
 export const WRITE_TABLE_ALLOWLIST = [
-  RETOURS_TABLE_ID,
+  KANBAN_TABLE_ID,
+  KANBAN_COMMENTAIRES_TABLE_ID,
   MISSIONS_TABLE_ID,
   MISSIONS_ENFANTS_TABLE_ID,
   REALISE_TABLE_ID,
@@ -29,6 +34,7 @@ export type WritableTableId = (typeof WRITE_TABLE_ALLOWLIST)[number];
 
 /** Tables autorisées pour `getTable().update` (sous-ensemble). */
 export const WRITE_TABLE_UPDATE_ALLOWLIST = [
+  KANBAN_TABLE_ID,
   MISSIONS_TABLE_ID,
   MISSIONS_ENFANTS_TABLE_ID,
   REALISE_TABLE_ID,

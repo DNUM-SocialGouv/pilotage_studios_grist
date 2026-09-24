@@ -1,6 +1,6 @@
 # Feedback utilisateur (widget flottant)
 
-Bouton fixe « Un retour ? » (bas droite) présent sur **tous** les écrans du Custom Widget. Ouvre un panneau pour signaler une anomalie, une suggestion ou une question. Chaque envoi crée une ligne dans la table Grist `Retours`.
+Bouton fixe « Un retour ? » (bas droite) présent sur **tous** les écrans du Custom Widget. Ouvre un panneau pour signaler une anomalie, une suggestion ou une question. Chaque envoi crée une ligne dans la table Grist **`Kanban`** (`Nature=Feedback`, `Colonne_kanban=feedback`).
 
 Référence design : [`design/feedback_widget/`](../../../design/feedback_widget/).
 
@@ -24,37 +24,43 @@ Pas d’auto-détection Grist (le jeton widget ne fournit pas un profil fiable).
 
 **Limite V1** : choix **déclaratif** (pas de lien session Grist ↔ ligne Equipe) — un utilisateur peut sélectionner un autre nom. Acceptable pour un canal de feedback interne ; durcissement possible plus tard (ACL / matching email).
 
-## Table Grist `Retours`
+## Table Grist `Kanban` (Feedback)
 
 | Colonne | Remplie à l’envoi |
 |---------|-------------------|
+| `Nature` (= Feedback), `Colonne_kanban` (= feedback), `Titre` (= Type), `Resume` (1ʳᵉ ligne message) | Oui |
 | `Date`, `Auteur`, `Email`, `Type`, `Page`, `Message`, `Niveau_gene`, `Contexte_technique`, `Statut` (= Nouveau) | Oui |
-| `Priorite`, `Assigne_a`, `Lien_ticket`, `Reponse` | Non (suivi équipe dans Grist) |
+| `Theme`, guides, `Lien_github`, champs produit | Non (suivi / enrichissement dans Grist ou Admin) |
 
-Écriture widget : **create uniquement** via `grist.getTable('Retours').create`, gardée par [`writeTableAllowlist.ts`](../../../src/security/writeTableAllowlist.ts).
+Écriture widget : **create** via `grist.getTable('Kanban').create`, gardée par [`writeTableAllowlist.ts`](../../../src/security/writeTableAllowlist.ts).  
+Update widget : **`Colonne_kanban` seulement** (select Admin dans le drawer).
 
-Lecture widget : allowlistée pour la **colonne Feedback** de l’accueil (`fetchAllowlistedTable('Retours')`) — seuls les retours **ouverts** (hors `Fait` / `Écarté` / `Terminé`). Colonne **toujours en 1ʳᵉ position** : placeholder d’invitation (CTA) **toujours visible**, puis la liste des tickets ouverts s’il y en a.
+Lecture widget : `fetchAllowlistedTable('Kanban')` — colonne Feedback = `Nature=Feedback` et `Colonne_kanban=feedback`. Placeholder d’invitation **toujours visible**. **Clic carte** → drawer (`TicketDrawer`) + conversation.
+
+### Conversation (commentaires)
+
+Table `Kanban_commentaires` : `Cible_id` (= id `Kanban`), `Date`, `Auteur`, `Email`, `Message` (`Cible_type` figé à `Kanban` pour compat colonne existante). Create allowlisté pour tout utilisateur du widget. Pas d’update/delete widget en V1.
 
 ### Confidentialité lecture (décision V1)
 
-**Décision produit** : la colonne Feedback est un **kanban partagé interne** — tout utilisateur qui peut lire `Retours` via les Access Rules voit les messages des autres (prénom + extrait). Acceptable tant que le document reste un cercle restreint Pilotage.
+**Décision produit** : la colonne Feedback est un **kanban partagé interne** — tout utilisateur qui peut lire `Kanban` via les Access Rules voit les messages des autres (prénom + extrait). Acceptable tant que le document reste un cercle restreint Pilotage.
 
-**Pas** de filtre front « mes retours seulement » (contournable). Si l’audience s’élargit (freelance nombreux, invités) : durcir en Access Rules (ex. Read = Owner / `Role_ACL` Admin, Create pour tous) — HITL Grist, pas de masquage JS.
+**Pas** de filtre front « mes retours seulement » (contournable). Si l’audience s’élargit : durcir en Access Rules — HITL Grist, pas de masquage JS.
 
 ## Access Rules (HITL — à appliquer dans Grist)
 
-Recommandation (à valider / poser manuellement) :
+Recommandation :
 
-- **Create** : utilisateurs ayant accès au document (même population que le widget).
-- **Read** : aujourd’hui ouvert à la population widget (voir décision V1 ci-dessus) ; resserrer à Owners / Admin si besoin de confidentialité.
-- **Update / Delete** : Owners / équipe studio uniquement (tri `Statut`, `Priorite`, `Assigne_a`, `Reponse`).
-- Choices Type / Niveau_gene / Statut / Priorite : à peaufiner dans l’UI Grist si besoin (colonnes créées en Text + valeurs métier documentées).
+| Table | Read | Create | Update / Delete |
+|-------|------|--------|-----------------|
+| `Kanban` | Population widget | Population widget (feedback) | Owner / `Role_ACL` Admin (dont `Colonne_kanban`) |
+| `Kanban_commentaires` | Population widget | Population widget | Owner / Admin |
 
-Sans règles Update/Delete, tout utilisateur *Editor* du doc peut aussi modifier les retours des autres.
+Sans règles Update/Delete, tout utilisateur *Editor* du doc peut aussi modifier les tickets / commentaires des autres.
 
 ## Alertes / suivi « nouveau retour »
 
-Sans e-mail Grist ni ETL : runbook ops (webhook Mattermost go/no-go + **fallback** vue filtrée `Statut = Nouveau`) → [`alertes.md`](alertes.md).
+Sans e-mail Grist ni ETL : runbook ops (webhook Mattermost go/no-go + **fallback** vue filtrée `Statut = Nouveau` sur `Kanban`) → [`alertes.md`](alertes.md).
 
 **Décision actuelle** : **No-go** Mattermost direct (smoke HTTP 400 decode payload) → process actif = [fallback vue `Nouveau`](alertes.md#fallback-opérationnel-process-actif-tant-que-no-go).
 

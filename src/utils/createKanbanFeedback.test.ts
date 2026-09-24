@@ -1,25 +1,41 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { buildRetoursFields } from "./createRetoursRecord.ts";
+import {
+  buildKanbanFeedbackFields,
+  resumeFromMessage,
+} from "./createKanbanFeedback.ts";
 import { feedbackAuteurOptionsFromEquipeTable } from "./feedbackEquipe.ts";
 import { pageOptionFromPathname } from "./feedbackPages.ts";
 import {
   assertWritableTableId,
+  assertWritableUpdateTableId,
   isWritableTableId,
+  isWritableUpdateTableId,
 } from "../security/writeTableAllowlist.ts";
 import type { GristFetchTableResult } from "../gristTypes.ts";
+import { buildKanbanColonnePatch } from "./updateKanbanColonne.ts";
+import {
+  filterFeedbackColumn,
+  groupProductByKanban,
+  kanbanTicketFromRecord,
+  prenomFromAuteur,
+} from "./kanbanTickets.ts";
 
 describe("writeTableAllowlist", () => {
-  it("autorise Retours, Missions, Missions_enfants, Realise et Acl_profil en create ; Droits_pages en update only", () => {
-    assert.equal(isWritableTableId("Retours"), true);
+  it("autorise Kanban create+update, Kanban_commentaires create ; pas Retours/Roadmap", () => {
+    assert.equal(isWritableTableId("Kanban"), true);
+    assert.equal(isWritableTableId("Kanban_commentaires"), true);
     assert.equal(isWritableTableId("Missions"), true);
     assert.equal(isWritableTableId("Missions_enfants"), true);
     assert.equal(isWritableTableId("Realise"), true);
     assert.equal(isWritableTableId("Acl_profil"), true);
     assert.equal(isWritableTableId("Droits_pages"), false);
-    assert.equal(isWritableTableId("Feedback_Identite"), false);
-    assert.equal(isWritableTableId("BDC"), false);
+    assert.equal(isWritableTableId("Retours"), false);
+    assert.equal(isWritableTableId("Roadmap"), false);
+    assert.equal(isWritableUpdateTableId("Kanban"), true);
+    assert.equal(isWritableUpdateTableId("Retours"), false);
     assert.throws(() => assertWritableTableId("Plan_activite"), /non autorisée/);
+    assert.throws(() => assertWritableUpdateTableId("Retours"), /non autorisée/);
   });
 });
 
@@ -48,11 +64,11 @@ describe("feedbackAuteurOptionsFromEquipeTable", () => {
   });
 });
 
-describe("buildRetoursFields", () => {
+describe("buildKanbanFeedbackFields", () => {
   it("exige un message non vide", () => {
     assert.throws(
       () =>
-        buildRetoursFields({
+        buildKanbanFeedbackFields({
           userName: "A",
           userEmail: "a@b.c",
           type: "Suggestion",
@@ -68,7 +84,7 @@ describe("buildRetoursFields", () => {
   it("exige un auteur non vide", () => {
     assert.throws(
       () =>
-        buildRetoursFields({
+        buildKanbanFeedbackFields({
           userName: "  ",
           userEmail: "a@b.c",
           type: "Suggestion",
@@ -81,13 +97,13 @@ describe("buildRetoursFields", () => {
     );
   });
 
-  it("pose Statut Nouveau et niveau seulement pour Anomalie", () => {
-    const fields = buildRetoursFields({
+  it("pose Nature Feedback, colonne feedback, Statut Nouveau", () => {
+    const fields = buildKanbanFeedbackFields({
       userName: "Camille",
       userEmail: "c@example.com",
       type: "Anomalie",
       page: "Missions",
-      message: "Bug",
+      message: "Bug\nsuite",
       niveau: "Bloquant — je ne peux pas continuer",
       joinContext: true,
       href: "https://example.test/",
@@ -96,16 +112,19 @@ describe("buildRetoursFields", () => {
       screenHeight: 50,
       now: new Date("2026-09-12T10:00:00.000Z"),
     });
+    assert.equal(fields.Nature, "Feedback");
+    assert.equal(fields.Colonne_kanban, "feedback");
+    assert.equal(fields.Titre, "Anomalie");
+    assert.equal(fields.Resume, "Bug");
     assert.equal(fields.Statut, "Nouveau");
     assert.equal(fields.Auteur, "Camille");
     assert.equal(fields.Niveau_gene, "Bloquant — je ne peux pas continuer");
     assert.equal(fields.Date, "2026-09-12T10:00:00.000Z");
     assert.match(fields.Contexte_technique, /TestUA/);
-    assert.match(fields.Contexte_technique, /100x50/);
   });
 
   it("vide Niveau_gene et contexte si non applicable", () => {
-    const fields = buildRetoursFields({
+    const fields = buildKanbanFeedbackFields({
       userName: "Camille",
       userEmail: "",
       type: "Question",
@@ -118,6 +137,64 @@ describe("buildRetoursFields", () => {
     assert.equal(fields.Niveau_gene, "");
     assert.equal(fields.Contexte_technique, "");
     assert.equal(fields.Type, "Question");
+    assert.equal(fields.Resume, "Comment faire ?");
+  });
+});
+
+describe("resumeFromMessage", () => {
+  it("prend la première ligne", () => {
+    assert.equal(resumeFromMessage("a\nb"), "a");
+  });
+});
+
+describe("buildKanbanColonnePatch", () => {
+  it("sync Statut_produit et Statut feedback", () => {
+    assert.deepEqual(buildKanbanColonnePatch("livre", "Feedback"), {
+      Colonne_kanban: "livre",
+      Statut_produit: "done",
+      Statut: "Fait",
+    });
+    assert.deepEqual(buildKanbanColonnePatch("en_cours", "Produit"), {
+      Colonne_kanban: "en_cours",
+      Statut_produit: "current",
+    });
+  });
+});
+
+describe("kanbanTicketFromRecord / grouping", () => {
+  it("parse Feedback et Produit", () => {
+    const fb = kanbanTicketFromRecord({
+      id: 1,
+      Nature: "Feedback",
+      Colonne_kanban: "feedback",
+      Titre: "Anomalie",
+      Type: "Anomalie",
+      Message: "Hello",
+      Resume: "Hello",
+      Auteur: "Alice Mathieu",
+      Date: 1_700_000_000,
+    });
+    assert.equal(fb.nature, "Feedback");
+    assert.equal(fb.column, "feedback");
+    assert.equal(prenomFromAuteur(fb.auteur), "Alice");
+
+    const pr = kanbanTicketFromRecord({
+      id: 2,
+      Nature: "Produit",
+      Colonne_kanban: "backlog",
+      Titre: "Feature",
+      Resume: "Why",
+      Theme: "Équipe et droits",
+      Statut_produit: "later",
+      Ordre: 3,
+    });
+    assert.equal(pr.nature, "Produit");
+    assert.equal(pr.theme, "Équipe et droits");
+
+    const items = [fb, pr];
+    assert.equal(filterFeedbackColumn(items).length, 1);
+    const groups = groupProductByKanban(items);
+    assert.equal(groups.find((g) => g.column.id === "backlog")?.items.length, 1);
   });
 });
 

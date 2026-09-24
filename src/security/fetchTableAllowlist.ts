@@ -1,5 +1,10 @@
 import type { GristFetchTableResult } from "../gristTypes";
-import { DROITS_PAGES_TABLE_ID, RETOURS_TABLE_ID, ACL_PROFIL_TABLE_ID } from "./writeTableAllowlist.ts";
+import {
+  DROITS_PAGES_TABLE_ID,
+  KANBAN_COMMENTAIRES_TABLE_ID,
+  KANBAN_TABLE_ID,
+  ACL_PROFIL_TABLE_ID,
+} from "./writeTableAllowlist.ts";
 
 /**
  * Allowlist des tableIds passés à `docApi.fetchTable`.
@@ -35,7 +40,10 @@ export { ACL_PROFIL_TABLE_ID };
 /** Réexport pour les appelants lecture (page Admin). */
 export { DROITS_PAGES_TABLE_ID };
 
-/** `Retours` : colonne Feedback accueil — lu après boot PA (pas au même tick que `Plan_activite`). */
+/** Kanban accueil unifié (Feedback + produit). */
+export { KANBAN_TABLE_ID };
+
+/** `Kanban` + commentaires : lu après boot PA (pas au même tick que `Plan_activite`). */
 
 export const FETCH_TABLE_ALLOWLIST = [
   PA_TABLE_ID,
@@ -43,7 +51,8 @@ export const FETCH_TABLE_ALLOWLIST = [
   ...BDC_DEPENSES_TABLE_IDS,
   ACL_PROFIL_TABLE_ID,
   DROITS_PAGES_TABLE_ID,
-  RETOURS_TABLE_ID,
+  KANBAN_TABLE_ID,
+  KANBAN_COMMENTAIRES_TABLE_ID,
 ] as const;
 
 export type AllowlistedTableId = (typeof FETCH_TABLE_ALLOWLIST)[number];

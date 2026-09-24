@@ -1,18 +1,19 @@
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import { Button } from "@codegouvfr/react-dsfr/Button";
-import type { RetoursListStatus } from "../../hooks/useRetoursList";
+import type { KanbanListStatus } from "../../hooks/useKanbanList";
 import { requestOpenFeedback } from "../../utils/feedbackOpen";
 import {
-  badgeClassForRetourType,
+  badgeClassForFeedbackType,
   prenomFromAuteur,
-  type RetourKanbanItem,
-} from "../../utils/retoursKanban";
+  type KanbanTicket,
+} from "../../utils/kanbanTickets";
 
 type WelcomeFeedbackColumnProps = {
-  items: RetourKanbanItem[];
-  status: RetoursListStatus;
+  items: KanbanTicket[];
+  status: KanbanListStatus;
   error: string | null;
+  onOpenTicket: (item: KanbanTicket) => void;
 };
 
 /** Placeholder toujours visible (même s’il y a déjà des tickets). */
@@ -37,34 +38,53 @@ function FeedbackInvitePlaceholder() {
   );
 }
 
-function FeedbackCard({ item }: { item: RetourKanbanItem }) {
+function FeedbackCard({
+  item,
+  onOpen,
+}: {
+  item: KanbanTicket;
+  onOpen: (item: KanbanTicket) => void;
+}) {
+  const body = item.resume || item.message;
   const message =
-    item.message.length > 160 ? `${item.message.slice(0, 157).trimEnd()}…` : item.message;
+    body.length > 160 ? `${body.slice(0, 157).trimEnd()}…` : body;
   const meta = [prenomFromAuteur(item.auteur), item.dateLabel].filter(Boolean).join(" · ");
 
   return (
     <li className="welcome-kanban__card">
-      <div className="welcome-roadmap__item-head">
-        <Badge small as="span" className={badgeClassForRetourType(item.type)}>
-          {item.type}
-        </Badge>
-        {item.statut ? (
-          <Badge small as="span">
-            {item.statut}
+      <button
+        type="button"
+        className="welcome-kanban__card-btn"
+        onClick={() => onOpen(item)}
+      >
+        <div className="welcome-roadmap__item-head">
+          <Badge small as="span" className={badgeClassForFeedbackType(item.type)}>
+            {item.type}
           </Badge>
-        ) : null}
-      </div>
-      {message ? <p className="fr-text--sm fr-mb-1w fr-mt-1w">{message}</p> : null}
-      {meta ? <p className="fr-text--xs fr-mb-0 fr-hint-text">{meta}</p> : null}
+          {item.statutFeedback ? (
+            <Badge small as="span">
+              {item.statutFeedback}
+            </Badge>
+          ) : null}
+        </div>
+        {message ? <p className="fr-text--sm fr-mb-1w fr-mt-1w">{message}</p> : null}
+        {meta ? <p className="fr-text--xs fr-mb-0 fr-hint-text">{meta}</p> : null}
+        <span className="fr-link fr-link--sm fr-mt-1w">Ouvrir</span>
+      </button>
     </li>
   );
 }
 
 /**
  * Colonne kanban « Feedback » (1ʳᵉ position).
- * Placeholder d’invitation toujours affiché ; liste des `Retours` en dessous s’il y en a.
+ * Placeholder d’invitation toujours affiché ; tickets `Nature=Feedback` en dessous.
  */
-export function WelcomeFeedbackColumn({ items, status, error }: WelcomeFeedbackColumnProps) {
+export function WelcomeFeedbackColumn({
+  items,
+  status,
+  error,
+  onOpenTicket,
+}: WelcomeFeedbackColumnProps) {
   const count = status === "loading" || status === "error" ? 0 : items.length;
 
   return (
@@ -106,7 +126,7 @@ export function WelcomeFeedbackColumn({ items, status, error }: WelcomeFeedbackC
       {items.length > 0 ? (
         <ul className="welcome-kanban__list fr-mb-0 fr-mt-2w">
           {items.map((item) => (
-            <FeedbackCard key={item.id} item={item} />
+            <FeedbackCard key={item.id} item={item} onOpen={onOpenTicket} />
           ))}
         </ul>
       ) : null}

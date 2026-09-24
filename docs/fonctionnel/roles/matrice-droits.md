@@ -44,7 +44,7 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 
 | Écran / parcours | Route | Admin | Resp. | Freelance | Invité | Statut | Notes |
 |------------------|-------|-------|-------|-----------|--------|--------|-------|
-| Accueil | `/` | oui | oui | oui | oui | **Appliqué** (widget + `Droits_pages`) | |
+| Accueil | `/` | oui | oui | oui | oui | **Appliqué** (widget + `Droits_pages`) | Kanban Grist + drawer conversation |
 | Plans d’activité | `/pa` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Couche 5 ; données encore ouvertes (couche 6 plus tard) |
 | Bons de commande | `/bdc` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Idem |
 | Prestation / CRA (liste) | `/cra` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Freelances : déclaration via `/cra/declarer` |
@@ -78,7 +78,9 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | `Realise` (CRA) hors montants | CRUD | R/U département | **R/U + C** ses lignes | — | **Appliqué** (ACL) + widget | Déclaration `#33` ; revue `#70` ; mur `#47` HITL 2026-09-21 |
 | `Realise.Calcul_TTC` | R ; U Owner | R | R | R | **Appliqué** | `+R -U` si non-Owner |
 | `Missions` / `Missions_enfants` | CRUD | R/U dép. | R ses missions | R / — | Non (rôle) | |
-| `Retours` (feedback) | CR (widget liste) | C (+ R liste V1) | C (+ R liste V1) | C ? | Widget create + **Read liste V1** | Kanban Feedback : affichage **ouverts seulement** (hors Fait/Écarté) ; ACL Read partagée |
+| `Kanban` (feedback + produit) | CRU (liste + colonne Admin) | C (+ R) ; U colonne Admin | C (+ R) | C (+ R) | Widget create Feedback + Read + **update colonne Admin** | Table unique ; `Nature` Feedback\|Produit ; ACL Update Owner/Admin HITL |
+| `Kanban_commentaires` | CR | C (+ R) | C (+ R) | C (+ R) | Widget create + Read | Conversation drawer ; `Cible_id` → `Kanban` ; update/delete Owner/Admin (HITL ACL) |
+| `Retours` / `Roadmap` (legacy) | — | — | — | — | **Hors widget** (migrées → `Kanban`) | Archivables Owner |
 | `Acl_profil` | CRUD | CRUD | CR soi | CR soi | **Appliqué** | Owner/Admin `+CRUD` ; `user.Email == rec.E_mail` → `+CR` ; `True` → `-CRUD` |
 | `Droits_pages` | CRUD (Owner / Admin) | — | — | — | **Appliqué** | Owner **ou** `Role_ACL == Admin` → `+CRUD` ; `True` → `-CRUD` |
 | Structure (S) | Owner | — | — | — | **Appliqué** | `-S` si non-Owner |
@@ -97,6 +99,8 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-09-24 | Table unique `Kanban` (fusion Retours+Roadmap) ; drawer ordre lecture + select colonne Admin ; commentaires `Cible_id` ; create feedback → `Kanban` | 5, 6 (doc HITL ACL) | Kanban unifié drawer |
+| 2026-09-23 | Kanban accueil 100 % Grist : `Roadmap` + `Kanban_commentaires` ; drawer ticket + conversation pour tous ; GitHub optionnel ; plus de source `publicRoadmap.ts` | 5, 6 (doc HITL ACL) | Kanban conversation |
 | 2026-09-23 | Fiche mission Contexte : panneau PJ = télécharger + ajouter + détacher `Docs` (upload jeton non-readonly) ; Note studio éditable ; pas de changement ACL tables | 5 | Note studio + Docs Contexte |
 | 2026-09-23 | Fiche produit : 4 onglets référentiel → 1 onglet Informations (groupes métier, page document) ; pas de compteurs ; mêmes droits lecture | 5 | Gabarit A canvas infos produit |
 | 2026-09-22 | Produits : liste + fiche lecture (`/produits`, `/produits/:id`) ; nav hors stub ; missions liées sur fiche ; pas d’écriture catalogue | 5 | [#3](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3) |

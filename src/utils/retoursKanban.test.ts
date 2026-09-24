@@ -51,6 +51,8 @@ describe("sortRetoursNewestFirst", () => {
         page: "",
         message: "m1",
         statut: "",
+        niveauGene: "",
+        lienTicket: "",
       },
       {
         id: 3,
@@ -60,6 +62,8 @@ describe("sortRetoursNewestFirst", () => {
         page: "",
         message: "m3",
         statut: "",
+        niveauGene: "",
+        lienTicket: "",
       },
     ]);
     assert.deepEqual(
@@ -80,6 +84,8 @@ describe("filterRetoursOpenForFeedback", () => {
         page: "",
         message: "ouvert",
         statut: "Nouveau",
+        niveauGene: "",
+        lienTicket: "",
       },
       {
         id: 4,
@@ -89,6 +95,8 @@ describe("filterRetoursOpenForFeedback", () => {
         page: "",
         message: "filtres",
         statut: "Fait",
+        niveauGene: "",
+        lienTicket: "",
       },
       {
         id: 5,
@@ -98,6 +106,8 @@ describe("filterRetoursOpenForFeedback", () => {
         page: "",
         message: "écarté",
         statut: "Écarté",
+        niveauGene: "",
+        lienTicket: "",
       },
     ]);
     assert.deepEqual(

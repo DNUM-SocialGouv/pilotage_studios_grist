@@ -11,6 +11,8 @@ export type RetourKanbanItem = {
   page: string;
   message: string;
   statut: string;
+  niveauGene: string;
+  lienTicket: string;
 };
 
 function asString(value: unknown): string {
@@ -62,6 +64,8 @@ export function retourKanbanItemFromRecord(
     page: asString(record.Page),
     message: asString(record.Message),
     statut: asString(record.Statut),
+    niveauGene: asString(record.Niveau_gene),
+    lienTicket: asString(record.Lien_ticket),
   };
 }
 
