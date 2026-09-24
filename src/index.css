@@ -1119,6 +1119,180 @@ button.fr-link:disabled {
   outline-offset: 2px;
 }
 
+/* Drawer ticket kanban — gabarit zones A / B / C */
+.ticket-drawer-header {
+  border-bottom: 1px solid var(--border-default-grey);
+  padding: 1.25rem 1.5rem 1rem;
+}
+
+.ticket-drawer-header__top {
+  align-items: flex-start;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.ticket-drawer-header__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.ticket-drawer-header__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.ticket-drawer-colonne-row {
+  margin-top: 0.75rem;
+  max-width: 14rem;
+}
+
+.ticket-drawer-colonne-row .fr-select-group {
+  margin-bottom: 0;
+}
+
+.ticket-drawer-colonne-row .fr-label {
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+.ticket-drawer-colonne-row .fr-select {
+  font-size: 0.875rem;
+  min-height: 2rem;
+  padding-block: 0.25rem;
+}
+
+.ticket-drawer-body {
+  color: var(--text-default-grey);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.ticket-drawer-section {
+  margin: 0;
+}
+
+.ticket-drawer-label {
+  color: var(--text-mention-grey);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin: 0 0 0.35rem;
+  text-transform: uppercase;
+}
+
+.ticket-drawer-lead {
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+
+.ticket-drawer-pratique {
+  background: var(--background-alt-grey);
+  border: 1px solid var(--border-default-grey);
+  border-radius: 0.25rem;
+  padding: 0.875rem 1rem;
+}
+
+.ticket-drawer-pratique h3 {
+  font-weight: 700;
+}
+
+.ticket-drawer-pratique__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ticket-drawer-pratique__steps > li {
+  align-items: flex-start;
+  display: flex;
+  gap: 0.65rem;
+}
+
+.ticket-drawer-pratique__num {
+  align-items: center;
+  border: 1px solid var(--border-default-grey);
+  border-radius: 50%;
+  color: var(--text-mention-grey);
+  display: inline-flex;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  height: 1.25rem;
+  justify-content: center;
+  line-height: 1;
+  width: 1.25rem;
+}
+
+.ticket-drawer-pratique__text {
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.ticket-drawer-meta {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ticket-drawer-meta__chip {
+  border: 1px solid var(--border-default-grey);
+  border-radius: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  padding: 0.4rem 0.65rem;
+}
+
+.ticket-drawer-meta__label {
+  color: var(--text-mention-grey);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.ticket-drawer-meta__value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.ticket-drawer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+}
+
+.ticket-conversation {
+  border-top: 1px solid var(--border-default-grey);
+  margin-top: 0.25rem;
+  padding-top: 1.25rem;
+}
+
+.ticket-conversation__head {
+  align-items: baseline;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.ticket-conversation__head h3 {
+  font-weight: 700;
+}
+
 .ticket-conversation__list {
   display: flex;
   flex-direction: column;
@@ -1130,8 +1304,13 @@ button.fr-link:disabled {
 
 .ticket-conversation__item {
   background: var(--background-alt-grey);
-  border-left: 3px solid var(--border-default-blue-france);
-  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+  padding: 0.65rem 0.75rem;
+}
+
+.ticket-conversation__submit {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .welcome-feedback-empty {

@@ -10,7 +10,7 @@
 
 ## Objet
 
-Première page affichée à l’ouverture du Custom Widget dans Grist : titre + pictogramme + **feuille de route en kanban** (Feedback · Backlog · En cours · Livré). Chaque carte ouvre un **tiroir** (valeur → en pratique → métadonnées → GitHub → conversation). La navigation des modules se fait via la **nav** (`WidgetNav`), pas une liste sur l’accueil.
+Première page affichée à l’ouverture du Custom Widget dans Grist : titre + pictogramme + **feuille de route en kanban** (Feedback · Backlog · En cours · Livré). Chaque carte ouvre un **tiroir** (résumé → en pratique / détail → pastilles méta → actions → conversation). La navigation des modules se fait via la **nav** (`WidgetNav`), pas une liste sur l’accueil.
 
 ## Comportement
 
@@ -20,7 +20,7 @@ Première page affichée à l’ouverture du Custom Widget dans Grist : titre + 
 | En-tête | Titre « Pilotage studios » + pictogramme `Factory` |
 | Kanban | Titre « Feuille de route » + **4 colonnes** : **Feedback** (CTA + tickets `Nature=Feedback` en colonne `feedback`) · **Backlog** · **En cours** · **Livré** (dernier livré en haut) |
 | Carte | Cliquable → drawer SM (`TicketDrawer`) |
-| Drawer (ordre) | Titre + colonne (select **Admin** / badge sinon) → Valeur (`Resume`) → En pratique → tableau métadonnées → lien GitHub → filet → Conversation |
+| Drawer (ordre) | En-tête (badges + titre + colonne **Admin** compacte) → Résumé → En pratique (Produit) ou Détail (Feedback) → pastilles méta → actions (page / GitHub) → Conversation |
 | Colonne Admin | Update `Colonne_kanban` (+ sync `Statut_produit` / `Statut` feedback) via widget ; ACL Grist = vraie barrière |
 | Conversation | Tout utilisateur peut commenter (identité via liste Équipe) |
 | Nav | `WidgetNav` : Accueil icône home ; **Mon carnet** (Freelance/Admin) ; **Budget** / **Outils** en menus |
@@ -30,7 +30,8 @@ Première page affichée à l’ouverture du Custom Widget dans Grist : titre + 
 ## Données Grist
 
 - `Kanban` : create Feedback via bouton « Un retour ? » ; lecture kanban ; update colonne **Admin** (UX) / Owner·Admin (ACL).
-- `Kanban_commentaires` : create + lecture fil (`Cible_id` = id ligne `Kanban`).
+- Cartes **unifiées** (Feedback et Produit) : titre · badge · thème · résumé · auteur/date si présents.
+- `Kanban_commentaires` : create + lecture fil (`Cible_id` = id ligne `Kanban`) — ordre **plus récent en haut**.
 - Anciennes tables `Retours` / `Roadmap` : migrées ; plus utilisées par le widget (archivables Owner).
 
 ## Hors scope

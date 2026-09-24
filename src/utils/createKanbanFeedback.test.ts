@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   buildKanbanFeedbackFields,
-  resumeFromMessage,
+  clampResume,
+  clampTitre,
 } from "./createKanbanFeedback.ts";
 import { feedbackAuteurOptionsFromEquipeTable } from "./feedbackEquipe.ts";
 import { pageOptionFromPathname } from "./feedbackPages.ts";
@@ -22,12 +23,10 @@ describe("writeTableAllowlist", () => {
     assert.equal(isWritableTableId("Missions_enfants"), true);
     assert.equal(isWritableTableId("Realise"), true);
     assert.equal(isWritableTableId("Acl_profil"), true);
-    assert.equal(isWritableTableId("Equipe"), true);
     assert.equal(isWritableTableId("Droits_pages"), false);
     assert.equal(isWritableTableId("Retours"), false);
     assert.equal(isWritableTableId("Roadmap"), false);
     assert.equal(isWritableUpdateTableId("Kanban"), true);
-    assert.equal(isWritableUpdateTableId("Equipe"), false);
     assert.equal(isWritableUpdateTableId("Retours"), false);
     assert.throws(() => assertWritableTableId("Plan_activite"), /non autorisée/);
     assert.throws(() => assertWritableUpdateTableId("Retours"), /non autorisée/);
@@ -60,19 +59,34 @@ describe("feedbackAuteurOptionsFromEquipeTable", () => {
 });
 
 describe("buildKanbanFeedbackFields", () => {
-  it("exige un message non vide", () => {
+  it("exige titre et résumé", () => {
     assert.throws(
       () =>
         buildKanbanFeedbackFields({
           userName: "A",
           userEmail: "a@b.c",
           type: "Suggestion",
+          titre: "  ",
+          resume: "ok",
           page: "Accueil",
-          message: "  ",
           niveau: "",
           joinContext: false,
         }),
-      /Message obligatoire/,
+      /Titre obligatoire/,
+    );
+    assert.throws(
+      () =>
+        buildKanbanFeedbackFields({
+          userName: "A",
+          userEmail: "a@b.c",
+          type: "Suggestion",
+          titre: "Titre",
+          resume: "  ",
+          page: "Accueil",
+          niveau: "",
+          joinContext: false,
+        }),
+      /Résumé obligatoire/,
     );
   });
 
@@ -83,8 +97,9 @@ describe("buildKanbanFeedbackFields", () => {
           userName: "  ",
           userEmail: "a@b.c",
           type: "Suggestion",
+          titre: "Titre",
+          resume: "ok",
           page: "Accueil",
-          message: "ok",
           niveau: "",
           joinContext: false,
         }),
@@ -92,13 +107,15 @@ describe("buildKanbanFeedbackFields", () => {
     );
   });
 
-  it("pose Nature Feedback, colonne feedback, Statut Nouveau", () => {
+  it("aligne Titre / Resume / Theme←Page ; Message = détail ou résumé", () => {
     const fields = buildKanbanFeedbackFields({
       userName: "Camille",
       userEmail: "c@example.com",
       type: "Anomalie",
+      titre: "Bouton Enregistrer grisé",
+      resume: "Je ne peux pas valider mon CRA.",
+      message: "Étapes : ouvrir Mon carnet…",
       page: "Missions",
-      message: "Bug\nsuite",
       niveau: "Bloquant — je ne peux pas continuer",
       joinContext: true,
       href: "https://example.test/",
@@ -109,22 +126,24 @@ describe("buildKanbanFeedbackFields", () => {
     });
     assert.equal(fields.Nature, "Feedback");
     assert.equal(fields.Colonne_kanban, "feedback");
-    assert.equal(fields.Titre, "Anomalie");
-    assert.equal(fields.Resume, "Bug");
+    assert.equal(fields.Titre, "Bouton Enregistrer grisé");
+    assert.equal(fields.Resume, "Je ne peux pas valider mon CRA.");
+    assert.equal(fields.Theme, "Missions");
+    assert.equal(fields.Page, "Missions");
+    assert.equal(fields.Message, "Étapes : ouvrir Mon carnet…");
     assert.equal(fields.Statut, "Nouveau");
-    assert.equal(fields.Auteur, "Camille");
     assert.equal(fields.Niveau_gene, "Bloquant — je ne peux pas continuer");
-    assert.equal(fields.Date, "2026-09-12T10:00:00.000Z");
     assert.match(fields.Contexte_technique, /TestUA/);
   });
 
-  it("vide Niveau_gene et contexte si non applicable", () => {
+  it("sans détail : Message = Resume ; vide Niveau hors Anomalie", () => {
     const fields = buildKanbanFeedbackFields({
       userName: "Camille",
       userEmail: "",
       type: "Question",
+      titre: "Où est le BDC ?",
+      resume: "Comment rattacher un BDC ?",
       page: "Accueil",
-      message: "Comment faire ?",
       niveau: "Mineur — cosmétique / confort",
       joinContext: false,
       now: new Date("2026-01-01T00:00:00.000Z"),
@@ -132,13 +151,15 @@ describe("buildKanbanFeedbackFields", () => {
     assert.equal(fields.Niveau_gene, "");
     assert.equal(fields.Contexte_technique, "");
     assert.equal(fields.Type, "Question");
-    assert.equal(fields.Resume, "Comment faire ?");
+    assert.equal(fields.Message, "Comment rattacher un BDC ?");
+    assert.equal(fields.Theme, "Accueil");
   });
 });
 
-describe("resumeFromMessage", () => {
-  it("prend la première ligne", () => {
-    assert.equal(resumeFromMessage("a\nb"), "a");
+describe("clampTitre / clampResume", () => {
+  it("tronque proprement", () => {
+    assert.equal(clampTitre("  A  B  "), "A B");
+    assert.ok(clampResume("x".repeat(250)).endsWith("…"));
   });
 });
 

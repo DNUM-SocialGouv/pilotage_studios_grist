@@ -4,7 +4,6 @@
 export {
   buildKanbanFeedbackFields as buildRetoursFields,
   createKanbanFeedbackRecord as createRetoursRecord,
-  resumeFromMessage,
   type CreateKanbanFeedbackInput as CreateRetoursInput,
   type FeedbackType,
   type KanbanFeedbackFields as RetoursFields,

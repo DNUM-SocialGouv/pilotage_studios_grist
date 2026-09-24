@@ -1,6 +1,6 @@
 /**
  * Création d’une ligne feedback dans `Kanban` via plugin API (`getTable().create`).
- * Garde runtime : seule la table allowlistée écriture.
+ * Champs alignés sur la carte kanban : Titre · Type · Resume · (Message détail) · Theme←Page.
  */
 
 import {
@@ -14,11 +14,15 @@ export type CreateKanbanFeedbackInput = {
   userName: string;
   userEmail: string;
   type: FeedbackType;
+  /** Titre carte (court). */
+  titre: string;
+  /** Phrase valeur / why — corps de carte + drawer. */
+  resume: string;
+  /** Détail optionnel (drawer) ; si vide = même contenu que Resume. */
+  message?: string;
   page: string;
-  message: string;
   niveau: string;
   joinContext: boolean;
-  /** URL widget / contexte technique (si joinContext). */
   href?: string;
   userAgent?: string;
   screenWidth?: number;
@@ -31,6 +35,7 @@ export type KanbanFeedbackFields = {
   Colonne_kanban: "feedback";
   Titre: string;
   Resume: string;
+  Theme: string;
   Date: string;
   Auteur: string;
   Email: string;
@@ -42,28 +47,40 @@ export type KanbanFeedbackFields = {
   Statut: "Nouveau";
 };
 
-/** Première ligne non vide du message (phrase valeur / why). */
-export function resumeFromMessage(message: string): string {
-  const first = message
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .find(Boolean);
-  if (!first) return "";
-  return first.length > 200 ? `${first.slice(0, 197).trimEnd()}…` : first;
+const TITRE_MAX = 80;
+const RESUME_MAX = 200;
+
+export function clampTitre(titre: string): string {
+  const t = titre.trim().replace(/\s+/g, " ");
+  if (t.length <= TITRE_MAX) return t;
+  return `${t.slice(0, TITRE_MAX - 1).trimEnd()}…`;
+}
+
+export function clampResume(resume: string): string {
+  const t = resume.trim().replace(/\s+/g, " ");
+  if (t.length <= RESUME_MAX) return t;
+  return `${t.slice(0, RESUME_MAX - 1).trimEnd()}…`;
 }
 
 /** Construit le payload champs (pur — testable hors Grist). */
 export function buildKanbanFeedbackFields(
   input: CreateKanbanFeedbackInput,
 ): KanbanFeedbackFields {
-  const message = input.message.trim();
-  if (!message) {
-    throw new Error("Message obligatoire");
+  const titre = clampTitre(input.titre);
+  if (!titre) {
+    throw new Error("Titre obligatoire");
+  }
+  const resume = clampResume(input.resume);
+  if (!resume) {
+    throw new Error("Résumé obligatoire");
   }
   const userName = input.userName.trim();
   if (!userName) {
     throw new Error("Auteur obligatoire");
   }
+
+  const detail = (input.message ?? "").trim();
+  const message = detail || resume;
 
   const href = input.href ?? "";
   const userAgent = input.userAgent ?? "";
@@ -73,16 +90,19 @@ export function buildKanbanFeedbackFields(
     ? `${href} · ${userAgent} · ${w}x${h}`
     : "";
 
+  const page = input.page.trim();
+
   return {
     Nature: "Feedback",
     Colonne_kanban: "feedback",
-    Titre: input.type,
-    Resume: resumeFromMessage(message),
+    Titre: titre,
+    Resume: resume,
+    Theme: page,
     Date: (input.now ?? new Date()).toISOString(),
     Auteur: userName,
     Email: input.userEmail.trim(),
     Type: input.type,
-    Page: input.page,
+    Page: page,
     Message: message,
     Niveau_gene: input.type === "Anomalie" ? input.niveau : "",
     Contexte_technique: contexte,

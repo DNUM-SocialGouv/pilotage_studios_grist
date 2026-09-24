@@ -44,7 +44,7 @@ describe("buildKanbanCommentaireFields", () => {
 });
 
 describe("kanbanCommentaireFromRecord", () => {
-  it("filtre par Cible_id", () => {
+  it("filtre par Cible_id et trie du plus récent au plus ancien", () => {
     const a = kanbanCommentaireFromRecord({
       id: 1,
       Cible_type: "Kanban",
@@ -56,16 +56,24 @@ describe("kanbanCommentaireFromRecord", () => {
     const b = kanbanCommentaireFromRecord({
       id: 2,
       Cible_type: "Kanban",
-      Cible_id: 9,
+      Cible_id: 5,
       Date: 1_700_000_100,
       Auteur: "Bob",
       Message: "Deux",
     });
-    assert.ok(a && b);
-    const filtered = filterCommentairesForTicket([a, b], 5);
+    const c = kanbanCommentaireFromRecord({
+      id: 3,
+      Cible_type: "Kanban",
+      Cible_id: 9,
+      Date: 1_700_000_200,
+      Auteur: "Cara",
+      Message: "Autre",
+    });
+    assert.ok(a && b && c);
+    const filtered = filterCommentairesForTicket([a, b, c], 5);
     assert.deepEqual(
-      filtered.map((c) => c.id),
-      [1],
+      filtered.map((x) => x.id),
+      [2, 1],
     );
   });
 });
