@@ -103,10 +103,12 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
     const [submitError, setSubmitError] = useState<string>();
     const [savePending, setSavePending] = useState(false);
 
-    const { register, handleSubmit, reset, formState } = useForm<EquipeCreateFormValues>({
+    const { register, handleSubmit, reset, watch, formState } = useForm<EquipeCreateFormValues>({
       resolver: zodResolver(formSchema),
       defaultValues: emptyEquipeCreateForm(),
     });
+
+    const watchedRole = watch("Role_ACL");
 
     const statutChoices = useMemo(
       () => mergeChoiceOptions([DEFAULT_EQUIPE_STATUT, "Inactif"], statutOptions),
@@ -131,6 +133,10 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
     const modeChoices = useMemo(
       () => mergeChoiceOptions([], modeRecrutementOptions),
       [modeRecrutementOptions],
+    );
+    const roleChoices = useMemo(
+      () => mergeChoiceOptions([...EQUIPE_ROLE_ACL_CHOICES], [watchedRole]),
+      [watchedRole],
     );
 
     const openCreate = useCallback(() => {
@@ -158,6 +164,7 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
 
     const onDialogClose = () => {
       setSubmitError(undefined);
+      setMode("create");
       setEditingId(null);
     };
 
@@ -180,17 +187,27 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
       setSavePending(true);
 
       try {
-        if (mode === "edit" && editingId != null) {
+        if (mode === "edit") {
+          // Jamais de create depuis l’UI « Modifier » (évite doublon e-mail).
+          if (editingId == null) {
+            setSubmitError("Édition incohérente : fermez le panneau et réessayez.");
+            return;
+          }
+          if (!values.Role_ACL.trim()) {
+            setSubmitError("Le rôle est obligatoire pour enregistrer la fiche.");
+            return;
+          }
           await updateEquipeRecord(editingId, buildEquipeUpdateFields(values));
           await refreshAfterWrite();
           close();
-        } else {
-          const fields = buildEquipeCreateFields(values);
-          const id = await createEquipeRecord(fields);
-          await refreshAfterWrite();
-          close();
-          void navigate(`/equipe/${id}`);
+          return;
         }
+
+        const fields = buildEquipeCreateFields(values);
+        const id = await createEquipeRecord(fields);
+        await refreshAfterWrite();
+        close();
+        void navigate(`/equipe/${id}`);
       } catch (e) {
         setSubmitError(e instanceof Error ? e.message : "Erreur inconnue");
       } finally {
@@ -350,9 +367,12 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
                         </Select>
                       </div>
                       <div className="fr-col-12 fr-col-md-6">
-                        <Select label="Rôle" nativeSelectProps={register("Role_ACL")}>
+                        <Select
+                          label={isEdit ? "Rôle *" : "Rôle"}
+                          nativeSelectProps={register("Role_ACL")}
+                        >
                           <option value="">—</option>
-                          {EQUIPE_ROLE_ACL_CHOICES.map((v) => (
+                          {roleChoices.map((v) => (
                             <option key={v} value={v}>
                               {v}
                             </option>

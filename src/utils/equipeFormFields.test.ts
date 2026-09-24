@@ -140,14 +140,16 @@ describe("buildEquipeUpdateFields", () => {
     });
   });
 
-  it("omet TJM si le champ est vide (ne pas effacer)", () => {
+  it("omet TJM et Role_ACL si vides (ne pas effacer)", () => {
     const fields = buildEquipeUpdateFields({
       ...emptyEquipeCreateForm(),
       Prenom_Nom: "Alice",
       E_mail: "a@b.fr",
+      Role_ACL: "",
       TJM: "",
     });
     assert.equal("TJM" in fields, false);
+    assert.equal("Role_ACL" in fields, false);
   });
 });
 

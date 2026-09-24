@@ -18,9 +18,10 @@ Voir la carte d’identité d’une personne — mise en page alignée sur la fi
 
 ## Édition (Admin)
 
-Mêmes champs que la création : Prénom Nom *, E-mail *, Département, Spécialité, Statut, Portage, Ordinateur, Mode de recrutement, Rôle, TJM.
+Mêmes champs que la création : Prénom Nom *, E-mail *, Département, Spécialité, Statut, Portage, Ordinateur, Mode de recrutement, Rôle *, TJM.
 
 - Après enregistrement : rechargement de la liste / fiche (on reste sur `/equipe/:id`).
+- **Rôle** : obligatoire à l’édition (évite d’effacer les droits par accident). Une valeur hors liste standard reste proposée dans le sélecteur.
 - TJM : laisser le champ vide **conserve** la valeur actuelle (ne l’efface pas).
 - L’e-mail n’apparaît **jamais** en consultation ; seulement dans le drawer.
 - Les freelances (et autres non-Admin) ne voient pas le bouton. Sécurité réelle = Access Rules Grist (Owner / Admin seuls peuvent mettre à jour).

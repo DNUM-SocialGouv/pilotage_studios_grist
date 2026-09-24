@@ -44,7 +44,10 @@ export type EquipeCreateFields = {
   TJM?: number;
 };
 
-/** Champs envoyés à `Equipe.update` (mêmes colonnes ; TJM omis si formulaire vide). */
+/**
+ * Champs envoyés à `Equipe.update`.
+ * TJM / Role_ACL omis si formulaire vide (ne pas effacer par accident).
+ */
 export type EquipeUpdateFields = {
   Prenom_Nom: string;
   E_mail: string;
@@ -54,7 +57,7 @@ export type EquipeUpdateFields = {
   Portage: string;
   Ordinateur2: string;
   Mode_recrutement: string;
-  Role_ACL: string;
+  Role_ACL?: string;
   TJM?: number;
 };
 
@@ -136,8 +139,8 @@ export function buildEquipeCreateFields(values: EquipeCreateFormValues): EquipeC
 }
 
 /**
- * Patch update : chaînes toujours envoyées (vide = effacer le choix) ;
- * TJM omis si le champ formulaire est vide (ne pas effacer un TJM existant par accident).
+ * Patch update : chaînes envoyées (vide = effacer le choix pour les champs non sensibles) ;
+ * TJM et Role_ACL omis si vides (ne pas effacer un TJM / rôle existant par accident).
  */
 export function buildEquipeUpdateFields(values: EquipeCreateFormValues): EquipeUpdateFields {
   const out: EquipeUpdateFields = {
@@ -149,8 +152,12 @@ export function buildEquipeUpdateFields(values: EquipeCreateFormValues): EquipeU
     Portage: values.Portage.trim(),
     Ordinateur2: values.Ordinateur2.trim(),
     Mode_recrutement: values.Mode_recrutement.trim(),
-    Role_ACL: values.Role_ACL.trim(),
   };
+
+  const role = values.Role_ACL.trim();
+  if (role) {
+    out.Role_ACL = role;
+  }
 
   const tjm = parseOptionalTjm(values.TJM);
   if (tjm !== null && tjm !== "invalid") {
