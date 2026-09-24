@@ -59,7 +59,7 @@ export function KanbanCard({ item, onOpen }: KanbanCardProps) {
         ) : null}
         {resume ? <p className="fr-text--sm fr-mb-1w fr-mt-1w">{resume}</p> : null}
         {meta ? <p className="fr-text--xs fr-mb-0 fr-hint-text">{meta}</p> : null}
-        <span className="fr-link fr-link--sm fr-mt-1w">Ouvrir</span>
+        <span className="welcome-kanban__card-open fr-mt-1w">Voir la fiche</span>
       </button>
     </li>
   );

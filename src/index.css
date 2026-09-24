@@ -1119,6 +1119,16 @@ button.fr-link:disabled {
   outline-offset: 2px;
 }
 
+.welcome-kanban__card-open {
+  color: var(--text-action-high-blue-france);
+  display: inline-block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.5;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
 /* Drawer ticket kanban — gabarit zones A / B / C */
 .ticket-drawer-header {
   border-bottom: 1px solid var(--border-default-grey);
@@ -1357,23 +1367,7 @@ button.fr-link:disabled {
   padding: 0;
 }
 
-/* Texte guide : couleur explicite (évite CanvasText clair du <dialog> dans Grist). */
-.roadmap-guide,
-.roadmap-guide__lead,
-.roadmap-guide__step {
-  color: var(--text-default-grey);
-}
-
-.roadmap-guide__lead,
-.roadmap-guide__step {
-  font-size: 0.875rem;
-  line-height: 1.5;
-}
-
-.roadmap-guide__steps {
-  margin: 0;
-  padding-left: 1.25rem;
-}
+/* (roadmap-guide* retiré — drawer ticket utilise ticket-drawer-*) */
 
 .welcome-artwork {
   align-items: center;

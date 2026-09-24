@@ -28,19 +28,13 @@ export type TicketDrawerProps = {
 
 type MetaChip = { label: string; value: string };
 
+/** Pastilles méta — sans Type/Statut (déjà en badges d’en-tête). */
 function buildMetaChips(ticket: KanbanTicket): MetaChip[] {
   const chips: MetaChip[] = [];
   if (ticket.theme) {
     chips.push({ label: "Thème", value: ticket.theme });
   }
-  if (ticket.nature === "Produit" && ticket.status) {
-    chips.push({
-      label: "Statut",
-      value: KANBAN_STATUS_LABEL[ticket.status],
-    });
-  }
   if (ticket.nature === "Feedback") {
-    if (ticket.type) chips.push({ label: "Type", value: ticket.type });
     if (ticket.page) chips.push({ label: "Page", value: ticket.page });
     if (ticket.auteur) chips.push({ label: "Auteur", value: ticket.auteur });
     if (ticket.niveauGene) {
@@ -158,7 +152,9 @@ export function TicketDrawer({ ticket, onClose, onColumnChanged }: TicketDrawerP
                       >
                         {ticket.nature}
                       </Badge>
-                      {!isAdmin ? (
+                      {/* Évite Feedback + Feedback quand colonne = nature. */}
+                      {!isAdmin &&
+                      !(ticket.nature === "Feedback" && displayColumn === "feedback") ? (
                         <Badge small as="span">
                           {KANBAN_COLUMN_LABEL[displayColumn]}
                         </Badge>
@@ -280,7 +276,7 @@ export function TicketDrawer({ ticket, onClose, onColumnChanged }: TicketDrawerP
                       </p>
                     ) : null}
                     {ticket.guideSteps.length > 0 ? (
-                      <ol className="ticket-drawer-pratique__steps fr-mb-0">
+                      <ul className="ticket-drawer-pratique__steps fr-mb-0">
                         {ticket.guideSteps.map((step, index) => (
                           <li key={`${index}-${step}`}>
                             <span className="ticket-drawer-pratique__num" aria-hidden="true">
@@ -289,7 +285,7 @@ export function TicketDrawer({ ticket, onClose, onColumnChanged }: TicketDrawerP
                             <span className="ticket-drawer-pratique__text">{step}</span>
                           </li>
                         ))}
-                      </ol>
+                      </ul>
                     ) : null}
                   </section>
                 ) : null}
