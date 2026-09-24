@@ -53,7 +53,7 @@ Réduire la complexité ; pas d’ajout « au cas où ». Les agents **proposent
 
 Nav principale : Accueil, **Mon carnet** (Freelance/Admin, `/cra/declarer`), **Budget** (sous-menu Bons de commande · Plans d’activité · Prestation / CRA · Revue CRA équipe · Procès-verbaux — masqué si aucun enfant accessible, typiquement côté Freelance), Produits, Missions, **Équipe**, **Outils** (Récap porteurs · Droits des pages — Admin). Pas de route `/budget`. `/intervenants` redirige vers `/equipe`.
 
-Entrée MemoryRouter : `/` (`WelcomePage` — **feuille de route kanban** Backlog · En cours · Livré, contenu `src/content/publicRoadmap.ts`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
+Entrée MemoryRouter : `/` (`WelcomePage` — **feuille de route kanban** Feedback · Backlog · En cours · Livré, table Grist unique `Kanban`, conversation `Kanban_commentaires`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
 
 ### Feuille de route (priorité métier)
 
@@ -82,7 +82,7 @@ Visibilité users : section roadmap sur `/` + issues rédigées selon [`docs/iss
 | Routes | `src/App.tsx` |
 | Nav | `src/layout/WidgetNav.tsx` + [`widgetNavItems.ts`](src/layout/widgetNavItems.ts) (`WIDGET_NAV_ITEMS`, groupe Budget) |
 | Pages | `src/pages/WelcomePage.tsx`, `Pa*.tsx`, `Bdc*.tsx`, `Missions*.tsx`, `Equipe*.tsx`, `Produits*.tsx`, `CraListView.tsx`, `CraDeclarerPage.tsx`, `CraRevueEquipePage.tsx`, `CraRecapPorteursPage.tsx`, `DroitsPagesAdminPage.tsx`, `StubPage.tsx` |
-| Contenu public | [`src/content/publicRoadmap.ts`](src/content/publicRoadmap.ts) (feuille de route accueil) |
+| Contenu public | Table Grist `Kanban` + `Kanban_commentaires` (accueil) ; libellés / parse dans [`src/utils/kanbanTickets.ts`](src/utils/kanbanTickets.ts) |
 | Données | `src/hooks/useGristPaData.ts`, `useBdcDepensesData.ts`, `useMissionsData.ts`, `useEquipeData.ts`, `useEquipeMemberMissionsData.ts`, `GristPaContext.tsx`, `gristMap.ts`, `gristRest.ts`, `gristAccessToken.ts` |
 | Sécu | `src/security/embedTrust.ts`, `NothingHerePage.tsx`, `ensureFreshBuild.ts`, `fetchTableAllowlist.ts`, `writeTableAllowlist.ts` |
 | Finance / refs | `src/utils/paFinance.ts`, `montantReste.tsx`, `gristReferences.ts`, `equipeBadge.ts` |
@@ -90,7 +90,7 @@ Visibilité users : section roadmap sur `/` + issues rédigées selon [`docs/iss
 | Missions | `MissionsListView`, `MissionsDetailView`, `useMissionsData`, `MissionFormDrawer`, `MissionEnfantDrawer`, `craByMission.ts` |
 | Équipe | `EquipeListView`, `EquipeDetailView`, `EquipeLayout`, `useEquipeData`, `useEquipeMemberMissionsData`, `EquipeFicheMissionsSection`, `equipeList.ts`, `equipeMemberPrestations.ts` |
 | CRA | `CraListView`, `CraDeclarerPage`, `CraRevueEquipePage`, `CraRecapPorteursPage`, `craList.ts`, `craDeclarer.ts`, `craRevueEquipe.ts`, `craExport.ts`, `realiseGristWrite.ts` |
-| Feedback | `FeedbackWidget`, `createRetoursRecord`, `feedbackEquipe`, `writeTableAllowlist` |
+| Feedback | `FeedbackWidget`, `createKanbanFeedback`, `feedbackEquipe`, `writeTableAllowlist` |
 
 ---
 
@@ -103,14 +103,15 @@ Visibilité users : section roadmap sur `/` + issues rédigées selon [`docs/iss
 | Onglet Dépenses fiche BDC **ou** écrans `/missions` **ou** `/cra` **ou** `/cra/declarer` **ou** `/cra/revue-equipe` **ou** `/outils/recap-porteurs` **ou** `/equipe` **ou** `/produits` (lazy, lecture) | `Realise`, `Missions`, `Missions_enfants` (`Mission_parent` + `Titre_de_la_prestation`, fallbacks lecture `Libelle` / texte `Mission_enfant`), `Equipe` (annuaire `/equipe` + `Portage` récap porteurs + identité déclaration / revue), `Tableau_de_pilotage_SDPC_Produits_SDPC` (catalogue `/produits`) |
 | Fiche `/equipe/:id` (lazy, lecture — section Missions & prestations) | `Missions`, `Missions_enfants` (filtre `Intervenant` = personne) ; avatar = `Equipe.Avatar` (seed) |
 | Fiche `/produits/:id` (lazy, lecture — onglet Missions : prestations + CRA) | `Missions` (filtre `Produit_SDPC`), `Missions_enfants`, `Equipe`, `Realise` (via `loadMissionsTables`) |
-| Feedback widget (écriture create + lecture liste accueil) | `Retours` |
+| Kanban accueil (Feedback + produit, lecture + create Feedback + update colonne Admin) | `Kanban` |
+| Conversation tickets (create + lecture drawer) | `Kanban_commentaires` |
 | Droits pages session (nav + gardes) | `Acl_profil` (lecture ; create auto si absente ; `Page_*` formules ← `Droits_pages`) |
 | Matrice écrans Admin (`/outils/droits-pages`) | `Droits_pages` (lecture + update ; Owner / Admin ACL) |
 | Select auteur feedback (lecture lazy) | `Equipe` (déjà allowlistée) |
 
 **Allowlist lecture** : uniquement via [`src/security/fetchTableAllowlist.ts`](src/security/fetchTableAllowlist.ts) (`FETCH_TABLE_ALLOWLIST`, `fetchAllowlistedTable`) **et** REST `fetchGristRecordsViaToken` (même allowlist). Pas d’ID libre depuis l’UI. Nouvelle table lecture = MAJ ce fichier + §4 + docs + [`SECURITY.md`](SECURITY.md).
 
-**Allowlist écriture** : [`src/security/writeTableAllowlist.ts`](src/security/writeTableAllowlist.ts) — `Retours` (create) ; `Missions` (create + update drawer) ; `Missions_enfants` (create + update drawer prestation) ; `Realise` (create + update déclaration CRA + revue équipe) ; `Acl_profil` (create only, fiche session auto) ; `Droits_pages` (update only, page Admin). Pas de delete widget. `Retours` est aussi en **lecture** (`FETCH_TABLE_ALLOWLIST`) pour la colonne Feedback de l’accueil.
+**Allowlist écriture** : [`src/security/writeTableAllowlist.ts`](src/security/writeTableAllowlist.ts) — `Kanban` (create Feedback + update `Colonne_kanban`) ; `Kanban_commentaires` (create) ; `Missions` (create + update drawer) ; `Missions_enfants` (create + update drawer prestation) ; `Realise` (create + update déclaration CRA + revue équipe) ; `Acl_profil` (create only, fiche session auto) ; `Droits_pages` (update only, page Admin). Pas de delete widget. `Kanban` / `Kanban_commentaires` sont aussi en **lecture** (`FETCH_TABLE_ALLOWLIST`) pour le kanban d’accueil.
 
 **BDC** : chargée via `docApi.getAccessToken({ readOnly: true })` → REST `/tables/BDC/records?auth=…` (jeton court, droits utilisateur) — pas de clé API dans le bundle. Attachments devis idem.
 
@@ -228,7 +229,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 ## 10. Hors scope (ne pas recréer sans demande)
 
 - Features IA / assistant
-- Écriture Grist hors allowlist (`Retours`, drawer `Missions` / `Missions_enfants` create+update, Note studio `Suivi_resp_studio`, Docs mission upload/détachement, `Realise` create+update déclaration, `Acl_profil` create auto, `Droits_pages` update Admin) — pas d’update/delete retours, pas de delete missions/prestations/CRA, pas d’édition `Type_prestation` / `Date_de_fin` prestation, pas d’update/delete `Acl_profil`, pas de create/delete lignes `Droits_pages`
+- Écriture Grist hors allowlist (`Kanban` create Feedback + update colonne, `Kanban_commentaires` create, drawer `Missions` / `Missions_enfants` create+update, Note studio `Suivi_resp_studio`, Docs mission upload/détachement, `Realise` create+update déclaration, `Acl_profil` create auto, `Droits_pages` update Admin) — pas d’update/delete commentaires, pas d’édition texte tickets hors colonne, pas de delete missions/prestations/CRA, pas d’édition `Type_prestation` / `Date_de_fin` prestation, pas d’update/delete `Acl_profil`, pas de create/delete lignes `Droits_pages`
 - Imports CSV Sofiane
 - Remplacer l’app `pilotage_studios`
 - Kanban / notifs / mails **dans le widget** ; alertes ops = hors bundle ([`docs/fonctionnel/feedback/alertes.md`](docs/fonctionnel/feedback/alertes.md) — pas d’URL webhook dans git)

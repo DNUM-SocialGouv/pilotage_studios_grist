@@ -22,7 +22,7 @@ gh issue view <NUM> --repo DNUM-SocialGouv/pilotage_studios_grist
 
 ## Créer une issue (roadmap / métier)
 
-Préférer le template [`docs/issues-publiques.md`](../../../docs/issues-publiques.md). Brancher l’URL dans `src/content/publicRoadmap.ts` si visible sur l’accueil.
+Préférer le template [`docs/issues-publiques.md`](../../../docs/issues-publiques.md). Brancher l’URL GitHub optionnelle dans la table Grist `Kanban` (`Lien_github`) si visible sur l’accueil.
 
 ## Playbook — nouvel écran (ex. prochaines : prestations [#31](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/31), pas Produits en priorité)
 1. Route `MemoryRouter` dans `src/App.tsx` (liste + fiche si besoin) ; retirer le stub correspondant.

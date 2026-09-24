@@ -33,6 +33,6 @@ Le dépôt est **public**. Les issues liées à la feuille de route d’accueil 
 
 ## Lien avec l’accueil
 
-Après création d’une issue de roadmap : ajouter `issueUrl` dans [`src/content/publicRoadmap.ts`](../../src/content/publicRoadmap.ts) (même PR ou PR suivante).
+Après création d’une issue de roadmap utile à discuter hors widget : renseigner `Lien_github` sur la ligne correspondante de la table Grist **`Kanban`** (édition dans Grist). La discussion principale se fait dans le **drawer** (commentaires `Kanban_commentaires`).
 
 Référence ordre produit : [`AGENTS.md`](../../AGENTS.md) §2 (Grist-first + feuille de route).

@@ -1,25 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import Factory from "@codegouvfr/react-dsfr/picto/Factory";
-import { RoadmapGuideDrawer } from "../components/welcome/RoadmapGuideDrawer";
+import { TicketDrawer } from "../components/welcome/TicketDrawer";
 import { WelcomeFeedbackColumn } from "../components/welcome/WelcomeFeedbackColumn";
+import { useKanbanList } from "../hooks/useKanbanList";
+import { subscribeKanbanReload } from "../utils/feedbackOpen";
 import {
-  groupPublicRoadmapByKanban,
-  PUBLIC_ROADMAP_THEMES,
-  ROADMAP_STATUS_BADGE_CLASS,
-  ROADMAP_STATUS_LABEL,
-  type PublicRoadmapItem,
-} from "../content/publicRoadmap";
-import { useRetoursList } from "../hooks/useRetoursList";
-
-function themeLabel(themeId: PublicRoadmapItem["themeId"]): string {
-  return PUBLIC_ROADMAP_THEMES.find((t) => t.id === themeId)?.label ?? themeId;
-}
+  badgeClassForFeedbackType,
+  KANBAN_STATUS_BADGE_CLASS,
+  KANBAN_STATUS_LABEL,
+  type KanbanTicket,
+} from "../utils/kanbanTickets";
 
 export function WelcomePage() {
-  const kanbanGroups = groupPublicRoadmapByKanban();
-  const { items: retours, status: retoursStatus, error: retoursError } = useRetoursList();
-  const [guideItem, setGuideItem] = useState<PublicRoadmapItem | null>(null);
+  const {
+    feedbackItems,
+    productGroups,
+    status,
+    error,
+    reload,
+  } = useKanbanList();
+  const [ticket, setTicket] = useState<KanbanTicket | null>(null);
+
+  useEffect(() => subscribeKanbanReload(reload), [reload]);
 
   return (
     <div className="welcome-page">
@@ -37,16 +41,30 @@ export function WelcomePage() {
 
         <section className="welcome-roadmap fr-mt-3w" aria-labelledby="welcome-roadmap-title">
           <h2 id="welcome-roadmap-title" className="fr-h5">
-            Roadmap
+            Feuille de route
           </h2>
+
+          {status === "error" ? (
+            <Alert
+              className="fr-mb-2w"
+              severity="error"
+              small
+              title="Kanban indisponible"
+              description={
+                error
+                  ? `Impossible de charger les tickets (${error}).`
+                  : "Impossible de charger les tickets."
+              }
+            />
+          ) : null}
 
           <div className="welcome-kanban fr-grid-row fr-grid-row--gutters">
             <WelcomeFeedbackColumn
-              items={retours}
-              status={retoursStatus}
-              error={retoursError}
+              items={feedbackItems}
+              status={status}
+              onOpenTicket={setTicket}
             />
-            {kanbanGroups.map((group) => (
+            {productGroups.map((group) => (
               <section
                 key={group.column.id}
                 className="welcome-kanban__column fr-col-12 fr-col-md-6 fr-col-xl-3"
@@ -62,52 +80,54 @@ export function WelcomePage() {
                   <Badge
                     small
                     as="span"
-                    aria-label={`${group.column.label} : ${group.items.length} élément${group.items.length === 1 ? "" : "s"}`}
+                    aria-label={`${group.column.label} : ${
+                      status === "loading" ? "…" : group.items.length
+                    } élément${group.items.length === 1 ? "" : "s"}`}
                   >
-                    {group.items.length}
+                    {status === "loading" ? "…" : group.items.length}
                   </Badge>
                 </div>
+                {status === "loading" ? (
+                  <p className="fr-text--sm fr-hint-text fr-mb-0" role="status">
+                    Chargement…
+                  </p>
+                ) : null}
                 <ul className="welcome-kanban__list fr-mb-0">
                   {group.items.map((item) => (
                     <li key={item.id} className="welcome-kanban__card">
-                      <div className="welcome-roadmap__item-head">
-                        <span className="welcome-roadmap__title">{item.title}</span>{" "}
-                        <Badge
-                          small
-                          as="span"
-                          className={ROADMAP_STATUS_BADGE_CLASS[item.status]}
-                        >
-                          {ROADMAP_STATUS_LABEL[item.status]}
-                        </Badge>
-                      </div>
-                      <p className="fr-text--xs fr-mb-1w fr-hint-text">
-                        {themeLabel(item.themeId)}
-                      </p>
-                      <p className="fr-text--sm fr-mb-1w">{item.summary}</p>
-                      <div className="welcome-roadmap__item-actions">
-                        <button
-                          type="button"
-                          className="fr-link fr-link--sm"
-                          onClick={() => setGuideItem(item)}
-                        >
-                          Comment ça marche ?
-                          <span className="fr-sr-only"> — {item.title}</span>
-                        </button>
-                        {item.issueUrl ? (
-                          <a
-                            className="fr-link fr-link--sm"
-                            href={item.issueUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Discuter sur GitHub
-                            <span className="fr-sr-only">
-                              {" "}
-                              (nouvelle fenêtre) — {item.title}
-                            </span>
-                          </a>
+                      <button
+                        type="button"
+                        className="welcome-kanban__card-btn"
+                        onClick={() => setTicket(item)}
+                      >
+                        <div className="welcome-roadmap__item-head">
+                          <span className="welcome-roadmap__title">{item.title}</span>{" "}
+                          {item.nature === "Feedback" ? (
+                            <Badge
+                              small
+                              as="span"
+                              className={badgeClassForFeedbackType(item.type)}
+                            >
+                              {item.type}
+                            </Badge>
+                          ) : (
+                            <Badge
+                              small
+                              as="span"
+                              className={KANBAN_STATUS_BADGE_CLASS[item.status]}
+                            >
+                              {KANBAN_STATUS_LABEL[item.status]}
+                            </Badge>
+                          )}
+                        </div>
+                        {item.theme ? (
+                          <p className="fr-text--xs fr-mb-1w fr-hint-text">{item.theme}</p>
                         ) : null}
-                      </div>
+                        {item.resume ? (
+                          <p className="fr-text--sm fr-mb-1w">{item.resume}</p>
+                        ) : null}
+                        <span className="fr-link fr-link--sm">Ouvrir</span>
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -117,7 +137,13 @@ export function WelcomePage() {
         </section>
       </div>
 
-      <RoadmapGuideDrawer item={guideItem} onClose={() => setGuideItem(null)} />
+      <TicketDrawer
+        ticket={ticket}
+        onClose={() => setTicket(null)}
+        onColumnChanged={() => {
+          reload();
+        }}
+      />
     </div>
   );
 }
