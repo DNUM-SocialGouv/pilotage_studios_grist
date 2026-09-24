@@ -7,7 +7,7 @@ description: Traite une issue GitHub du dépôt DNUM-SocialGouv/pilotage_studios
 
 1. Relire **[AGENTS.md](../../../AGENTS.md)** (iframe, MemoryRouter, allowlist, hors-scope).
 2. Consulter **[docs/README.md](../../../docs/README.md)** et le protocole **[DOC-FONCTIONNEL.md](DOC-FONCTIONNEL.md)**.
-3. **Kanban** : lire skill **[pilotage-grist-kanban](../pilotage-grist-kanban/SKILL.md)** — matcher / proposer create ou `backlog`→`en_cours` ; **HITL** avant écriture MCP.
+3. **Kanban** (si sujet **produit / correctif visible** utilisateurs ; sinon `N/A kanban : …`) : lire skill **[pilotage-grist-kanban](../pilotage-grist-kanban/SKILL.md)** — matcher / proposer create ou `backlog`→`en_cours` ; **HITL** avant écriture MCP.
 
 ```bash
 gh issue view <NUM> --repo DNUM-SocialGouv/pilotage_studios_grist
@@ -16,7 +16,7 @@ gh issue view <NUM> --repo DNUM-SocialGouv/pilotage_studios_grist
 ## Contraintes
 
 - Pas d’IA / secrets LLM dans le widget.
-- Pas d’écriture Grist sans demande explicite (sauf sync kanban **après OK** via skill kanban / MCP).
+- Pas d’écriture Grist sans demande explicite. Exception **agents uniquement** : sync feuille de route via MCP + skill kanban **après OK** — **pas** d’élargissement des writes widget (`getTable`).
 - Données via `grist-plugin-api` uniquement ; tables hors ancre via `fetchAllowlistedTable` seulement.
 - **Simplification** : avant d’élargir le scope, proposer ce qu’on *ne fait pas* (voir AGENTS.md).
 - Issues **publiques** / roadmap : rédiger selon [`docs/issues-publiques.md`](../../../docs/issues-publiques.md).

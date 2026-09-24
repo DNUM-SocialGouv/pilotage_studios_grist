@@ -61,7 +61,7 @@ Après CI **build** verte (+ revue `pilotage-grist-code-review` si besoin) :
 gh pr merge --delete-branch
 ```
 
-Si la PR livre une **feature / correctif visible** : avant ou juste après merge, skill
+Si la PR livre une **feature / correctif visible** : **après** merge (CI verte), skill
 **[pilotage-grist-kanban](../pilotage-grist-kanban/SKILL.md)** — proposer
 `en_cours` → `livre` (+ guides / `Page_path` si écran livré) ; **HITL** avant écriture.
 

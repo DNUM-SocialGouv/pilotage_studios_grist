@@ -84,10 +84,15 @@ Hors périmètre (chore, docs, rules, revue) → une ligne :
 
 ### 4. Après OK humain
 
+Avant create :
+
+1. Vérifier que `Cle` est **absente** des cartes `Nature=Produit` déjà lues.
+2. Poser `Ordre = max(Ordre existant) + 1` (si table vide → `1`).
+
 - **Create** → `grist_add_records` avec au minimum :
 
   `Nature=Produit`, `Colonne_kanban`, `Titre`, `Resume`, `Theme`,
-  `Statut_produit`, `Cle` (slug unique), `Ordre` ; optionnel : `Lien_github`,
+  `Statut_produit`, `Cle`, `Ordre` ; optionnel : `Lien_github`,
   `Page_path`, `Page_lien_libelle`, `Guide_lead`, `Guide_intro`, `Guide_etapes`.
 
 - **Move / edit** → `grist_update_records` : toujours sync
@@ -95,7 +100,7 @@ Hors périmètre (chore, docs, rules, revue) → une ligne :
 
 ### 5. Fin de sujet / merge PR
 
-Proposer `en_cours` → `livre` + `Statut_produit=done`.  
+**Après** merge CI verte : proposer `en_cours` → `livre` + `Statut_produit=done`.  
 Si un écran est livré : compléter `Guide_*`, `Page_path`, `Page_lien_libelle`
 (modèle : cartes déjà en Livré). **Toujours HITL** avant l’update.
 
@@ -104,7 +109,7 @@ Si un écran est livré : compléter `Guide_*`, `Page_path`, `Page_lien_libelle`
 | Moment | Action typique |
 |--------|----------------|
 | Démarrage feature / issue | Match ou create → proposer `en_cours` (ou `backlog` si pas encore démarré) |
-| Fin / merge PR produit | Proposer `livre` |
+| Fin / merge PR produit | **Après** merge : proposer `livre` |
 | Création d’issue roadmap | Proposer create en `backlog` + `Lien_github` |
 
 ## Jamais
