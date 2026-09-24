@@ -73,7 +73,8 @@ export function parseOptionalTjm(raw: string): number | null | "invalid" {
 export function buildEquipeCreateFields(values: EquipeCreateFormValues): EquipeCreateFields {
   const out: EquipeCreateFields = {
     Prenom_Nom: values.Prenom_Nom.trim(),
-    E_mail: values.E_mail.trim(),
+    // Aligné User Attribute / résolution session (casse ignorée).
+    E_mail: values.E_mail.trim().toLowerCase(),
   };
 
   const setIf = (key: keyof EquipeCreateFields, raw: string) => {

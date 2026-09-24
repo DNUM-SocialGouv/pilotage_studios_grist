@@ -22,7 +22,7 @@ Panneau latéral (drawer SM) : Prénom Nom *, E-mail *, Département, Spécialit
 
 Après enregistrement : rechargement de la liste et ouverture de `/equipe/:id`.
 
-Les freelances (et autres non-Admin) ne voient pas le bouton. La sécurité réelle reste les Access Rules Grist (Owner / Admin seul peuvent créer).
+Les freelances (et autres non-Admin) ne voient pas le bouton. Un **Owner** du document qui n’a pas le rôle Admin dans Équipe peut créer côté Grist (Access Rules) mais ne voit pas le bouton widget — aligné sur les autres écrans Admin. La sécurité réelle reste les Access Rules Grist (Owner / Admin seuls peuvent créer).
 
 ## États
 

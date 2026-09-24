@@ -143,12 +143,11 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
 
     useImperativeHandle(ref, () => ({ openCreate, close }), [openCreate, close]);
 
-    const refreshAfterWrite = async (): Promise<boolean> => {
+    const refreshAfterWrite = async () => {
       try {
         await onRecordsChanged();
-        return true;
       } catch {
-        return false;
+        // Write déjà réussi : on navigue quand même ; la fiche rechargera si besoin.
       }
     };
 

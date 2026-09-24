@@ -36,7 +36,7 @@ describe("buildEquipeCreateFields", () => {
     const fields = buildEquipeCreateFields({
       ...emptyEquipeCreateForm(),
       Prenom_Nom: "  Alice Dupont  ",
-      E_mail: " alice@example.org ",
+      E_mail: " Alice@Example.ORG ",
       Equipe: "Design",
       Specialite: "",
       Portage: "Malt",

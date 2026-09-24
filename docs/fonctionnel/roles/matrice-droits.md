@@ -69,8 +69,8 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | Table / ressource | Admin | Resp. | Freelance | Invité | Appliqué ? | Notes |
 |-------------------|-------|-------|-----------|--------|------------|-------|
 | `Equipe` (hors TJM/TTC) | CRUD | R | R (3 cols) | R | **Appliqué** | Table `+R-CUD` ; Freelance : seulement `Prenom_Nom` / `Equipe` / `Specialite` ([#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55)) ; widget **create** Admin (drawer) |
-| `Equipe.TJM`, `Total_TTC` | RU (+ C create) | RU | R soi | R soi | **Appliqué** | `-RU` sauf Owner / Admin / soi (`user.Email == rec.E_mail`) — [#60](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/60) ; TJM saisissable à la création Admin |
-| `Equipe.E_mail` | RU (+ C create) | — | — | — | **Appliqué** | `-RU` si non-(Owner\|Admin) ; saisie **création** Admin seulement (pas d’affichage liste/fiche) |
+| `Equipe.TJM`, `Total_TTC` | RU | RU | R soi | R soi | **Appliqué** | `-RU` sauf Owner / Admin / soi (`user.Email == rec.E_mail`) — [#60](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/60) ; TJM aussi saisissable à la **création** Admin (droit table C) |
+| `Equipe.E_mail` | RU | — | — | — | **Appliqué** | `-RU` si non-(Owner\|Admin) ; saisie à la **création** Admin seulement (pas d’affichage liste/fiche) |
 | `Plan_activite` | CRUD | R ? | R / — | R / — | Non (rôle) | Ancre widget |
 | `BDC` métadonnées | CRUD | R ? | R limité | R / — | Non (rôle) | |
 | `BDC` montants / Devis / Sofiane… | RU | — | — | — | **Appliqué (Owner)** | `-RU` si non-Owner |

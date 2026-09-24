@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import type { ReactNode } from "react";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
@@ -30,8 +31,27 @@ export function EquipeDetailView() {
   const { data } = useEquipeOutlet();
   const memberId = id ? Number.parseInt(id, 10) : NaN;
   const member = data.members.find((m) => m.id === memberId);
+  const missReloadTried = useRef(false);
 
-  if (data.status === "loading" || data.status === "idle") {
+  // Après création : si le reload liste a échoué, retenter une fois sur la fiche.
+  useEffect(() => {
+    if (
+      data.status !== "ok" ||
+      member != null ||
+      !Number.isFinite(memberId) ||
+      memberId <= 0 ||
+      data.isReloading ||
+      missReloadTried.current
+    ) {
+      return;
+    }
+    missReloadTried.current = true;
+    void data.reloadEquipe().catch(() => {
+      /* introuvable ci-dessous */
+    });
+  }, [data, member, memberId]);
+
+  if (data.status === "loading" || data.status === "idle" || data.isReloading) {
     return (
       <div className="fr-py-1w">
         <WidgetBreadcrumb
