@@ -162,12 +162,14 @@ Workspace Cursor : ouvrir **uniquement** ce dépôt pour le widget — ne pas d�
 | [`.cursor/skills/pilotage-grist-issue/`](.cursor/skills/pilotage-grist-issue/) | Traiter / créer une issue (+ [`DOC-FONCTIONNEL.md`](.cursor/skills/pilotage-grist-issue/DOC-FONCTIONNEL.md)) |
 | [`.cursor/skills/pilotage-grist-pr/`](.cursor/skills/pilotage-grist-pr/) | Ouvrir / merger une PR (+ [`CHECKLIST.md`](.cursor/skills/pilotage-grist-pr/CHECKLIST.md)) |
 | [`.cursor/skills/pilotage-grist-code-review/`](.cursor/skills/pilotage-grist-code-review/) | Revue avant merge |
+| [`.cursor/skills/pilotage-grist-kanban/`](.cursor/skills/pilotage-grist-kanban/) | Sync feuille de route kanban Grist (HITL avant écriture) |
 | [`.cursor/skills/grist-custom-widgets/`](.cursor/skills/grist-custom-widgets/) | API Custom Widget (ready / onRecords / fetchTable) |
 | [`.cursor/rules/dsfr-tableaux.mdc`](.cursor/rules/dsfr-tableaux.mdc) | Tableaux DSFR |
 | [`.cursor/rules/widget-iframe.mdc`](.cursor/rules/widget-iframe.mdc) | Contraintes iframe (always-on) |
 | [`.cursor/rules/pilotage-drawers.mdc`](.cursor/rules/pilotage-drawers.mdc) | Drawers : taille fixe SM, pas de sélecteur largeur |
 | [`.cursor/rules/pedagogie-non-technique.mdc`](.cursor/rules/pedagogie-non-technique.mdc) | « En clair » : brief non technique en tête des plans / issues / PR / synthèses (always-on) |
 | [`.cursor/rules/roles-matrice.mdc`](.cursor/rules/roles-matrice.mdc) | MAJ obligatoire [`docs/fonctionnel/roles/matrice-droits.md`](docs/fonctionnel/roles/matrice-droits.md) si feature / permissions (always-on) |
+| [`.cursor/rules/kanban-feuille-route.mdc`](.cursor/rules/kanban-feuille-route.mdc) | Sync kanban à chaque feature / issue / correctif visible (always-on) |
 
 MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + DSFR). Dans Cursor, les namespaces exposés sont typiquement `user-grist` et `user-dsfr`.
 
@@ -178,9 +180,10 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 ### Avant une feature
 
 1. Relire §1–2 et [`docs/README.md`](docs/README.md) ; **challenger la simplification**.
-2. Issue GitHub : skill [`pilotage-grist-issue`](.cursor/skills/pilotage-grist-issue/SKILL.md) (+ protocole doc) ; si issue **publique / roadmap** → [`docs/issues-publiques.md`](docs/issues-publiques.md).
-3. PR : skill [`pilotage-grist-pr`](.cursor/skills/pilotage-grist-pr/SKILL.md) — case **Portage app solo**.
-4. Avant merge : skill [`pilotage-grist-code-review`](.cursor/skills/pilotage-grist-code-review/SKILL.md).
+2. Feuille de route : skill [`pilotage-grist-kanban`](.cursor/skills/pilotage-grist-kanban/SKILL.md) (rule [`kanban-feuille-route`](.cursor/rules/kanban-feuille-route.mdc)) — proposer create / déplacement ; **HITL** avant écriture Grist.
+3. Issue GitHub : skill [`pilotage-grist-issue`](.cursor/skills/pilotage-grist-issue/SKILL.md) (+ protocole doc) ; si issue **publique / roadmap** → [`docs/issues-publiques.md`](docs/issues-publiques.md).
+4. PR : skill [`pilotage-grist-pr`](.cursor/skills/pilotage-grist-pr/SKILL.md) — case **Portage app solo**.
+5. Avant merge : skill [`pilotage-grist-code-review`](.cursor/skills/pilotage-grist-code-review/SKILL.md). Après merge produit : proposer passage **Livré** via skill kanban.
 
 ### Portage vers l’app web (`pilotage_studios`)
 

@@ -61,4 +61,8 @@ Après CI **build** verte (+ revue `pilotage-grist-code-review` si besoin) :
 gh pr merge --delete-branch
 ```
 
+Si la PR livre une **feature / correctif visible** : **après** merge (CI verte), skill
+**[pilotage-grist-kanban](../pilotage-grist-kanban/SKILL.md)** — proposer
+`en_cours` → `livre` (+ guides / `Page_path` si écran livré) ; **HITL** avant écriture.
+
 Checklist : [CHECKLIST.md](CHECKLIST.md). Doc : [../pilotage-grist-issue/DOC-FONCTIONNEL.md](../pilotage-grist-issue/DOC-FONCTIONNEL.md).
