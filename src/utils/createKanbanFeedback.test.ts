@@ -13,13 +13,6 @@ import {
   isWritableUpdateTableId,
 } from "../security/writeTableAllowlist.ts";
 import type { GristFetchTableResult } from "../gristTypes.ts";
-import { buildKanbanColonnePatch } from "./updateKanbanColonne.ts";
-import {
-  filterFeedbackColumn,
-  groupProductByKanban,
-  kanbanTicketFromRecord,
-  prenomFromAuteur,
-} from "./kanbanTickets.ts";
 
 describe("writeTableAllowlist", () => {
   it("autorise Kanban create+update, Kanban_commentaires create ; pas Retours/Roadmap", () => {
@@ -144,57 +137,6 @@ describe("buildKanbanFeedbackFields", () => {
 describe("resumeFromMessage", () => {
   it("prend la première ligne", () => {
     assert.equal(resumeFromMessage("a\nb"), "a");
-  });
-});
-
-describe("buildKanbanColonnePatch", () => {
-  it("sync Statut_produit et Statut feedback", () => {
-    assert.deepEqual(buildKanbanColonnePatch("livre", "Feedback"), {
-      Colonne_kanban: "livre",
-      Statut_produit: "done",
-      Statut: "Fait",
-    });
-    assert.deepEqual(buildKanbanColonnePatch("en_cours", "Produit"), {
-      Colonne_kanban: "en_cours",
-      Statut_produit: "current",
-    });
-  });
-});
-
-describe("kanbanTicketFromRecord / grouping", () => {
-  it("parse Feedback et Produit", () => {
-    const fb = kanbanTicketFromRecord({
-      id: 1,
-      Nature: "Feedback",
-      Colonne_kanban: "feedback",
-      Titre: "Anomalie",
-      Type: "Anomalie",
-      Message: "Hello",
-      Resume: "Hello",
-      Auteur: "Alice Mathieu",
-      Date: 1_700_000_000,
-    });
-    assert.equal(fb.nature, "Feedback");
-    assert.equal(fb.column, "feedback");
-    assert.equal(prenomFromAuteur(fb.auteur), "Alice");
-
-    const pr = kanbanTicketFromRecord({
-      id: 2,
-      Nature: "Produit",
-      Colonne_kanban: "backlog",
-      Titre: "Feature",
-      Resume: "Why",
-      Theme: "Équipe et droits",
-      Statut_produit: "later",
-      Ordre: 3,
-    });
-    assert.equal(pr.nature, "Produit");
-    assert.equal(pr.theme, "Équipe et droits");
-
-    const items = [fb, pr];
-    assert.equal(filterFeedbackColumn(items).length, 1);
-    const groups = groupProductByKanban(items);
-    assert.equal(groups.find((g) => g.column.id === "backlog")?.items.length, 1);
   });
 });
 

@@ -15,7 +15,7 @@ import {
   pageOptionFromPathname,
   type FeedbackPageOption,
 } from "../../utils/feedbackPages";
-import { subscribeOpenFeedback } from "../../utils/feedbackOpen";
+import { requestKanbanReload, subscribeOpenFeedback } from "../../utils/feedbackOpen";
 import styles from "./FeedbackWidget.module.css";
 
 const TYPES: FeedbackType[] = ["Anomalie", "Suggestion", "Question"];
@@ -200,6 +200,7 @@ export function FeedbackWidget() {
         screenWidth: typeof screen !== "undefined" ? screen.width : 0,
         screenHeight: typeof screen !== "undefined" ? screen.height : 0,
       });
+      requestKanbanReload();
       setSent(true);
     } catch (err) {
       const msg =

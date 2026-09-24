@@ -1,6 +1,6 @@
 # Alertes « nouveau retour » (ops HITL)
 
-Comment savoir qu’une ligne a été créée dans `Retours` **sans** ouvrir la table en veille — **sans e-mail Grist** et **sans ETL**.
+Comment savoir qu’une ligne Feedback a été créée dans `Kanban` **sans** ouvrir la table en veille — **sans e-mail Grist** et **sans ETL**.
 
 > **Hors du widget** : aucune URL Mattermost, aucun token, aucun appel HTTP depuis le bundle Pages. Config = document Grist + Mattermost uniquement.
 
@@ -10,7 +10,7 @@ Comment savoir qu’une ligne a été créée dans `Retours` **sans** ouvrir la 
 |--------|--------|
 | **Décision** | **No-go** (smoke 2026-09-13) |
 | **Preuve** | HTTP **400** Mattermost `web.incoming_webhook.decode.app_error` — Grist envoie un **tableau JSON** de lignes ; Incoming Webhook attend `{ "text": "…" }` |
-| **Process actif** | **Fallback** : vue Grist `Retours` filtrée `Statut = Nouveau` |
+| **Process actif** | **Fallback** : vue Grist `Kanban` filtrée `Nature = Feedback` et `Statut = Nouveau` |
 | **Webhook Grist** | **Désactiver** + **Effacer la file d'attente** (statut `retrying` sinon) |
 
 Sans e-mail Grist ni ETL, pas de push Mattermost fiable. Réessayer seulement si un transformateur (n8n / Worker) ou l’e-mail automation devient disponible.
@@ -29,7 +29,7 @@ Payload Grist = **tableau JSON** de lignes (`[{ id, Auteur, Type, Message, … }
 
 ```mermaid
 flowchart TD
-  create[Create_ligne_Retours]
+  create[Create_ligne_Kanban_Feedback]
   wh[Webhook_Grist_add]
   mm[Incoming_Webhook_Mattermost]
   ok{Statut_2xx_et_lisible}
@@ -46,8 +46,8 @@ flowchart TD
 
 | Champ Mattermost | Valeur |
 |------------------|--------|
-| **Titre** | `Retours Pilotage Grist` (≤ 64 car.) |
-| **Description** | `Alertes create table Retours (widget) — webhook Grist, sans ETL` |
+| **Titre** | `Kanban Feedback Pilotage` (≤ 64 car.) |
+| **Description** | `Alertes create table Kanban Nature=Feedback (widget) — webhook Grist, sans ETL` |
 | **Canal** | `Studios_Pilotage_Grist` (déjà sélectionné — OK si c’est le canal cible) |
 | **Verrouiller le canal** | **coché** (le webhook ne poste que dans ce canal) |
 | **Nom d'utilisateur** | `retours-grist` (minuscules, ≤ 22 ; caractères `-` `_` `.` OK) |
@@ -65,10 +65,10 @@ Doc : **Pilotage studio (V2)** → **Paramètres** → **Gérer les points d'anc
 
 | Champ | Valeur |
 |-------|--------|
-| **Nom** | `Retours → Mattermost` |
+| **Nom** | `Kanban Feedback → Mattermost` |
 | **Mémo** | `add only — no ETL` |
 | **Types d'événements** | **ajout** uniquement (pas les updates de tri) |
-| **Table** | `Retours` |
+| **Table** | `Kanban` |
 | Filtre colonnes / Colonne de déclenchement | **vides** |
 | **URL** | Incoming Webhook Mattermost (secret) |
 | **Entête de sécurité** | vide sauf exigence Mattermost |
@@ -80,13 +80,13 @@ Checklist : [ ] champs remplis · [ ] event = ajout · [ ] Activé
 
 ## Étape 3 — Smoke test (HITL)
 
-1. Créer une ligne test dans `Retours` (UI Grist) **ou** envoyer un retour via le widget « Un retour ? ».
+1. Créer une ligne test Feedback dans `Kanban` (UI Grist) **ou** envoyer un retour via le widget « Un retour ? ».
 2. Lire le champ **Statut** du point d’ancrage Web + le canal Mattermost.
 3. Si échecs en boucle → **Effacer la file d'attente**, désactiver, corriger.
 
 ### Résultat smoke (2026-09-13)
 
-- Config webhook OK (Table `Retours`, event add, URL Mattermost Fabrique, Activé).
+- Config webhook OK (à l’époque table `Retours` ; aujourd’hui cibler `Kanban`, event add, URL Mattermost Fabrique, Activé).
 - Après create via formulaire widget : **Statut** = `retrying`, `lastHttpStatus` **400**, message Mattermost *Failed to decode the payload of media type application/json for incoming webhook*.
 - → **No-go** (voir [Décision actuelle](#décision-actuelle)).
 
@@ -100,7 +100,7 @@ Checklist : [ ] champs remplis · [ ] event = ajout · [ ] Activé
 
 ## Fallback opérationnel (process actif tant que No-go)
 
-1. Dans Grist, page / vue **`Retours`** filtrée : `Statut` = `Nouveau`.
+1. Dans Grist, page / vue **`Kanban`** filtrée : `Nature` = `Feedback` et `Statut` = `Nouveau`.
 2. Mettre la vue en **favori** navigateur (ou lien page du doc).
 3. Rituel court (standup / début de journée) : ouvrir cette vue.
 4. ACL recommandées : seuls Owners / studio passent les lignes hors `Nouveau` (`À trier` → …) pour que le filtre reste un vrai file de travail — voir [README feedback](README.md#access-rules-hitl--à-appliquer-dans-grist).

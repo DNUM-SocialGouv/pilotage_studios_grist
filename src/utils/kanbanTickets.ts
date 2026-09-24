@@ -103,12 +103,28 @@ export function parseKanbanNature(value: unknown): KanbanNature {
   return s === "Feedback" ? "Feedback" : "Produit";
 }
 
+export function isKanbanColumnId(value: unknown): value is KanbanColumnId {
+  return (
+    value === "feedback" ||
+    value === "backlog" ||
+    value === "en_cours" ||
+    value === "livre"
+  );
+}
+
 export function parseKanbanColumn(value: unknown): KanbanColumnId {
   const s = asString(value).toLowerCase();
   if (s === "feedback") return "feedback";
   if (s === "en_cours" || s === "en-cours") return "en_cours";
   if (s === "livre" || s === "livré") return "livre";
   return "backlog";
+}
+
+/** Refuse toute valeur hors enum (écriture Admin). */
+export function assertKanbanColumnId(value: unknown): asserts value is KanbanColumnId {
+  if (!isKanbanColumnId(value)) {
+    throw new Error("Colonne kanban invalide");
+  }
 }
 
 export function parseKanbanStatutProduit(value: unknown): KanbanStatutProduit {

@@ -12,8 +12,6 @@
  */
 
 export const KANBAN_TABLE_ID = "Kanban";
-/** @deprecated Ancienne table feedback — plus utilisée par le widget (migrée vers `Kanban`). */
-export const RETOURS_TABLE_ID = "Retours";
 export const KANBAN_COMMENTAIRES_TABLE_ID = "Kanban_commentaires";
 export const MISSIONS_TABLE_ID = "Missions";
 export const MISSIONS_ENFANTS_TABLE_ID = "Missions_enfants";

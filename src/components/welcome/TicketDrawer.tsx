@@ -8,6 +8,7 @@ import { TableShell } from "../FinanceRecap";
 import { isAdminRole } from "../../utils/droitsPagesThemes";
 import {
   badgeClassForFeedbackType,
+  isKanbanColumnId,
   KANBAN_ALL_COLUMNS,
   KANBAN_COLUMN_LABEL,
   KANBAN_STATUS_BADGE_CLASS,
@@ -15,6 +16,7 @@ import {
   type KanbanColumnId,
   type KanbanTicket,
 } from "../../utils/kanbanTickets";
+import { safeHttpUrl } from "../../utils/produitsList";
 import { updateKanbanColonne } from "../../utils/updateKanbanColonne";
 import { TicketConversation } from "./TicketConversation";
 
@@ -64,6 +66,7 @@ export function TicketDrawer({ ticket, onClose, onColumnChanged }: TicketDrawerP
 
   const displayColumn = localColumn ?? ticket?.column ?? "backlog";
   const title = ticket?.title ?? "Ticket";
+  const githubHref = ticket?.lienGithub ? safeHttpUrl(ticket.lienGithub) : undefined;
 
   const metaRows: { label: string; value: string }[] = [];
   if (ticket?.theme) {
@@ -88,16 +91,19 @@ export function TicketDrawer({ ticket, onClose, onColumnChanged }: TicketDrawerP
   const hasPratique =
     Boolean(ticket?.guideIntro) || (ticket?.guideSteps.length ?? 0) > 0;
 
-  const onColumnSelect = async (next: KanbanColumnId) => {
-    if (!ticket || !isAdmin || next === displayColumn || savingColumn) {
+  const onColumnSelect = async (raw: string) => {
+    if (!ticket || !isAdmin || savingColumn) {
+      return;
+    }
+    if (!isKanbanColumnId(raw) || raw === displayColumn) {
       return;
     }
     setSavingColumn(true);
     setColumnError(null);
     try {
-      await updateKanbanColonne(ticket.id, next, ticket.nature);
-      setLocalColumn(next);
-      onColumnChanged?.(ticket.id, next);
+      await updateKanbanColonne(ticket.id, raw, ticket.nature, { isAdmin: true });
+      setLocalColumn(raw);
+      onColumnChanged?.(ticket.id, raw);
     } catch (err) {
       setColumnError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -130,7 +136,7 @@ export function TicketDrawer({ ticket, onClose, onColumnChanged }: TicketDrawerP
                         value: displayColumn,
                         disabled: savingColumn,
                         onChange: (e) => {
-                          void onColumnSelect(e.target.value as KanbanColumnId);
+                          void onColumnSelect(e.target.value);
                         },
                       }}
                     >
@@ -278,11 +284,11 @@ export function TicketDrawer({ ticket, onClose, onColumnChanged }: TicketDrawerP
                   </section>
                 ) : null}
 
-                {ticket.lienGithub ? (
+                {githubHref ? (
                   <p className="fr-mb-3w">
                     <a
                       className="fr-link"
-                      href={ticket.lienGithub}
+                      href={githubHref}
                       target="_blank"
                       rel="noopener noreferrer"
                     >

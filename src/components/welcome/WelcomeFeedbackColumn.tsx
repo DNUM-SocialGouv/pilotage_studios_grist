@@ -1,4 +1,3 @@
-import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import type { KanbanListStatus } from "../../hooks/useKanbanList";
@@ -12,7 +11,6 @@ import {
 type WelcomeFeedbackColumnProps = {
   items: KanbanTicket[];
   status: KanbanListStatus;
-  error: string | null;
   onOpenTicket: (item: KanbanTicket) => void;
 };
 
@@ -78,11 +76,11 @@ function FeedbackCard({
 /**
  * Colonne kanban « Feedback » (1ʳᵉ position).
  * Placeholder d’invitation toujours affiché ; tickets `Nature=Feedback` en dessous.
+ * Erreur de chargement : gérée par `WelcomePage` (pas de double alerte).
  */
 export function WelcomeFeedbackColumn({
   items,
   status,
-  error,
   onOpenTicket,
 }: WelcomeFeedbackColumnProps) {
   const count = status === "loading" || status === "error" ? 0 : items.length;
@@ -105,19 +103,6 @@ export function WelcomeFeedbackColumn({
         </Badge>
       </div>
       <FeedbackInvitePlaceholder />
-      {status === "error" ? (
-        <Alert
-          className="fr-mt-2w"
-          severity="error"
-          small
-          title="Retours indisponibles"
-          description={
-            error
-              ? `Impossible de charger la liste des retours (${error}).`
-              : "Impossible de charger la liste des retours."
-          }
-        />
-      ) : null}
       {status === "loading" ? (
         <p className="fr-text--sm fr-hint-text fr-mt-2w fr-mb-0" role="status">
           Chargement des retours…

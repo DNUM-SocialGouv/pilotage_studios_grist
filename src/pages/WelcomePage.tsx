@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import Factory from "@codegouvfr/react-dsfr/picto/Factory";
 import { TicketDrawer } from "../components/welcome/TicketDrawer";
 import { WelcomeFeedbackColumn } from "../components/welcome/WelcomeFeedbackColumn";
 import { useKanbanList } from "../hooks/useKanbanList";
+import { subscribeKanbanReload } from "../utils/feedbackOpen";
 import {
+  badgeClassForFeedbackType,
   KANBAN_STATUS_BADGE_CLASS,
   KANBAN_STATUS_LABEL,
   type KanbanTicket,
@@ -20,6 +22,8 @@ export function WelcomePage() {
     reload,
   } = useKanbanList();
   const [ticket, setTicket] = useState<KanbanTicket | null>(null);
+
+  useEffect(() => subscribeKanbanReload(reload), [reload]);
 
   return (
     <div className="welcome-page">
@@ -58,7 +62,6 @@ export function WelcomePage() {
             <WelcomeFeedbackColumn
               items={feedbackItems}
               status={status}
-              error={error}
               onOpenTicket={setTicket}
             />
             {productGroups.map((group) => (
@@ -99,13 +102,23 @@ export function WelcomePage() {
                       >
                         <div className="welcome-roadmap__item-head">
                           <span className="welcome-roadmap__title">{item.title}</span>{" "}
-                          <Badge
-                            small
-                            as="span"
-                            className={KANBAN_STATUS_BADGE_CLASS[item.status]}
-                          >
-                            {KANBAN_STATUS_LABEL[item.status]}
-                          </Badge>
+                          {item.nature === "Feedback" ? (
+                            <Badge
+                              small
+                              as="span"
+                              className={badgeClassForFeedbackType(item.type)}
+                            >
+                              {item.type}
+                            </Badge>
+                          ) : (
+                            <Badge
+                              small
+                              as="span"
+                              className={KANBAN_STATUS_BADGE_CLASS[item.status]}
+                            >
+                              {KANBAN_STATUS_LABEL[item.status]}
+                            </Badge>
+                          )}
                         </div>
                         {item.theme ? (
                           <p className="fr-text--xs fr-mb-1w fr-hint-text">{item.theme}</p>
