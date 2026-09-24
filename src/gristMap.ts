@@ -201,6 +201,8 @@ export function toEquipeMember(record: GristRecord): EquipeMember {
   return {
     id: record.id,
     Prenom_Nom: asString(record.Prenom_Nom) ?? asGristChoice(record.Prenom_Nom),
+    // Admin only (ACL) — préremplissage drawer ; jamais affiché liste/fiche
+    E_mail: asString(record.E_mail)?.toLowerCase(),
     Equipe: asGristChoice(record.Equipe) ?? asString(record.Equipe),
     Portage: asGristChoice(record.Portage) ?? asString(record.Portage),
     Statut: asGristChoice(record.Statut) ?? asString(record.Statut),
