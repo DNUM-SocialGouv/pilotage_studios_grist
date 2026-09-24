@@ -9,11 +9,13 @@ Référence design : [`design/feedback_widget/`](../../../design/feedback_widget
 | Élément | Détail |
 |---------|--------|
 | Montage | [`WidgetLayout`](../../../src/layout/WidgetLayout.tsx) — pas une route dédiée |
-| Types | Anomalie / Suggestion / Question (segmentés) |
-| Page concernée | Select prérempli depuis la route MemoryRouter |
-| Message | Obligatoire ; bouton d’envoi désactivé si vide |
+| Types | Anomalie / Suggestion / Question (segmentés) → badge carte |
+| Titre | Obligatoire — titre de la carte kanban |
+| En une phrase (`Resume`) | Obligatoire — corps de carte + « Résumé » du drawer |
+| Détail (`Message`) | Optionnel ; si vide = même contenu que le résumé |
+| Page concernée | Select prérempli ; écrit aussi dans `Theme` (ligne thème carte) |
 | Niveau de gêne | Visible seulement si type = Anomalie |
-| Identité | Select searchable (liste déroulante riche) sur la table `Equipe` (`Prenom_Nom` / `E_mail`) — obligatoire |
+| Identité | Select searchable sur `Equipe` — obligatoire |
 | Contexte technique | Case cochée par défaut (URL widget · UA · résolution) |
 | Après envoi | Confirmation ; *Fermer* / *Un autre retour* |
 | Erreur | Message + possibilité de réessayer (panneau reste ouvert) |
@@ -28,14 +30,17 @@ Pas d’auto-détection Grist (le jeton widget ne fournit pas un profil fiable).
 
 | Colonne | Remplie à l’envoi |
 |---------|-------------------|
-| `Nature` (= Feedback), `Colonne_kanban` (= feedback), `Titre` (= Type), `Resume` (1ʳᵉ ligne message) | Oui |
-| `Date`, `Auteur`, `Email`, `Type`, `Page`, `Message`, `Niveau_gene`, `Contexte_technique`, `Statut` (= Nouveau) | Oui |
-| `Theme`, guides, `Lien_github`, champs produit | Non (suivi / enrichissement dans Grist ou Admin) |
+| `Nature` (= Feedback), `Colonne_kanban` (= feedback) | Oui |
+| `Titre`, `Resume`, `Theme` (= Page), `Type`, `Page`, `Message` | Oui |
+| `Date`, `Auteur`, `Email`, `Niveau_gene`, `Contexte_technique`, `Statut` (= Nouveau) | Oui |
+| Guides, `Lien_github`, champs produit | Non (suivi / enrichissement dans Grist ou Admin) |
 
 Écriture widget : **create** via `grist.getTable('Kanban').create`, gardée par [`writeTableAllowlist.ts`](../../../src/security/writeTableAllowlist.ts).  
 Update widget : **`Colonne_kanban` seulement** (select Admin dans le drawer).
 
 Lecture widget : `fetchAllowlistedTable('Kanban')` — colonne Feedback = `Nature=Feedback` et `Colonne_kanban=feedback`. Placeholder d’invitation **toujours visible**. **Clic carte** → drawer (`TicketDrawer`) + conversation.
+
+**Ancienne table `Retours`** : migrée vers `Kanban` ; plus utilisée par le widget — archivable / supprimable Owner (après vérif alertes ops).
 
 ### Conversation (commentaires)
 

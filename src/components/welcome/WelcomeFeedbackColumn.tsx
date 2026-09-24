@@ -2,11 +2,8 @@ import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import type { KanbanListStatus } from "../../hooks/useKanbanList";
 import { requestOpenFeedback } from "../../utils/feedbackOpen";
-import {
-  badgeClassForFeedbackType,
-  prenomFromAuteur,
-  type KanbanTicket,
-} from "../../utils/kanbanTickets";
+import type { KanbanTicket } from "../../utils/kanbanTickets";
+import { KanbanCard } from "./KanbanCard";
 
 type WelcomeFeedbackColumnProps = {
   items: KanbanTicket[];
@@ -33,43 +30,6 @@ function FeedbackInvitePlaceholder() {
         Gimme
       </Button>
     </div>
-  );
-}
-
-function FeedbackCard({
-  item,
-  onOpen,
-}: {
-  item: KanbanTicket;
-  onOpen: (item: KanbanTicket) => void;
-}) {
-  const body = item.resume || item.message;
-  const message =
-    body.length > 160 ? `${body.slice(0, 157).trimEnd()}…` : body;
-  const meta = [prenomFromAuteur(item.auteur), item.dateLabel].filter(Boolean).join(" · ");
-
-  return (
-    <li className="welcome-kanban__card">
-      <button
-        type="button"
-        className="welcome-kanban__card-btn"
-        onClick={() => onOpen(item)}
-      >
-        <div className="welcome-roadmap__item-head">
-          <Badge small as="span" className={badgeClassForFeedbackType(item.type)}>
-            {item.type}
-          </Badge>
-          {item.statutFeedback ? (
-            <Badge small as="span">
-              {item.statutFeedback}
-            </Badge>
-          ) : null}
-        </div>
-        {message ? <p className="fr-text--sm fr-mb-1w fr-mt-1w">{message}</p> : null}
-        {meta ? <p className="fr-text--xs fr-mb-0 fr-hint-text">{meta}</p> : null}
-        <span className="fr-link fr-link--sm fr-mt-1w">Ouvrir</span>
-      </button>
-    </li>
   );
 }
 
@@ -111,7 +71,7 @@ export function WelcomeFeedbackColumn({
       {items.length > 0 ? (
         <ul className="welcome-kanban__list fr-mb-0 fr-mt-2w">
           {items.map((item) => (
-            <FeedbackCard key={item.id} item={item} onOpen={onOpenTicket} />
+            <KanbanCard key={item.id} item={item} onOpen={onOpenTicket} />
           ))}
         </ul>
       ) : null}

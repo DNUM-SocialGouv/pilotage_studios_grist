@@ -23,7 +23,7 @@ const TYPES: FeedbackType[] = ["Anomalie", "Suggestion", "Question"];
 const HINTS: Record<FeedbackType, string> = {
   Anomalie: "Ce qui s’est passé, ce que vous attendiez, comment le reproduire.",
   Suggestion: "L’amélioration proposée et le besoin auquel elle répond.",
-  Question: "Votre question sur l’outil ou une donnée.",
+  Question: "Précisions utiles pour répondre (écran, donnée, contexte).",
 };
 
 const NIVEAUX = [
@@ -93,6 +93,8 @@ export function FeedbackWidget() {
   const location = useLocation();
   const baseId = useId();
   const pageSelectId = `${baseId}-page`;
+  const titreId = `${baseId}-titre`;
+  const resumeId = `${baseId}-resume`;
   const msgId = `${baseId}-msg`;
   const niveauId = `${baseId}-niveau`;
   const ctxId = `${baseId}-ctx`;
@@ -106,6 +108,8 @@ export function FeedbackWidget() {
   const [page, setPage] = useState<FeedbackPageOption>(() =>
     pageOptionFromPathname(location.pathname),
   );
+  const [titre, setTitre] = useState("");
+  const [resume, setResume] = useState("");
   const [message, setMessage] = useState("");
   const [niveau, setNiveau] = useState<string>(NIVEAUX[0]);
   const [joinContext, setJoinContext] = useState(true);
@@ -172,6 +176,8 @@ export function FeedbackWidget() {
     setSent(false);
     setSending(false);
     setError(null);
+    setTitre("");
+    setResume("");
     setMessage("");
     setType("Anomalie");
     setNiveau(NIVEAUX[0]);
@@ -181,7 +187,7 @@ export function FeedbackWidget() {
   }
 
   async function submit() {
-    if (message.trim().length === 0 || !selectedAuteur || sending) {
+    if (titre.trim().length === 0 || resume.trim().length === 0 || !selectedAuteur || sending) {
       return;
     }
     setSending(true);
@@ -191,8 +197,10 @@ export function FeedbackWidget() {
         userName: selectedAuteur.name,
         userEmail: selectedAuteur.email,
         type,
-        page,
+        titre,
+        resume,
         message,
+        page,
         niveau,
         joinContext,
         href: typeof window !== "undefined" ? window.location.href : "",
@@ -214,7 +222,11 @@ export function FeedbackWidget() {
   }
 
   const canSubmit =
-    message.trim().length > 0 && selectedAuteur != null && !sending && !auteursLoading;
+    titre.trim().length > 0 &&
+    resume.trim().length > 0 &&
+    selectedAuteur != null &&
+    !sending &&
+    !auteursLoading;
 
   return (
     <>
@@ -318,6 +330,7 @@ export function FeedbackWidget() {
               <div className="fr-select-group fr-mb-2w">
                 <label className="fr-label" htmlFor={pageSelectId}>
                   Page concernée
+                  <span className="fr-hint-text">Affichée comme thème sur la carte.</span>
                 </label>
                 <select
                   className="fr-select"
@@ -334,19 +347,54 @@ export function FeedbackWidget() {
               </div>
 
               <div className="fr-input-group fr-mb-2w">
+                <label className="fr-label" htmlFor={titreId}>
+                  Titre <span className={styles.required}>*</span>
+                  <span className="fr-hint-text">Court — titre de la carte kanban.</span>
+                </label>
+                <input
+                  className="fr-input"
+                  id={titreId}
+                  type="text"
+                  value={titre}
+                  onChange={(e) => setTitre(e.target.value)}
+                  placeholder="Ex. Bouton Enregistrer grisé"
+                  maxLength={80}
+                  required
+                />
+              </div>
+
+              <div className="fr-input-group fr-mb-2w">
+                <label className="fr-label" htmlFor={resumeId}>
+                  En une phrase <span className={styles.required}>*</span>
+                  <span className="fr-hint-text">
+                    Ce qui compte — affiché sur la carte et en tête du tiroir.
+                  </span>
+                </label>
+                <input
+                  className="fr-input"
+                  id={resumeId}
+                  type="text"
+                  value={resume}
+                  onChange={(e) => setResume(e.target.value)}
+                  placeholder="Ex. Je ne peux pas valider mon CRA du mois."
+                  maxLength={200}
+                  required
+                />
+              </div>
+
+              <div className="fr-input-group fr-mb-2w">
                 <label className="fr-label" htmlFor={msgId}>
-                  Votre message <span className={styles.required}>*</span>
+                  Détail <span className="fr-hint-text">(optionnel)</span>
                   <span className="fr-hint-text">{HINTS[type]}</span>
                 </label>
                 <textarea
                   className="fr-input"
                   id={msgId}
-                  rows={4}
+                  rows={3}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Décrivez le problème, l’idée ou la question…"
+                  placeholder="Étapes, captures, contexte utile…"
                   style={{ resize: "vertical" }}
-                  required
                 />
               </div>
 

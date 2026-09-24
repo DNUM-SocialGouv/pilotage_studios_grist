@@ -117,11 +117,25 @@ export function TicketConversation({ cibleId }: TicketConversationProps) {
     }
   };
 
+  const countLabel =
+    loadStatus === "ok"
+      ? comments.length === 0
+        ? "0 message"
+        : comments.length === 1
+          ? "1 message"
+          : `${comments.length} messages`
+      : null;
+
   return (
-    <section className="ticket-conversation fr-mt-3w" aria-labelledby="ticket-conversation-title">
-      <h3 id="ticket-conversation-title" className="fr-h6">
-        Conversation
-      </h3>
+    <section className="ticket-conversation" aria-labelledby="ticket-conversation-title">
+      <div className="ticket-conversation__head">
+        <h3 id="ticket-conversation-title" className="fr-text--md fr-mb-0">
+          Conversation
+        </h3>
+        {countLabel ? (
+          <p className="fr-text--xs fr-hint-text fr-mb-0">{countLabel}</p>
+        ) : null}
+      </div>
 
       {loadStatus === "loading" ? (
         <p className="fr-text--sm fr-hint-text" role="status">
@@ -137,14 +151,17 @@ export function TicketConversation({ cibleId }: TicketConversationProps) {
         />
       ) : null}
       {loadStatus === "ok" && comments.length === 0 ? (
-        <p className="fr-text--sm fr-hint-text">Aucun commentaire pour l’instant.</p>
+        <p className="fr-text--sm fr-hint-text">
+          Aucun commentaire pour l’instant. Posez une question ou notez une décision
+          ici.
+        </p>
       ) : null}
       {comments.length > 0 ? (
         <ul className="ticket-conversation__list fr-mb-3w">
           {comments.map((c) => (
             <li key={c.id} className="ticket-conversation__item">
               <p className="fr-text--xs fr-hint-text fr-mb-1v">
-                {prenomFromAuteur(c.auteur)}
+                <strong className="fr-text--bold">{prenomFromAuteur(c.auteur)}</strong>
                 {c.dateLabel ? ` · ${c.dateLabel}` : ""}
               </p>
               <p className="fr-text--sm fr-mb-0" style={{ whiteSpace: "pre-wrap" }}>
@@ -155,15 +172,15 @@ export function TicketConversation({ cibleId }: TicketConversationProps) {
         </ul>
       ) : null}
 
-      <form onSubmit={(e) => void onSubmit(e)}>
-        <div className="fr-mb-2w">
+      <form className="ticket-conversation__form" onSubmit={(e) => void onSubmit(e)}>
+        <div className="ticket-conversation__identity fr-mb-2w">
           <DsfrSelectRichMulti
             id={auteurSelectId}
-            label="Votre identité"
+            label="Vous êtes"
             hintText={
               auteursLoading
                 ? "Chargement de la table Equipe…"
-                : "Choisissez votre nom dans la table Equipe (déclaratif)."
+                : "Choisissez votre nom dans la table Équipe (déclaratif)."
             }
             placeholderWhenEmpty="Rechercher une personne…"
             options={auteurOptions}
@@ -207,9 +224,11 @@ export function TicketConversation({ cibleId }: TicketConversationProps) {
             description={submitError}
           />
         ) : null}
-        <Button type="submit" disabled={!canSubmit}>
-          {submitting ? "Envoi…" : "Envoyer"}
-        </Button>
+        <div className="ticket-conversation__submit">
+          <Button type="submit" disabled={!canSubmit}>
+            {submitting ? "Envoi…" : "Envoyer"}
+          </Button>
+        </div>
       </form>
     </section>
   );

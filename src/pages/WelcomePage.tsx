@@ -2,16 +2,12 @@ import { useEffect, useState } from "react";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import Factory from "@codegouvfr/react-dsfr/picto/Factory";
+import { KanbanCard } from "../components/welcome/KanbanCard";
 import { TicketDrawer } from "../components/welcome/TicketDrawer";
 import { WelcomeFeedbackColumn } from "../components/welcome/WelcomeFeedbackColumn";
 import { useKanbanList } from "../hooks/useKanbanList";
 import { subscribeKanbanReload } from "../utils/feedbackOpen";
-import {
-  badgeClassForFeedbackType,
-  KANBAN_STATUS_BADGE_CLASS,
-  KANBAN_STATUS_LABEL,
-  type KanbanTicket,
-} from "../utils/kanbanTickets";
+import type { KanbanTicket } from "../utils/kanbanTickets";
 
 export function WelcomePage() {
   const {
@@ -94,41 +90,7 @@ export function WelcomePage() {
                 ) : null}
                 <ul className="welcome-kanban__list fr-mb-0">
                   {group.items.map((item) => (
-                    <li key={item.id} className="welcome-kanban__card">
-                      <button
-                        type="button"
-                        className="welcome-kanban__card-btn"
-                        onClick={() => setTicket(item)}
-                      >
-                        <div className="welcome-roadmap__item-head">
-                          <span className="welcome-roadmap__title">{item.title}</span>{" "}
-                          {item.nature === "Feedback" ? (
-                            <Badge
-                              small
-                              as="span"
-                              className={badgeClassForFeedbackType(item.type)}
-                            >
-                              {item.type}
-                            </Badge>
-                          ) : (
-                            <Badge
-                              small
-                              as="span"
-                              className={KANBAN_STATUS_BADGE_CLASS[item.status]}
-                            >
-                              {KANBAN_STATUS_LABEL[item.status]}
-                            </Badge>
-                          )}
-                        </div>
-                        {item.theme ? (
-                          <p className="fr-text--xs fr-mb-1w fr-hint-text">{item.theme}</p>
-                        ) : null}
-                        {item.resume ? (
-                          <p className="fr-text--sm fr-mb-1w">{item.resume}</p>
-                        ) : null}
-                        <span className="fr-link fr-link--sm">Ouvrir</span>
-                      </button>
-                    </li>
+                    <KanbanCard key={item.id} item={item} onOpen={setTicket} />
                   ))}
                 </ul>
               </section>

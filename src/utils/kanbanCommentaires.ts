@@ -77,5 +77,5 @@ export function filterCommentairesForTicket(
 ): KanbanCommentaireItem[] {
   return items
     .filter((item) => item.cibleId === cibleId)
-    .sort((a, b) => a.dateSort - b.dateSort || a.id - b.id);
+    .sort((a, b) => b.dateSort - a.dateSort || b.id - a.id);
 }
