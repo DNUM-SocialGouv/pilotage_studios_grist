@@ -206,6 +206,9 @@ export function toEquipeMember(record: GristRecord): EquipeMember {
     Statut: asGristChoice(record.Statut) ?? asString(record.Statut),
     Specialite: asGristChoice(record.Specialite) ?? asString(record.Specialite),
     Role_ACL: asGristChoice(record.Role_ACL) ?? asString(record.Role_ACL),
+    Ordinateur2: asGristChoice(record.Ordinateur2) ?? asString(record.Ordinateur2),
+    Mode_recrutement:
+      asGristChoice(record.Mode_recrutement) ?? asString(record.Mode_recrutement),
     Missions_en_cours:
       asString(record.Missions_en_cours) ?? asGristChoice(record.Missions_en_cours),
     Avatar: asString(record.Avatar) ?? asGristChoice(record.Avatar),

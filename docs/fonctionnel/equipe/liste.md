@@ -4,7 +4,7 @@
 
 ## Objet
 
-Consulter les personnes du pilotage, filtrer, ouvrir une fiche.
+Consulter les personnes du pilotage, filtrer, ouvrir une fiche. Les **Admin** peuvent aussi **ajouter une personne**.
 
 ## Parcours
 
@@ -14,6 +14,15 @@ Consulter les personnes du pilotage, filtrer, ouvrir une fiche.
 | Page | `src/pages/EquipeListView.tsx` (sous `EquipeLayout`) |
 | Navigation | **Équipe** (`WidgetNav`) |
 | Pagination | 10 lignes |
+| Création | Bouton **Nouvelle personne** (Admin / preview standalone) → drawer `EquipeFormDrawer` |
+
+## Création (Admin)
+
+Panneau latéral (drawer SM) : Prénom Nom *, E-mail *, Département, Spécialité, Statut (défaut Actif), Portage, Ordinateur, Mode de recrutement, Rôle, TJM (optionnel).
+
+Après enregistrement : rechargement de la liste et ouverture de `/equipe/:id`.
+
+Les freelances (et autres non-Admin) ne voient pas le bouton. La sécurité réelle reste les Access Rules Grist (Owner / Admin seul peuvent créer).
 
 ## États
 
@@ -21,7 +30,7 @@ Consulter les personnes du pilotage, filtrer, ouvrir une fiche.
 |------|-----|
 | Chargement | Alerte « Connexion à Grist… » |
 | Erreur Grist | Alerte erreur |
-| OK | Filtres + tableau |
+| OK | Filtres + tableau (+ bouton Admin si applicable) |
 
 ## Filtres
 

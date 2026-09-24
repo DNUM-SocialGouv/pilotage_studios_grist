@@ -22,10 +22,12 @@ describe("writeTableAllowlist", () => {
     assert.equal(isWritableTableId("Missions_enfants"), true);
     assert.equal(isWritableTableId("Realise"), true);
     assert.equal(isWritableTableId("Acl_profil"), true);
+    assert.equal(isWritableTableId("Equipe"), true);
     assert.equal(isWritableTableId("Droits_pages"), false);
     assert.equal(isWritableTableId("Retours"), false);
     assert.equal(isWritableTableId("Roadmap"), false);
     assert.equal(isWritableUpdateTableId("Kanban"), true);
+    assert.equal(isWritableUpdateTableId("Equipe"), false);
     assert.equal(isWritableUpdateTableId("Retours"), false);
     assert.throws(() => assertWritableTableId("Plan_activite"), /non autorisée/);
     assert.throws(() => assertWritableUpdateTableId("Retours"), /non autorisée/);

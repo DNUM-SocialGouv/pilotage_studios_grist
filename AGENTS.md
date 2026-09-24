@@ -88,7 +88,7 @@ Visibilité users : section roadmap sur `/` + issues rédigées selon [`docs/iss
 | Finance / refs | `src/utils/paFinance.ts`, `montantReste.tsx`, `gristReferences.ts`, `equipeBadge.ts` |
 | Dépenses BDC | `BdcDepensesPanel`, `BdcDepensesByPrestationTable`, `groupSuiviByMissionEnfant.ts`, `CraTtcStackBar` |
 | Missions | `MissionsListView`, `MissionsDetailView`, `useMissionsData`, `MissionFormDrawer`, `MissionEnfantDrawer`, `craByMission.ts` |
-| Équipe | `EquipeListView`, `EquipeDetailView`, `EquipeLayout`, `useEquipeData`, `useEquipeMemberMissionsData`, `EquipeFicheMissionsSection`, `equipeList.ts`, `equipeMemberPrestations.ts` |
+| Équipe | `EquipeListView`, `EquipeDetailView`, `EquipeLayout`, `useEquipeData`, `useEquipeMemberMissionsData`, `EquipeFicheMissionsSection`, `EquipeFormDrawer`, `equipeList.ts`, `equipeMemberPrestations.ts`, `equipeFormFields.ts`, `equipeGristWrite.ts` |
 | CRA | `CraListView`, `CraDeclarerPage`, `CraRevueEquipePage`, `CraRecapPorteursPage`, `craList.ts`, `craDeclarer.ts`, `craRevueEquipe.ts`, `craExport.ts`, `realiseGristWrite.ts` |
 | Feedback | `FeedbackWidget`, `createKanbanFeedback`, `feedbackEquipe`, `writeTableAllowlist` |
 
@@ -111,7 +111,7 @@ Visibilité users : section roadmap sur `/` + issues rédigées selon [`docs/iss
 
 **Allowlist lecture** : uniquement via [`src/security/fetchTableAllowlist.ts`](src/security/fetchTableAllowlist.ts) (`FETCH_TABLE_ALLOWLIST`, `fetchAllowlistedTable`) **et** REST `fetchGristRecordsViaToken` (même allowlist). Pas d’ID libre depuis l’UI. Nouvelle table lecture = MAJ ce fichier + §4 + docs + [`SECURITY.md`](SECURITY.md).
 
-**Allowlist écriture** : [`src/security/writeTableAllowlist.ts`](src/security/writeTableAllowlist.ts) — `Kanban` (create Feedback + update `Colonne_kanban`) ; `Kanban_commentaires` (create) ; `Missions` (create + update drawer) ; `Missions_enfants` (create + update drawer prestation) ; `Realise` (create + update déclaration CRA + revue équipe) ; `Acl_profil` (create only, fiche session auto) ; `Droits_pages` (update only, page Admin). Pas de delete widget. `Kanban` / `Kanban_commentaires` sont aussi en **lecture** (`FETCH_TABLE_ALLOWLIST`) pour le kanban d’accueil.
+**Allowlist écriture** : [`src/security/writeTableAllowlist.ts`](src/security/writeTableAllowlist.ts) — `Kanban` (create Feedback + update `Colonne_kanban`) ; `Kanban_commentaires` (create) ; `Missions` (create + update drawer) ; `Missions_enfants` (create + update drawer prestation) ; `Realise` (create + update déclaration CRA + revue équipe) ; `Acl_profil` (create only, fiche session auto) ; `Droits_pages` (update only, page Admin) ; `Equipe` (create only, drawer Admin nouvelle personne). Pas de delete widget. `Kanban` / `Kanban_commentaires` sont aussi en **lecture** (`FETCH_TABLE_ALLOWLIST`) pour le kanban d’accueil.
 
 **BDC** : chargée via `docApi.getAccessToken({ readOnly: true })` → REST `/tables/BDC/records?auth=…` (jeton court, droits utilisateur) — pas de clé API dans le bundle. Attachments devis idem.
 
@@ -229,7 +229,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 ## 10. Hors scope (ne pas recréer sans demande)
 
 - Features IA / assistant
-- Écriture Grist hors allowlist (`Kanban` create Feedback + update colonne, `Kanban_commentaires` create, drawer `Missions` / `Missions_enfants` create+update, Note studio `Suivi_resp_studio`, Docs mission upload/détachement, `Realise` create+update déclaration, `Acl_profil` create auto, `Droits_pages` update Admin) — pas d’update/delete commentaires, pas d’édition texte tickets hors colonne, pas de delete missions/prestations/CRA, pas d’édition `Type_prestation` / `Date_de_fin` prestation, pas d’update/delete `Acl_profil`, pas de create/delete lignes `Droits_pages`
+- Écriture Grist hors allowlist (`Kanban` create Feedback + update colonne, `Kanban_commentaires` create, drawer `Missions` / `Missions_enfants` create+update, Note studio `Suivi_resp_studio`, Docs mission upload/détachement, `Realise` create+update déclaration, `Acl_profil` create auto, `Droits_pages` update Admin, `Equipe` create Admin) — pas d’update/delete commentaires, pas d’édition texte tickets hors colonne, pas de delete missions/prestations/CRA/équipe, pas d’édition `Type_prestation` / `Date_de_fin` prestation, pas d’update/delete `Acl_profil`, pas de create/delete lignes `Droits_pages`, pas d’update `Equipe` (édition fiche = #63)
 - Imports CSV Sofiane
 - Remplacer l’app `pilotage_studios`
 - Kanban / notifs / mails **dans le widget** ; alertes ops = hors bundle ([`docs/fonctionnel/feedback/alertes.md`](docs/fonctionnel/feedback/alertes.md) — pas d’URL webhook dans git)

@@ -9,6 +9,7 @@
  * - `Realise` : create + update (déclaration CRA freelance + revue équipe manager — pas de delete).
  * - `Droits_pages` : update only (page Admin droits des écrans — pas de create/delete).
  * - `Acl_profil` : create only (fiche session auto si absente — pas d’update/delete).
+ * - `Equipe` : create only (drawer Admin nouvelle personne — pas d’update/delete ; édition = #63).
  */
 
 export const KANBAN_TABLE_ID = "Kanban";
@@ -18,6 +19,7 @@ export const MISSIONS_ENFANTS_TABLE_ID = "Missions_enfants";
 export const REALISE_TABLE_ID = "Realise";
 export const DROITS_PAGES_TABLE_ID = "Droits_pages";
 export const ACL_PROFIL_TABLE_ID = "Acl_profil";
+export const EQUIPE_TABLE_ID = "Equipe";
 
 export const WRITE_TABLE_ALLOWLIST = [
   KANBAN_TABLE_ID,
@@ -26,6 +28,7 @@ export const WRITE_TABLE_ALLOWLIST = [
   MISSIONS_ENFANTS_TABLE_ID,
   REALISE_TABLE_ID,
   ACL_PROFIL_TABLE_ID,
+  EQUIPE_TABLE_ID,
 ] as const;
 
 export type WritableTableId = (typeof WRITE_TABLE_ALLOWLIST)[number];
