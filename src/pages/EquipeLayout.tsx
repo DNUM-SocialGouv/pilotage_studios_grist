@@ -1,12 +1,18 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext, useMemo } from "react";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Outlet } from "react-router-dom";
+import { EquipeFormDrawer } from "../components/equipe/EquipeFormDrawer";
+import {
+  EquipeFormDrawerProvider,
+  useEquipeFormDrawerRef,
+} from "../components/equipe/EquipeFormDrawerContext";
 import { useGristPa } from "../GristPaContext";
-import { useEquipeData, type EquipeData } from "../hooks/useEquipeData";
+import { useEquipeData, type EquipeDataState } from "../hooks/useEquipeData";
 import { NothingHerePage } from "../security/NothingHerePage";
+import { uniqueSortedLabels } from "../utils/equipeList";
 
 export type EquipeOutletContext = {
-  data: EquipeData;
+  data: EquipeDataState;
 };
 
 const EquipeOutletReactContext = createContext<EquipeOutletContext | null>(null);
@@ -17,6 +23,47 @@ export function useEquipeOutlet(): EquipeOutletContext {
     throw new Error("useEquipeOutlet doit être utilisé sous EquipeLayout");
   }
   return ctx;
+}
+
+function EquipeDrawerHost({ data }: { data: EquipeDataState }) {
+  const drawerRef = useEquipeFormDrawerRef();
+  const equipeOptions = useMemo(
+    () => uniqueSortedLabels(data.members.map((m) => m.Equipe)),
+    [data.members],
+  );
+  const specialiteOptions = useMemo(
+    () => uniqueSortedLabels(data.members.map((m) => m.Specialite)),
+    [data.members],
+  );
+  const statutOptions = useMemo(
+    () => uniqueSortedLabels(data.members.map((m) => m.Statut)),
+    [data.members],
+  );
+  const portageOptions = useMemo(
+    () => uniqueSortedLabels(data.members.map((m) => m.Portage)),
+    [data.members],
+  );
+  const ordinateurOptions = useMemo(
+    () => uniqueSortedLabels(data.members.map((m) => m.Ordinateur2)),
+    [data.members],
+  );
+  const modeRecrutementOptions = useMemo(
+    () => uniqueSortedLabels(data.members.map((m) => m.Mode_recrutement)),
+    [data.members],
+  );
+
+  return (
+    <EquipeFormDrawer
+      ref={drawerRef}
+      equipeOptions={equipeOptions}
+      specialiteOptions={specialiteOptions}
+      statutOptions={statutOptions}
+      portageOptions={portageOptions}
+      ordinateurOptions={ordinateurOptions}
+      modeRecrutementOptions={modeRecrutementOptions}
+      onRecordsChanged={data.reloadEquipe}
+    />
+  );
 }
 
 /**
@@ -56,8 +103,11 @@ export function EquipeLayout() {
   }
 
   return (
-    <EquipeOutletReactContext.Provider value={{ data }}>
-      <Outlet />
-    </EquipeOutletReactContext.Provider>
+    <EquipeFormDrawerProvider>
+      <EquipeOutletReactContext.Provider value={{ data }}>
+        <Outlet />
+        <EquipeDrawerHost data={data} />
+      </EquipeOutletReactContext.Provider>
+    </EquipeFormDrawerProvider>
   );
 }

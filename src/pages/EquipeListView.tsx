@@ -7,7 +7,9 @@ import { SearchBar } from "@codegouvfr/react-dsfr/SearchBar";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { TableShell } from "../components/FinanceRecap";
 import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
+import { useEquipeFormDrawerRef } from "../components/equipe/EquipeFormDrawerContext";
 import { tdEquipeTag } from "../components/EquipeTags";
+import { useAclProfil } from "../AclProfilContext";
 import {
   equipeDisplayName,
   equipeFieldReadable,
@@ -15,6 +17,7 @@ import {
   initialEquipeStatutFilter,
   uniqueSortedLabels,
 } from "../utils/equipeList";
+import { isAdminRole } from "../utils/droitsPagesThemes";
 import { useEquipeOutlet } from "./EquipeLayout";
 
 const PAGE_SIZE = 10;
@@ -26,6 +29,9 @@ function dash(value: string | undefined): string {
 
 export function EquipeListView() {
   const { data } = useEquipeOutlet();
+  const equipeFormDrawerRef = useEquipeFormDrawerRef();
+  const { status: aclStatus, role } = useAclProfil();
+  const canCreate = aclStatus === "standalone" || isAdminRole(role);
   const [search, setSearch] = useState("");
   const [searchKey, setSearchKey] = useState(0);
   const [statutFilter, setStatutFilter] = useState("");
@@ -166,6 +172,19 @@ export function EquipeListView() {
   return (
     <div className="fr-py-1w">
       <h1 className="fr-h3">Équipe</h1>
+
+      {canCreate ? (
+        <div className="fr-mb-3w">
+          <button
+            type="button"
+            className="fr-btn fr-btn--primary fr-icon-add-line fr-btn--icon-left"
+            title="Créer une nouvelle personne"
+            onClick={() => equipeFormDrawerRef.current?.openCreate()}
+          >
+            Nouvelle personne
+          </button>
+        </div>
+      ) : null}
 
       <Accordion
         id="equipe-liste-filtres"

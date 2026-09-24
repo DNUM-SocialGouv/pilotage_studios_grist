@@ -54,6 +54,7 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 | Procès-verbaux | `/pv` | **oui** | **non** | **non** | **non** | **Appliqué** UX (stub) | |
 | Missions | `/missions` | oui | oui | oui | oui | **Appliqué** UX | |
 | Équipe | `/equipe` | oui | oui | oui | oui | **Configurable** Admin | Flag `Page_equipe` ; réglé via `/outils/droits-pages` ([#54](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/54)) |
+| Créer fiche Équipe | `/equipe` (drawer) | **oui** | **non** | **non** | **non** | **Appliqué** UX + ACL | Bouton Admin ; `Equipe` create allowlisté ; édition = [#63](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/63) |
 | Droits des pages | `/outils/droits-pages` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Garde rôle Admin (pas de `Page_*`) ; édite `Droits_pages` |
 | Produits | `/produits`, `/produits/:id` | oui | oui | oui | oui | **Appliqué** UX (liste + fiche lecture) | Flag `Page_produits` |
 
@@ -67,9 +68,9 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Table / ressource | Admin | Resp. | Freelance | Invité | Appliqué ? | Notes |
 |-------------------|-------|-------|-----------|--------|------------|-------|
-| `Equipe` (hors TJM/TTC) | CRUD | R | R (3 cols) | R | **Appliqué** | Table `+R-CUD` ; Freelance : seulement `Prenom_Nom` / `Equipe` / `Specialite` ([#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55)) |
-| `Equipe.TJM`, `Total_TTC` | RU | RU | R soi | R soi | **Appliqué** | `-RU` sauf Owner / Admin / soi (`user.Email == rec.E_mail`) — [#60](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/60) |
-| `Equipe.E_mail` | RU | — | — | — | **Appliqué** | `-RU` si non-(Owner\|Admin) |
+| `Equipe` (hors TJM/TTC) | CRUD | R | R (3 cols) | R | **Appliqué** | Table `+R-CUD` ; Freelance : seulement `Prenom_Nom` / `Equipe` / `Specialite` ([#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55)) ; widget **create** Admin (drawer) |
+| `Equipe.TJM`, `Total_TTC` | RU | RU | R soi | R soi | **Appliqué** | `-RU` sauf Owner / Admin / soi (`user.Email == rec.E_mail`) — [#60](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/60) ; TJM aussi saisissable à la **création** Admin (droit table C) |
+| `Equipe.E_mail` | RU | — | — | — | **Appliqué** | `-RU` si non-(Owner\|Admin) ; saisie à la **création** Admin seulement (pas d’affichage liste/fiche) |
 | `Plan_activite` | CRUD | R ? | R / — | R / — | Non (rôle) | Ancre widget |
 | `BDC` métadonnées | CRUD | R ? | R limité | R / — | Non (rôle) | |
 | `BDC` montants / Devis / Sofiane… | RU | — | — | — | **Appliqué (Owner)** | `-RU` si non-Owner |
@@ -99,6 +100,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-09-24 | Création fiche Équipe (Admin) : bouton liste + drawer (identité, e-mail, rôle, TJM…) ; `Equipe` create allowlisté ; pas d’update (#63) | 5, 6 (doc) | Kanban `equipe-fiche-creation-admin` |
 | 2026-09-24 | Access Rules `Kanban` / `Kanban_commentaires` posées Owner UI (vérif MCP) | 6 | Post-merge #80 |
 | 2026-09-24 | Table unique `Kanban` (fusion Retours+Roadmap) ; drawer ordre lecture + select colonne Admin ; commentaires `Cible_id` ; create feedback → `Kanban` | 5, 6 (doc HITL ACL) | Kanban unifié drawer |
 | 2026-09-23 | Kanban accueil 100 % Grist : `Roadmap` + `Kanban_commentaires` ; drawer ticket + conversation pour tous ; GitHub optionnel ; plus de source `publicRoadmap.ts` | 5, 6 (doc HITL ACL) | Kanban conversation |

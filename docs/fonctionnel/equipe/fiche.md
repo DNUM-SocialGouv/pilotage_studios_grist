@@ -56,4 +56,4 @@ Le widget **n’invente pas** les droits : il affiche ces montants seulement qua
 
 Règle Grist **appliquée** : voir [access-rules.md](../roles/access-rules.md).
 
-Pas de bouton créer / éditer. Pas d’e-mail dans le widget. Pas de TJM / Total TTC sur la **liste**.
+Pas de bouton éditer / supprimer. Pas d’e-mail affiché en consultation (saisie e-mail uniquement à la création Admin, voir [liste.md](liste.md)). Pas de TJM / Total TTC sur la **liste**.

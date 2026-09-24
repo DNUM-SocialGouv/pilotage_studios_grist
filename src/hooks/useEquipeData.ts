@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { recordsFromFetchTable, toEquipeMember } from "../gristMap";
 import { fetchAllowlistedTable } from "../security/fetchTableAllowlist";
 import type { EquipeMember } from "../types";
@@ -9,6 +9,11 @@ export type EquipeData = {
   status: EquipeDataStatus;
   error: string | null;
   members: EquipeMember[];
+};
+
+export type EquipeDataState = EquipeData & {
+  isReloading: boolean;
+  reloadEquipe: () => Promise<void>;
 };
 
 const EMPTY: EquipeData = {
@@ -23,10 +28,39 @@ export async function loadEquipeTable(): Promise<EquipeMember[]> {
 }
 
 /**
- * Table `Equipe` — chargé sur `/equipe` uniquement (lazy, lecture).
+ * Table `Equipe` — chargé sur `/equipe` uniquement (lazy, lecture + reload après create).
  */
-export function useEquipeData(enabled: boolean): EquipeData {
+export function useEquipeData(enabled: boolean): EquipeDataState {
   const [state, setState] = useState<EquipeData>(EMPTY);
+  const [isReloading, setIsReloading] = useState(false);
+
+  const reloadEquipe = useCallback(async () => {
+    if (!enabled) {
+      return;
+    }
+    setIsReloading(true);
+    try {
+      const members = await loadEquipeTable();
+      setState({ status: "ok", error: null, members });
+    } catch (err) {
+      setState((prev) => {
+        if (prev.status === "ok") {
+          return prev;
+        }
+        return {
+          ...prev,
+          status: "error",
+          error:
+            err instanceof Error
+              ? err.message
+              : "La liste de l’équipe n’a pas pu être chargée.",
+        };
+      });
+      throw err;
+    } finally {
+      setIsReloading(false);
+    }
+  }, [enabled]);
 
   useEffect(() => {
     if (!enabled) {
@@ -64,5 +98,5 @@ export function useEquipeData(enabled: boolean): EquipeData {
     };
   }, [enabled]);
 
-  return state;
+  return { ...state, isReloading, reloadEquipe };
 }
