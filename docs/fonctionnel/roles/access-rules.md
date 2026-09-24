@@ -98,16 +98,16 @@ Le widget crée automatiquement la fiche si elle manque (`E_mail` seulement ; `R
 
 L’annuaire `/equipe` s’adapte : si `Statut` / `Portage` / `Rôle` sont illisibles, pas de filtre Actif forcé, colonnes masquées. Feedback : e-mail `CENSORED` ignoré dans le select auteur.
 
-## Tables kanban accueil (recommandation HITL — à poser Owner UI)
+## Tables kanban accueil (**Appliqué** 2026-09-24 — Owner UI)
 
 | Table | Condition | Droits | Mémo |
 |-------|-----------|--------|------|
-| `Kanban` `*` | `True` | `+CR` | Lecture feuille de route + create Feedback (population widget) |
-| `Kanban` `*` | Owner **ou** `Role_ACL == Admin` | `+U` (ou `+CRUD`) | Dont `Colonne_kanban` depuis le widget ; édition contenu dans Grist |
-| `Kanban_commentaires` `*` | `True` | `+CR` | Conversation : tout le monde lit et crée |
-| `Kanban_commentaires` `*` | Owner **ou** `Role_ACL == Admin` | `+UD` (ou `+CRUD`) | Modération ; le widget ne fait pas d’update/delete |
+| `Kanban` `*` | Owner **ou** `Role_ACL == Admin` | `+CRUD` | Édition contenu + colonne depuis le widget |
+| `Kanban` `*` | `True` | `+CR-UD` | Lecture + create Feedback ; pas d’update/delete |
+| `Kanban_commentaires` `*` | Owner **ou** `Role_ACL == Admin` | `+CRUD` | Modération |
+| `Kanban_commentaires` `*` | `True` | `+CR-UD` | Lecture + create commentaire ; pas d’update/delete |
 
-Créée / migrée 2026-09-24 (seed depuis `Roadmap` + `Retours`). Snapshot ACL à rafraîchir après pose des règles. Anciennes tables `Retours` / `Roadmap` : hors widget.
+Vérifié MCP `grist_get_acl_rules` (resources 41 / 42, rules 39–42). Ordre : Owner/Admin au-dessus de `True`. User Attribute `Equipe` requis. Anciennes tables `Retours` / `Roadmap` : hors widget.
 
 ## Qui peut modifier quoi
 
