@@ -1,0 +1,31 @@
+---
+description: Sync feuille de route kanban Grist à chaque feature / issue / correctif visible utilisateurs
+alwaysApply: true
+---
+
+# Feuille de route kanban (agents)
+
+## Source de vérité
+
+Table Grist `Kanban` (accueil widget) — colonnes produit **Backlog · En cours · Livré**.  
+Procédure : skill [`pilotage-grist-kanban`](../skills/pilotage-grist-kanban/SKILL.md).
+
+## Quand (obligatoire)
+
+Dès qu’on lance une **feature**, une **issue GitHub**, ou un **correctif visible** pour les utilisateurs du widget :
+
+1. Lire le skill `pilotage-grist-kanban`
+2. Consulter le kanban (MCP `user-grist`)
+3. **Proposer** create ou déplacement de carte (`Nature=Produit`)
+4. **Attendre l’OK humain** avant toute écriture MCP
+
+## Quand pas
+
+Chore, typo docs, rules / skills, revue pure, portage interne → une ligne « N/A kanban : … » suffit.
+
+## Jamais
+
+- Écrire dans `Kanban` sans validation explicite
+- Créer une carte `Nature=Feedback`
+- Supprimer une carte
+- Déplacer sans sync `Statut_produit` (voir skill)
