@@ -17,6 +17,7 @@ import {
 } from "../../utils/kanbanTickets";
 import { safeHttpUrl } from "../../utils/produitsList";
 import { updateKanbanColonne } from "../../utils/updateKanbanColonne";
+import { MissionProse } from "../missions/MissionProse";
 import { TicketConversation } from "./TicketConversation";
 
 export type TicketDrawerProps = {
@@ -93,11 +94,7 @@ export function TicketDrawer({ ticket, onClose, onColumnChanged }: TicketDrawerP
     "";
 
   const detailText =
-    ticket?.nature === "Feedback" &&
-    ticket.message &&
-    ticket.message !== resumeText
-      ? ticket.message
-      : "";
+    ticket?.message && ticket.message !== resumeText ? ticket.message : "";
 
   const hasPratique =
     Boolean(ticket?.guideIntro) || (ticket?.guideSteps.length ?? 0) > 0;
@@ -253,12 +250,9 @@ export function TicketDrawer({ ticket, onClose, onColumnChanged }: TicketDrawerP
                     <p id="ticket-detail-title" className="ticket-drawer-label">
                       Détail
                     </p>
-                    <p
-                      className="fr-text--sm fr-mb-0"
-                      style={{ whiteSpace: "pre-wrap" }}
-                    >
-                      {detailText}
-                    </p>
+                    <div className="ticket-drawer-detail">
+                      <MissionProse value={detailText} />
+                    </div>
                   </section>
                 ) : null}
 

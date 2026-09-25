@@ -25,6 +25,7 @@ App sœur (hors iframe) : [pilotage_studios](https://github.com/DNUM-SocialGouv/
 | **Produits** | [fonctionnel/produits/](fonctionnel/produits/) — [liste](fonctionnel/produits/liste.md) · [fiche](fonctionnel/produits/fiche.md) | Documenté (lecture `/produits` ; [#3](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3)) |
 | **Rôles & droits Grist** | [fonctionnel/roles/](fonctionnel/roles/) — **[matrice](fonctionnel/roles/matrice-droits.md)** (registre vivant) · [Droits des pages Admin](fonctionnel/roles/droits-pages-admin.md) · [ACL](fonctionnel/roles/access-rules.md) · [inventaire](fonctionnel/roles/inventaire-partage.md) | 6 couches + tableaux écrans/données ; prep [#47](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/47) ; Admin [#54](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/54) |
 | **Issues publiques** | [issues-publiques.md](issues-publiques.md) | Template rédaction (repo public) |
+| **Recherche utilisateur (RU)** | [ru/](ru/) — [insights](ru/insights/) | Base d’enseignements (Design / Access.) ; distinct de `fonctionnel/` |
 | **Portage → app sœur** | [portage/](portage/) | Opt-in handoff agents |
 | PV | — | Stub « À venir » (nav) — ordre : voir AGENTS §2 |
 | Évaluations, Analyse | — | Stub hors nav |

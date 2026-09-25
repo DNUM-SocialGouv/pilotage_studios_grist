@@ -20,7 +20,7 @@ Première page affichée à l’ouverture du Custom Widget dans Grist : titre + 
 | En-tête | Titre « Pilotage studios » + pictogramme `Factory` |
 | Kanban | Titre « Feuille de route » + **4 colonnes** : **Feedback** (CTA + tickets `Nature=Feedback` en colonne `feedback`) · **Backlog** · **En cours** · **Livré** (dernier livré en haut) |
 | Carte | Cliquable → drawer SM (`TicketDrawer`) |
-| Drawer (ordre) | En-tête (badges + titre + colonne **Admin** compacte) → Résumé → En pratique (Produit) ou Détail (Feedback) → pastilles méta → actions (page / GitHub) → Conversation |
+| Drawer (ordre) | En-tête (badges + titre + colonne **Admin** compacte) → Résumé → En pratique (Produit, si guide) ou Détail (`Message` en **Markdown** léger : titres, listes, tableaux, gras, liens — via `MissionProse`) → pastilles méta → actions (page / GitHub) → Conversation |
 | Colonne Admin | Update `Colonne_kanban` (+ sync `Statut_produit` / `Statut` feedback) via widget ; ACL Grist = vraie barrière |
 | Conversation | Tout utilisateur peut commenter (identité via liste Équipe) |
 | Nav | `WidgetNav` : Accueil icône home ; **Mon carnet** (Freelance/Admin) ; **Budget** / **Outils** en menus |

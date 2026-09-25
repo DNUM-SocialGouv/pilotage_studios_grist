@@ -1,0 +1,39 @@
+---
+description: Exigences Design (parcours simple) et Accessibilité pour tout sujet visible utilisateurs
+alwaysApply: true
+---
+
+# Design & Accessibilité (produit)
+
+Lecteurs métier de référence : **responsable Design** et **responsable Accessibilité**.
+Toute feature / correctif **visible** dans le widget doit rester compréhensible pour elles
+et livrable sans dette d’accessibilité.
+
+Complète [`pedagogie-non-technique.mdc`](pedagogie-non-technique.mdc) (lisibilité)
+et s’appuie sur la base RU [`docs/ru/`](../../docs/ru/).
+
+## Toujours
+
+- **Parcours simple** : une intention claire ; proposer de *ne pas* faire avant d’ajouter
+  un écran, un champ ou une étape (AGENTS.md — simplification).
+- **Règle métier en une phrase** : si on ne peut pas l’énoncer simplement, le modèle
+  n’est pas prêt (ex. « une grille = personne × métier × période »).
+- **Expérience** : pas de double saisie confuse ; libellés métier (mission, prestation,
+  CRA, TJM…) ; erreurs actionnables.
+- **Accessibilité** : clavier, focus visible, libellés / noms accessibles, contrastes
+  via DSFR, messages d’erreur liés aux champs. Critère de **revue avant merge** sur
+  tout nouvel écran ou formulaire.
+- **Issues / tickets publics** : langage didactique (voir [`docs/issues-publiques.md`](../../docs/issues-publiques.md)) ;
+  inviter Design + Access. quand le sujet touche parcours ou UI.
+
+## Jamais
+
+- Livrer une UI « Admin seulement » sans vérifier navigation clavier et libellés.
+- Multiplier les fiches / écrans pour contourner une règle métier mal posée.
+- Promettre une accessibilité « plus tard » sans case de revue.
+
+## Base RU
+
+Avant d’arbitrer un parcours sensible : lire [`docs/ru/README.md`](../../docs/ru/README.md)
+et les fiches d’insight pertinentes. Si un insight manque, le **proposer** (HITL)
+plutôt que d’inventer des besoins utilisateurs.
