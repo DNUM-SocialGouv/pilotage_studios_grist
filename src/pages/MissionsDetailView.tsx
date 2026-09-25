@@ -51,7 +51,6 @@ const FIELD_LABELS: Record<string, string> = {
   Pb_utilisateurs_identifies: "Problèmes utilisateurs identifiés",
   Fonctionnalites_produit: "Fonctionnalités produit",
   Volumes_d_usages_utilisateurs_utilisations_: "Volumes d’usages / utilisations",
-  Suivi_resp_studio: "Suivi resp. studio",
 };
 
 function parseMissionTabId(params: URLSearchParams): MissionTabId {
@@ -107,21 +106,25 @@ function MissionContextePanel({
           </>
         ) : (
           <p className="fr-text--sm fr-text-mention--grey fr-mb-0">
-            Aucun contenu détaillé renseigné pour cette mission.
+            Aucun texte de contexte (demande, enjeux, historique…) pour cette
+            mission. Les liens et pièces jointes restent disponibles dans la
+            colonne dédiée.
           </p>
         )}
       </div>
       <aside className="fr-col-12 fr-col-md-4 mission-contexte-layout__aside">
-        <MissionLiensFigmaNotionPanel
-          missionId={mission.id}
-          value={mission.Liens_FIGMA_Notion}
-          onSaved={onDocsChanged}
-        />
-        <MissionContexteDocsPanel
-          missionId={mission.id}
-          docs={mission.Docs}
-          onChanged={onDocsChanged}
-        />
+        <div className="mission-contexte-aside-stack">
+          <MissionLiensFigmaNotionPanel
+            missionId={mission.id}
+            value={mission.Liens_FIGMA_Notion}
+            onSaved={onDocsChanged}
+          />
+          <MissionContexteDocsPanel
+            missionId={mission.id}
+            docs={mission.Docs}
+            onChanged={onDocsChanged}
+          />
+        </div>
       </aside>
     </div>
   );
@@ -311,7 +314,7 @@ export function MissionsDetailView() {
                   </li>
                 </ul>
                 <div
-                  className="fr-grid-row mission-fiche__hero-meta"
+                  className="fr-grid-row fr-grid-row--gutters mission-fiche__hero-meta"
                   role="group"
                   aria-label="Informations de la mission"
                 >

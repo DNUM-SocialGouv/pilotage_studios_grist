@@ -93,7 +93,7 @@ export function MissionLiensFigmaNotionPanel({
             className="fr-btn fr-btn--tertiary fr-btn--sm fr-icon-edit-line fr-btn--icon-left"
             onClick={startEdit}
           >
-            {hasContent ? "Modifier" : "Ajouter"}
+            {hasContent ? "Modifier les liens" : "Ajouter un lien"}
           </button>
         ) : null}
       </div>
@@ -161,7 +161,7 @@ export function MissionLiensFigmaNotionPanel({
         </p>
       ) : (
         <p className="fr-text--sm fr-text-mention--grey fr-mb-0 fr-mt-2w">
-          Aucun lien — utilisez « Ajouter » pour renseigner une URL Figma ou Notion.
+          Aucun lien — utilisez « Ajouter un lien » pour renseigner une URL Figma ou Notion.
         </p>
       )}
     </section>

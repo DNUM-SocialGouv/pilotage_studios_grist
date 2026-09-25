@@ -993,9 +993,21 @@ a.equipe-list-name-cell:focus-visible {
   gap: 0.5rem;
 }
 
-/* Contexte — colonne PJ (hauteur contenu, sticky desktop) */
+/* Contexte — colonne droite (liens + PJ sticky ensemble desktop) */
 .mission-contexte-layout__aside {
   align-self: start;
+}
+
+.mission-contexte-aside-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 48em) {
+  .mission-contexte-aside-stack {
+    position: sticky;
+    top: 1rem;
+  }
 }
 
 .mission-contexte-liens {
@@ -1088,13 +1100,6 @@ a.equipe-list-name-cell:focus-visible {
 .mission-contexte-docs__delete {
   flex: 0 0 auto;
   margin-top: -0.25rem;
-}
-
-@media (min-width: 48em) {
-  .mission-contexte-docs {
-    position: sticky;
-    top: 1rem;
-  }
 }
 
 button.fr-link {
