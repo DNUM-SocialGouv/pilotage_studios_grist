@@ -7,18 +7,18 @@ import { Input } from "@codegouvfr/react-dsfr/Input";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
 import { useAclProfil } from "../AclProfilContext";
+import {
+  countCarnetDepartementPrestations,
+  CraCarnetDepartementPanel,
+} from "../components/CraCarnetDepartementPanel";
 import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
 import { tdEquipeTag } from "../components/EquipeTags";
-import { TableShell } from "../components/FinanceRecap";
 import { StatutBadge } from "../components/StatutBadge";
 import { useGristPa } from "../GristPaContext";
 import { useCraDeclarerData } from "../hooks/useCraDeclarerData";
 import { NothingHerePage } from "../security/NothingHerePage";
 import { aggregateCraByEnfantId } from "../utils/craByMission";
-import {
-  craCarnetDepartementGroups,
-  type CarnetDepartementMissionGroup,
-} from "../utils/craCarnetDepartement";
+import { craCarnetDepartementGroups } from "../utils/craCarnetDepartement";
 import {
   buildCraDeclarerSaveRows,
   buildRealiseDeclarerFields,
@@ -39,7 +39,6 @@ import {
   createRealiseRecord,
   updateRealiseRecord,
 } from "../utils/realiseGristWrite";
-import type { CraTotaux } from "../utils/suiviMensuel";
 
 type CarnetTabId = "en-cours" | "passees";
 
@@ -63,40 +62,6 @@ function formatJoursAffichage(n: number): string {
     return "0";
   }
   return String(Math.round(n * 10) / 10).replace(".", ",");
-}
-
-function countPrestations(groups: CarnetDepartementMissionGroup[]): number {
-  return groups.reduce((sum, g) => sum + g.prestations.length, 0);
-}
-
-function totauxForPrestations(
-  enfantIds: number[],
-  craByEnfantId: Map<number, CraTotaux>,
-): CraTotaux {
-  let jours = 0;
-  let ttc = 0;
-  let count = 0;
-  for (const id of enfantIds) {
-    const t = craByEnfantId.get(id);
-    if (!t) {
-      continue;
-    }
-    jours += t.jours;
-    ttc += t.ttc;
-    count += t.count;
-  }
-  return { jours, ttc, count };
-}
-
-function formatCraCount(count: number): string {
-  return String(count);
-}
-
-function formatTtcEngage(totaux: CraTotaux | undefined): string {
-  if (!totaux || totaux.count === 0) {
-    return "—";
-  }
-  return formatMontantEur(totaux.ttc);
 }
 
 export function CraDeclarerPage() {
@@ -180,19 +145,11 @@ export function CraDeclarerPage() {
 
   const managerActiveGroups =
     tabId === "en-cours" ? managerGroupsEnCours : managerGroupsPassees;
-  const managerPrestaCount = countPrestations(managerActiveGroups);
 
   const craByEnfantId = useMemo(
     () => aggregateCraByEnfantId(data.suivi),
     [data.suivi],
   );
-
-  const managerCraTotaux = useMemo(() => {
-    const ids = managerActiveGroups.flatMap((g) =>
-      g.prestations.map((p) => p.enfantId),
-    );
-    return totauxForPrestations(ids, craByEnfantId);
-  }, [managerActiveGroups, craByEnfantId]);
 
   const rowsByEnfantId = useMemo(
     () => new Map(flatRows.map((r) => [r.enfantId, r] as const)),
@@ -222,28 +179,6 @@ export function CraDeclarerPage() {
     {
       label: "Total HT",
       value: totalHt != null ? formatMontantEur(totalHt) : "—",
-    },
-  ];
-
-  const managerMetaCells: { label: string; value: ReactNode }[] = [
-    {
-      label: "Missions",
-      value: String(managerActiveGroups.length),
-    },
-    {
-      label:
-        tabId === "en-cours"
-          ? "Prestations en cours"
-          : "Prestations passées",
-      value: String(managerPrestaCount),
-    },
-    {
-      label: "Lignes CRA",
-      value: formatCraCount(managerCraTotaux.count),
-    },
-    {
-      label: "TTC engagé",
-      value: formatTtcEngage(managerCraTotaux),
     },
   ];
 
@@ -462,11 +397,11 @@ export function CraDeclarerPage() {
             ? [
                 {
                   tabId: "en-cours",
-                  label: `En cours (${countPrestations(managerGroupsEnCours)})`,
+                  label: `En cours (${countCarnetDepartementPrestations(managerGroupsEnCours)})`,
                 },
                 {
                   tabId: "passees",
-                  label: `Passées (${countPrestations(managerGroupsPassees)})`,
+                  label: `Passées (${countCarnetDepartementPrestations(managerGroupsPassees)})`,
                 },
               ]
             : [
@@ -482,112 +417,12 @@ export function CraDeclarerPage() {
         }
       >
         {managerMode ? (
-          <>
-            <div
-              className="fr-grid-row equipe-fiche-meta-bandeau cra-carnet__meta fr-mb-3w"
-              role="group"
-              aria-label="Indicateurs du périmètre département"
-              aria-live="polite"
-            >
-              {managerMetaCells.map((cell) => (
-                <div
-                  key={cell.label}
-                  className="fr-col-12 fr-col-sm-6 fr-col-md-3 equipe-fiche-meta-bandeau__cell"
-                >
-                  <div className="fr-text--xs fr-mb-1v equipe-fiche-meta-bandeau__label">
-                    {cell.label}
-                  </div>
-                  <div className="fr-text--sm fr-mb-0 fr-text--bold">{cell.value}</div>
-                </div>
-              ))}
-            </div>
-
-            {managerActiveGroups.length === 0 ? (
-              <Alert
-                severity="info"
-                title={
-                  tabId === "en-cours"
-                    ? "Aucune mission en cours dans votre département"
-                    : "Aucune prestation passée dans votre département"
-                }
-                description={
-                  tabId === "en-cours"
-                    ? `Aucune prestation active n’est staffée sur le département « ${data.self.equipeLabel} ». Vérifiez le staffing sur Missions.`
-                    : "Quand des prestations de votre département seront terminées, elles apparaîtront ici."
-                }
-              />
-            ) : (
-              managerActiveGroups.map((group) => {
-                const groupTotaux = totauxForPrestations(
-                  group.prestations.map((p) => p.enfantId),
-                  craByEnfantId,
-                );
-                return (
-                  <section
-                    key={group.missionId}
-                    className="cra-carnet__chapter fr-mb-4w"
-                  >
-                    <div className="cra-carnet__chapter-head fr-mb-2w">
-                      <div className="cra-carnet__chapter-title">
-                        <h3 className="fr-h5 fr-mb-0">
-                          <Link to={`/missions/${group.missionId}`}>
-                            {group.missionLibelle}
-                          </Link>
-                        </h3>
-                        <StatutBadge statut={group.missionStatut} />
-                        <span className="fr-text--xs fr-hint-text cra-carnet__chapter-summary">
-                          {formatCraCount(groupTotaux.count)} CRA ·{" "}
-                          {group.prestations.length} presta
-                          {group.prestations.length > 1 ? "s" : ""}
-                        </span>
-                      </div>
-                    </div>
-
-                    <TableShell size="sm" className="fr-mb-0 cra-carnet__dept-table">
-                      <table>
-                        <caption className="fr-sr-only">
-                          Prestations du département pour {group.missionLibelle}
-                        </caption>
-                        <thead>
-                          <tr>
-                            <th scope="col">Prestation</th>
-                            <th scope="col">Intervenant</th>
-                            <th scope="col">Statut</th>
-                            <th scope="col" className="fr-cell--right">
-                              CRA
-                            </th>
-                            <th scope="col" className="fr-cell--right">
-                              TTC engagé
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {group.prestations.map((presta) => {
-                            const totaux = craByEnfantId.get(presta.enfantId);
-                            return (
-                              <tr key={presta.enfantId}>
-                                <td>{presta.prestationLibelle}</td>
-                                <td>{presta.intervenantNom}</td>
-                                <td>
-                                  <StatutBadge statut={presta.statut} />
-                                </td>
-                                <td className="fr-cell--right">
-                                  {formatCraCount(totaux?.count ?? 0)}
-                                </td>
-                                <td className="fr-cell--right">
-                                  {formatTtcEngage(totaux)}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </TableShell>
-                  </section>
-                );
-              })
-            )}
-          </>
+          <CraCarnetDepartementPanel
+            equipeLabel={data.self.equipeLabel}
+            tabId={tabId}
+            groups={managerActiveGroups}
+            craByEnfantId={craByEnfantId}
+          />
         ) : tabId === "en-cours" ? (
           <>
             <div

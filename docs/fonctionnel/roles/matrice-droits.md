@@ -49,7 +49,7 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 | Bons de commande | `/bdc` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Idem |
 | Prestation / CRA (liste) | `/cra` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Freelances : déclaration via `/cra/declarer` |
 | Déclarer mon CRA / **Mon carnet** | `/cra/declarer` | **oui*** | **oui*** | **oui** | **non** | **Appliqué** UX (rôle) | *Admin/Resp. : liste lecture missions via prestations du **département** (`Equipe.Equipe`) ; Freelance : saisie CRA « moi » ; nav niveau 1 ; hors `Page_*` ; Invité masqué |
-| Revue CRA équipe | `/cra/revue-equipe` | **oui*** | **oui*** | **non** | **non** | **Appliqué** UX (rôle + dép.) | *Uniquement si `Equipe.Equipe` renseigné ; périmètre = même département ; hors `Page_*` ; ACL `Realise` encore ouverte (#47) |
+| Revue CRA équipe | `/cra/revue-equipe` | **oui*** | **oui*** | **non** | **non** | **Appliqué** UX (rôle + dép.) | *Uniquement si `Equipe.Equipe` renseigné ; périmètre = même département ; hors `Page_*` ; ACL `Realise` par rôle **faite** (#47/#70) |
 | Récap porteurs | `/outils/recap-porteurs` | **oui** | **non** | **non** | **non** | **Appliqué** UX | |
 | Procès-verbaux | `/pv` | **oui** | **non** | **non** | **non** | **Appliqué** UX (stub) | |
 | Missions | `/missions` | oui | oui | oui | oui | **Appliqué** UX | |
@@ -101,7 +101,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
-| 2026-09-25 | Mon carnet : Admin/Resp. = liste lecture missions du département (presta intervenant même `Equipe.Equipe`, missions mixtes incluses) ; Freelance = saisie inchangée ; Invité masqué ; Resp. ajouté à la nav/garde | 5 | Carnet périmètre département |
+| 2026-09-25 | Mon carnet : Admin/Resp. = liste lecture missions du département (presta intervenant même `Equipe.Equipe`, missions mixtes incluses) ; Freelance = saisie inchangée ; Invité masqué ; Resp. ajouté à la nav/garde ; note Revue CRA : ACL `Realise` faite | 5 | Carnet périmètre département / PR #90 |
 | 2026-09-25 | Access Rules BDC montants : Owner **ou** Admin `+RU` ; hors `-RU` ; `OWNER` sans guillemets (Const `"OWNER"` censurait aussi les Owners) ; vérif MCP OK | 6 | HITL Owner — récap fiche BDC à 0 € |
 | 2026-09-24 | Édition fiche Équipe (Admin) : bouton Modifier + drawer (mêmes champs que création, TJM inclus) ; `Equipe` update allowlisté | 5, 6 (doc) | [#63](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/63) / kanban `equipe-fiche-edition-admin` |
 | 2026-09-24 | Création fiche Équipe (Admin) : bouton liste + drawer (identité, e-mail, rôle, TJM…) ; `Equipe` create allowlisté ; pas d’update (#63) | 5, 6 (doc) | Kanban `equipe-fiche-creation-admin` |

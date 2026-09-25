@@ -130,5 +130,5 @@ export function craCarnetDepartementGroups(
     ),
     filter,
   );
-  return groupEquipePrestationRowsByMission(rows) as CarnetDepartementMissionGroup[];
+  return groupEquipePrestationRowsByMission(rows);
 }
