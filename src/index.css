@@ -1630,6 +1630,14 @@ button.fr-link:disabled {
   gap: 0.5rem 0.75rem;
 }
 
+.cra-carnet__chapter-summary {
+  margin-left: auto;
+}
+
+.cra-carnet__dept-table.fr-table {
+  margin-bottom: 0;
+}
+
 .cra-carnet__entry {
   display: flex;
   flex-wrap: nowrap;

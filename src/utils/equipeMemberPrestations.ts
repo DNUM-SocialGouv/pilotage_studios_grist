@@ -123,10 +123,15 @@ export function filterEquipePrestationRows(
  * Regroupe les prestations par mission (ordre des groupes = max date début
  * décroissante, puis libellé ; dans un groupe = date décroissante).
  */
-export function groupEquipePrestationRowsByMission(
-  rows: EquipePrestationRow[],
-): EquipePrestationMissionGroup[] {
-  const byId = new Map<number, EquipePrestationMissionGroup>();
+export function groupEquipePrestationRowsByMission<
+  T extends EquipePrestationRow,
+>(
+  rows: T[],
+): Array<Omit<EquipePrestationMissionGroup, "prestations"> & { prestations: T[] }> {
+  const byId = new Map<
+    number,
+    Omit<EquipePrestationMissionGroup, "prestations"> & { prestations: T[] }
+  >();
 
   for (const row of rows) {
     let group = byId.get(row.missionId);

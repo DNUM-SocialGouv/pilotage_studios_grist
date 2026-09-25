@@ -6,12 +6,19 @@ import { CallOut } from "@codegouvfr/react-dsfr/CallOut";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
+import { useAclProfil } from "../AclProfilContext";
+import {
+  countCarnetDepartementPrestations,
+  CraCarnetDepartementPanel,
+} from "../components/CraCarnetDepartementPanel";
 import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
 import { tdEquipeTag } from "../components/EquipeTags";
 import { StatutBadge } from "../components/StatutBadge";
 import { useGristPa } from "../GristPaContext";
 import { useCraDeclarerData } from "../hooks/useCraDeclarerData";
 import { NothingHerePage } from "../security/NothingHerePage";
+import { aggregateCraByEnfantId } from "../utils/craByMission";
+import { craCarnetDepartementGroups } from "../utils/craCarnetDepartement";
 import {
   buildCraDeclarerSaveRows,
   buildRealiseDeclarerFields,
@@ -25,6 +32,7 @@ import {
   periodeTimestampForMonthKey,
   type CraDeclarerDraft,
 } from "../utils/craDeclarer";
+import { isMonCarnetManagerRole } from "../utils/droitsPagesThemes";
 import { equipeMontantLisible } from "../utils/equipeList";
 import { formatMontantEur } from "../utils/formatMontant";
 import {
@@ -58,9 +66,13 @@ function formatJoursAffichage(n: number): string {
 
 export function CraDeclarerPage() {
   const pa = useGristPa();
+  const { role } = useAclProfil();
   const enabled =
     !pa.untrustedEmbed && !pa.outsideGrist && !pa.loading && !pa.error;
   const data = useCraDeclarerData(enabled);
+
+  // Standalone sans rôle : vue freelance (saisie) pour les previews locales.
+  const managerMode = isMonCarnetManagerRole(role);
 
   const [monthKey, setMonthKey] = useState(craDeclarerDefaultMonthKey);
   const [drafts, setDrafts] = useState<CraDeclarerDraft[]>([]);
@@ -71,8 +83,8 @@ export function CraDeclarerPage() {
 
   const monthOptions = useMemo(() => craDeclarerMonthOptions(), []);
 
-  const groups = useMemo(() => {
-    if (!data.self) {
+  const freelanceGroups = useMemo(() => {
+    if (managerMode || !data.self) {
       return [];
     }
     return craDeclarerPrestationGroups(
@@ -80,9 +92,64 @@ export function CraDeclarerPage() {
       data.missionEnfants,
       data.missions,
     );
-  }, [data.self, data.missionEnfants, data.missions]);
+  }, [managerMode, data.self, data.missionEnfants, data.missions]);
 
-  const flatRows = useMemo(() => craDeclarerPrestationRowsFlat(groups), [groups]);
+  const flatRows = useMemo(
+    () => craDeclarerPrestationRowsFlat(freelanceGroups),
+    [freelanceGroups],
+  );
+
+  const managerGroupsEnCours = useMemo(() => {
+    if (!managerMode || !data.self) {
+      return [];
+    }
+    return craCarnetDepartementGroups(
+      data.self.equipeLabel,
+      data.missionEnfants,
+      data.missions,
+      data.intervenants,
+      "en-cours",
+    );
+  }, [
+    managerMode,
+    data.self,
+    data.missionEnfants,
+    data.missions,
+    data.intervenants,
+  ]);
+
+  const managerGroupsPassees = useMemo(() => {
+    if (!managerMode || !data.self) {
+      return [];
+    }
+    const all = craCarnetDepartementGroups(
+      data.self.equipeLabel,
+      data.missionEnfants,
+      data.missions,
+      data.intervenants,
+      "toutes",
+    );
+    return all
+      .map((g) => ({
+        ...g,
+        prestations: g.prestations.filter((p) => !p.enCours),
+      }))
+      .filter((g) => g.prestations.length > 0);
+  }, [
+    managerMode,
+    data.self,
+    data.missionEnfants,
+    data.missions,
+    data.intervenants,
+  ]);
+
+  const managerActiveGroups =
+    tabId === "en-cours" ? managerGroupsEnCours : managerGroupsPassees;
+
+  const craByEnfantId = useMemo(
+    () => aggregateCraByEnfantId(data.suivi),
+    [data.suivi],
+  );
 
   const rowsByEnfantId = useMemo(
     () => new Map(flatRows.map((r) => [r.enfantId, r] as const)),
@@ -96,7 +163,7 @@ export function CraDeclarerPage() {
     [totalSaisi, showTjm, data.self?.tjm],
   );
 
-  const metaCells: { label: string; value: ReactNode }[] = [
+  const freelanceMetaCells: { label: string; value: ReactNode }[] = [
     {
       label: "TJM",
       value: showTjm ? formatMontantEur(data.self!.tjm) : "—",
@@ -116,14 +183,14 @@ export function CraDeclarerPage() {
   ];
 
   useEffect(() => {
-    if (!data.self || data.status !== "ok") {
+    if (managerMode || !data.self || data.status !== "ok") {
       setDrafts([]);
       return;
     }
     setDrafts(initCraDeclarerDrafts(flatRows, data.suivi, data.self.id, monthKey));
     setSaveOk(null);
     setSaveError(null);
-  }, [data.self, data.status, data.suivi, flatRows, monthKey]);
+  }, [managerMode, data.self, data.status, data.suivi, flatRows, monthKey]);
 
   const updateDraft = (enfantId: number, patch: Partial<CraDeclarerDraft>) => {
     setDrafts((prev) =>
@@ -134,7 +201,7 @@ export function CraDeclarerPage() {
   };
 
   const onSave = async () => {
-    if (!data.self) {
+    if (!data.self || managerMode) {
       return;
     }
     setSaving(true);
@@ -228,14 +295,31 @@ export function CraDeclarerPage() {
     return (
       <Alert
         severity="error"
-        title="Déclaration impossible"
+        title="Carnet impossible"
         description={
           data.error ??
-          "Impossible d’identifier votre fiche Équipe pour filtrer vos prestations."
+          "Impossible d’identifier votre fiche Équipe pour ouvrir le carnet."
         }
       />
     );
   }
+
+  if (managerMode && !data.self.equipeLabel.trim()) {
+    return (
+      <div className="fr-container fr-container--fluid fr-px-0">
+        <Alert
+          className="fr-mt-2w"
+          severity="warning"
+          title="Pas de département sur votre fiche"
+          description="Cette vue liste les missions du département (colonne Équipe). Demandez à un Owner de renseigner votre département si vous devez suivre le staffing Product, Design, etc."
+        />
+      </div>
+    );
+  }
+
+  const calloutTitle = managerMode
+    ? `Mon carnet — ${data.self.equipeLabel}`
+    : "Mon carnet";
 
   return (
     <div className="fr-container fr-container--fluid fr-px-0 cra-carnet">
@@ -244,7 +328,7 @@ export function CraDeclarerPage() {
           className="cra-carnet__callout"
           colorVariant="blue-cumulus"
           titleAs="h2"
-          title="Mon carnet"
+          title={calloutTitle}
           bodyAs="div"
         >
           <div className="cra-carnet__hero-grid">
@@ -266,21 +350,23 @@ export function CraDeclarerPage() {
               </div>
             </div>
 
-            <div className="cra-carnet__hero-aside">
-              <Select
-                label="Mois du carnet"
-                nativeSelectProps={{
-                  value: monthKey,
-                  onChange: (e) => setMonthKey(e.target.value),
-                }}
-              >
-                {monthOptions.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </Select>
-            </div>
+            {!managerMode ? (
+              <div className="cra-carnet__hero-aside">
+                <Select
+                  label="Mois du carnet"
+                  nativeSelectProps={{
+                    value: monthKey,
+                    onChange: (e) => setMonthKey(e.target.value),
+                  }}
+                >
+                  {monthOptions.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            ) : null}
           </div>
         </CallOut>
       </header>
@@ -306,18 +392,38 @@ export function CraDeclarerPage() {
             setTabId("en-cours");
           }
         }}
-        tabs={[
-          {
-            tabId: "en-cours",
-            label: `En cours (${flatRows.length})`,
-          },
-          {
-            tabId: "passees",
-            label: "Passées",
-          },
-        ]}
+        tabs={
+          managerMode
+            ? [
+                {
+                  tabId: "en-cours",
+                  label: `En cours (${countCarnetDepartementPrestations(managerGroupsEnCours)})`,
+                },
+                {
+                  tabId: "passees",
+                  label: `Passées (${countCarnetDepartementPrestations(managerGroupsPassees)})`,
+                },
+              ]
+            : [
+                {
+                  tabId: "en-cours",
+                  label: `En cours (${flatRows.length})`,
+                },
+                {
+                  tabId: "passees",
+                  label: "Passées",
+                },
+              ]
+        }
       >
-        {tabId === "en-cours" ? (
+        {managerMode ? (
+          <CraCarnetDepartementPanel
+            equipeLabel={data.self.equipeLabel}
+            tabId={tabId}
+            groups={managerActiveGroups}
+            craByEnfantId={craByEnfantId}
+          />
+        ) : tabId === "en-cours" ? (
           <>
             <div
               className="fr-grid-row equipe-fiche-meta-bandeau cra-carnet__meta fr-mb-3w"
@@ -325,7 +431,7 @@ export function CraDeclarerPage() {
               aria-label="Indicateurs des prestations en cours"
               aria-live="polite"
             >
-              {metaCells.map((cell) => (
+              {freelanceMetaCells.map((cell) => (
                 <div
                   key={cell.label}
                   className="fr-col-12 fr-col-md-3 equipe-fiche-meta-bandeau__cell"
@@ -346,122 +452,122 @@ export function CraDeclarerPage() {
               />
             ) : (
               <>
-                {groups.map((group) => (
-                <section key={group.missionId} className="cra-carnet__chapter fr-mb-4w">
-                  <div className="cra-carnet__chapter-head fr-mb-2w">
-                    <div className="cra-carnet__chapter-title">
-                      <h3 className="fr-h5 fr-mb-0">
-                        <Link to={`/missions/${group.missionId}`}>
-                          {group.missionLibelle}
-                        </Link>
-                      </h3>
-                      <StatutBadge statut={group.missionStatut} />
+                {freelanceGroups.map((group) => (
+                  <section key={group.missionId} className="cra-carnet__chapter fr-mb-4w">
+                    <div className="cra-carnet__chapter-head fr-mb-2w">
+                      <div className="cra-carnet__chapter-title">
+                        <h3 className="fr-h5 fr-mb-0">
+                          <Link to={`/missions/${group.missionId}`}>
+                            {group.missionLibelle}
+                          </Link>
+                        </h3>
+                        <StatutBadge statut={group.missionStatut} />
+                      </div>
                     </div>
-                  </div>
 
-                  <ul className="fr-raw-list cra-carnet__entries">
-                    {group.prestations.map((presta) => {
-                      const draft = drafts.find((d) => d.enfantId === presta.enfantId);
-                      if (!draft) {
-                        return null;
-                      }
-                      const joursInputId = `cra-jours-${presta.enfantId}`;
-                      const joursValue = draft.nbJours.trim().replace(",", ".");
-                      return (
-                        <li key={presta.enfantId} className="cra-carnet__entry fr-mb-2w">
-                          <div className="cra-carnet__entry-jours">
-                            <label className="fr-label fr-sr-only" htmlFor={joursInputId}>
-                              Nombre de jours
-                            </label>
-                            <input
-                              id={joursInputId}
-                              className="fr-input cra-carnet__jours-input"
-                              type="number"
-                              inputMode="decimal"
-                              min={0}
-                              step={0.5}
-                              placeholder="0"
-                              value={joursValue}
-                              onChange={(e) =>
-                                updateDraft(presta.enfantId, {
-                                  nbJours: e.target.value,
-                                })
-                              }
-                            />
-                            <span
-                              className="cra-carnet__entry-jours-unit"
-                              aria-hidden="true"
-                            >
-                              jours
-                            </span>
-                          </div>
-                          <div className="cra-carnet__entry-body">
-                            <div className="cra-carnet__entry-title fr-mb-2w">
-                              <p className="fr-text--bold fr-mb-0">
-                                {presta.prestationLibelle}
-                              </p>
-                              {draft.existingRealiseId != null ? (
-                                <div className="cra-carnet__entry-meta">
-                                  <span className="fr-text--xs fr-hint-text">
-                                    Déjà saisi ce mois
-                                  </span>
-                                </div>
-                              ) : null}
-                            </div>
-                            <Input
-                              label="Ce que vous avez fait"
-                              hintText="Description courte du mois"
-                              textArea
-                              nativeTextAreaProps={{
-                                rows: 2,
-                                value: draft.taches,
-                                placeholder:
-                                  "Qu’avez-vous fait ce mois sur cette prestation ?",
-                                onChange: (e) =>
+                    <ul className="fr-raw-list cra-carnet__entries">
+                      {group.prestations.map((presta) => {
+                        const draft = drafts.find((d) => d.enfantId === presta.enfantId);
+                        if (!draft) {
+                          return null;
+                        }
+                        const joursInputId = `cra-jours-${presta.enfantId}`;
+                        const joursValue = draft.nbJours.trim().replace(",", ".");
+                        return (
+                          <li key={presta.enfantId} className="cra-carnet__entry fr-mb-2w">
+                            <div className="cra-carnet__entry-jours">
+                              <label className="fr-label fr-sr-only" htmlFor={joursInputId}>
+                                Nombre de jours
+                              </label>
+                              <input
+                                id={joursInputId}
+                                className="fr-input cra-carnet__jours-input"
+                                type="number"
+                                inputMode="decimal"
+                                min={0}
+                                step={0.5}
+                                placeholder="0"
+                                value={joursValue}
+                                onChange={(e) =>
                                   updateDraft(presta.enfantId, {
-                                    taches: e.target.value,
-                                  }),
-                              }}
-                            />
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </section>
-              ))}
+                                    nbJours: e.target.value,
+                                  })
+                                }
+                              />
+                              <span
+                                className="cra-carnet__entry-jours-unit"
+                                aria-hidden="true"
+                              >
+                                jours
+                              </span>
+                            </div>
+                            <div className="cra-carnet__entry-body">
+                              <div className="cra-carnet__entry-title fr-mb-2w">
+                                <p className="fr-text--bold fr-mb-0">
+                                  {presta.prestationLibelle}
+                                </p>
+                                {draft.existingRealiseId != null ? (
+                                  <div className="cra-carnet__entry-meta">
+                                    <span className="fr-text--xs fr-hint-text">
+                                      Déjà saisi ce mois
+                                    </span>
+                                  </div>
+                                ) : null}
+                              </div>
+                              <Input
+                                label="Ce que vous avez fait"
+                                hintText="Description courte du mois"
+                                textArea
+                                nativeTextAreaProps={{
+                                  rows: 2,
+                                  value: draft.taches,
+                                  placeholder:
+                                    "Qu’avez-vous fait ce mois sur cette prestation ?",
+                                  onChange: (e) =>
+                                    updateDraft(presta.enfantId, {
+                                      taches: e.target.value,
+                                    }),
+                                }}
+                              />
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </section>
+                ))}
 
-              {saveError ? (
-                <Alert
-                  className="fr-mb-2w"
-                  severity="error"
-                  title="Enregistrement refusé"
-                  description={saveError}
-                />
-              ) : null}
-              {saveOk ? (
-                <Alert
-                  className="fr-mb-2w"
-                  severity="success"
-                  title="Carnet enregistré"
-                  description={saveOk}
-                />
-              ) : null}
+                {saveError ? (
+                  <Alert
+                    className="fr-mb-2w"
+                    severity="error"
+                    title="Enregistrement refusé"
+                    description={saveError}
+                  />
+                ) : null}
+                {saveOk ? (
+                  <Alert
+                    className="fr-mb-2w"
+                    severity="success"
+                    title="Carnet enregistré"
+                    description={saveOk}
+                  />
+                ) : null}
 
-              <div className="cra-carnet__footer fr-mt-2w">
-                <p className="fr-text--xs fr-hint-text fr-mb-2w">
-                  Les saisies restent modifiables tant que vous n’avez pas quitté la
-                  page — cliquez pour les écrire dans Grist.
-                </p>
-                <Button
-                  type="button"
-                  onClick={() => void onSave()}
-                  disabled={saving || data.isReloading}
-                >
-                  {saving ? "Enregistrement…" : "Publier le carnet"}
-                </Button>
-              </div>
-            </>
+                <div className="cra-carnet__footer fr-mt-2w">
+                  <p className="fr-text--xs fr-hint-text fr-mb-2w">
+                    Les saisies restent modifiables tant que vous n’avez pas quitté la
+                    page — cliquez pour les écrire dans Grist.
+                  </p>
+                  <Button
+                    type="button"
+                    onClick={() => void onSave()}
+                    disabled={saving || data.isReloading}
+                  >
+                    {saving ? "Enregistrement…" : "Publier le carnet"}
+                  </Button>
+                </div>
+              </>
             )}
           </>
         ) : (

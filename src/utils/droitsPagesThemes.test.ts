@@ -13,6 +13,7 @@ import {
   isAdminRole,
   isCraDeclarerRole,
   isCraRevueEquipeRole,
+  isMonCarnetManagerRole,
 } from "./droitsPagesThemes.ts";
 import { pageOptionFromPathname } from "./feedbackPages.ts";
 import {
@@ -49,11 +50,20 @@ describe("droitsPagesThemes", () => {
     assert.equal(isAdminRole(null), false);
   });
 
-  it("détecte les rôles déclaration CRA", () => {
+  it("détecte les rôles Mon carnet", () => {
     assert.equal(isCraDeclarerRole("Admin"), true);
+    assert.equal(isCraDeclarerRole("Responsable de département"), true);
     assert.equal(isCraDeclarerRole("Freelance"), true);
     assert.equal(isCraDeclarerRole("Invité"), false);
     assert.equal(isCraDeclarerRole(null), false);
+  });
+
+  it("détecte le mode manager Mon carnet (liste département)", () => {
+    assert.equal(isMonCarnetManagerRole("Admin"), true);
+    assert.equal(isMonCarnetManagerRole("Responsable de département"), true);
+    assert.equal(isMonCarnetManagerRole("Freelance"), false);
+    assert.equal(isMonCarnetManagerRole("Invité"), false);
+    assert.equal(isMonCarnetManagerRole(null), false);
   });
 
   it("détecte les rôles revue CRA équipe", () => {
@@ -144,6 +154,19 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
       budget.children.map((c) => c.href),
       ["/cra/revue-equipe"],
     );
+  });
+
+  it("montre Mon carnet pour Resp. (liste département)", () => {
+    const filtered = filterNavItemsByPageAccess(
+      WIDGET_NAV_ITEMS,
+      (href) => canAccessHref(href, PAGE_ACCESS_FAIL_CLOSED),
+      { isAdmin: false, canDeclareCra: true, canRevueCraEquipe: true },
+    );
+    const carnet = filtered.find(
+      (item) => !isWidgetNavGroup(item) && item.href === "/cra/declarer",
+    );
+    assert.ok(carnet && !isWidgetNavGroup(carnet));
+    assert.equal(carnet.text, "Mon carnet");
   });
 
   it("masque Mon carnet si rôle non autorisé", () => {

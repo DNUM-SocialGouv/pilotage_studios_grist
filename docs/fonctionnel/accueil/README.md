@@ -23,7 +23,7 @@ Première page affichée à l’ouverture du Custom Widget dans Grist : titre + 
 | Drawer (ordre) | En-tête (badges + titre + colonne **Admin** compacte) → Résumé → En pratique (Produit, si guide) ou Détail (`Message` : **Markdown** léger pour Produit via `MissionProse` ; texte brut pour Feedback) → pastilles méta → actions (page / GitHub) → Conversation |
 | Colonne Admin | Update `Colonne_kanban` (+ sync `Statut_produit` / `Statut` feedback) via widget ; ACL Grist = vraie barrière |
 | Conversation | Tout utilisateur peut commenter (identité via liste Équipe) |
-| Nav | `WidgetNav` : Accueil icône home ; **Mon carnet** (Freelance/Admin) ; **Budget** / **Outils** en menus |
+| Nav | `WidgetNav` : Accueil icône home ; **Mon carnet** (Freelance/Admin/Resp.) ; **Budget** / **Outils** en menus |
 | Layout | Panneau large (`welcome-page__panel--wide`) pour 4 colonnes |
 | Fallback | Route `*` → redirection vers `/` |
 

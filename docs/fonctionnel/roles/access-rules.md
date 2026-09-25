@@ -1,6 +1,6 @@
 # Access Rules — état des lieux
 
-Snapshot **2026-09-21** — MCP `grist_get_acl_rules`, doc `nei9DeARs5Eo`.  
+Snapshot **2026-09-25** — MCP `grist_get_acl_rules`, doc `nei9DeARs5Eo`.  
 Anonymisé — pas de noms ni d’emails.
 
 ## En clair
@@ -9,13 +9,27 @@ La table **Équipe** a des règles par **rôle** : lecture seule pour la plupart
 
 La table **Realise** (CRA) a un **mur par rôle** (#47 / suite #70) : Owner/Admin tout ; Responsable son département ; Freelance ses lignes (+ create) ; `Calcul_TTC` lecture seule hors Owner.
 
+Les **montants BDC** (Budget / consommé / solde, Devis, Sofiane…) : Owner **ou** Admin métier peuvent lire et modifier ; les autres non (**corrigé** 2026-09-25 — voir leçon `OWNER` sans guillemets).
+
+## Leçon — `OWNER` sans guillemets
+
+| Écriture | Parse Grist | Effet |
+|----------|-------------|--------|
+| `user.Access == OWNER` | `Name` OWNER | Correct — reconnaît les Owners du document |
+| `user.Access == "OWNER"` | `Const` `"OWNER"` | **Incorrect** — la comparaison rate ; un Owner est traité comme non-Owner |
+
+**Incident 2026-09-25** : récap fiche BDC à 0 € + colonnes BDC censurées pour un Owner réel, à cause d’un `-RU` sur `user.Access != "OWNER"`. Correctif : allow explicite Owner/Admin + deny hors Owner/Admin, avec `OWNER` **sans** guillemets.
+
+**Reste à assainir (HITL)** : plusieurs autres règles utilisent encore `"OWNER"` (Const). Souvent **mitigé** par un `or user.Equipe.Role_ACL == "Admin"` (les Admin métier passent). Priorité : règles **Access seul** (Previsionnel TTC, summaries, Malt, Constatations, `Realise.Calcul_TTC`).
+
 ## Synthèse
 
 | Indicateur | Valeur |
 |------------|--------|
 | User Attributes | **OK** — Name `Equipe`, `user.Email` → `Equipe.E_mail` |
-| Montants BDC / summaries… | **`-RU`** si non-Owner (inchangé) |
-| `Equipe.TJM`, `Total_TTC` | **Appliqué** — refus sauf Owner, Admin, ou soi (`user.Email == rec.E_mail`) |
+| Montants BDC (`Devis`, `Montant_TTC`, `Total_TTC_CRA`, `Solde_TTC_*`, …) | **Appliqué** — Owner **ou** Admin `+RU` ; hors Owner/Admin `-RU` (`OWNER` sans guillemets) |
+| Summaries / Previsionnel TTC / Malt… | **À revoir** — encore `"OWNER"` (Const) sur plusieurs règles |
+| `Equipe.TJM`, `Total_TTC` | **Appliqué** — refus sauf Owner, Admin, ou soi (`user.Email == rec.E_mail`) — formule encore avec `"OWNER"` (mitigé Admin/soi) |
 | `Equipe` table (`*`) | Owner **ou** `Role_ACL == Admin` → `+CRUD` ; `True` → `+R -CUD` |
 | `Equipe.E_mail` | **HITL #33** : deny hors soi (comme TJM) — voir détail |
 | `Equipe` colonnes « hors carte » | `Role_ACL == Freelance` → `-RU` (voir liste) |
@@ -84,13 +98,25 @@ Colonnes **laissées visibles** aux Freelances : `Prenom_Nom`, `Equipe`, `Specia
 
 Le widget crée automatiquement la fiche si elle manque (`E_mail` seulement ; `Role` / `Page_*` restent des formules Grist).
 
-## Autres règles (inchangées, synthèse)
+## Table `BDC` — colonnes sensibles (corrigé 2026-09-25)
+
+Ressource : `Devis`, `Montant_TTC`, `Nombre_de_CRA`, `Plateforme`, `SOFIANE`, `Solde_TTC_CRA`, `Solde_TTC_MALT`, `Total_TTC_CRA`.
+
+| Condition | Droits | Mémo |
+|-----------|--------|------|
+| `user.Access == OWNER or user.Equipe.Role_ACL == "Admin"` | `+RU` | Owner document **ou** Admin métier : lecture / écriture des montants (récap fiche widget + table Grist) |
+| `user.Access != OWNER and user.Equipe.Role_ACL != "Admin"` | `-RU` | Autres : montants masqués |
+
+**Vérif MCP** (2026-09-25) : règles 43 / 44, parse `Name` OWNER (pas `Const`).
+
+## Autres règles (synthèse)
 
 | Table | Colonnes | Condition | Droits |
 |-------|----------|-----------|--------|
 | `*` | `*` | `user.Access != OWNER` | `-S` |
-| `Previsionnel` / summaries / `Realise.Calcul_TTC` / `BDC` montants / Malt… | (sensibles) | non-Owner | `-RU` |
-| `Constatations` | `*` | `user.Access == "OWNER"` | `+CRUD` |
+| `Previsionnel` / summaries / Malt… | (sensibles) | encore `!= "OWNER"` (Const) | `-RU` — **à corriger** → `!= OWNER` |
+| `Realise.Calcul_TTC` | `Calcul_TTC` | encore `!= "OWNER"` (Const) | `+R -U` — **à corriger** |
+| `Constatations` | `*` | encore `== "OWNER"` (Const) | `+CRUD` — **à corriger** → `== OWNER` |
 | `Acl_profil` | `*` | Owner **ou** Admin → `+CRUD` ; `user.Email == rec.E_mail` → `+CR` ; `True` → `-CRUD` | Ménage Owner/Admin ; create/read soi ; reste interdit |
 | `Droits_pages` | `*` | Owner **ou** Admin → `+CRUD` ; `True` → `-CRUD` | |
 
