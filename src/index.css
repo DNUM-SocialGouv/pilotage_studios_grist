@@ -94,8 +94,9 @@ span.fr-tag.fr-tag--beige-gris-galet {
   margin-bottom: 1rem;
 }
 
-/* Fiche produit : le hero beige doit coller au menu (pas de bandeau blanc). */
-.widget-shell:has(.produit-fiche) .widget-nav {
+/* Fiches produit / mission : le hero beige doit coller au menu (pas de bandeau blanc). */
+.widget-shell:has(.produit-fiche) .widget-nav,
+.widget-shell:has(.mission-fiche) .widget-nav {
   margin-bottom: 0;
 }
 
@@ -788,8 +789,7 @@ span.fr-tag.fr-tag--beige-gris-galet {
   background-image: linear-gradient(0deg, var(--border-default-grey), var(--border-default-grey)) !important;
 }
 
-/* Fiches détail — mission (/missions/:id) et équipe (/equipe/:id) */
-.mission-fiche-title-row,
+/* Fiche détail équipe (/equipe/:id) — en-tête P2 */
 .equipe-fiche-title-row {
   align-items: center;
   display: flex;
@@ -798,9 +798,8 @@ span.fr-tag.fr-tag--beige-gris-galet {
   justify-content: space-between;
 }
 
-.mission-fiche-title-row__identity,
 .equipe-fiche-title-row__identity {
-  align-items: center;
+  align-items: flex-start;
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
@@ -808,10 +807,6 @@ span.fr-tag.fr-tag--beige-gris-galet {
 }
 
 /* Avatar 4rem : badges en haut, nom en bas — même emprise verticale */
-.equipe-fiche-title-row__identity {
-  align-items: flex-start;
-}
-
 .equipe-fiche-title-row__text {
   display: flex;
   flex-direction: column;
@@ -822,14 +817,10 @@ span.fr-tag.fr-tag--beige-gris-galet {
   padding-block: 0;
 }
 
-.mission-fiche-title-row .fr-badges-group,
-.equipe-fiche-title-row .fr-badges-group {
-  margin-bottom: 0;
-}
-
 .equipe-fiche-title-row .fr-badges-group {
   align-items: center;
   line-height: 1;
+  margin-bottom: 0;
   margin-top: 0;
 }
 
@@ -838,12 +829,8 @@ span.fr-tag.fr-tag--beige-gris-galet {
   margin: 0 0.375rem;
 }
 
-.mission-fiche-title-row__title,
 .equipe-fiche-title-row__title {
   line-height: 1.2;
-}
-
-.equipe-fiche-title-row__title {
   margin-top: auto;
 }
 
@@ -884,25 +871,21 @@ a.equipe-list-name-cell:focus-visible {
   text-decoration: underline;
 }
 
-.mission-fiche-meta-bandeau,
 .equipe-fiche-meta-bandeau {
   border: 1px solid var(--border-default-grey);
   border-radius: 0.25rem;
 }
 
-.mission-fiche-meta-bandeau__cell,
 .equipe-fiche-meta-bandeau__cell {
   padding: 0.75rem 1rem;
 }
 
 @media (min-width: 48em) {
-  .mission-fiche-meta-bandeau__cell:not(:last-child),
   .equipe-fiche-meta-bandeau__cell:not(:last-child) {
     border-right: 1px solid var(--border-default-grey);
   }
 }
 
-.mission-fiche-meta-bandeau__label,
 .equipe-fiche-meta-bandeau__label {
   color: var(--text-mention-grey);
 }
@@ -1010,9 +993,56 @@ a.equipe-list-name-cell:focus-visible {
   gap: 0.5rem;
 }
 
-/* Contexte — colonne PJ (hauteur contenu, sticky desktop) */
+/* Contexte — colonne droite (liens + PJ sticky ensemble desktop) */
 .mission-contexte-layout__aside {
   align-self: start;
+}
+
+.mission-contexte-aside-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 48em) {
+  .mission-contexte-aside-stack {
+    position: sticky;
+    top: 1rem;
+  }
+}
+
+.mission-contexte-liens {
+  background-color: var(--background-alt-grey);
+  border: 1px solid var(--border-default-grey);
+  border-radius: 0.25rem;
+  padding: 1rem;
+}
+
+.mission-contexte-liens__header {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.mission-contexte-liens__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.mission-contexte-liens__list {
+  list-style: none;
+  padding-left: 0;
+  word-break: break-word;
+}
+
+.mission-contexte-liens__list li + li {
+  margin-top: 0.5rem;
+}
+
+.mission-contexte-liens__raw {
+  word-break: break-word;
 }
 
 .mission-contexte-docs {
@@ -1070,13 +1100,6 @@ a.equipe-list-name-cell:focus-visible {
 .mission-contexte-docs__delete {
   flex: 0 0 auto;
   margin-top: -0.25rem;
-}
-
-@media (min-width: 48em) {
-  .mission-contexte-docs {
-    position: sticky;
-    top: 1rem;
-  }
 }
 
 button.fr-link {
@@ -1882,6 +1905,58 @@ button.fr-link:disabled {
 
 .produit-fiche__hero-meta-item {
   display: inline-flex;
+}
+
+/* —— Fiche mission : hero type Mon carnet / produit —— */
+.mission-fiche.fr-container--fluid {
+  overflow: visible;
+}
+
+.mission-fiche__hero,
+.mission-fiche__hero .fr-callout {
+  background-color: var(--background-alt-beige-gris-galet);
+}
+
+.mission-fiche__hero.cra-carnet__hero {
+  margin-top: 0;
+  padding-top: 1.5rem;
+}
+
+.mission-fiche__callout.fr-callout {
+  margin-bottom: 0;
+  background-image: none;
+}
+
+.mission-fiche__breadcrumb.fr-breadcrumb {
+  margin-bottom: 0.75rem;
+}
+
+.mission-fiche__breadcrumb .fr-breadcrumb__button,
+.mission-fiche__breadcrumb .fr-breadcrumb__link {
+  background-color: transparent;
+}
+
+.mission-fiche__callout .fr-callout__title {
+  font-weight: 700;
+  font-size: 1.75rem;
+  line-height: 2.25rem;
+  margin: 0 0 1rem;
+  color: var(--text-title-grey);
+}
+
+@media (min-width: 48em) {
+  .mission-fiche__callout .fr-callout__title {
+    font-size: 2.5rem;
+    line-height: 3rem;
+  }
+}
+
+.mission-fiche__hero-meta-label {
+  color: var(--text-mention-grey);
+}
+
+.mission-fiche__hero-meta-item {
+  min-width: 0;
 }
 
 .produit-referentiel-tile {

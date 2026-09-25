@@ -4,7 +4,7 @@
 
 ## Objet
 
-Voir la carte d’identité d’une personne — mise en page alignée sur la fiche mission (badges + bandeau). Les **Admin** peuvent **modifier** la fiche via le même panneau que la création.
+Voir la carte d’identité d’une personne — en-tête P2 (badges + bandeau méta), distinct du hero CallOut des fiches mission / produit. Les **Admin** peuvent **modifier** la fiche via le même panneau que la création.
 
 ## Parcours
 
