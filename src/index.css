@@ -966,10 +966,6 @@ a.equipe-list-name-cell:focus-visible {
   padding-left: 1.25rem;
 }
 
-.mission-fiche-prose__list--ordered {
-  list-style-type: decimal;
-}
-
 .mission-fiche-prose__list li {
   margin-bottom: 0.25rem;
 }

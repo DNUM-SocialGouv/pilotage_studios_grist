@@ -250,9 +250,18 @@ export function TicketDrawer({ ticket, onClose, onColumnChanged }: TicketDrawerP
                     <p id="ticket-detail-title" className="ticket-drawer-label">
                       Détail
                     </p>
-                    <div className="ticket-drawer-detail">
-                      <MissionProse value={detailText} />
-                    </div>
+                    {ticket.nature === "Produit" ? (
+                      <div className="ticket-drawer-detail">
+                        <MissionProse value={detailText} />
+                      </div>
+                    ) : (
+                      <p
+                        className="fr-text--sm fr-mb-0"
+                        style={{ whiteSpace: "pre-wrap" }}
+                      >
+                        {detailText}
+                      </p>
+                    )}
                   </section>
                 ) : null}
 

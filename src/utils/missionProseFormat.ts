@@ -121,6 +121,21 @@ function looksLikeTableRow(line: string): boolean {
   return splitMarkdownTableCells(t).length >= 2;
 }
 
+/** Aligne une ligne sur le nombre de colonnes de l’en-tête (pad / tronque). */
+export function normalizeTableRow(
+  cells: MissionProseInline[][],
+  colCount: number,
+): MissionProseInline[][] {
+  if (colCount <= 0) {
+    return [];
+  }
+  const out = cells.slice(0, colCount);
+  while (out.length < colCount) {
+    out.push([{ type: "text", value: "" }]);
+  }
+  return out;
+}
+
 function flushParagraph(
   lines: string[],
   blocks: MissionProseBlock[],
@@ -211,7 +226,12 @@ export function parseMissionProse(raw: string): MissionProseBlock[] {
         );
         i += 1;
       }
-      blocks.push({ type: "table", headers, rows });
+      const colCount = headers.length;
+      blocks.push({
+        type: "table",
+        headers: normalizeTableRow(headers, colCount),
+        rows: rows.map((row) => normalizeTableRow(row, colCount)),
+      });
       continue;
     }
 

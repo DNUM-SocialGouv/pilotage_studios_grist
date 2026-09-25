@@ -123,4 +123,17 @@ describe("parseMissionProse", () => {
       assert.deepEqual(blocks[0].rows[0]![1], [{ type: "bold", value: "RU" }]);
     }
   });
+
+  it("normalise les lignes de tableau à la largeur de l’en-tête", () => {
+    const blocks = parseMissionProse(
+      "| A | B | C |\n|---|---|---|\n| 1 | 2 |\n| x | y | z | w |",
+    );
+    assert.equal(blocks[0]!.type, "table");
+    if (blocks[0]!.type === "table") {
+      assert.equal(blocks[0].rows[0]!.length, 3);
+      assert.deepEqual(blocks[0].rows[0]![2], [{ type: "text", value: "" }]);
+      assert.equal(blocks[0].rows[1]!.length, 3);
+      assert.deepEqual(blocks[0].rows[1]![2], [{ type: "text", value: "z" }]);
+    }
+  });
 });
