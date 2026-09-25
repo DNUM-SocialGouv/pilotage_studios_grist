@@ -4,7 +4,7 @@
 
 ## Objet
 
-Détail d’une mission master : en-tête P2 (bandeau), onglets — aligné UI sur l’app sœur ([PR #222](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/222), [PR #224](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/224), [PR #225](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/225), drawer [#227](https://github.com/DNUM-SocialGouv/pilotage_studios/pull/227)). Édition master via drawer ; CRUD prestations via drawer dédié ; **Note studio** éditable sur place (textarea Markdown) ; **Docs** gérés dans la colonne Contexte (télécharger / ajouter / détacher) ; pas d’IA ni d’édition inline des champs narratifs Contexte.
+Détail d’une mission master : hero type Mon carnet / produit (bandeau CallOut), onglets — aligné UI sur la fiche produit pour l’en-tête ; contenu métier mission (statut, produit, département, Modifier). Édition master via drawer ; CRUD prestations via drawer dédié ; **Note studio** éditable sur place (textarea Markdown) ; **Liens FIGMA / Notion** éditables sur place (panneau Contexte, au-dessus des PJ) ; **Docs** gérés dans la colonne Contexte (télécharger / ajouter / détacher) ; pas d’IA ni d’édition inline des champs narratifs Contexte (demande, enjeux…).
 
 ## Parcours
 
@@ -19,14 +19,17 @@ Détail d’une mission master : en-tête P2 (bandeau), onglets — aligné UI s
 
 Même gate que la liste (`MissionsLayout`). Mission introuvable : alerte warning + retour liste. Pendant un rechargement après création : « Chargement de la mission… » (évite un faux introuvable).
 
-## En-tête (P2)
+## Hero (style Mon carnet / produit)
 
-| Élément | Contenu |
-|---------|---------|
-| Ligne titre | Badge statut + **H1** (`Nom_de_la_mission`) + bouton **Modifier** (drawer edit) |
-| Bandeau méta | 2–3 colonnes bordées : **Produit** (texte) · **Département** (`departement_sdpc` du produit SDPC lié) · **Dernière mise à jour** (masquée si vide). Pas d’intervenants ni de TTC CRA dans l’en-tête |
+| Zone | Contenu |
+|------|---------|
+| Fil d’Ariane | Dans le hero : Accueil › Missions › nom de la mission |
+| Titre | CallOut `titleAs="h2"` — `Nom_de_la_mission` (DSFR CallOut : pas de `h1`) |
+| Badge | Statut (`StatutBadge`) sous le titre |
+| Méta | Produit (texte) · Département (pastille `tdEquipeTag` si renseigné, sinon `—`) · Dernière mise à jour (masquée si vide) |
+| Actions | Colonne droite du hero : bouton **Modifier** (drawer edit) |
 
-Pas de CR / estimation / IA.
+Pas de CR / estimation / IA. Pas de champs spécifiques produit (En prod, liens site…).
 
 ## Drawer « Modifier » (master)
 
@@ -45,7 +48,7 @@ Après succès : Alert in-drawer (edit) ou fermeture (create) + rechargement des
 
 | Onglet | Contenu |
 |--------|---------|
-| **Contexte** | Champs narratifs (demande, enjeux, historique, utilisateurs / périmètre, liens FIGMA/Notion) : titres `#`–`######`, paragraphes, listes `*` / `-` / `1.`, tableaux GFM `| … |`, gras `**…**`, liens Markdown `[libellé](https://…)` — colonne gauche ; **Pièces jointes** (`Docs`) en panneau latéral droit sticky (desktop) — usages app sœur : télécharger · **Supprimer** (détache l’id de la cellule) · **Ajouter un document** (upload REST jeton non-readonly + rattachement ; PDF/Office/MD/ODT/image, 20 Mo max) |
+| **Contexte** | Colonne gauche : champs narratifs (demande, enjeux, historique, utilisateurs / périmètre) — titres `#`–`######`, paragraphes, listes `*` / `-` / `1.`, tableaux GFM `| … |`, gras `**…**`, liens Markdown `[libellé](https://…)`. Colonne droite sticky (desktop) : **Liens FIGMA / Notion** (`Liens_FIGMA_Notion` — URLs nues ou Markdown, cliquables, édition sur place Ajouter / Modifier) **au-dessus** des **Pièces jointes** (`Docs` — télécharger · **Supprimer** · **Ajouter un document** ; PDF/Office/MD/ODT/image, 20 Mo max) |
 | **Équipe & prestations** | Filtres **équipe** + **période CRA** (Du mois / Au mois, bornes inclusives sur `Realise.Periode`) + **barre empilée** % TTC par équipe (montant affiché `… € TTC · … jours`, sans titre « TTC par équipe ») ; CTA **Ajouter une prestation** ; tableau prestations avec **CRA dépliables** (chevron si ≥1 CRA dans la plage, sinon spacer ; sous-lignes période / tâches / jours / TTC) — colonnes : **Prestation**, **Statut** (badge), intervenant, équipe, **date de début**, **jours envisagés**, Nb CRA, TTC CRA, action **Modifier**. Si une borne période est active : seules les prestations avec ≥1 CRA dans la plage apparaissent. Composant partagé avec la fiche produit (`MissionEquipePrestationsPanel`). |
 | **Note studio** | `Suivi_resp_studio` — lecture Markdown léger (`MissionProse`) ; **édition sur place** (bouton Ajouter / Modifier → textarea + aide Markdown → valider / annuler) via `updateMissionRecord` ; pas de WYSIWYG |
 

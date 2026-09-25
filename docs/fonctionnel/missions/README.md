@@ -19,7 +19,7 @@ Une **mission master** (`Missions`) est un lot d’accompagnement (contexte, pro
 
 | Table | Usage |
 |-------|--------|
-| `Missions` | Lignes liste / fiche (masters) ; **écriture** create + update (drawer Nom / Produit / Statut ; Note studio `Suivi_resp_studio` ; Docs `Docs` via panneau Contexte) |
+| `Missions` | Lignes liste / fiche (masters) ; **écriture** create + update (drawer Nom / Produit / Statut ; Note studio `Suivi_resp_studio` ; Liens FIGMA/Notion `Liens_FIGMA_Notion` + Docs `Docs` via panneau Contexte) |
 | `Missions_enfants` | Prestations ; **écriture** create + update (drawer fiche ; 1ʳᵉ prestation optionnelle à la création mission) |
 | `Equipe` | Libellés intervenants / équipe |
 | `Tableau_de_pilotage_SDPC_Produits_SDPC` | Libellés produit |

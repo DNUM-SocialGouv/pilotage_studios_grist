@@ -1,11 +1,14 @@
 import { useEffect, useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
+import { CallOut } from "@codegouvfr/react-dsfr/CallOut";
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
+import { tdEquipeTag } from "../components/EquipeTags";
 import { useMissionEnfantDrawerRef } from "../components/missions/MissionEnfantDrawerContext";
 import { useMissionFormDrawerRef } from "../components/missions/MissionFormDrawerContext";
 import { MissionContexteDocsPanel } from "../components/missions/MissionContexteDocsPanel";
 import { MissionEquipePrestationsPanel } from "../components/missions/MissionEquipePrestationsPanel";
+import { MissionLiensFigmaNotionPanel } from "../components/missions/MissionLiensFigmaNotionPanel";
 import { MissionNoteStudioEditor } from "../components/missions/MissionNoteStudioEditor";
 import { MissionProse } from "../components/missions/MissionProse";
 import { StatutBadge } from "../components/StatutBadge";
@@ -48,7 +51,6 @@ const FIELD_LABELS: Record<string, string> = {
   Pb_utilisateurs_identifies: "Problèmes utilisateurs identifiés",
   Fonctionnalites_produit: "Fonctionnalités produit",
   Volumes_d_usages_utilisateurs_utilisations_: "Volumes d’usages / utilisations",
-  Liens_FIGMA_Notion: "Liens FIGMA / Notion",
   Suivi_resp_studio: "Suivi resp. studio",
 };
 
@@ -84,8 +86,7 @@ function MissionContextePanel({
       .map((key) => ({ key, value: mission[key] }))
       .filter((f) => isTextFilled(f.value)),
   })).filter((s) => s.fields.length > 0);
-  const liens = isTextFilled(mission.Liens_FIGMA_Notion) ? mission.Liens_FIGMA_Notion : null;
-  const hasNarrative = sections.length > 0 || liens != null;
+  const hasNarrative = sections.length > 0;
 
   return (
     <div className="fr-grid-row fr-grid-row--gutters mission-contexte-layout">
@@ -103,12 +104,6 @@ function MissionContextePanel({
                 ))}
               </section>
             ))}
-            {liens ? (
-              <div className="fr-mb-0">
-                <h3 className="fr-h6 fr-mb-1w">{FIELD_LABELS.Liens_FIGMA_Notion}</h3>
-                <MissionProse value={liens} />
-              </div>
-            ) : null}
           </>
         ) : (
           <p className="fr-text--sm fr-text-mention--grey fr-mb-0">
@@ -117,6 +112,11 @@ function MissionContextePanel({
         )}
       </div>
       <aside className="fr-col-12 fr-col-md-4 mission-contexte-layout__aside">
+        <MissionLiensFigmaNotionPanel
+          missionId={mission.id}
+          value={mission.Liens_FIGMA_Notion}
+          onSaved={onDocsChanged}
+        />
         <MissionContexteDocsPanel
           missionId={mission.id}
           docs={mission.Docs}
@@ -269,7 +269,9 @@ export function MissionsDetailView() {
   const produitId = extractGristReferenceId(mission.Produit_SDPC);
   const produitRecord =
     produitId != null && produitId !== 0 ? produitsRecordsById.get(produitId) : undefined;
-  const departementLabel = produitRecord ? departementProduitSdpc(produitRecord) : "—";
+  const departementRaw = produitRecord ? departementProduitSdpc(produitRecord) : "—";
+  const departementHasValue = departementRaw !== "—" && departementRaw.trim().length > 0;
+  const produitLabel = libelleProduitMission(mission, produitsById);
   const majRaw = mission.Derniere_mise_a_jour;
   const derniereMajLabel =
     typeof majRaw === "number" && Number.isFinite(majRaw) && majRaw !== 0
@@ -286,97 +288,116 @@ export function MissionsDetailView() {
   }
 
   return (
-    <div className="fr-py-1w">
-      <WidgetBreadcrumb
-        className="fr-mb-2w"
-        segments={[...MISSIONS_CRUMB]}
-        currentPageLabel={titre}
-      />
-
-      <div className="mission-fiche-title-row fr-mb-2w">
-        <div className="mission-fiche-title-row__identity">
-          <ul className="fr-badges-group fr-mb-0">
-            <li>
-              <StatutBadge statut={mission.Statut} />
-            </li>
-          </ul>
-          <h1 className="fr-mb-0 fr-h3 mission-fiche-title-row__title">{titre}</h1>
-        </div>
-        <button
-          type="button"
-          className="fr-btn fr-btn--primary fr-icon-edit-line fr-btn--icon-left"
-          onClick={() => missionFormDrawerRef.current?.openEdit(mission)}
+    <div className="fr-container fr-container--fluid fr-px-0 mission-fiche cra-carnet">
+      <header className="cra-carnet__hero mission-fiche__hero fr-mb-3w">
+        <WidgetBreadcrumb
+          id="mission-fiche-breadcrumb"
+          className="mission-fiche__breadcrumb"
+          segments={[...MISSIONS_CRUMB]}
+          currentPageLabel={titre}
+        />
+        <CallOut
+          className="cra-carnet__callout mission-fiche__callout"
+          titleAs="h2"
+          title={titre}
+          bodyAs="div"
         >
-          Modifier
-        </button>
-      </div>
-
-      <div
-        className="fr-grid-row mission-fiche-meta-bandeau fr-mb-4w"
-        role="group"
-        aria-label="Informations de la mission"
-      >
-        <div className={`${metaColClass} mission-fiche-meta-bandeau__cell`}>
-          <div className="fr-text--xs fr-mb-1v mission-fiche-meta-bandeau__label">Produit</div>
-          <div className="fr-text--sm fr-mb-0">
-            {libelleProduitMission(mission, produitsById)}
-          </div>
-        </div>
-        <div className={`${metaColClass} mission-fiche-meta-bandeau__cell`}>
-          <div className="fr-text--xs fr-mb-1v mission-fiche-meta-bandeau__label">
-            Département
-          </div>
-          <div className="fr-text--sm fr-mb-0">{departementLabel}</div>
-        </div>
-        {derniereMajLabel != null ? (
-          <div className={`${metaColClass} mission-fiche-meta-bandeau__cell`}>
-            <div className="fr-text--xs fr-mb-1v mission-fiche-meta-bandeau__label">
-              Dernière mise à jour
+          <div className="cra-carnet__hero-grid">
+            <div className="cra-carnet__hero-identity">
+              <div className="cra-carnet__hero-identity-text">
+                <ul className="fr-badges-group fr-mb-2w">
+                  <li>
+                    <StatutBadge statut={mission.Statut} />
+                  </li>
+                </ul>
+                <div
+                  className="fr-grid-row mission-fiche__hero-meta"
+                  role="group"
+                  aria-label="Informations de la mission"
+                >
+                  <div className={`${metaColClass} mission-fiche__hero-meta-item`}>
+                    <div className="fr-text--xs fr-mb-1v mission-fiche__hero-meta-label">
+                      Produit
+                    </div>
+                    <div className="fr-text--sm fr-mb-0">{produitLabel}</div>
+                  </div>
+                  <div className={`${metaColClass} mission-fiche__hero-meta-item`}>
+                    <div className="fr-text--xs fr-mb-1v mission-fiche__hero-meta-label">
+                      Département
+                    </div>
+                    <div className="fr-text--sm fr-mb-0">
+                      {departementHasValue
+                        ? tdEquipeTag(departementRaw, { small: true })
+                        : "—"}
+                    </div>
+                  </div>
+                  {derniereMajLabel != null ? (
+                    <div className={`${metaColClass} mission-fiche__hero-meta-item`}>
+                      <div className="fr-text--xs fr-mb-1v mission-fiche__hero-meta-label">
+                        Dernière mise à jour
+                      </div>
+                      <div className="fr-text--sm fr-mb-0">{derniereMajLabel}</div>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
             </div>
-            <div className="fr-text--sm fr-mb-0">{derniereMajLabel}</div>
-          </div>
-        ) : null}
-      </div>
 
-      <Tabs
-        label="Sections de la fiche mission"
-        className="fr-mb-2w"
-        selectedTabId={missionTabId}
-        onTabChange={selectMissionTab}
-        tabs={[
-          { tabId: "contexte", label: "Contexte", iconId: "fr-icon-file-text-line" },
-          {
-            tabId: "equipe",
-            label: "Équipe & prestations",
-            iconId: "fr-icon-team-line",
-          },
-          {
-            tabId: "notes",
-            label: "Note studio",
-            iconId: "fr-icon-draft-line",
-          },
-        ]}
-      >
-        {missionTabId === "contexte" ? (
-          <MissionContextePanel mission={mission} onDocsChanged={reloadMissions} />
-        ) : null}
-        {missionTabId === "equipe" ? (
-          <MissionEquipePrestationsPanel
-            key={mission.id}
-            missionId={mission.id}
-            missionTitre={titre}
-            enfants={enfants}
-            realisations={realisations}
-            intervenantsById={intervenantsById}
-            equipesByIntervenantId={equipesByIntervenantId}
-            onAddPrestation={(mid) => enfantDrawerRef.current?.openCreate(mid)}
-            onEditPrestation={(enfant) => enfantDrawerRef.current?.openEdit(enfant)}
-          />
-        ) : null}
-        {missionTabId === "notes" ? (
-          <MissionNotesPanel mission={mission} onNoteSaved={reloadMissions} />
-        ) : null}
-      </Tabs>
+            <div className="cra-carnet__hero-aside">
+              <p className="fr-text--xs fr-mb-1v fr-hint-text">Actions</p>
+              <button
+                type="button"
+                className="fr-btn fr-btn--primary fr-icon-edit-line fr-btn--icon-left"
+                onClick={() => missionFormDrawerRef.current?.openEdit(mission)}
+              >
+                Modifier
+              </button>
+            </div>
+          </div>
+        </CallOut>
+      </header>
+
+      <div className="fr-px-2w fr-px-md-0">
+        <Tabs
+          label="Sections de la fiche mission"
+          className="fr-mb-2w"
+          selectedTabId={missionTabId}
+          onTabChange={selectMissionTab}
+          tabs={[
+            { tabId: "contexte", label: "Contexte", iconId: "fr-icon-file-text-line" },
+            {
+              tabId: "equipe",
+              label: "Équipe & prestations",
+              iconId: "fr-icon-team-line",
+            },
+            {
+              tabId: "notes",
+              label: "Note studio",
+              iconId: "fr-icon-draft-line",
+            },
+          ]}
+        >
+          {missionTabId === "contexte" ? (
+            <MissionContextePanel mission={mission} onDocsChanged={reloadMissions} />
+          ) : null}
+          {missionTabId === "equipe" ? (
+            <MissionEquipePrestationsPanel
+              key={mission.id}
+              missionId={mission.id}
+              missionTitre={titre}
+              enfants={enfants}
+              realisations={realisations}
+              intervenantsById={intervenantsById}
+              equipesByIntervenantId={equipesByIntervenantId}
+              onAddPrestation={(mid) => enfantDrawerRef.current?.openCreate(mid)}
+              onEditPrestation={(enfant) => enfantDrawerRef.current?.openEdit(enfant)}
+            />
+          ) : null}
+          {missionTabId === "notes" ? (
+            <MissionNotesPanel mission={mission} onNoteSaved={reloadMissions} />
+          ) : null}
+        </Tabs>
+      </div>
     </div>
   );
 }
