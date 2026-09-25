@@ -490,6 +490,7 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
                             render={({ field }) => (
                               <DsfrSelectRichMulti
                                 label="Produit (SDPC)"
+                                hintText="Rechercher un produit ; recliquer sur le produit choisi pour le retirer."
                                 placeholderWhenEmpty="Rechercher un produit…"
                                 options={produitRows.map((p) => ({
                                   value: String(p.id),

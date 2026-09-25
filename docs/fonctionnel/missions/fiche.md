@@ -33,7 +33,7 @@ Pas de CR / estimation / IA. Pas de champs spécifiques produit (En prod, liens 
 
 ## Drawer « Modifier » (master)
 
-Champs **Nom · Produit · Statut** uniquement (pas les textes de contexte — ceux-ci s’éditent sur place dans l’onglet **Contexte**). Prestations : renvoi vers l’onglet **Équipe & prestations** (lien in-drawer). Après enregistrement : Alert succès in-drawer.
+Champs **Nom · Produit** (liste searchable) **· Statut** uniquement (pas les textes de contexte — ceux-ci s’éditent sur place dans l’onglet **Contexte**). Prestations : renvoi vers l’onglet **Équipe & prestations** (lien in-drawer). Après enregistrement : Alert succès in-drawer.
 
 ## Drawer prestation (onglet Équipe)
 

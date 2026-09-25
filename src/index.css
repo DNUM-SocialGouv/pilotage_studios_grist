@@ -1012,6 +1012,10 @@ a.equipe-list-name-cell:focus-visible {
   justify-content: flex-end;
 }
 
+.mission-contexte-narrative__section:last-child {
+  margin-bottom: 0 !important;
+}
+
 .mission-contexte-narrative__actions {
   display: flex;
   flex-wrap: wrap;

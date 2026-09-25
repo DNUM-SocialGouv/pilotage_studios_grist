@@ -120,6 +120,7 @@ export function MissionContexteNarrativeEditor({
     >
       {editing ? (
         <div className="mission-contexte-narrative__edit">
+          <p className="fr-hint-text fr-mb-3w">{MARKDOWN_HINT}</p>
           {MISSION_CONTEXTE_SECTIONS.map((section) => (
             <fieldset
               key={section.title}
@@ -132,7 +133,6 @@ export function MissionContexteNarrativeEditor({
                 <Input
                   key={key}
                   label={MISSION_CONTEXTE_FIELD_LABELS[key]}
-                  hintText={MARKDOWN_HINT}
                   textArea
                   className="fr-mb-2w mission-contexte-narrative__field"
                   nativeTextAreaProps={{
@@ -185,13 +185,16 @@ export function MissionContexteNarrativeEditor({
             }
             const showEdit = section.title === firstFilledSectionTitle;
             return (
-              <section key={section.title} className="fr-mb-4w">
+              <section
+                key={section.title}
+                className="mission-contexte-narrative__section fr-mb-4w"
+              >
                 <div className="mission-contexte-narrative__header">
                   <h2 className="fr-h6 fr-mb-0">{section.title}</h2>
                   {showEdit ? editButton : null}
                 </div>
                 {fields.map(({ key, value }) => (
-                  <div key={key} className="fr-mt-3w fr-mb-3w">
+                  <div key={key} className="fr-mt-3w fr-mb-0">
                     <h3 className="fr-text--md fr-mb-1w fr-text--bold">
                       {MISSION_CONTEXTE_FIELD_LABELS[key]}
                     </h3>
