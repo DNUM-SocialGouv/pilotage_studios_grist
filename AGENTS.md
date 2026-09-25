@@ -169,6 +169,7 @@ Workspace Cursor : ouvrir **uniquement** ce dépôt pour le widget — ne pas d�
 | [`.cursor/rules/widget-iframe.mdc`](.cursor/rules/widget-iframe.mdc) | Contraintes iframe (always-on) |
 | [`.cursor/rules/pilotage-drawers.mdc`](.cursor/rules/pilotage-drawers.mdc) | Drawers : taille fixe SM, pas de sélecteur largeur |
 | [`.cursor/rules/pedagogie-non-technique.mdc`](.cursor/rules/pedagogie-non-technique.mdc) | « En clair » : brief non technique en tête des plans / issues / PR / synthèses (always-on) |
+| [`.cursor/rules/design-accessibilite.mdc`](.cursor/rules/design-accessibilite.mdc) | Parcours simple, règle métier claire, accessibilité (always-on) ; base RU [`docs/ru/`](docs/ru/) |
 | [`.cursor/rules/roles-matrice.mdc`](.cursor/rules/roles-matrice.mdc) | MAJ obligatoire [`docs/fonctionnel/roles/matrice-droits.md`](docs/fonctionnel/roles/matrice-droits.md) si feature / permissions (always-on) |
 | [`.cursor/rules/kanban-feuille-route.mdc`](.cursor/rules/kanban-feuille-route.mdc) | Sync kanban à chaque feature / issue / correctif visible (always-on) |
 

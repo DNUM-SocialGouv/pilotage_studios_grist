@@ -52,6 +52,7 @@ describe("parseMissionProse", () => {
     assert.equal(blocks[0]!.type, "paragraph");
     assert.equal(blocks[1]!.type, "list");
     if (blocks[1]!.type === "list") {
+      assert.equal(blocks[1].ordered, false);
       assert.equal(blocks[1].items.length, 2);
     }
     assert.equal(blocks[2]!.type, "paragraph");
@@ -95,7 +96,44 @@ describe("parseMissionProse", () => {
     assert.equal(blocks[2]!.type, "heading");
     assert.equal(blocks[3]!.type, "list");
     if (blocks[3]!.type === "list") {
+      assert.equal(blocks[3].ordered, false);
       assert.equal(blocks[3].items.length, 2);
+    }
+  });
+
+  it("reconnaît les listes numérotées", () => {
+    const blocks = parseMissionProse("1. Un\n2. Deux");
+    assert.equal(blocks.length, 1);
+    assert.equal(blocks[0]!.type, "list");
+    if (blocks[0]!.type === "list") {
+      assert.equal(blocks[0].ordered, true);
+      assert.equal(blocks[0].items.length, 2);
+    }
+  });
+
+  it("parse un tableau GFM", () => {
+    const blocks = parseMissionProse(
+      "| Personne | Métier |\n|----------|--------|\n| Alex | **RU** |\n| Sam | Design |",
+    );
+    assert.equal(blocks.length, 1);
+    assert.equal(blocks[0]!.type, "table");
+    if (blocks[0]!.type === "table") {
+      assert.equal(blocks[0].headers.length, 2);
+      assert.equal(blocks[0].rows.length, 2);
+      assert.deepEqual(blocks[0].rows[0]![1], [{ type: "bold", value: "RU" }]);
+    }
+  });
+
+  it("normalise les lignes de tableau à la largeur de l’en-tête", () => {
+    const blocks = parseMissionProse(
+      "| A | B | C |\n|---|---|---|\n| 1 | 2 |\n| x | y | z | w |",
+    );
+    assert.equal(blocks[0]!.type, "table");
+    if (blocks[0]!.type === "table") {
+      assert.equal(blocks[0].rows[0]!.length, 3);
+      assert.deepEqual(blocks[0].rows[0]![2], [{ type: "text", value: "" }]);
+      assert.equal(blocks[0].rows[1]!.length, 3);
+      assert.deepEqual(blocks[0].rows[1]![2], [{ type: "text", value: "z" }]);
     }
   });
 });

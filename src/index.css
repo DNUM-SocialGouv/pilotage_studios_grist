@@ -913,11 +913,14 @@ a.equipe-list-name-cell:focus-visible {
 
 .mission-fiche-prose {
   word-break: break-word;
+  font-size: 1rem;
+  line-height: 1.5rem;
 }
 
 .mission-fiche-prose > p:last-child,
 .mission-fiche-prose > .mission-fiche-prose__heading:last-child,
-.mission-fiche-prose > .mission-fiche-prose__list:last-child {
+.mission-fiche-prose > .mission-fiche-prose__list:last-child,
+.mission-fiche-prose > .mission-fiche-prose__table:last-child {
   margin-bottom: 0;
 }
 
@@ -946,6 +949,18 @@ a.equipe-list-name-cell:focus-visible {
   font-size: 0.9375rem;
 }
 
+/*
+ * DSFR pose `p { font-size: 1rem }` en dur : dans un conteneur `.fr-text--sm`,
+ * les <p> restent à 1rem tandis que ul/ol héritent du sm → listes plus petites.
+ * On force paragraphes et listes à la taille du conteneur prose.
+ */
+.mission-fiche-prose > p,
+.mission-fiche-prose__list,
+.mission-fiche-prose__list li {
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
 .mission-fiche-prose__list {
   margin: 0 0 1rem;
   padding-left: 1.25rem;
@@ -953,6 +968,25 @@ a.equipe-list-name-cell:focus-visible {
 
 .mission-fiche-prose__list li {
   margin-bottom: 0.25rem;
+}
+
+.mission-fiche-prose__table {
+  margin: 0 0 1rem;
+}
+
+/* Détail ticket : même corps que le résumé (pas de fr-text--sm qui désalignait p/li). */
+.ticket-drawer-detail .mission-fiche-prose {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+.ticket-drawer-detail .mission-fiche-prose__heading--1,
+.ticket-drawer-detail .mission-fiche-prose__heading--2 {
+  font-size: 1.125rem;
+}
+
+.ticket-drawer-detail .mission-fiche-prose__heading--3 {
+  font-size: 1rem;
 }
 
 /* Note studio — carte édition sur place (pattern app sœur) */
