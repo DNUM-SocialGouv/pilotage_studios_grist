@@ -9,8 +9,8 @@ type CraDeclarerRoleGuardProps = {
 };
 
 /**
- * Garde Freelance / Admin pour « Déclarer mon CRA » (hors `Page_*`).
- * Standalone / preview locale : accès ouvert.
+ * Garde Mon carnet : Freelance (saisie) / Admin & Resp. (liste dép.) (hors `Page_*`).
+ * Standalone / preview locale : accès ouvert. Invité → redirection.
  */
 export function CraDeclarerRoleGuard({ children }: CraDeclarerRoleGuardProps) {
   const { status, role, error } = useAclProfil();

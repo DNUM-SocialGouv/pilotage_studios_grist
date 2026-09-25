@@ -86,10 +86,30 @@ export function isAdminRole(role: string | null | undefined): boolean {
   return (role?.trim() ?? "") === "Admin";
 }
 
-/** Rôles autorisés à ouvrir « Mon carnet » / déclaration CRA (couche 5, hors Page_*). */
+/**
+ * Rôles autorisés à ouvrir « Mon carnet » (couche 5, hors Page_*).
+ * Alias métier : `isMonCarnetRole`.
+ */
 export function isCraDeclarerRole(role: string | null | undefined): boolean {
   const t = role?.trim() ?? "";
-  return t === "Admin" || t === "Freelance";
+  return (
+    t === "Admin" ||
+    t === "Responsable de département" ||
+    t === "Freelance"
+  );
+}
+
+/** @see isCraDeclarerRole */
+export const isMonCarnetRole = isCraDeclarerRole;
+
+/**
+ * Admin / Resp. : vue lecture des missions du département (pas la saisie CRA).
+ */
+export function isMonCarnetManagerRole(
+  role: string | null | undefined,
+): boolean {
+  const t = role?.trim() ?? "";
+  return t === "Admin" || t === "Responsable de département";
 }
 
 /**

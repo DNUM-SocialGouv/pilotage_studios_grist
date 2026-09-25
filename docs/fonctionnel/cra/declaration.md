@@ -3,41 +3,60 @@
 [← CRA](README.md) › **Mon carnet**
 
 > **Route** : `/cra/declarer`  
-> **Nav** : **Mon carnet** (niveau 1 — Freelance et Admin). Pas sous Budget.
+> **Nav** : **Mon carnet** (niveau 1 — Freelance, Admin, Responsable de département). Pas sous Budget.
 
 ## En clair
 
-En fin de mois, le freelance ouvre **Mon carnet**, choisit le mois, et ne voit **que ses prestations en cours** (groupées par mission). Pour chacune : nombre de jours + description courte, puis enregistrement. La page **Missions** reste ouverte pour tout le monde (contexte, documents) — ce n’est pas un filtre sur le catalogue.
+Selon le rôle, **Mon carnet** sert deux intentions :
 
-Le haut de page montre l’identité (avatar, nom, **tag équipe** coloré) et le mois. Dans l’onglet **En cours**, un **cadre** reprend le modèle de la fiche Équipe : TJM (si lisible), nombre de prestations en cours, jours saisis du mois, et **Total HT** indicatif (= jours × TJM). L’onglet **Passées** est prévu ensuite (sans ce cadre, qui n’a de sens que pour la saisie du mois).
+- **Freelance** : en fin de mois, choisir le mois, voir **ses prestations en cours** (groupées par mission), saisir jours + description, puis enregistrer.
+- **Admin** et **Responsable de département** : **liste en lecture** des missions qui ont **au moins une prestation** dont l’intervenant est dans **leur** département (ex. Product). Une mission mixte (Access. + Design + Product) apparaît ; une mission uniquement Access. n’apparaît pas pour un Admin Product. Pas de saisie de jours ici — la revue CRA (jours / BDC) reste sous Budget → Revue CRA équipe.
+
+La page **Missions** reste ouverte pour tout le monde (contexte, documents).
+
+Le haut de page montre l’identité (avatar, nom, **tag équipe** coloré). En mode freelance, un **cadre** reprend TJM (si lisible), prestations en cours, jours saisis, Total HT. En mode manager : nombre de missions / prestations du périmètre.
 
 ## Qui y accède
 
-| Rôle | Accès |
-|------|--------|
-| Freelance | Oui (nav + garde de rôle) |
-| Admin | Oui (pour tester / dépanner) |
-| Autres | Non (redirection accueil) |
+| Rôle | Accès | Contenu |
+|------|--------|---------|
+| Freelance | Oui (nav + garde) | Saisie CRA (prestations « moi ») |
+| Admin | Oui | Liste lecture missions du **département** (`Equipe.Equipe`) |
+| Responsable de département | Oui | Idem Admin (même filtre département) |
+| Invité | Non (redirection accueil) | — |
 
-Pas de drapeau `Page_*` dédié : l’accès repose sur `Acl_profil.Role` (Freelance ou Admin).
+Pas de drapeau `Page_*` dédié : l’accès repose sur `Acl_profil.Role`.
 
-## Parcours
+**Prérequis manager** : `Equipe.Equipe` renseigné sur la fiche — sinon message « pas de département » (comme la revue équipe).
+
+## Parcours freelance
 
 1. Choisir le **mois** du carnet.
-2. Onglet **En cours** : pour chaque **mission** (libellé + **statut mission**), renseigner les **jours** et une **description** par prestation.
+2. Onglet **En cours** : pour chaque **mission**, renseigner les **jours** et une **description** par prestation.
 3. **Publier le carnet** → crée ou met à jour les lignes `Realise` du mois.
 
 Si une saisie existe déjà pour le mois / la prestation, le formulaire la préremplit.
 
 Le **Total HT** du cadre est un calcul d’affichage (jours saisis × TJM) : il n’écrit pas `Calcul_TTC` dans Grist.
 
+## Parcours Admin / Responsable
+
+1. Ouvrir **Mon carnet** (nav niveau 1).
+2. Onglet **En cours** : missions avec prestations actives du département ; lien vers la fiche mission ; **tableau** par mission (prestation, intervenant, statut, nb CRA, TTC engagé).
+3. Onglet **Passées** : prestations terminées du même périmètre.
+4. Bandeau : Missions · Prestations · Lignes CRA · TTC engagé (le département reste dans le hero / badge).
+
+Pas de mois, pas de « Publier ». Pour ajuster les CRA des freelances : **Budget → Revue CRA équipe**.
+
+**Indicateurs** : nb CRA = lignes `Realise` liées à la prestation ; TTC engagé = somme des montants TTC de ces lignes (même logique que la liste Missions).
+
 ## Données
 
 | Table | Usage |
 |-------|--------|
-| `Equipe` | Identifier « moi » (e-mail session = `Equipe.E_mail`) + libellé département |
-| `Missions` / `Missions_enfants` | Prestations où `Intervenant` = moi et statut « en cours » |
-| `Realise` | Create / update : `Nb_jours`, `Taches_realisees`, `Periode`, `Intervenants`, `Mission_enfant`, `Missions`, `Equipe` |
+| `Equipe` | Identifier « moi » (e-mail session = `Equipe.E_mail`) + libellé département ; map intervenant → département (manager) |
+| `Missions` / `Missions_enfants` | Freelance : prestations où `Intervenant` = moi ; manager : prestations dont l’intervenant a le même `Equipe.Equipe` |
+| `Realise` | Freelance only — create / update : `Nb_jours`, `Taches_realisees`, `Periode`, `Intervenants`, `Mission_enfant`, `Missions`, `Equipe` |
 
 Pas d’écriture de `Calcul_TTC` ni de lien BDC (qualification = [#34](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/34)).
 
@@ -47,17 +66,20 @@ Pas d’écriture de `Calcul_TTC` ni de lien BDC (qualification = [#34](https://
 2. **HITL Owner** : règle `Equipe.E_mail` **comme le TJM** — condition  
    `user.Access != "OWNER" and user.Equipe.Role_ACL != "Admin" and user.Email != rec.E_mail` → `-RU`  
    (supprimer l’ancien deny « non-Owner/Admin » sans exception soi, et inutile d’ajouter un `+R` soi à part : le refus l’emporterait). Voir [access-rules.md](../roles/access-rules.md).
-3. Staffing : prestations avec `Intervenant` = la personne.
+3. Staffing : prestations avec `Intervenant` = la personne (freelance) ou département renseigné (manager).
 
 Identité widget : l’e-mail de session vient de **`Acl_profil.E_mail`** (pas du jeton REST, souvent sans e-mail).
 
 ## Limites V1
 
-- Pas de soumission / relecture manager (suite [#33](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/33)).
-- Pas encore d’Access Rules sur `Realise` (filtre UX seulement — mur données = [#47](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/47), session suivante).
+- Pas de soumission / relecture manager depuis Mon carnet (→ revue équipe [#70](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/70)).
+- Filtre département manager = **confort UX** ; Access Rules `Missions` encore ouvertes (couche 6 plus tard).
 - Pas de suppression de ligne CRA depuis le widget.
+- Admin / Resp. ne déclarent plus leurs propres jours via cette page (saisie = rôle Freelance).
 
 ## Liens
 
 - Liste Admin : [liste.md](liste.md) (`/cra`)
+- Revue équipe : [revue-equipe.md](revue-equipe.md)
+- Matrice rôles : [matrice-droits.md](../roles/matrice-droits.md)
 - Issue : [#33](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/33)

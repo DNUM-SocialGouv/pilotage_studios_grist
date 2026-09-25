@@ -51,7 +51,7 @@ Réduire la complexité ; pas d’ajout « au cas où ». Les agents **proposent
 | `/pv` | Stub « À venir » (nav) |
 | `/evaluations`, `/analyse` | Stub hors nav |
 
-Nav principale : Accueil, **Mon carnet** (Freelance/Admin, `/cra/declarer`), **Budget** (sous-menu Bons de commande · Plans d’activité · Prestation / CRA · Revue CRA équipe · Procès-verbaux — masqué si aucun enfant accessible, typiquement côté Freelance), Produits, Missions, **Équipe**, **Outils** (Récap porteurs · Droits des pages — Admin). Pas de route `/budget`. `/intervenants` redirige vers `/equipe`.
+Nav principale : Accueil, **Mon carnet** (Freelance/Admin/Resp., `/cra/declarer`), **Budget** (sous-menu Bons de commande · Plans d’activité · Prestation / CRA · Revue CRA équipe · Procès-verbaux — masqué si aucun enfant accessible, typiquement côté Freelance), Produits, Missions, **Équipe**, **Outils** (Récap porteurs · Droits des pages — Admin). Pas de route `/budget`. `/intervenants` redirige vers `/equipe`.
 
 Entrée MemoryRouter : `/` (`WelcomePage` — **feuille de route kanban** Feedback · Backlog · En cours · Livré, table Grist unique `Kanban`, conversation `Kanban_commentaires`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
 

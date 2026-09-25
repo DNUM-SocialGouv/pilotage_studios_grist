@@ -20,6 +20,7 @@ export type CraDeclarerData = {
   self: SelfEquipeIdentity | null;
   missions: MissionsData["missions"];
   missionEnfants: MissionsData["missionEnfants"];
+  intervenants: MissionsData["intervenants"];
   suivi: MissionsData["suivi"];
 };
 
@@ -35,6 +36,7 @@ const EMPTY: CraDeclarerData = {
   self: null,
   missions: [],
   missionEnfants: [],
+  intervenants: [],
   suivi: [],
 };
 
@@ -51,6 +53,7 @@ async function loadCraDeclarerBundle(
     self,
     missions: tables.missions,
     missionEnfants: tables.missionEnfants,
+    intervenants: tables.intervenants,
     suivi: tables.suivi,
   };
 }

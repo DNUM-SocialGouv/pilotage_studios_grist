@@ -11,8 +11,8 @@ export type WidgetNavLink = {
   /** Visible seulement si rôle Admin (indépendant des `Page_*`). */
   adminOnly?: boolean;
   /**
-   * Visible seulement si rôle Freelance ou Admin (déclaration CRA).
-   * Indépendant des `Page_*` — ne passe pas par `canAccess`.
+   * Visible seulement si rôle Freelance, Admin ou Responsable de département
+   * (Mon carnet). Indépendant des `Page_*` — ne passe pas par `canAccess`.
    */
   craDeclarerOnly?: boolean;
   /**
