@@ -993,6 +993,57 @@ a.equipe-list-name-cell:focus-visible {
   gap: 0.5rem;
 }
 
+/* Contexte narratif — même pattern édition sur place */
+.mission-contexte-narrative {
+  border: 1px solid var(--border-default-grey);
+  border-radius: 0.25rem;
+  padding: 1rem 1.25rem;
+}
+
+.mission-contexte-narrative__header {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.mission-contexte-narrative__header--end {
+  justify-content: flex-end;
+}
+
+.mission-contexte-narrative__section:last-child {
+  margin-bottom: 0 !important;
+}
+
+.mission-contexte-narrative__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.mission-contexte-narrative__fieldset {
+  border: 0;
+  margin: 0;
+  min-width: 0;
+  padding: 0;
+  width: 100%;
+}
+
+/* DSFR bride souvent les inputs (~32rem) — pleine largeur colonne Contexte */
+.mission-contexte-narrative__field,
+.mission-contexte-narrative__field.fr-input-group,
+.mission-contexte-narrative__field .fr-input-wrap,
+.mission-contexte-narrative__field textarea.fr-input {
+  max-width: none;
+  width: 100%;
+}
+
+.mission-contexte-narrative__fieldset .fr-input-group {
+  max-width: none;
+  width: 100%;
+}
+
 /* Contexte — colonne droite (liens + PJ sticky ensemble desktop) */
 .mission-contexte-layout__aside {
   align-self: start;

@@ -87,7 +87,7 @@ Visibilité users : section roadmap sur `/` + issues rédigées selon [`docs/iss
 | Sécu | `src/security/embedTrust.ts`, `NothingHerePage.tsx`, `ensureFreshBuild.ts`, `fetchTableAllowlist.ts`, `writeTableAllowlist.ts` |
 | Finance / refs | `src/utils/paFinance.ts`, `montantReste.tsx`, `gristReferences.ts`, `equipeBadge.ts` |
 | Dépenses BDC | `BdcDepensesPanel`, `BdcDepensesByPrestationTable`, `groupSuiviByMissionEnfant.ts`, `CraTtcStackBar` |
-| Missions | `MissionsListView`, `MissionsDetailView`, `useMissionsData`, `MissionFormDrawer`, `MissionEnfantDrawer`, `craByMission.ts` |
+| Missions | `MissionsListView`, `MissionsDetailView`, `useMissionsData`, `MissionFormDrawer`, `MissionEnfantDrawer`, `MissionContexteNarrativeEditor`, `craByMission.ts` |
 | Équipe | `EquipeListView`, `EquipeDetailView`, `EquipeLayout`, `useEquipeData`, `useEquipeMemberMissionsData`, `EquipeFicheMissionsSection`, `EquipeFormDrawer`, `equipeList.ts`, `equipeMemberPrestations.ts`, `equipeFormFields.ts`, `equipeGristWrite.ts` |
 | CRA | `CraListView`, `CraDeclarerPage`, `CraRevueEquipePage`, `CraRecapPorteursPage`, `craList.ts`, `craDeclarer.ts`, `craRevueEquipe.ts`, `craExport.ts`, `realiseGristWrite.ts` |
 | Feedback | `FeedbackWidget`, `createKanbanFeedback`, `feedbackEquipe`, `writeTableAllowlist` |
@@ -234,7 +234,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 ## 10. Hors scope (ne pas recréer sans demande)
 
 - Features IA / assistant
-- Écriture Grist hors allowlist (`Kanban` create Feedback + update colonne, `Kanban_commentaires` create, drawer `Missions` / `Missions_enfants` create+update, Note studio `Suivi_resp_studio`, Liens FIGMA/Notion `Liens_FIGMA_Notion`, Docs mission upload/détachement, `Realise` create+update déclaration, `Acl_profil` create auto, `Droits_pages` update Admin, `Equipe` create+update Admin) — pas d’update/delete commentaires, pas d’édition texte tickets hors colonne, pas de delete missions/prestations/CRA/équipe, pas d’édition `Type_prestation` / `Date_de_fin` prestation, pas d’update/delete `Acl_profil`, pas de create/delete lignes `Droits_pages`, pas de delete `Equipe`
+- Écriture Grist hors allowlist (`Kanban` create Feedback + update colonne, `Kanban_commentaires` create, drawer `Missions` / `Missions_enfants` create+update, Contexte narratif mission `Demande` / `Enjeux` / `Historique` / profils & périmètre, Note studio `Suivi_resp_studio`, Liens FIGMA/Notion `Liens_FIGMA_Notion`, Docs mission upload/détachement, `Realise` create+update déclaration, `Acl_profil` create auto, `Droits_pages` update Admin, `Equipe` create+update Admin) — pas d’update/delete commentaires, pas d’édition texte tickets hors colonne, pas de delete missions/prestations/CRA/équipe, pas d’édition `Type_prestation` / `Date_de_fin` prestation, pas d’update/delete `Acl_profil`, pas de create/delete lignes `Droits_pages`, pas de delete `Equipe`
 - Imports CSV Sofiane
 - Remplacer l’app `pilotage_studios`
 - Kanban / notifs / mails **dans le widget** ; alertes ops = hors bundle ([`docs/fonctionnel/feedback/alertes.md`](docs/fonctionnel/feedback/alertes.md) — pas d’URL webhook dans git)
