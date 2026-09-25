@@ -83,10 +83,10 @@ export async function loadProduitsListTables(): Promise<
   };
 }
 
-/** @deprecated Préférer `loadProduitsListTables` (inclut CRA pour le filtre liste). */
+/** Catalogue seuls (sans Missions / CRA) — tests ou usages hors liste. */
 export async function loadProduitsTable(): Promise<ProduitSdpc[]> {
-  const loaded = await loadProduitsListTables();
-  return loaded.produits;
+  const raw = await fetchAllowlistedTable("Tableau_de_pilotage_SDPC_Produits_SDPC");
+  return recordsFromFetchTable(raw).map(toProduitSdpc);
 }
 
 /**

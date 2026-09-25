@@ -23,7 +23,7 @@ export type ProduitsListFilters = {
   search: string;
   departement: string;
   statut: string;
-  /** Si true : uniquement produits avec jours CRA &gt; 0 ou TTC CRA &gt; 0. */
+  /** Si true : uniquement produits avec jours CRA > 0 ou TTC CRA > 0. */
   avecInvestissementStudio: boolean;
 };
 
@@ -57,7 +57,7 @@ export function produitEnProdLabel(enProd: boolean | undefined): string {
 
 /**
  * Ids produits ayant un investissement studio : au moins un CRA rattaché
- * (via mission / prestation) avec jours &gt; 0 ou TTC &gt; 0.
+ * (via mission / prestation) avec jours > 0 ou TTC > 0.
  */
 export function produitIdsAvecInvestissement(
   missions: readonly Mission[],
@@ -73,8 +73,7 @@ export function produitIdsAvecInvestissement(
   }
 
   const enfantsById = new Map(missionEnfants.map((e) => [e.id, e]));
-  const joursByProduit = new Map<number, number>();
-  const ttcByProduit = new Map<number, number>();
+  const ids = new Set<number>();
 
   for (const row of suivi) {
     const masterId = resolveSuiviMasterMissionId(row, enfantsById);
@@ -82,28 +81,27 @@ export function produitIdsAvecInvestissement(
       continue;
     }
     const produitId = produitByMissionId.get(masterId);
-    if (produitId == null) {
+    if (produitId == null || ids.has(produitId)) {
       continue;
     }
     const jours =
       typeof row.Nb_jours === "number" && Number.isFinite(row.Nb_jours) ? row.Nb_jours : 0;
     const ttc = montantTtcLigneSuivi(row);
-    joursByProduit.set(produitId, (joursByProduit.get(produitId) ?? 0) + jours);
-    ttcByProduit.set(produitId, (ttcByProduit.get(produitId) ?? 0) + ttc);
-  }
-
-  const ids = new Set<number>();
-  for (const [produitId, jours] of joursByProduit) {
-    if (jours > 0 || (ttcByProduit.get(produitId) ?? 0) > 0) {
-      ids.add(produitId);
-    }
-  }
-  for (const [produitId, ttc] of ttcByProduit) {
-    if (ttc > 0) {
+    if (jours > 0 || ttc > 0) {
       ids.add(produitId);
     }
   }
   return ids;
+}
+
+/**
+ * True si on peut appliquer le filtre investissement sans vider le catalogue à tort
+ * (ex. aucun CRA lisible — Access Rules ou tables manquantes).
+ */
+export function canApplyInvestissementFilter(
+  produitIdsInvestis: ReadonlySet<number>,
+): boolean {
+  return produitIdsInvestis.size > 0;
 }
 
 export function produitDepartementOptions(produits: readonly ProduitSdpc[]): string[] {

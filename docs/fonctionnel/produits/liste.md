@@ -35,11 +35,11 @@ Bloc **accordéon** (même shell que Missions / Équipe) : recherche + interrupt
 | Filtre | Comportement |
 |--------|----------------|
 | Recherche | Nom, département, statut, chef de produit |
-| Afficher uniquement les produits avec investissement studio | Interrupteur — **activé par défaut** ; produit gardé si jours CRA &gt; 0 **ou** TTC CRA &gt; 0 (via mission / prestation) |
+| Afficher uniquement les produits avec investissement studio | Interrupteur — **activé par défaut** ; produit gardé si jours CRA &gt; 0 **ou** TTC CRA &gt; 0 (via mission / prestation). Si **aucun** CRA lisible (droits Realise / tables absentes), le filtre n’est **pas** appliqué : catalogue complet + alerte info |
 | Département | Valeurs présentes |
 | Statut actuel | Valeurs présentes |
 
-Réinitialiser hors accordéon **uniquement si au moins un filtre est actif** (interrupteur désactivé compte ; l’état activé = défaut).
+Réinitialiser hors accordéon si au moins un filtre est actif (interrupteur désactivé compte), **ou** si la liste est vide alors que le catalogue ne l’est pas (sortie rapide du filtre investissement).
 
 ## Colonnes
 

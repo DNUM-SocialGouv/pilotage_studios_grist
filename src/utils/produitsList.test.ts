@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { Mission, MissionEnfant, ProduitSdpc, SuiviMensuel } from "../types.ts";
 import {
+  canApplyInvestissementFilter,
   filterProduits,
   missionsLieesAuProduit,
   produitDepartement,
@@ -97,6 +98,13 @@ describe("produitIdsAvecInvestissement", () => {
     const suivi: SuiviMensuel[] = [{ id: 1, Missions: 10, Nb_jours: 1 }];
     const ids = produitIdsAvecInvestissement(missions, enfants, suivi);
     assert.ok(ids.has(26));
+  });
+});
+
+describe("canApplyInvestissementFilter", () => {
+  it("refuse un set vide (évite catalogue vidé à tort)", () => {
+    assert.equal(canApplyInvestissementFilter(new Set()), false);
+    assert.equal(canApplyInvestissementFilter(new Set([1])), true);
   });
 });
 

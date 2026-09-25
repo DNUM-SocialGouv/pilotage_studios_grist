@@ -10,6 +10,7 @@ import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch";
 import { TableShell } from "../components/FinanceRecap";
 import { tdEquipeTag } from "../components/EquipeTags";
 import {
+  canApplyInvestissementFilter,
   filterProduits,
   PRODUITS_DEFAULT_AVEC_INVESTISSEMENT,
   produitDepartement,
@@ -54,6 +55,10 @@ export function ProduitsListView() {
     [data.missionEnfants, data.missions, data.suivi],
   );
 
+  /** Pas de CRA lisible → ne pas vider le catalogue (droits Realise / tables absentes). */
+  const investFilterApplicable = canApplyInvestissementFilter(produitIdsInvestis);
+  const applyInvestFilter = avecInvestissementStudio && investFilterApplicable;
+
   const rows = useMemo(
     () =>
       filterProduits(
@@ -62,12 +67,12 @@ export function ProduitsListView() {
           search,
           departement: departementFilter,
           statut: statutFilter,
-          avecInvestissementStudio,
+          avecInvestissementStudio: applyInvestFilter,
         },
         produitIdsInvestis,
       ),
     [
-      avecInvestissementStudio,
+      applyInvestFilter,
       data.produits,
       departementFilter,
       produitIdsInvestis,
@@ -89,12 +94,27 @@ export function ProduitsListView() {
     return n;
   }, [avecInvestissementStudio, departementFilter, search, statutFilter]);
 
+  const showReset =
+    filtresActifsCount > 0 ||
+    (avecInvestissementStudio && rows.length === 0 && data.produits.length > 0);
+
+  const investFilterIneffective =
+    avecInvestissementStudio &&
+    !investFilterApplicable &&
+    data.produits.length > 0 &&
+    data.status === "ok";
+
   const resetFilters = () => {
     setSearch("");
     setSearchKey((k) => k + 1);
     setDepartementFilter("");
     setStatutFilter("");
-    setAvecInvestissementStudio(PRODUITS_DEFAULT_AVEC_INVESTISSEMENT);
+    // Liste vide à cause du filtre investissement → désactiver plutôt que revenir au défaut ON.
+    if (avecInvestissementStudio && rows.length === 0 && data.produits.length > 0) {
+      setAvecInvestissementStudio(false);
+    } else {
+      setAvecInvestissementStudio(PRODUITS_DEFAULT_AVEC_INVESTISSEMENT);
+    }
     setPage(1);
   };
 
@@ -137,6 +157,16 @@ export function ProduitsListView() {
           small
           title="Données partielles"
           description={data.refsError}
+        />
+      ) : null}
+
+      {investFilterIneffective ? (
+        <Alert
+          className="fr-mb-2w"
+          severity="info"
+          small
+          title="Filtre investissement non appliqué"
+          description="Aucun CRA (réalisations) lisible pour calculer l’investissement studio — catalogue complet affiché. Vérifiez vos droits sur les réalisations, ou désactivez l’interrupteur."
         />
       ) : null}
 
@@ -216,7 +246,7 @@ export function ProduitsListView() {
         </div>
       </Accordion>
 
-      {filtresActifsCount > 0 ? (
+      {showReset ? (
         <div className="fr-mb-2w">
           <a
             href="#reinitialiser-filtres"
@@ -233,10 +263,10 @@ export function ProduitsListView() {
 
       <p className="fr-text--sm fr-mb-2w">
         {rows.length === 0
-          ? filtresActifsCount > 0 || avecInvestissementStudio
-            ? "Aucun produit ne correspond aux filtres."
+          ? filtresActifsCount > 0 || applyInvestFilter
+            ? "Aucun produit ne correspond aux filtres. Désactivez l’interrupteur investissement studio pour voir tout le catalogue."
             : "Aucun produit."
-          : filtresActifsCount > 0
+          : filtresActifsCount > 0 || applyInvestFilter
             ? `${rows.length} produit${rows.length > 1 ? "s" : ""} correspondent aux filtres.`
             : `${rows.length} produit${rows.length > 1 ? "s" : ""}.`}
       </p>
