@@ -27,6 +27,8 @@ l’onglet Missions reprend le bloc « Équipe & prestations » de chaque missio
 
 Colonnes widget (liste) : `Produit`, `departement_sdpc`, `Statut_actuel`, `En_prod`, `Chef_de_produit`.
 
+Filtre liste **investissement studio** (interrupteur, défaut activé) : s’appuie aussi sur `Missions` + `Missions_enfants` + `Realise` (jours ou TTC CRA &gt; 0). Détail : [liste.md](liste.md).
+
 Colonnes fiche : périmètre **sync référentiel** (~37 champs, affichés en 5 groupes métier sur l’onglet Informations) + badges `En_prod` / `Obsolescence` / `Statut_cible` / `Type_de_produit` / `Description_longue` / liens FO & collab. Détail : [fiche.md](fiche.md), `src/utils/produitReferentiel.ts`.
 
 **Hors scope widget** : édition catalogue, stack technique hors sync, PV, évaluations, onglets Prestations / Maturité.

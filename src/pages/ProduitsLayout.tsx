@@ -20,7 +20,8 @@ export function useProduitsOutlet(): ProduitsOutletContext {
 }
 
 /**
- * Liste + fiche `/produits` : un seul fetch catalogue SDPC, gate hors Grist comme Équipe.
+ * Liste + fiche `/produits` : catalogue SDPC + Missions / prestations / CRA
+ * pour le filtre investissement (liste), gate hors Grist comme Équipe.
  */
 export function ProduitsLayout() {
   const pa = useGristPa();

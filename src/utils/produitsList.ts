@@ -1,8 +1,10 @@
-import type { Mission, ProduitSdpc } from "../types.ts";
+import type { Mission, MissionEnfant, ProduitSdpc, SuiviMensuel } from "../types.ts";
 import { isPrestationEnCours } from "./equipeMemberPrestations.ts";
 import { extractGristReferenceId } from "./gristReferences.ts";
+import { resolveSuiviMasterMissionId } from "./missionEnfants.ts";
 import { departementProduitSdpc, libelleProduitGrist } from "./pilotageProduits.ts";
 import { uniqueSortedLabels } from "./equipeList.ts";
+import { montantTtcLigneSuivi } from "./suiviMensuel.ts";
 
 /** True si la mission a un statut actif (pas terminé / clos / archivé / annulé).
  * Statut vide → false (pas d’ouverture forcée ni priorité de tri sur la fiche produit).
@@ -14,16 +16,15 @@ export function isMissionEnCours(statut: string | undefined): boolean {
   return isPrestationEnCours(statut);
 }
 
-/** Filtre « En production » : Oui par défaut (réduit le bruit du catalogue). */
-export const PRODUITS_DEFAULT_EN_PROD = "oui";
-
-export type ProduitsEnProdFilter = "" | "oui" | "non";
+/** Filtre investissement studio : activé par défaut (réduit le bruit du catalogue). */
+export const PRODUITS_DEFAULT_AVEC_INVESTISSEMENT = true;
 
 export type ProduitsListFilters = {
   search: string;
   departement: string;
   statut: string;
-  enProd: ProduitsEnProdFilter;
+  /** Si true : uniquement produits avec jours CRA &gt; 0 ou TTC CRA &gt; 0. */
+  avecInvestissementStudio: boolean;
 };
 
 export function produitDisplayName(produit: ProduitSdpc): string {
@@ -55,16 +56,54 @@ export function produitEnProdLabel(enProd: boolean | undefined): string {
 }
 
 /**
- * Filtre En production initial : « Oui » si au moins un produit a En_prod === true,
- * sinon tous (évite une liste vide si la colonne est absente / censurée).
+ * Ids produits ayant un investissement studio : au moins un CRA rattaché
+ * (via mission / prestation) avec jours &gt; 0 ou TTC &gt; 0.
  */
-export function initialProduitsEnProdFilter(
-  produits: readonly ProduitSdpc[],
-): ProduitsEnProdFilter {
-  if (produits.some((p) => p.En_prod === true)) {
-    return PRODUITS_DEFAULT_EN_PROD;
+export function produitIdsAvecInvestissement(
+  missions: readonly Mission[],
+  missionEnfants: readonly MissionEnfant[],
+  suivi: readonly SuiviMensuel[],
+): Set<number> {
+  const produitByMissionId = new Map<number, number>();
+  for (const m of missions) {
+    const produitId = extractGristReferenceId(m.Produit_SDPC);
+    if (produitId != null && produitId !== 0) {
+      produitByMissionId.set(m.id, produitId);
+    }
   }
-  return "";
+
+  const enfantsById = new Map(missionEnfants.map((e) => [e.id, e]));
+  const joursByProduit = new Map<number, number>();
+  const ttcByProduit = new Map<number, number>();
+
+  for (const row of suivi) {
+    const masterId = resolveSuiviMasterMissionId(row, enfantsById);
+    if (masterId == null) {
+      continue;
+    }
+    const produitId = produitByMissionId.get(masterId);
+    if (produitId == null) {
+      continue;
+    }
+    const jours =
+      typeof row.Nb_jours === "number" && Number.isFinite(row.Nb_jours) ? row.Nb_jours : 0;
+    const ttc = montantTtcLigneSuivi(row);
+    joursByProduit.set(produitId, (joursByProduit.get(produitId) ?? 0) + jours);
+    ttcByProduit.set(produitId, (ttcByProduit.get(produitId) ?? 0) + ttc);
+  }
+
+  const ids = new Set<number>();
+  for (const [produitId, jours] of joursByProduit) {
+    if (jours > 0 || (ttcByProduit.get(produitId) ?? 0) > 0) {
+      ids.add(produitId);
+    }
+  }
+  for (const [produitId, ttc] of ttcByProduit) {
+    if (ttc > 0) {
+      ids.add(produitId);
+    }
+  }
+  return ids;
 }
 
 export function produitDepartementOptions(produits: readonly ProduitSdpc[]): string[] {
@@ -78,19 +117,19 @@ export function produitStatutOptions(produits: readonly ProduitSdpc[]): string[]
 export function filterProduits(
   produits: readonly ProduitSdpc[],
   filters: ProduitsListFilters,
+  produitIdsInvestis?: ReadonlySet<number>,
 ): ProduitSdpc[] {
   const q = filters.search.trim().toLowerCase();
+  const investis = produitIdsInvestis ?? new Set<number>();
   return produits
     .filter((produit) => {
       const dept = produitDepartement(produit);
       const okDept = !filters.departement || dept === filters.departement;
       const okStatut =
         !filters.statut || (produit.Statut_actuel?.trim() ?? "") === filters.statut;
-      const okEnProd =
-        !filters.enProd ||
-        (filters.enProd === "oui" && produit.En_prod === true) ||
-        (filters.enProd === "non" && produit.En_prod === false);
-      if (!okDept || !okStatut || !okEnProd) {
+      const okInvest =
+        !filters.avecInvestissementStudio || investis.has(produit.id);
+      if (!okDept || !okStatut || !okInvest) {
         return false;
       }
       if (!q) {

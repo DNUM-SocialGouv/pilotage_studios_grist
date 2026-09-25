@@ -1,15 +1,14 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import type { Mission, ProduitSdpc } from "../types.ts";
+import type { Mission, MissionEnfant, ProduitSdpc, SuiviMensuel } from "../types.ts";
 import {
-  PRODUITS_DEFAULT_EN_PROD,
   filterProduits,
-  initialProduitsEnProdFilter,
   missionsLieesAuProduit,
   produitDepartement,
   produitDisplayName,
   produitEnProdLabel,
   produitDescription,
+  produitIdsAvecInvestissement,
   safeHttpUrl,
 } from "./produitsList.ts";
 
@@ -64,54 +63,114 @@ describe("produitDescription / produitEnProdLabel", () => {
   });
 });
 
-describe("initialProduitsEnProdFilter", () => {
-  it("défaut Oui s’il existe au moins un produit en prod", () => {
-    assert.equal(initialProduitsEnProdFilter([basavi, archive]), PRODUITS_DEFAULT_EN_PROD);
+describe("produitIdsAvecInvestissement", () => {
+  const missions: Mission[] = [
+    { id: 10, Produit_SDPC: 26 },
+    { id: 20, Produit_SDPC: 1 },
+  ];
+  const enfants: MissionEnfant[] = [
+    { id: 100, Mission: 10 },
+    { id: 200, Mission: 20 },
+  ];
+
+  it("détecte jours CRA > 0", () => {
+    const suivi: SuiviMensuel[] = [{ id: 1, Mission_enfant: 100, Nb_jours: 2, TTC: 0 }];
+    const ids = produitIdsAvecInvestissement(missions, enfants, suivi);
+    assert.ok(ids.has(26));
+    assert.equal(ids.has(1), false);
   });
 
-  it("laisse vide si aucun En_prod true", () => {
-    assert.equal(initialProduitsEnProdFilter([archive, sansEnProd]), "");
+  it("détecte TTC CRA > 0 même sans jours", () => {
+    const suivi: SuiviMensuel[] = [{ id: 1, Mission_enfant: 200, Nb_jours: 0, TTC: 150 }];
+    const ids = produitIdsAvecInvestissement(missions, enfants, suivi);
+    assert.ok(ids.has(1));
+    assert.equal(ids.has(26), false);
+  });
+
+  it("ignore les CRA sans mission / produit", () => {
+    const suivi: SuiviMensuel[] = [{ id: 1, Mission_enfant: 999, Nb_jours: 5, TTC: 100 }];
+    const ids = produitIdsAvecInvestissement(missions, enfants, suivi);
+    assert.equal(ids.size, 0);
+  });
+
+  it("accepte le rattachement legacy Missions", () => {
+    const suivi: SuiviMensuel[] = [{ id: 1, Missions: 10, Nb_jours: 1 }];
+    const ids = produitIdsAvecInvestissement(missions, enfants, suivi);
+    assert.ok(ids.has(26));
   });
 });
 
 describe("filterProduits", () => {
-  it("filtre en production, département, statut et recherche", () => {
-    const rows = filterProduits([basavi, archive, sansEnProd], {
-      search: "",
-      departement: "",
-      statut: "",
-      enProd: "oui",
-    });
+  it("filtre investissement, département, statut et recherche", () => {
+    const investis = new Set([26]);
+    const rows = filterProduits(
+      [basavi, archive, sansEnProd],
+      {
+        search: "",
+        departement: "",
+        statut: "",
+        avecInvestissementStudio: true,
+      },
+      investis,
+    );
     assert.deepEqual(
       rows.map((p) => p.id),
       [26],
     );
 
-    const gps = filterProduits([basavi, archive], {
-      search: "basavi",
-      departement: "GPS",
-      statut: "En amélioration continue",
-      enProd: "",
-    });
+    const gps = filterProduits(
+      [basavi, archive],
+      {
+        search: "basavi",
+        departement: "GPS",
+        statut: "En amélioration continue",
+        avecInvestissementStudio: false,
+      },
+      investis,
+    );
     assert.equal(gps.length, 1);
     assert.equal(gps[0]!.id, 26);
 
-    const none = filterProduits([basavi], {
-      search: "zzz",
-      departement: "",
-      statut: "",
-      enProd: "",
-    });
+    const none = filterProduits(
+      [basavi],
+      {
+        search: "zzz",
+        departement: "",
+        statut: "",
+        avecInvestissementStudio: false,
+      },
+      investis,
+    );
     assert.equal(none.length, 0);
   });
 
+  it("sans filtre investissement : tout le catalogue (hors autres filtres)", () => {
+    const rows = filterProduits(
+      [basavi, archive],
+      {
+        search: "",
+        departement: "",
+        statut: "",
+        avecInvestissementStudio: false,
+      },
+      new Set(),
+    );
+    assert.deepEqual(
+      rows.map((p) => p.Produit),
+      ["ARCHIVÉ", "BASAVI"],
+    );
+  });
+
   it("trie par libellé", () => {
-    const rows = filterProduits([archive, basavi], {
-      search: "",
-      departement: "",
-      statut: "",
-      enProd: "",
-    });
+    const rows = filterProduits(
+      [archive, basavi],
+      {
+        search: "",
+        departement: "",
+        statut: "",
+        avecInvestissementStudio: false,
+      },
+    );
     assert.deepEqual(
       rows.map((p) => p.Produit),
       ["ARCHIVÉ", "BASAVI"],
