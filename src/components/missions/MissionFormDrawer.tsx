@@ -484,17 +484,31 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
                           />
                         </div>
                         <div className="fr-col-12 fr-col-md-6">
-                          <Select
-                            label="Produit (SDPC)"
-                            nativeSelectProps={register("Produit_SDPC")}
-                          >
-                            <option value="">—</option>
-                            {produitRows.map((p) => (
-                              <option key={p.id} value={String(p.id)}>
-                                {p.label}
-                              </option>
-                            ))}
-                          </Select>
+                          <Controller
+                            name="Produit_SDPC"
+                            control={control}
+                            render={({ field }) => (
+                              <DsfrSelectRichMulti
+                                label="Produit (SDPC)"
+                                placeholderWhenEmpty="Rechercher un produit…"
+                                options={produitRows.map((p) => ({
+                                  value: String(p.id),
+                                  label: p.label,
+                                }))}
+                                selectedValues={field.value.trim() ? [field.value] : []}
+                                onSelectedValuesChange={(values) =>
+                                  field.onChange(values[0] ?? "")
+                                }
+                                searchable
+                                searchLabel="Rechercher"
+                                searchPlaceholder="Nom du produit…"
+                                showBulkActions={false}
+                                maxSelections={1}
+                                pluralEntityLabel="produits"
+                                disabled={savePending}
+                              />
+                            )}
+                          />
                         </div>
                         <div className="fr-col-12 fr-col-md-6">
                           <Select label="Statut" nativeSelectProps={register("Statut")}>

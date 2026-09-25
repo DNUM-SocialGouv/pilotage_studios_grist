@@ -7,10 +7,10 @@ import { tdEquipeTag } from "../components/EquipeTags";
 import { useMissionEnfantDrawerRef } from "../components/missions/MissionEnfantDrawerContext";
 import { useMissionFormDrawerRef } from "../components/missions/MissionFormDrawerContext";
 import { MissionContexteDocsPanel } from "../components/missions/MissionContexteDocsPanel";
+import { MissionContexteNarrativeEditor } from "../components/missions/MissionContexteNarrativeEditor";
 import { MissionEquipePrestationsPanel } from "../components/missions/MissionEquipePrestationsPanel";
 import { MissionLiensFigmaNotionPanel } from "../components/missions/MissionLiensFigmaNotionPanel";
 import { MissionNoteStudioEditor } from "../components/missions/MissionNoteStudioEditor";
-import { MissionProse } from "../components/missions/MissionProse";
 import { StatutBadge } from "../components/StatutBadge";
 import { WidgetBreadcrumb } from "../components/WidgetBreadcrumb";
 import type { Mission } from "../types";
@@ -30,29 +30,6 @@ import { useMissionsOutlet } from "./MissionsLayout";
 
 type MissionTabId = "contexte" | "equipe" | "notes";
 
-const NARRATIVE_SECTIONS: { title: string; keys: (keyof Mission)[] }[] = [
-  { title: "Contexte et demande", keys: ["Demande", "Enjeux", "Historique"] },
-  {
-    title: "Utilisateurs et périmètre produit",
-    keys: [
-      "Cible_profils_utilisateurs",
-      "Pb_utilisateurs_identifies",
-      "Fonctionnalites_produit",
-      "Volumes_d_usages_utilisateurs_utilisations_",
-    ],
-  },
-];
-
-const FIELD_LABELS: Record<string, string> = {
-  Demande: "Demande",
-  Enjeux: "Enjeux",
-  Historique: "Historique",
-  Cible_profils_utilisateurs: "Cible profils utilisateurs",
-  Pb_utilisateurs_identifies: "Problèmes utilisateurs identifiés",
-  Fonctionnalites_produit: "Fonctionnalités produit",
-  Volumes_d_usages_utilisateurs_utilisations_: "Volumes d’usages / utilisations",
-};
-
 function parseMissionTabId(params: URLSearchParams): MissionTabId {
   const raw = params.get("onglet") ?? params.get("tab");
   if (raw === "equipe" || raw === "equipe-prestations" || raw === "realisations") {
@@ -68,10 +45,6 @@ function parseMissionTabId(params: URLSearchParams): MissionTabId {
   return "contexte";
 }
 
-function isTextFilled(value: unknown): boolean {
-  return typeof value === "string" && value.trim().length > 0;
-}
-
 function MissionContextePanel({
   mission,
   onDocsChanged,
@@ -79,38 +52,13 @@ function MissionContextePanel({
   mission: Mission;
   onDocsChanged: () => Promise<void>;
 }) {
-  const sections = NARRATIVE_SECTIONS.map((section) => ({
-    ...section,
-    fields: section.keys
-      .map((key) => ({ key, value: mission[key] }))
-      .filter((f) => isTextFilled(f.value)),
-  })).filter((s) => s.fields.length > 0);
-  const hasNarrative = sections.length > 0;
-
   return (
     <div className="fr-grid-row fr-grid-row--gutters mission-contexte-layout">
       <div className="fr-col-12 fr-col-md-8 mission-contexte-layout__main">
-        {hasNarrative ? (
-          <>
-            {sections.map((section) => (
-              <section key={section.title} className="fr-mb-4w">
-                <h2 className="fr-h5 fr-mb-3w">{section.title}</h2>
-                {section.fields.map(({ key, value }) => (
-                  <div key={key} className="fr-mb-3w">
-                    <h3 className="fr-h6 fr-mb-1w">{FIELD_LABELS[key] ?? key}</h3>
-                    <MissionProse value={String(value)} />
-                  </div>
-                ))}
-              </section>
-            ))}
-          </>
-        ) : (
-          <p className="fr-text--sm fr-text-mention--grey fr-mb-0">
-            Aucun texte de contexte (demande, enjeux, historique…) pour cette
-            mission. Les liens et pièces jointes restent disponibles dans la
-            colonne dédiée.
-          </p>
-        )}
+        <MissionContexteNarrativeEditor
+          mission={mission}
+          onSaved={onDocsChanged}
+        />
       </div>
       <aside className="fr-col-12 fr-col-md-4 mission-contexte-layout__aside">
         <div className="mission-contexte-aside-stack">
@@ -347,7 +295,6 @@ export function MissionsDetailView() {
             </div>
 
             <div className="cra-carnet__hero-aside">
-              <p className="fr-text--xs fr-mb-1v fr-hint-text">Actions</p>
               <button
                 type="button"
                 className="fr-btn fr-btn--primary fr-icon-edit-line fr-btn--icon-left"
