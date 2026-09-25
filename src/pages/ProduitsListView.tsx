@@ -6,18 +6,19 @@ import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination";
 import { SearchBar } from "@codegouvfr/react-dsfr/SearchBar";
 import { Select } from "@codegouvfr/react-dsfr/Select";
+import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch";
 import { TableShell } from "../components/FinanceRecap";
 import { tdEquipeTag } from "../components/EquipeTags";
 import {
+  canApplyInvestissementFilter,
   filterProduits,
-  initialProduitsEnProdFilter,
-  PRODUITS_DEFAULT_EN_PROD,
+  PRODUITS_DEFAULT_AVEC_INVESTISSEMENT,
   produitDepartement,
   produitDepartementOptions,
   produitDisplayName,
   produitEnProdLabel,
+  produitIdsAvecInvestissement,
   produitStatutOptions,
-  type ProduitsEnProdFilter,
 } from "../utils/produitsList";
 import { useProduitsOutlet } from "./ProduitsLayout";
 
@@ -34,15 +35,10 @@ export function ProduitsListView() {
   const [searchKey, setSearchKey] = useState(0);
   const [departementFilter, setDepartementFilter] = useState("");
   const [statutFilter, setStatutFilter] = useState("");
-  /** `null` = suivre le défaut métier (évite le flash catalogue complet au 1er rendu). */
-  const [enProdOverride, setEnProdOverride] = useState<ProduitsEnProdFilter | null>(null);
+  const [avecInvestissementStudio, setAvecInvestissementStudio] = useState(
+    PRODUITS_DEFAULT_AVEC_INVESTISSEMENT,
+  );
   const [page, setPage] = useState(1);
-
-  const defaultEnProd =
-    data.status === "ok"
-      ? initialProduitsEnProdFilter(data.produits)
-      : PRODUITS_DEFAULT_EN_PROD;
-  const enProdFilter = enProdOverride ?? defaultEnProd;
 
   const departementOptions = useMemo(
     () => produitDepartementOptions(data.produits),
@@ -53,15 +49,36 @@ export function ProduitsListView() {
     [data.produits],
   );
 
+  const produitIdsInvestis = useMemo(
+    () =>
+      produitIdsAvecInvestissement(data.missions, data.missionEnfants, data.suivi),
+    [data.missionEnfants, data.missions, data.suivi],
+  );
+
+  /** Pas de CRA lisible → ne pas vider le catalogue (droits Realise / tables absentes). */
+  const investFilterApplicable = canApplyInvestissementFilter(produitIdsInvestis);
+  const applyInvestFilter = avecInvestissementStudio && investFilterApplicable;
+
   const rows = useMemo(
     () =>
-      filterProduits(data.produits, {
-        search,
-        departement: departementFilter,
-        statut: statutFilter,
-        enProd: enProdFilter,
-      }),
-    [data.produits, departementFilter, enProdFilter, search, statutFilter],
+      filterProduits(
+        data.produits,
+        {
+          search,
+          departement: departementFilter,
+          statut: statutFilter,
+          avecInvestissementStudio: applyInvestFilter,
+        },
+        produitIdsInvestis,
+      ),
+    [
+      applyInvestFilter,
+      data.produits,
+      departementFilter,
+      produitIdsInvestis,
+      search,
+      statutFilter,
+    ],
   );
 
   const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
@@ -73,16 +90,31 @@ export function ProduitsListView() {
     if (search.trim()) n += 1;
     if (departementFilter) n += 1;
     if (statutFilter) n += 1;
-    if (enProdFilter !== defaultEnProd) n += 1;
+    if (avecInvestissementStudio !== PRODUITS_DEFAULT_AVEC_INVESTISSEMENT) n += 1;
     return n;
-  }, [defaultEnProd, departementFilter, enProdFilter, search, statutFilter]);
+  }, [avecInvestissementStudio, departementFilter, search, statutFilter]);
+
+  const showReset =
+    filtresActifsCount > 0 ||
+    (avecInvestissementStudio && rows.length === 0 && data.produits.length > 0);
+
+  const investFilterIneffective =
+    avecInvestissementStudio &&
+    !investFilterApplicable &&
+    data.produits.length > 0 &&
+    data.status === "ok";
 
   const resetFilters = () => {
     setSearch("");
     setSearchKey((k) => k + 1);
     setDepartementFilter("");
     setStatutFilter("");
-    setEnProdOverride(null);
+    // Liste vide à cause du filtre investissement → désactiver plutôt que revenir au défaut ON.
+    if (avecInvestissementStudio && rows.length === 0 && data.produits.length > 0) {
+      setAvecInvestissementStudio(false);
+    } else {
+      setAvecInvestissementStudio(PRODUITS_DEFAULT_AVEC_INVESTISSEMENT);
+    }
     setPage(1);
   };
 
@@ -118,6 +150,26 @@ export function ProduitsListView() {
     <div className="fr-py-1w">
       <h1 className="fr-h3">Produits</h1>
 
+      {data.refsError ? (
+        <Alert
+          className="fr-mb-2w"
+          severity="warning"
+          small
+          title="Données partielles"
+          description={data.refsError}
+        />
+      ) : null}
+
+      {investFilterIneffective ? (
+        <Alert
+          className="fr-mb-2w"
+          severity="info"
+          small
+          title="Filtre investissement non appliqué"
+          description="Aucun CRA (réalisations) lisible pour calculer l’investissement studio — catalogue complet affiché. Vérifiez vos droits sur les réalisations, ou désactivez l’interrupteur."
+        />
+      ) : null}
+
       <Accordion
         id="produits-liste-filtres"
         className="missions-liste-filtres fr-mb-2w"
@@ -141,7 +193,19 @@ export function ProduitsListView() {
               }}
             />
           </div>
-          <div className="fr-col-12 fr-col-md-4">
+          <div className="fr-col-12">
+            <ToggleSwitch
+              id="produits-filtre-investissement-studio"
+              label="Afficher uniquement les produits avec investissement studio"
+              checked={avecInvestissementStudio}
+              showCheckedHint={false}
+              onChange={(checked) => {
+                setAvecInvestissementStudio(checked);
+                setPage(1);
+              }}
+            />
+          </div>
+          <div className="fr-col-12 fr-col-md-6">
             <Select
               label="Département"
               nativeSelectProps={{
@@ -160,7 +224,7 @@ export function ProduitsListView() {
               ))}
             </Select>
           </div>
-          <div className="fr-col-12 fr-col-md-4">
+          <div className="fr-col-12 fr-col-md-6">
             <Select
               label="Statut actuel"
               nativeSelectProps={{
@@ -179,26 +243,10 @@ export function ProduitsListView() {
               ))}
             </Select>
           </div>
-          <div className="fr-col-12 fr-col-md-4">
-            <Select
-              label="En production"
-              nativeSelectProps={{
-                value: enProdFilter,
-                onChange: (e) => {
-                  setEnProdOverride(e.currentTarget.value as ProduitsEnProdFilter);
-                  setPage(1);
-                },
-              }}
-            >
-              <option value="">Tous</option>
-              <option value="oui">Oui</option>
-              <option value="non">Non</option>
-            </Select>
-          </div>
         </div>
       </Accordion>
 
-      {filtresActifsCount > 0 ? (
+      {showReset ? (
         <div className="fr-mb-2w">
           <a
             href="#reinitialiser-filtres"
@@ -215,10 +263,10 @@ export function ProduitsListView() {
 
       <p className="fr-text--sm fr-mb-2w">
         {rows.length === 0
-          ? filtresActifsCount > 0
-            ? "Aucun produit ne correspond aux filtres."
+          ? filtresActifsCount > 0 || applyInvestFilter
+            ? "Aucun produit ne correspond aux filtres. Désactivez l’interrupteur investissement studio pour voir tout le catalogue."
             : "Aucun produit."
-          : filtresActifsCount > 0
+          : filtresActifsCount > 0 || applyInvestFilter
             ? `${rows.length} produit${rows.length > 1 ? "s" : ""} correspondent aux filtres.`
             : `${rows.length} produit${rows.length > 1 ? "s" : ""}.`}
       </p>

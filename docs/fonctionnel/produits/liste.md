@@ -22,19 +22,24 @@ Parcourir le catalogue SDPC, filtrer, ouvrir une fiche.
 | Chargement | Alerte « Connexion à Grist… » |
 | Erreur Grist | Alerte erreur |
 | OK | Filtres + tableau |
+| Référentiels CRA partiels | Alerte warning (filtre investissement peut être incomplet) |
+
+## Données chargées
+
+Catalogue `Tableau_de_pilotage_SDPC_Produits_SDPC` **et**, pour le filtre investissement : `Missions`, `Missions_enfants`, `Realise` (pas `Equipe`).
 
 ## Filtres
 
-Bloc **accordéon** (même shell que Missions / Équipe) : recherche + listes déroulantes.
+Bloc **accordéon** (même shell que Missions / Équipe) : recherche + interrupteur + listes déroulantes.
 
 | Filtre | Comportement |
 |--------|----------------|
 | Recherche | Nom, département, statut, chef de produit |
+| Afficher uniquement les produits avec investissement studio | Interrupteur — **activé par défaut** ; produit gardé si jours CRA &gt; 0 **ou** TTC CRA &gt; 0 (via mission / prestation). Si **aucun** CRA lisible (droits Realise / tables absentes), le filtre n’est **pas** appliqué : catalogue complet + alerte info |
 | Département | Valeurs présentes |
 | Statut actuel | Valeurs présentes |
-| En production | Tous · Oui · Non — **défaut Oui** dès le premier affichage s’il existe au moins un produit en prod (pas de flash catalogue complet) |
 
-Réinitialiser hors accordéon **uniquement si au moins un filtre est actif** (écart au défaut En production compte).
+Réinitialiser hors accordéon si au moins un filtre est actif (interrupteur désactivé compte), **ou** si la liste est vide alors que le catalogue ne l’est pas (sortie rapide du filtre investissement).
 
 ## Colonnes
 
@@ -43,5 +48,5 @@ Réinitialiser hors accordéon **uniquement si au moins un filtre est actif** (�
 | Produit | Lien `/produits/:id` |
 | Département | Tag couleur studio si renseigné |
 | Statut actuel | Texte |
-| En production | Badge Oui / Non (ou —) |
+| En production | Badge Oui / Non (ou —) — drapeau catalogue, distinct du filtre investissement |
 | Chef de produit | Texte |
