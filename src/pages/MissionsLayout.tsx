@@ -1,6 +1,11 @@
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Outlet, useLocation } from "react-router-dom";
+import { MissionCraDrawer } from "../components/missions/MissionCraDrawer";
+import {
+  MissionCraDrawerProvider,
+  useMissionCraDrawerRef,
+} from "../components/missions/MissionCraDrawerContext";
 import { MissionEnfantDrawer } from "../components/missions/MissionEnfantDrawer";
 import {
   MissionEnfantDrawerProvider,
@@ -55,8 +60,10 @@ function missionEnfantStatutOptions(
 }
 
 function MissionDrawersHost({ missionsState }: { missionsState: MissionsDataState }) {
+  const pa = useGristPa();
   const missionDrawerRef = useMissionFormDrawerRef();
   const enfantDrawerRef = useMissionEnfantDrawerRef();
+  const craDrawerRef = useMissionCraDrawerRef();
   const statutOptions = useMemo(
     () => missionStatutOptions(missionsState.missions),
     [missionsState.missions],
@@ -85,6 +92,21 @@ function MissionDrawersHost({ missionsState }: { missionsState: MissionsDataStat
         .sort((a, b) => a.label.localeCompare(b.label, "fr", { sensitivity: "base" })),
     [missionsState.intervenants],
   );
+  const bdcOptions = useMemo(
+    () =>
+      pa.bdcList
+        .slice()
+        .sort((a, b) =>
+          (a.Nom_BdC ?? "").localeCompare(b.Nom_BdC ?? "", "fr", {
+            sensitivity: "base",
+          }),
+        )
+        .map((b) => ({
+          value: String(b.id),
+          label: b.Nom_BdC?.trim() || `BDC #${b.id}`,
+        })),
+    [pa.bdcList],
+  );
 
   return (
     <>
@@ -101,6 +123,12 @@ function MissionDrawersHost({ missionsState }: { missionsState: MissionsDataStat
         ref={enfantDrawerRef}
         statutOptions={enfantStatutOptions}
         intervenantOptions={intervenantOptions}
+        onRecordsChanged={missionsState.reloadMissions}
+      />
+      <MissionCraDrawer
+        ref={craDrawerRef}
+        suivi={missionsState.suivi}
+        bdcOptions={bdcOptions}
         onRecordsChanged={missionsState.reloadMissions}
       />
     </>
@@ -188,8 +216,10 @@ function MissionsGate({ children }: { children: ReactNode }) {
     <MissionsOutletReactContext.Provider value={outletValue}>
       <MissionFormDrawerProvider>
         <MissionEnfantDrawerProvider>
-          {children}
-          <MissionDrawersHost missionsState={missionsState} />
+          <MissionCraDrawerProvider>
+            {children}
+            <MissionDrawersHost missionsState={missionsState} />
+          </MissionCraDrawerProvider>
         </MissionEnfantDrawerProvider>
       </MissionFormDrawerProvider>
     </MissionsOutletReactContext.Provider>

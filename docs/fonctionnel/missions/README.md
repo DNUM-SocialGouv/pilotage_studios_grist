@@ -12,7 +12,7 @@ Une **mission master** (`Missions`) est un lot d’accompagnement (contexte, pro
 | Outil | Rôle |
 |-------|------|
 | **Grist** (`Missions`, `Missions_enfants`, `Realise`, `Equipe`, produits SDPC) | Référentiel |
-| **Ce widget** | Liste / fiche + **drawer** create/edit master + **drawer** create/edit prestations |
+| **Ce widget** | Liste / fiche + **drawer** create/edit master + **drawer** create/edit prestations + **drawer** Admin Modifier/Dupliquer CRA |
 | **App sœur** | Parité drawer + CSV, IA — [doc missions app](https://github.com/DNUM-SocialGouv/pilotage_studios/blob/main/docs/fonctionnel/missions/README.md) |
 
 ## Données Grist

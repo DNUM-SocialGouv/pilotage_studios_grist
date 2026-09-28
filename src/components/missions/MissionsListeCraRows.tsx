@@ -22,6 +22,8 @@ export function MissionsListeCraRows({
   layout = "liste",
   showDateColumn = false,
   showActions = true,
+  onEditCra,
+  onDuplicateCra,
 }: {
   rows: SuiviMensuel[];
   firstRowId: string;
@@ -29,18 +31,23 @@ export function MissionsListeCraRows({
   layout?: MissionsListeCraRowsLayout;
   /** Colonne « Date de début » (mode planifié fiche mission). */
   showDateColumn?: boolean;
-  /** Colonne actions (édition prestation). */
+  /** Colonne actions (édition prestation et/ou CRA). */
   showActions?: boolean;
+  /** Admin : ouvrir le drawer Modifier. */
+  onEditCra?: (suivi: SuiviMensuel) => void;
+  /** Admin : ouvrir le drawer Dupliquer. */
+  onDuplicateCra?: (suivi: SuiviMensuel) => void;
 }) {
+  const canEditCra = Boolean(onEditCra || onDuplicateCra);
+
   return (
     <>
       {rows.map((s, craIdx) => {
         const taches = s.Taches_realisees?.trim();
+        const periodeLabel = formatGristPeriodeMoisAnnee(s.Periode, s);
         const periodeEtTaches = (
           <>
-            <p className="fr-mb-0 fr-text--sm">
-              {formatGristPeriodeMoisAnnee(s.Periode, s)}
-            </p>
+            <p className="fr-mb-0 fr-text--sm">{periodeLabel}</p>
             {taches ? (
               <p className="fr-text--xs fr-hint-text fr-mb-0">{taches}</p>
             ) : null}
@@ -61,6 +68,36 @@ export function MissionsListeCraRows({
           </ExpandableChildCell>
         );
 
+        const craActions =
+          canEditCra ? (
+            <td className="pilotage-col-actions pilotage-expandable-child-cell">
+              <div className="fr-btns-group fr-btns-group--sm fr-btns-group--inline-reverse fr-btns-group--inline-sm fr-mb-0">
+                {onEditCra ? (
+                  <button
+                    type="button"
+                    className="fr-btn fr-btn--tertiary fr-btn--sm fr-icon-edit-line fr-btn--icon-left"
+                    title={`Modifier le CRA ${periodeLabel}`}
+                    onClick={() => onEditCra(s)}
+                  >
+                    Modifier
+                  </button>
+                ) : null}
+                {onDuplicateCra ? (
+                  <button
+                    type="button"
+                    className="fr-btn fr-btn--tertiary fr-btn--sm fr-icon-file-add-line fr-btn--icon-left"
+                    title={`Dupliquer le CRA ${periodeLabel}`}
+                    onClick={() => onDuplicateCra(s)}
+                  >
+                    Dupliquer
+                  </button>
+                ) : null}
+              </div>
+            </td>
+          ) : showActions ? (
+            <td className="pilotage-col-actions pilotage-expandable-child-cell" />
+          ) : null;
+
         if (layout === "fiche") {
           return (
             <ExpandableChildRow
@@ -79,9 +116,7 @@ export function MissionsListeCraRows({
               {joursCell}
               <ExpandableChildCell>—</ExpandableChildCell>
               {ttcCell}
-              {showActions ? (
-                <td className="pilotage-col-actions pilotage-expandable-child-cell" />
-              ) : null}
+              {craActions}
             </ExpandableChildRow>
           );
         }

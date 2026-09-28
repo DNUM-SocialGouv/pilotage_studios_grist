@@ -52,7 +52,7 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 | Revue CRA équipe | `/cra/revue-equipe` | **oui*** | **oui*** | **non** | **non** | **Appliqué** UX (rôle + dép.) | *Uniquement si `Equipe.Equipe` renseigné ; périmètre = même département ; hors `Page_*` ; ACL `Realise` par rôle **faite** (#47/#70) |
 | Récap porteurs | `/outils/recap-porteurs` | **oui** | **non** | **non** | **non** | **Appliqué** UX | |
 | Procès-verbaux | `/pv` | **oui** | **non** | **non** | **non** | **Appliqué** UX (stub) | |
-| Missions | `/missions` | oui | oui | oui | oui | **Appliqué** UX | |
+| Missions | `/missions` | oui | oui | oui | oui | **Appliqué** UX | Fiche : Modifier / Dupliquer CRA sous prestation = **Admin** seulement (drawer) |
 | Équipe | `/equipe` | oui | oui | oui | oui | **Configurable** Admin | Flag `Page_equipe` ; réglé via `/outils/droits-pages` ([#54](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/54)) |
 | Créer fiche Équipe | `/equipe` (drawer) | **oui** | **non** | **non** | **non** | **Appliqué** UX + ACL | Bouton Admin ; `Equipe` create allowlisté |
 | Éditer fiche Équipe | `/equipe/:id` (drawer) | **oui** | **non** | **non** | **non** | **Appliqué** UX + ACL | Bouton Modifier Admin ; `Equipe` update allowlisté ([#63](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/63)) |
@@ -77,7 +77,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | `BDC` montants / Devis / Sofiane… | RU | — | — | — | **Appliqué (Owner ou Admin)** | `== OWNER or Role_ACL == Admin` → `+RU` ; hors → `-RU` (`OWNER` **sans** guillemets — corr. 2026-09-25) |
 | `Constatations` | CRUD | — | — | — | **Appliqué (Owner)** | encore `== "OWNER"` (Const) — **à corriger** en `== OWNER` |
 | `Commandes_Sofiane` | CRUD | R | — | — | Non (rôle) | |
-| `Realise` (CRA) hors montants | CRUD | R/U département | **R/U + C** ses lignes | — | **Appliqué** (ACL) + widget | Déclaration `#33` ; revue `#70` ; mur `#47` HITL 2026-09-21 |
+| `Realise` (CRA) hors montants | CRUD | R/U département | **R/U + C** ses lignes | — | **Appliqué** (ACL) + widget | Déclaration `#33` ; revue `#70` ; mur `#47` HITL 2026-09-21 ; fiche mission Modifier/Dupliquer Admin (`cra-fiche-mission`) |
 | `Realise.Calcul_TTC` | R ; U Owner | R | R | R | **Appliqué** | `+R -U` si non-Owner |
 | `Missions` / `Missions_enfants` | CRUD | R/U dép. | R ses missions | R / — | Non (rôle) | |
 | `Kanban` (feedback + produit) | CRU (liste + colonne Admin) | C (+ R) ; U colonne Admin | C (+ R) | C (+ R) | **Appliqué** (ACL) + widget | Owner/Admin `+CRUD` ; `True` → `+CR-UD` |
@@ -101,6 +101,8 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-09-28 | Fiche mission drawer CRA Admin : + BDC (`BDC_cible`) + bloc calcul TTC indicatif (TJM × markup 15 % × TVA) ; `Calcul_TTC` lecture seule | 5 | Kanban `cra-fiche-mission` (TTC/BDC) |
+| 2026-09-28 | Fiche mission : Admin peut Modifier / Dupliquer un CRA sous prestation (drawer mois · jours · description ; create prérempli ; collision mois refusée) ; hors Admin = lecture seule des sous-lignes | 5 | Kanban `cra-fiche-mission` |
 | 2026-09-25 | Mon carnet : Admin/Resp. = liste lecture missions du département (presta intervenant même `Equipe.Equipe`, missions mixtes incluses) ; Freelance = saisie inchangée ; Invité masqué ; Resp. ajouté à la nav/garde ; note Revue CRA : ACL `Realise` faite | 5 | Carnet périmètre département / PR #90 |
 | 2026-09-25 | Access Rules BDC montants : Owner **ou** Admin `+RU` ; hors `-RU` ; `OWNER` sans guillemets (Const `"OWNER"` censurait aussi les Owners) ; vérif MCP OK | 6 | HITL Owner — récap fiche BDC à 0 € |
 | 2026-09-24 | Édition fiche Équipe (Admin) : bouton Modifier + drawer (mêmes champs que création, TJM inclus) ; `Equipe` update allowlisté | 5, 6 (doc) | [#63](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/63) / kanban `equipe-fiche-edition-admin` |

@@ -210,7 +210,8 @@ export function periodeTimestampForMonthKey(monthKey: string): number {
   return ts;
 }
 
-/** Champs Realise pour create / update (sans Calcul_TTC ni BDC). */
+/** Champs Realise pour create / update (sans Calcul_TTC, BDC, ni Equipe).
+ * `Equipe` est une **formule** Grist (dérivée de l’intervenant) — ne pas écrire. */
 export function buildRealiseDeclarerFields(input: {
   intervenantId: number;
   missionId: number;
@@ -218,7 +219,8 @@ export function buildRealiseDeclarerFields(input: {
   nbJours: number;
   taches: string;
   periodeTs: number;
-  equipeLabel: string;
+  /** @deprecated Ignoré — colonne formule côté Grist. */
+  equipeLabel?: string;
 }): Record<string, unknown> {
   return {
     Intervenants: input.intervenantId,
@@ -227,6 +229,5 @@ export function buildRealiseDeclarerFields(input: {
     Nb_jours: input.nbJours,
     Taches_realisees: input.taches,
     Periode: input.periodeTs,
-    Equipe: input.equipeLabel || undefined,
   };
 }

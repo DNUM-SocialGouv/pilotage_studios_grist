@@ -3,7 +3,9 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { CallOut } from "@codegouvfr/react-dsfr/CallOut";
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
+import { useAclProfil } from "../AclProfilContext";
 import { tdEquipeTag } from "../components/EquipeTags";
+import { useMissionCraDrawerRef } from "../components/missions/MissionCraDrawerContext";
 import { useMissionEnfantDrawerRef } from "../components/missions/MissionEnfantDrawerContext";
 import { useMissionFormDrawerRef } from "../components/missions/MissionFormDrawerContext";
 import { MissionContexteDocsPanel } from "../components/missions/MissionContexteDocsPanel";
@@ -13,11 +15,15 @@ import { MissionLiensFigmaNotionPanel } from "../components/missions/MissionLien
 import { MissionNoteStudioEditor } from "../components/missions/MissionNoteStudioEditor";
 import { StatutBadge } from "../components/StatutBadge";
 import { WidgetBreadcrumb } from "../components/WidgetBreadcrumb";
-import type { Mission } from "../types";
+import type { MissionCraDrawerContext } from "../components/missions/missionCraDrawerTypes";
+import type { Mission, MissionEnfant, SuiviMensuel } from "../types";
+import { isAdminRole } from "../utils/droitsPagesThemes";
+import { equipeMontantLisible } from "../utils/equipeList";
 import { formatGristDateTime } from "../utils/formatGristDate";
 import { extractGristReferenceId } from "../utils/gristReferences";
 import {
   enfantsOfMaster,
+  missionEnfantLibelle,
   suiviBelongsToMasterMission,
 } from "../utils/missionEnfants";
 import {
@@ -25,6 +31,7 @@ import {
   missionLibelle,
   produitsByIdFromRows,
 } from "../utils/missionsList";
+import { equipeLabelForEnfant } from "../utils/missionsListeTotaux";
 import { departementProduitSdpc } from "../utils/pilotageProduits";
 import { useMissionsOutlet } from "./MissionsLayout";
 
@@ -100,8 +107,11 @@ export function MissionsDetailView() {
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data, isReloading, reloadMissions } = useMissionsOutlet();
+  const { status: aclStatus, role: sessionRole } = useAclProfil();
   const missionFormDrawerRef = useMissionFormDrawerRef();
   const enfantDrawerRef = useMissionEnfantDrawerRef();
+  const craDrawerRef = useMissionCraDrawerRef();
+  const canEditCra = aclStatus === "standalone" || isAdminRole(sessionRole);
   const missionTabId = parseMissionTabId(searchParams);
   const rawOnglet = searchParams.get("onglet") ?? searchParams.get("tab");
   const missionId = id ? Number.parseInt(id, 10) : Number.NaN;
@@ -238,6 +248,68 @@ export function MissionsDetailView() {
     }
   }
 
+  function buildCraDrawerContext(
+    suivi: SuiviMensuel,
+    enfant: MissionEnfant,
+  ): MissionCraDrawerContext | null {
+    const fromSuiviIv = extractGristReferenceId(suivi.Intervenants);
+    const fromEnfantIv = extractGristReferenceId(enfant.Intervenant);
+    const intervenantId =
+      fromSuiviIv != null && fromSuiviIv !== 0
+        ? fromSuiviIv
+        : fromEnfantIv != null && fromEnfantIv !== 0
+          ? fromEnfantIv
+          : null;
+    const fromSuiviMission = extractGristReferenceId(suivi.Missions);
+    const missionIdResolved =
+      fromSuiviMission != null && fromSuiviMission !== 0
+        ? fromSuiviMission
+        : missionId;
+    const fromSuiviEnfant = extractGristReferenceId(suivi.Mission_enfant);
+    const enfantId =
+      fromSuiviEnfant != null && fromSuiviEnfant !== 0
+        ? fromSuiviEnfant
+        : enfant.id;
+    if (intervenantId == null || intervenantId === 0) {
+      return null;
+    }
+    const intervenantLibelle =
+      intervenantsById.get(intervenantId) ?? `Intervenant #${intervenantId}`;
+    const equipeFromEnfant = equipeLabelForEnfant(enfant, equipesByIntervenantId);
+    const equipeFromSuivi =
+      typeof suivi.Equipe === "string" ? suivi.Equipe.trim() : "";
+    const equipeLabel = equipeFromEnfant ?? (equipeFromSuivi || "");
+    const intervenantRow = data.intervenants.find((i) => i.id === intervenantId);
+    const tjmRaw = intervenantRow?.TJM;
+    return {
+      suivi,
+      intervenantId,
+      missionId: missionIdResolved,
+      enfantId,
+      equipeLabel,
+      prestationLibelle: missionEnfantLibelle(enfant, intervenantLibelle),
+      intervenantLibelle,
+      tjm: equipeMontantLisible(tjmRaw) ? tjmRaw : undefined,
+      portage: intervenantRow?.Portage?.trim() || undefined,
+    };
+  }
+
+  function openEditCra(suivi: SuiviMensuel, enfant: MissionEnfant) {
+    const ctx = buildCraDrawerContext(suivi, enfant);
+    if (!ctx) {
+      return;
+    }
+    craDrawerRef.current?.openEdit(ctx);
+  }
+
+  function openDuplicateCra(suivi: SuiviMensuel, enfant: MissionEnfant) {
+    const ctx = buildCraDrawerContext(suivi, enfant);
+    if (!ctx) {
+      return;
+    }
+    craDrawerRef.current?.openDuplicate(ctx);
+  }
+
   return (
     <div className="fr-container fr-container--fluid fr-px-0 mission-fiche cra-carnet">
       <header className="cra-carnet__hero mission-fiche__hero fr-mb-3w">
@@ -341,6 +413,8 @@ export function MissionsDetailView() {
               equipesByIntervenantId={equipesByIntervenantId}
               onAddPrestation={(mid) => enfantDrawerRef.current?.openCreate(mid)}
               onEditPrestation={(enfant) => enfantDrawerRef.current?.openEdit(enfant)}
+              onEditCra={canEditCra ? openEditCra : undefined}
+              onDuplicateCra={canEditCra ? openDuplicateCra : undefined}
             />
           ) : null}
           {missionTabId === "notes" ? (

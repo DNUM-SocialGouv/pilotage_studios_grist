@@ -80,6 +80,9 @@ export type MissionEquipePrestationsPanelProps = {
   /** Si absents : mode consultation (pas de CTA ajouter / modifier). */
   onAddPrestation?: (missionId: number) => void;
   onEditPrestation?: (enfant: MissionEnfant) => void;
+  /** Admin : modifier / dupliquer un CRA (sous-lignes). */
+  onEditCra?: (suivi: SuiviMensuel, enfant: MissionEnfant) => void;
+  onDuplicateCra?: (suivi: SuiviMensuel, enfant: MissionEnfant) => void;
   /** Filtres équipe / période (défaut : oui — fiche mission). */
   showFilters?: boolean;
   /**
@@ -110,12 +113,16 @@ export function MissionEquipePrestationsPanel({
   equipesByIntervenantId,
   onAddPrestation,
   onEditPrestation,
+  onEditCra,
+  onDuplicateCra,
   showFilters = true,
   columns = "planifie",
   ttcBarTitle,
   tableSize = "md",
 }: MissionEquipePrestationsPanelProps) {
   const canEdit = Boolean(onAddPrestation || onEditPrestation);
+  const canEditCra = Boolean(onEditCra || onDuplicateCra);
+  const showActionsColumn = canEdit || canEditCra;
   const showPlanifie = columns === "planifie";
   const [equipeFilter, setEquipeFilter] = useState("");
   const [periodeDebut, setPeriodeDebut] = useState("");
@@ -401,7 +408,7 @@ export function MissionEquipePrestationsPanel({
                   <col className="mission-equipe-col mission-equipe-col--ttc" />
                 </>
               )}
-              {canEdit ? (
+              {showActionsColumn ? (
                 <col className="mission-equipe-col mission-equipe-col--actions" />
               ) : null}
             </colgroup>
@@ -455,7 +462,7 @@ export function MissionEquipePrestationsPanel({
                     </th>
                   </>
                 )}
-                {canEdit ? (
+                {showActionsColumn ? (
                   <th scope="col" className="pilotage-col-actions">
                     <span className="fr-sr-only">Actions</span>
                   </th>
@@ -539,7 +546,7 @@ export function MissionEquipePrestationsPanel({
                       )}
                       <td className="fr-cell--right">{nbCra.toLocaleString("fr-FR")}</td>
                       <td className="fr-cell--right">{formatMontantEur(ttc)}</td>
-                      {canEdit ? (
+                      {showActionsColumn ? (
                         <td className="pilotage-col-actions">
                           {onEditPrestation ? (
                             <button
@@ -561,7 +568,15 @@ export function MissionEquipePrestationsPanel({
                         indentLevel={1}
                         layout="fiche"
                         showDateColumn={showPlanifie}
-                        showActions={canEdit}
+                        showActions={showActionsColumn}
+                        onEditCra={
+                          onEditCra ? (s) => onEditCra(s, e) : undefined
+                        }
+                        onDuplicateCra={
+                          onDuplicateCra
+                            ? (s) => onDuplicateCra(s, e)
+                            : undefined
+                        }
                       />
                     ) : null}
                   </Fragment>
