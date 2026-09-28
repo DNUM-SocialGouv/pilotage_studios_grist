@@ -83,7 +83,10 @@ export function missionCraMonthOptions(
 }
 
 /**
- * Id d’un autre Realise pour (intervenant, prestation, mois), hors `excludeId`.
+ * Id d’un autre Realise pour (prestation, mois), hors `excludeId`.
+ * 1) Match strict (intervenant + prestation + mois) via déclaration.
+ * 2) Fallback : même prestation + mois même si `Intervenants` est vide
+ *    (évite un doublon au Dupliquer sur une ligne legacy).
  * null = pas de collision.
  */
 export function findMissionCraMonthCollisionId(
@@ -93,26 +96,38 @@ export function findMissionCraMonthCollisionId(
   monthKey: string,
   excludeId?: number,
 ): number | null {
-  const existing = findExistingRealiseId(suivi, intervenantId, enfantId, monthKey);
-  if (existing == null) {
+  const key = monthKey.trim();
+  if (!key || enfantId <= 0) {
     return null;
   }
-  if (excludeId != null && existing === excludeId) {
-    return null;
-  }
-  return existing;
-}
 
-export function resolveMissionCraLinks(s: SuiviMensuel): {
-  intervenantId: number | null;
-  missionId: number | null;
-  enfantId: number | null;
-} {
-  return {
-    intervenantId: extractGristReferenceId(s.Intervenants) ?? null,
-    missionId: extractGristReferenceId(s.Missions) ?? null,
-    enfantId: extractGristReferenceId(s.Mission_enfant) ?? null,
-  };
+  const byIntervenant = findExistingRealiseId(
+    suivi,
+    intervenantId,
+    enfantId,
+    key,
+  );
+  if (byIntervenant != null && byIntervenant !== excludeId) {
+    return byIntervenant;
+  }
+
+  let best: number | null = null;
+  for (const s of suivi) {
+    if (excludeId != null && s.id === excludeId) {
+      continue;
+    }
+    const enf = extractGristReferenceId(s.Mission_enfant);
+    if (enf !== enfantId) {
+      continue;
+    }
+    if (gristPeriodeFilterKey(s.Periode, s) !== key) {
+      continue;
+    }
+    if (best == null || s.id > best) {
+      best = s.id;
+    }
+  }
+  return best;
 }
 
 /** Parse jours obligatoires pour le drawer (erreur si vide / invalide). */

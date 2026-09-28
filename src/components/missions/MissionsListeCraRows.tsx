@@ -77,6 +77,7 @@ export function MissionsListeCraRows({
                     type="button"
                     className="fr-btn fr-btn--tertiary fr-btn--sm fr-icon-edit-line fr-btn--icon-left"
                     title={`Modifier le CRA ${periodeLabel}`}
+                    aria-label={`Modifier le CRA ${periodeLabel}`}
                     onClick={() => onEditCra(s)}
                   >
                     Modifier
@@ -87,6 +88,7 @@ export function MissionsListeCraRows({
                     type="button"
                     className="fr-btn fr-btn--tertiary fr-btn--sm fr-icon-file-add-line fr-btn--icon-left"
                     title={`Dupliquer le CRA ${periodeLabel}`}
+                    aria-label={`Dupliquer le CRA ${periodeLabel}`}
                     onClick={() => onDuplicateCra(s)}
                   >
                     Dupliquer

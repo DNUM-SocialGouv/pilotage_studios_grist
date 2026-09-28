@@ -86,6 +86,18 @@ describe("findMissionCraMonthCollisionId", () => {
   it("retourne null si mois libre", () => {
     assert.equal(findMissionCraMonthCollisionId(rows, 1, 100, "2025-08"), null);
   });
+
+  it("détecte une collision legacy sans Intervenants (fallback prestation×mois)", () => {
+    const legacy: SuiviMensuel[] = [
+      suivi({
+        id: 20,
+        Intervenants: undefined,
+        Mission_enfant: 100,
+        Periode: Date.UTC(2025, 8, 1) / 1000,
+      }),
+    ];
+    assert.equal(findMissionCraMonthCollisionId(legacy, 1, 100, "2025-09"), 20);
+  });
 });
 
 describe("parseMissionCraJoursRequired", () => {

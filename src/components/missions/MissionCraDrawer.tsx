@@ -393,7 +393,6 @@ export const MissionCraDrawer = forwardRef<
                     className="fr-callout fr-callout--blue-cumulus fr-mt-3w fr-mb-3w fr-py-2w"
                     role="region"
                     aria-label="Calcul TTC indicatif"
-                    style={{ clear: "both", width: "100%" }}
                   >
                     <p className="fr-callout__title fr-text--sm fr-mb-1w">
                       Calcul TTC (indicatif)

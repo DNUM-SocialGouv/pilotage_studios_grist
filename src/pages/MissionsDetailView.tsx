@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { CallOut } from "@codegouvfr/react-dsfr/CallOut";
@@ -112,6 +112,7 @@ export function MissionsDetailView() {
   const enfantDrawerRef = useMissionEnfantDrawerRef();
   const craDrawerRef = useMissionCraDrawerRef();
   const canEditCra = aclStatus === "standalone" || isAdminRole(sessionRole);
+  const [craContextError, setCraContextError] = useState<string>();
   const missionTabId = parseMissionTabId(searchParams);
   const rawOnglet = searchParams.get("onglet") ?? searchParams.get("tab");
   const missionId = id ? Number.parseInt(id, 10) : Number.NaN;
@@ -297,16 +298,24 @@ export function MissionsDetailView() {
   function openEditCra(suivi: SuiviMensuel, enfant: MissionEnfant) {
     const ctx = buildCraDrawerContext(suivi, enfant);
     if (!ctx) {
+      setCraContextError(
+        "Impossible d’ouvrir ce CRA : intervenant introuvable sur la ligne ou la prestation. Vérifiez le rattachement dans Grist.",
+      );
       return;
     }
+    setCraContextError(undefined);
     craDrawerRef.current?.openEdit(ctx);
   }
 
   function openDuplicateCra(suivi: SuiviMensuel, enfant: MissionEnfant) {
     const ctx = buildCraDrawerContext(suivi, enfant);
     if (!ctx) {
+      setCraContextError(
+        "Impossible d’ouvrir ce CRA : intervenant introuvable sur la ligne ou la prestation. Vérifiez le rattachement dans Grist.",
+      );
       return;
     }
+    setCraContextError(undefined);
     craDrawerRef.current?.openDuplicate(ctx);
   }
 
@@ -403,7 +412,18 @@ export function MissionsDetailView() {
             <MissionContextePanel mission={mission} onDocsChanged={reloadMissions} />
           ) : null}
           {missionTabId === "equipe" ? (
-            <MissionEquipePrestationsPanel
+            <>
+              {craContextError ? (
+                <Alert
+                  severity="error"
+                  title="CRA non modifiable"
+                  description={craContextError}
+                  className="fr-mb-2w"
+                  closable
+                  onClose={() => setCraContextError(undefined)}
+                />
+              ) : null}
+              <MissionEquipePrestationsPanel
               key={mission.id}
               missionId={mission.id}
               missionTitre={titre}
@@ -416,6 +436,7 @@ export function MissionsDetailView() {
               onEditCra={canEditCra ? openEditCra : undefined}
               onDuplicateCra={canEditCra ? openDuplicateCra : undefined}
             />
+            </>
           ) : null}
           {missionTabId === "notes" ? (
             <MissionNotesPanel mission={mission} onNoteSaved={reloadMissions} />
