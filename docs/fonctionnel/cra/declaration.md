@@ -56,7 +56,7 @@ Pas de mois, pas de « Publier ». Pour ajuster les CRA des freelances : **Budge
 |-------|--------|
 | `Equipe` | Identifier « moi » (e-mail session = `Equipe.E_mail`) + libellé département ; map intervenant → département (manager) |
 | `Missions` / `Missions_enfants` | Freelance : prestations où `Intervenant` = moi ; manager : prestations dont l’intervenant a le même `Equipe.Equipe` |
-| `Realise` | Freelance only — create / update : `Nb_jours`, `Taches_realisees`, `Periode`, `Intervenants`, `Mission_enfant`, `Missions`, `Equipe` |
+| `Realise` | Freelance only — create / update : `Nb_jours`, `Taches_realisees`, `Periode`, `Intervenants`, `Mission_enfant`, `Missions` — **pas** `Equipe` (formule Grist) ni `Calcul_TTC` |
 
 Pas d’écriture de `Calcul_TTC` ni de lien BDC (qualification = [#34](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/34)).
 

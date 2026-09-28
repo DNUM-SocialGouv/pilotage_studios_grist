@@ -227,7 +227,7 @@ describe("craDeclarer filtre + upsert", () => {
     assert.equal(zeroOk[0]?.nbJours, 0);
   });
 
-  it("construit les champs Realise sans montants", () => {
+  it("construit les champs Realise sans montants ni Equipe (formule)", () => {
     const fields = buildRealiseDeclarerFields({
       intervenantId: 5,
       missionId: 100,
@@ -239,7 +239,7 @@ describe("craDeclarer filtre + upsert", () => {
     });
     assert.equal(fields.Intervenants, 5);
     assert.equal(fields.Nb_jours, 3);
-    assert.equal(fields.Equipe, "Design");
+    assert.equal("Equipe" in fields, false);
     assert.equal("Calcul_TTC" in fields, false);
   });
 });
