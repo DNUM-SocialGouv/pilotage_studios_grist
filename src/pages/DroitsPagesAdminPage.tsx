@@ -9,6 +9,7 @@ import { NothingHerePage } from "../security/NothingHerePage";
 import type { PageAccessFlags, PageAccessKey } from "../security/pageAccess";
 import { updateDroitsPagesRecord } from "../utils/droitsPagesGristWrite";
 import {
+  DROITS_PAGES_ROLE_FIXED,
   DROITS_PAGES_ROLE_ORDER,
   DROITS_PAGES_ROLE_SHORT,
   DROITS_PAGES_THEMES,
@@ -171,6 +172,11 @@ export function DroitsPagesAdminPage() {
 
       {data.status === "ok" ? (
         <>
+          <p className="fr-text--sm fr-mb-3w">
+            Les interrupteurs pilotent le menu (confort). Les écrans « Fixés par
+            rôle » sont rappelés en lecture seule : leur accès ne se règle pas
+            ici.
+          </p>
           {DROITS_PAGES_THEMES.map((theme) => (
             <section key={theme.id} className="fr-mb-4w">
               <h2 className="fr-h5 fr-mb-1w">{theme.label}</h2>
@@ -198,7 +204,11 @@ export function DroitsPagesAdminPage() {
                   <tbody>
                     {theme.screens.map((screen) => (
                       <tr key={screen.key}>
-                        <th scope="row">{screen.label}</th>
+                        <th scope="row">
+                          <span className="droits-pages-matrix__screen-label">
+                            {screen.label}
+                          </span>
+                        </th>
                         {DROITS_PAGES_ROLE_ORDER.map((role) => {
                           const flags = draft[role];
                           const checked = flags?.[screen.key] === true;
@@ -244,6 +254,60 @@ export function DroitsPagesAdminPage() {
               </TableShell>
             </section>
           ))}
+
+          <section className="fr-mb-4w">
+            <h2 className="fr-h5 fr-mb-1w">Fixés par rôle</h2>
+            <p className="fr-text--sm fr-mb-1w">
+              Accès déterminé par le rôle (et le département le cas échéant) —
+              pas d’interrupteur dans Grist.
+            </p>
+            <TableShell className="fr-mb-0 droits-pages-matrix">
+              <table>
+                <caption className="fr-sr-only">
+                  Droits d’écran — Fixés par rôle
+                </caption>
+                <colgroup>
+                  <col className="droits-pages-matrix__col-screen" />
+                  {DROITS_PAGES_ROLE_ORDER.map((role) => (
+                    <col key={role} className="droits-pages-matrix__col-role" />
+                  ))}
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th scope="col">Écran</th>
+                    {DROITS_PAGES_ROLE_ORDER.map((role) => (
+                      <th key={role} scope="col" className="droits-pages-matrix__role-head">
+                        {DROITS_PAGES_ROLE_SHORT[role]}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {DROITS_PAGES_ROLE_FIXED.map((screen) => (
+                    <tr key={screen.id}>
+                      <th scope="row">
+                        <span className="droits-pages-matrix__screen-label">
+                          {screen.label}
+                        </span>
+                        {screen.hint ? (
+                          <span className="fr-hint-text droits-pages-matrix__screen-hint">
+                            {screen.hint}
+                          </span>
+                        ) : null}
+                      </th>
+                      {DROITS_PAGES_ROLE_ORDER.map((role) => (
+                        <td key={role} className="droits-pages-matrix__cell">
+                          <span className="fr-text--sm">
+                            {screen.accessByRole[role] ? "Oui" : "Non"}
+                          </span>
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </TableShell>
+          </section>
         </>
       ) : null}
     </div>

@@ -22,7 +22,9 @@ Suivi des cellules : [`matrice-droits.md`](matrice-droits.md) tableau **A**.
 - Toute nouvelle garde de route / filtre nav → **MAJ matrice** (rule `roles-matrice`).
 - Pas de deny Admin-only global sur `Realise` tant que la saisie freelance n’est pas tranchée.
 - Fail-closed si profil absent / erreur : pas de PA / BDC / CRA / PV / récap ; Accueil / Missions / Produits / Équipe restent ouverts (aligné seed non-Admin).
-- Page Admin `/outils/droits-pages` : réservée rôle Admin (lien `adminOnly` + `AdminRoleGuard`) — hors `Page_*`.
+- Page Admin `/outils/droits-pages` : réservée rôle Admin (lien `adminOnly` + `AdminRoleGuard`) — hors `Page_*` ; rappel dans la section Admin « Fixés par rôle ».
+- Mon carnet / Revue CRA équipe : hors `Page_*` (gardes rôle) ; rappel lecture seule sur la page Admin.
+- Nouvel écran nav / garde → revue obligatoire (nouvelle `Page_*` | fixé par rôle | N/A) — rule `roles-matrice`.
 
 ## Technique widget
 

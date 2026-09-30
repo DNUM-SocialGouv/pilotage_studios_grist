@@ -9,6 +9,8 @@
 
 Les **Admin** peuvent ouvrir **Outils → Droits des pages** pour activer ou désactiver, rôle par rôle (interrupteurs), quels écrans apparaissent dans le menu du widget (Budget, Missions, Équipe…). Chaque interrupteur s’enregistre **immédiatement** dans Grist. C’est du **confort de menu** : ça ne verrouille pas les données.
 
+Une section **Fixés par rôle** rappelle en lecture seule les écrans dont l’accès ne se règle pas ici (Mon carnet, Revue CRA équipe, cette page elle-même).
+
 ## Qui y accède
 
 | Condition | Effet |
@@ -32,9 +34,17 @@ Pas de drapeau `Page_*` pour cet écran : un Admin ne peut pas se couper l’acc
 
 ## Thématiques
 
-Budget · Outils · Missions · Équipe · À venir · Accueil — **un tableau par thème** (titre + interrupteurs DSFR). Détail dans la matrice ([matrice-droits.md](matrice-droits.md)).
+Budget · Outils · Missions · Équipe · Produits · Accueil — **un tableau par thème** (titre + interrupteurs DSFR), puis **Fixés par rôle** (Oui/Non lecture seule). Détail dans la matrice ([matrice-droits.md](matrice-droits.md)).
+
+| Section | Contenu |
+|---------|---------|
+| Budget | BDC, PA, Prestation/CRA, PV (`Page_*`) |
+| Outils | Récap porteurs (`Page_recap_porteurs`) |
+| Missions / Équipe / Produits / Accueil | `Page_missions`, `Page_equipe`, `Page_produits`, `Page_accueil` |
+| Fixés par rôle | Mon carnet · Revue CRA équipe · Droits des pages (hors `Page_*`) |
 
 ## Hors scope
 
 - Access Rules sur les tables (couche 6, [#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55))
-- Création / suppression de rôles ou de colonnes `Page_*`
+- Création / suppression de rôles ou de colonnes `Page_*` (HITL Owner + revue agents — rule `roles-matrice`)
+- Interrupteurs pour Mon carnet / Revue CRA / Droits des pages (accès par rôle)

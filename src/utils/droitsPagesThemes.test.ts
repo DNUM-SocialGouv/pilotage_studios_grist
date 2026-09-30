@@ -8,6 +8,7 @@ import {
 import { isAllowlistedTableId } from "../security/fetchTableAllowlist.ts";
 import { sanitizeDroitsPagesPatchField } from "./droitsPagesGristWrite.ts";
 import {
+  DROITS_PAGES_ROLE_FIXED,
   DROITS_PAGES_THEMES,
   editablePageAccessKeys,
   isAdminRole,
@@ -36,12 +37,31 @@ describe("droitsPagesThemes", () => {
   it("groupe les écrans par thématiques attendues", () => {
     assert.deepEqual(
       DROITS_PAGES_THEMES.map((t) => t.id),
-      ["budget", "outils", "missions", "equipe", "a_venir", "accueil"],
+      ["budget", "outils", "missions", "equipe", "produits", "accueil"],
     );
+    const produits = DROITS_PAGES_THEMES.find((t) => t.id === "produits");
+    assert.equal(produits?.label, "Produits");
+    assert.equal(produits?.screens[0]?.key, "Page_produits");
     const accueil = DROITS_PAGES_THEMES.find((t) => t.id === "accueil");
     assert.equal(accueil?.screens[0]?.readOnly, true);
     assert.ok(editablePageAccessKeys().includes("Page_equipe"));
     assert.equal(editablePageAccessKeys().includes("Page_accueil"), false);
+  });
+
+  it("liste les écrans fixés par rôle (lecture seule Admin)", () => {
+    assert.deepEqual(
+      DROITS_PAGES_ROLE_FIXED.map((s) => s.id),
+      ["mon_carnet", "revue_cra", "droits_pages"],
+    );
+    const carnet = DROITS_PAGES_ROLE_FIXED.find((s) => s.id === "mon_carnet");
+    assert.equal(carnet?.accessByRole.Freelance, true);
+    assert.equal(carnet?.accessByRole.Invité, false);
+    const revue = DROITS_PAGES_ROLE_FIXED.find((s) => s.id === "revue_cra");
+    assert.equal(revue?.accessByRole.Freelance, false);
+    assert.equal(revue?.accessByRole["Responsable de département"], true);
+    const droits = DROITS_PAGES_ROLE_FIXED.find((s) => s.id === "droits_pages");
+    assert.equal(droits?.accessByRole.Admin, true);
+    assert.equal(droits?.accessByRole.Freelance, false);
   });
 
   it("détecte le rôle Admin", () => {
