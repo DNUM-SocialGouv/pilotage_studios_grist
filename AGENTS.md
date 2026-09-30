@@ -46,12 +46,13 @@ Réduire la complexité ; pas d’ajout « au cas où ». Les agents **proposent
 | `/cra/revue-equipe` | Implémenté (revue manager — jours / description / BDC, même département) |
 | `/outils/recap-porteurs` | Implémenté (récap mensuel par portage) |
 | `/outils/droits-pages` | Implémenté (Admin : matrice `Droits_pages`) |
+| `/outils/spike-datatable` | Labo Admin (POC `@tanstack/react-table` + `TableShell`, lecture `Realise`) |
 | `/equipe`, `/equipe/:id` | Implémenté (liste + fiche lecture) |
 | `/produits`, `/produits/:id` | Implémenté (liste + fiche lecture) |
 | `/pv` | Stub « À venir » (nav) |
 | `/evaluations`, `/analyse` | Stub hors nav |
 
-Nav principale : Accueil, **Mon carnet** (Freelance/Admin/Resp., `/cra/declarer`), **Budget** (sous-menu Bons de commande · Plans d’activité · Prestation / CRA · Revue CRA équipe · Procès-verbaux — masqué si aucun enfant accessible, typiquement côté Freelance), Produits, Missions, **Équipe**, **Outils** (Récap porteurs · Droits des pages — Admin). Pas de route `/budget`. `/intervenants` redirige vers `/equipe`.
+Nav principale : Accueil, **Mon carnet** (Freelance/Admin/Resp., `/cra/declarer`), **Budget** (sous-menu Bons de commande · Plans d’activité · Prestation / CRA · Revue CRA équipe · Procès-verbaux — masqué si aucun enfant accessible, typiquement côté Freelance), Produits, Missions, **Équipe**, **Outils** (Récap porteurs · Droits des pages · Spike datatable — Admin). Pas de route `/budget`. `/intervenants` redirige vers `/equipe`.
 
 Entrée MemoryRouter : `/` (`WelcomePage` — **feuille de route kanban** Feedback · Backlog · En cours · Livré, table Grist unique `Kanban`, conversation `Kanban_commentaires`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
 
@@ -81,7 +82,7 @@ Visibilité users : section roadmap sur `/` + issues rédigées selon [`docs/iss
 |------|----------|
 | Routes | `src/App.tsx` |
 | Nav | `src/layout/WidgetNav.tsx` + [`widgetNavItems.ts`](src/layout/widgetNavItems.ts) (`WIDGET_NAV_ITEMS`, groupe Budget) |
-| Pages | `src/pages/WelcomePage.tsx`, `Pa*.tsx`, `Bdc*.tsx`, `Missions*.tsx`, `Equipe*.tsx`, `Produits*.tsx`, `CraListView.tsx`, `CraDeclarerPage.tsx`, `CraRevueEquipePage.tsx`, `CraRecapPorteursPage.tsx`, `DroitsPagesAdminPage.tsx`, `StubPage.tsx` |
+| Pages | `src/pages/WelcomePage.tsx`, `Pa*.tsx`, `Bdc*.tsx`, `Missions*.tsx`, `Equipe*.tsx`, `Produits*.tsx`, `CraListView.tsx`, `CraDeclarerPage.tsx`, `CraRevueEquipePage.tsx`, `CraRecapPorteursPage.tsx`, `DroitsPagesAdminPage.tsx`, `SpikeDatatablePage.tsx`, `StubPage.tsx` |
 | Contenu public | Table Grist `Kanban` + `Kanban_commentaires` (accueil) ; libellés / parse dans [`src/utils/kanbanTickets.ts`](src/utils/kanbanTickets.ts) |
 | Données | `src/hooks/useGristPaData.ts`, `useBdcDepensesData.ts`, `useMissionsData.ts`, `useEquipeData.ts`, `useEquipeMemberMissionsData.ts`, `GristPaContext.tsx`, `gristMap.ts`, `gristRest.ts`, `gristAccessToken.ts` |
 | Sécu | `src/security/embedTrust.ts`, `NothingHerePage.tsx`, `ensureFreshBuild.ts`, `fetchTableAllowlist.ts`, `writeTableAllowlist.ts` |

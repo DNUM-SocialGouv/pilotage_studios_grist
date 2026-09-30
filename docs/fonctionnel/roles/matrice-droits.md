@@ -101,6 +101,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-09-30 | Spike datatable (`/outils/spike-datatable`) : page labo Admin-only (`adminOnly` + `AdminRoleGuard`), hors `Page_*` ; données fictives ; N/A tableau A (pas un écran métier) | 5 | POC TanStack + TableShell |
 | 2026-09-30 | Page Admin Droits des pages : section Produits (ex « À venir ») ; section **Fixés par rôle** (lecture seule : Mon carnet, Revue CRA équipe, Droits des pages) ; pas de nouveaux `Page_*` ; rule/checklist revue `Page_*` à chaque nouvel écran | 5 | Sync inventaire droits pages (A) |
 | 2026-09-28 | Fiche mission drawer CRA Admin : + BDC (`BDC_cible`) + bloc calcul TTC indicatif (TJM × markup 15 % × TVA) ; `Calcul_TTC` lecture seule | 5 | Kanban `cra-fiche-mission` (TTC/BDC) |
 | 2026-09-28 | Fiche mission : Admin peut Modifier / Dupliquer un CRA sous prestation (drawer mois · jours · description ; create prérempli ; collision mois refusée) ; hors Admin = lecture seule des sous-lignes | 5 | Kanban `cra-fiche-mission` |

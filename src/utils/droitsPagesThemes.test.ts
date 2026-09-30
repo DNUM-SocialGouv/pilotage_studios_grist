@@ -216,4 +216,8 @@ describe("feedbackPages droits-pages", () => {
   it("mappe la route Admin", () => {
     assert.equal(pageOptionFromPathname("/outils/droits-pages"), "Droits des pages");
   });
+
+  it("mappe le spike datatable", () => {
+    assert.equal(pageOptionFromPathname("/outils/spike-datatable"), "Spike datatable");
+  });
 });
