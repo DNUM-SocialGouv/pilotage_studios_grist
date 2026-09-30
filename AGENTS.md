@@ -53,7 +53,7 @@ Réduire la complexité ; pas d’ajout « au cas où ». Les agents **proposent
 | `/pv` | Stub « À venir » (nav) |
 | `/evaluations`, `/analyse` | Stub hors nav |
 
-Nav principale : Accueil, **Mon carnet** (Freelance/Admin/Resp., `/cra/declarer`), **Weekly** (Freelance/Admin/Resp., `/weekly`), **Budget** (sous-menu Bons de commande · Plans d’activité · Prestation / CRA · Revue CRA équipe · Procès-verbaux — masqué si aucun enfant accessible, typiquement côté Freelance), Produits, Missions, **Équipe**, **Outils** (Récap porteurs · Droits des pages · Spike datatable — Admin). Pas de route `/budget`. `/intervenants` redirige vers `/equipe`.
+Nav principale : Accueil, **Mon carnet** (Freelance/Admin/Resp., `/cra/declarer`), **Weekly** (Admin/Resp. + Freelances listés dans `Weekly_coachs`, `/weekly`), **Budget** (sous-menu Bons de commande · Plans d’activité · Prestation / CRA · Revue CRA équipe · Procès-verbaux — masqué si aucun enfant accessible, typiquement côté Freelance), Produits, Missions, **Équipe**, **Outils** (Récap porteurs · Droits des pages · Spike datatable — Admin). Pas de route `/budget`. `/intervenants` redirige vers `/equipe`.
 
 Entrée MemoryRouter : `/` (`WelcomePage` — **feuille de route kanban** Feedback · Backlog · En cours · Livré, table Grist unique `Kanban`, conversation `Kanban_commentaires`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
 
@@ -103,7 +103,7 @@ Visibilité users : section roadmap sur `/` + issues rédigées selon [`docs/iss
 | Ancre widget + liste PA | `Plan_activite` |
 | Finance PA + écrans BDC (accès full) | `BDC`, `Constatations`, `Commandes_Sofiane` |
 | Onglet Dépenses fiche BDC **ou** écrans `/missions` **ou** `/cra` **ou** `/cra/declarer` **ou** `/cra/revue-equipe` **ou** `/outils/recap-porteurs` **ou** `/equipe` **ou** `/produits` **ou** `/weekly` (lazy, lecture) | `Realise`, `Missions`, `Missions_enfants` (`Mission_parent` + `Titre_de_la_prestation`, fallbacks lecture `Libelle` / texte `Mission_enfant`), `Equipe` (annuaire `/equipe` + `Portage` récap porteurs + identité déclaration / revue), `Tableau_de_pilotage_SDPC_Produits_SDPC` (catalogue `/produits`) |
-| Weekly `/weekly` (lazy) | `Weekly_phase` (phase kanban), `Weekly_agenda` (sujets) + lecture `Missions` / `Missions_enfants` / `Equipe` / produits |
+| Weekly `/weekly` (lazy) | `Weekly_phase` (phase kanban), `Weekly_agenda` (sujets), `Weekly_coachs` (allowlist e-mails, lecture) + lecture `Missions` / `Missions_enfants` / `Equipe` / produits |
 | Fiche `/equipe/:id` (lazy, lecture — section Missions & prestations) | `Missions`, `Missions_enfants` (filtre `Intervenant` = personne) ; avatar = `Equipe.Avatar` (seed) |
 | Fiche `/produits/:id` (lazy, lecture — onglet Missions : prestations + CRA) | `Missions` (filtre `Produit_SDPC`), `Missions_enfants`, `Equipe`, `Realise` (via `loadMissionsTables`) |
 | Kanban accueil (Feedback + produit, lecture + create Feedback + update colonne Admin) | `Kanban` |

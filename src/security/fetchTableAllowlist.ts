@@ -5,6 +5,7 @@ import {
   KANBAN_TABLE_ID,
   ACL_PROFIL_TABLE_ID,
   WEEKLY_AGENDA_TABLE_ID,
+  WEEKLY_COACHS_TABLE_ID,
   WEEKLY_PHASE_TABLE_ID,
 } from "./writeTableAllowlist.ts";
 
@@ -32,10 +33,11 @@ export const BDC_DEPENSES_TABLE_IDS = [
   "Tableau_de_pilotage_SDPC_Produits_SDPC",
 ] as const;
 
-/** Tables satellite Weekly (lazy `/weekly`) — phase kanban + sujets agenda. */
+/** Tables satellite Weekly (lazy) — phase, agenda, allowlist coachs. */
 export const WEEKLY_TABLE_IDS = [
   WEEKLY_PHASE_TABLE_ID,
   WEEKLY_AGENDA_TABLE_ID,
+  WEEKLY_COACHS_TABLE_ID,
 ] as const;
 
 /**

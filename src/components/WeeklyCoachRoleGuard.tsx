@@ -2,18 +2,23 @@ import type { ReactNode } from "react";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Navigate } from "react-router-dom";
 import { useAclProfil } from "../AclProfilContext";
-import { isWeeklyCoachRole } from "../utils/droitsPagesThemes";
+import { useWeeklyCoachAllowlist } from "../hooks/useWeeklyCoachAllowlist";
+import { isMonCarnetManagerRole } from "../utils/droitsPagesThemes";
+import { canAccessWeeklyCoach } from "../utils/weeklyCoachAccess";
 
 type WeeklyCoachRoleGuardProps = {
   children: ReactNode;
 };
 
 /**
- * Garde Weekly (hors `Page_*`) : Admin / Resp. / Freelance.
- * Standalone / preview locale : accès ouvert. Invité → Accueil.
+ * Garde Weekly (hors `Page_*`) : Admin / Resp. + Freelance présents dans
+ * `Weekly_coachs` (Grist). Standalone : ouvert. Autres → Accueil.
  */
 export function WeeklyCoachRoleGuard({ children }: WeeklyCoachRoleGuardProps) {
-  const { status, role, error } = useAclProfil();
+  const { status, role, email, error } = useAclProfil();
+  const needsAllowlist =
+    status === "ok" && !isMonCarnetManagerRole(role) && (role ?? "").trim() === "Freelance";
+  const allowlist = useWeeklyCoachAllowlist(needsAllowlist);
 
   if (status === "loading") {
     return (
@@ -48,7 +53,39 @@ export function WeeklyCoachRoleGuard({ children }: WeeklyCoachRoleGuardProps) {
     );
   }
 
-  if (status === "standalone" || isWeeklyCoachRole(role)) {
+  if (status === "standalone") {
+    return <>{children}</>;
+  }
+
+  if (needsAllowlist && allowlist.status === "loading") {
+    return (
+      <p className="fr-text--sm fr-mt-2w" role="status">
+        Vérification de vos droits d’accès…
+      </p>
+    );
+  }
+
+  if (needsAllowlist && allowlist.status === "error") {
+    return (
+      <Alert
+        className="fr-mt-2w"
+        severity="error"
+        title="Liste des coachs indisponible"
+        description={
+          allowlist.error ??
+          "Impossible de vérifier si vous êtes autorisé·e à ouvrir Weekly."
+        }
+      />
+    );
+  }
+
+  if (
+    canAccessWeeklyCoach({
+      role,
+      email,
+      coachEmails: allowlist.emails,
+    })
+  ) {
     return <>{children}</>;
   }
 

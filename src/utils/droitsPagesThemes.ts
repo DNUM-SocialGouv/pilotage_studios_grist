@@ -128,7 +128,7 @@ export const DROITS_PAGES_ROLE_FIXED: readonly DroitsPagesRoleFixedScreen[] = [
       Freelance: true,
       Invité: false,
     },
-    hint: "Kanban missions + agenda synchro Ops / coachs (hors Page_*).",
+    hint: "Freelance : seulement les e-mails listés dans la table Grist `Weekly_coachs` (pas tout le rôle).",
   },
   {
     id: "droits_pages",
@@ -162,9 +162,6 @@ export function isCraDeclarerRole(role: string | null | undefined): boolean {
 
 /** @see isCraDeclarerRole */
 export const isMonCarnetRole = isCraDeclarerRole;
-
-/** Rôles autorisés à ouvrir Weekly coachs (couche 5, hors Page_*). */
-export const isWeeklyCoachRole = isCraDeclarerRole;
 
 /**
  * Admin / Resp. : vue lecture des missions du département (pas la saisie CRA).

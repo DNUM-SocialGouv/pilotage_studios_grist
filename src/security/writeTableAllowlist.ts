@@ -24,6 +24,8 @@ export const ACL_PROFIL_TABLE_ID = "Acl_profil";
 export const EQUIPE_TABLE_ID = "Equipe";
 export const WEEKLY_PHASE_TABLE_ID = "Weekly_phase";
 export const WEEKLY_AGENDA_TABLE_ID = "Weekly_agenda";
+/** Allowlist e-mails coachs Weekly — lecture seule widget (pas d’écriture). */
+export const WEEKLY_COACHS_TABLE_ID = "Weekly_coachs";
 
 export const WRITE_TABLE_ALLOWLIST = [
   KANBAN_TABLE_ID,
