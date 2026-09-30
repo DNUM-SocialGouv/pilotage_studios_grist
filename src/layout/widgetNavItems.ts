@@ -70,6 +70,12 @@ export const WIDGET_NAV_ITEMS: WidgetNavItem[] = [
         status: "in_progress",
         adminOnly: true,
       },
+      {
+        text: "Spike datatable",
+        href: "/outils/spike-datatable",
+        status: "in_progress",
+        adminOnly: true,
+      },
     ],
   },
 ];

@@ -60,6 +60,7 @@ describe("pageAccessKeyForPath / canAccessPath", () => {
     assert.equal(pageAccessKeyForPath("/cra/revue-equipe"), null);
     assert.equal(pageAccessKeyForPath("/outils/recap-porteurs"), "Page_recap_porteurs");
     assert.equal(pageAccessKeyForPath("/outils/droits-pages"), null);
+    assert.equal(pageAccessKeyForPath("/outils/spike-datatable"), null);
     assert.equal(pageAccessKeyForPath("/equipe"), "Page_equipe");
     assert.equal(pageAccessKeyForPath("/equipe/4"), "Page_equipe");
     assert.equal(pageAccessKeyForPath("/analyse"), null);
@@ -72,6 +73,7 @@ describe("pageAccessKeyForPath / canAccessPath", () => {
     assert.equal(canAccessPath("/missions", PAGE_ACCESS_FAIL_CLOSED), true);
     assert.equal(canAccessPath("/equipe", PAGE_ACCESS_FAIL_CLOSED), true);
     assert.equal(canAccessPath("/outils/droits-pages", PAGE_ACCESS_FAIL_CLOSED), true);
+    assert.equal(canAccessPath("/outils/spike-datatable", PAGE_ACCESS_FAIL_CLOSED), true);
     assert.equal(canAccessPath("/cra", PAGE_ACCESS_ALL_OPEN), true);
   });
 });

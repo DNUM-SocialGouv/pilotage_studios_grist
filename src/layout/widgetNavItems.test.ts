@@ -61,6 +61,7 @@ describe("groupe Outils", () => {
   it("est actif sur le récap porteurs et les droits des pages", () => {
     assert.equal(isGroupActive("/outils/recap-porteurs", outils), true);
     assert.equal(isGroupActive("/outils/droits-pages", outils), true);
+    assert.equal(isGroupActive("/outils/spike-datatable", outils), true);
   });
 
   it("n’est pas actif hors Outils", () => {
@@ -85,6 +86,7 @@ describe("flattenNavLinks", () => {
       "/equipe",
       "/outils/recap-porteurs",
       "/outils/droits-pages",
+      "/outils/spike-datatable",
     ]);
   });
 });
@@ -105,6 +107,7 @@ describe("WIDGET_MODULE_LINKS", () => {
         { text: "Équipe", href: "/equipe", status: "in_progress" },
         { text: "Récap porteurs", href: "/outils/recap-porteurs", status: "in_progress" },
         { text: "Droits des pages", href: "/outils/droits-pages", status: "in_progress" },
+        { text: "Spike datatable", href: "/outils/spike-datatable", status: "in_progress" },
       ],
     );
   });

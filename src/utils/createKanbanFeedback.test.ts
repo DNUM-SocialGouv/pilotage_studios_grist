@@ -175,6 +175,7 @@ describe("pageOptionFromPathname", () => {
     assert.equal(pageOptionFromPathname("/cra"), "Prestation / CRA");
     assert.equal(pageOptionFromPathname("/outils/recap-porteurs"), "Récap porteurs");
     assert.equal(pageOptionFromPathname("/outils/droits-pages"), "Droits des pages");
+    assert.equal(pageOptionFromPathname("/outils/spike-datatable"), "Spike datatable");
     assert.equal(pageOptionFromPathname("/inconnu"), "Autre");
   });
 });

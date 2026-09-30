@@ -24,6 +24,7 @@ import { EquipeListView } from "./pages/EquipeListView";
 import { ProduitsDetailView } from "./pages/ProduitsDetailView";
 import { ProduitsLayout } from "./pages/ProduitsLayout";
 import { ProduitsListView } from "./pages/ProduitsListView";
+import { SpikeDatatablePage } from "./pages/SpikeDatatablePage";
 import { StubPage } from "./pages/StubPage";
 import { WelcomePage } from "./pages/WelcomePage";
 import { getEmbedTrust } from "./security/embedTrust";
@@ -158,6 +159,14 @@ export default function App() {
                 element={
                   <AdminRoleGuard>
                     <DroitsPagesAdminPage />
+                  </AdminRoleGuard>
+                }
+              />
+              <Route
+                path="outils/spike-datatable"
+                element={
+                  <AdminRoleGuard>
+                    <SpikeDatatablePage />
                   </AdminRoleGuard>
                 }
               />
