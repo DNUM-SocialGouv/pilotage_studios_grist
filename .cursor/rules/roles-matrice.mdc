@@ -11,6 +11,9 @@ alwaysApply: true
 
 Schéma pédagogique : canvas local `roles-droits-schema.canvas.tsx` (aligné sur les 6 couches).
 
+Page Admin des interrupteurs : [`docs/fonctionnel/roles/droits-pages-admin.md`](../../docs/fonctionnel/roles/droits-pages-admin.md)
+(`Droits_pages` / `Page_*` + section « Fixés par rôle »).
+
 ## Quand mettre à jour (obligatoire)
 
 Dès qu’une feature ou un correctif touche **au moins un** de :
@@ -27,6 +30,20 @@ Alors, **dans la même PR** (ou session HITL documentée) :
 2. Ajouter une ligne au **Journal**
 3. Si snapshot ACL change → [`access-rules.md`](../../docs/fonctionnel/roles/access-rules.md)
 4. Case PR / checklist : matrice à jour **ou N/A** avec une phrase de justification
+
+## Nouvel écran nav / garde — revue `Page_*` (obligatoire)
+
+Dès qu’on ajoute ou change un **écran dans la nav** ou une **garde de route**,
+**proposer explicitement** (HITL avant colonnes Grist) l’un de :
+
+| Choix | Quand | Actions |
+|-------|--------|---------|
+| **Nouvelle colonne `Page_*`** | L’Admin doit pouvoir activer/désactiver l’écran par rôle | Colonne `Droits_pages` + formule `Acl_profil` (HITL Owner) ; `PAGE_ACCESS_KEYS` / `ROUTE_PAGE_ACCESS` ; thème dans `droitsPagesThemes.ts` ; nav + `PageAccessGuard` ; matrice A + doc Admin |
+| **Fixé par rôle** (hors `Page_*`) | Accès déterminé uniquement par le rôle (ex. Mon carnet, Revue CRA, Droits des pages) | Garde / flag nav dédié ; ligne dans `DROITS_PAGES_ROLE_FIXED` (rappel lecture seule Admin) ; matrice A note « hors Page_* » |
+| **N/A** | Action dans un écran déjà listé, stub hors nav, redirection | Justifier en une phrase dans la PR |
+
+**Jamais** créer une colonne `Page_*` en Grist sans OK Owner.  
+**Jamais** rendre « Droits des pages » configurable via `Page_*` (risque de se couper l’accès Admin).
 
 ## Jamais
 

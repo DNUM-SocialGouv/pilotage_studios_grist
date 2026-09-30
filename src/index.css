@@ -1565,7 +1565,30 @@ button.fr-link:disabled {
 .droits-pages-matrix__role-head,
 .droits-pages-matrix__cell {
   text-align: center;
-  vertical-align: middle;
+  vertical-align: top;
+}
+
+/* Libellé écran + hints : rester dans la col. Écran (pas de débordement). */
+.droits-pages-matrix th[scope="row"] {
+  vertical-align: top;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  max-width: 0; /* force le wrap sous table-layout: fixed */
+}
+
+.droits-pages-matrix__screen-label {
+  display: block;
+  font-weight: 700;
+}
+
+.droits-pages-matrix__screen-hint {
+  display: block;
+  margin-top: 0.25rem;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .droits-pages-matrix__cell .fr-toggle {

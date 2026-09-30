@@ -1,6 +1,7 @@
 /**
  * Thématiques UI pour la page Admin « Droits des pages ».
  * Clés = colonnes `Page_*` de `Droits_pages` / `Acl_profil`.
+ * Écrans « fixés par rôle » : hors `Page_*`, affichés en lecture seule.
  */
 
 import type { PageAccessKey } from "../security/pageAccess";
@@ -10,7 +11,7 @@ export type DroitsPagesThemeId =
   | "outils"
   | "missions"
   | "equipe"
-  | "a_venir"
+  | "produits"
   | "accueil";
 
 export type DroitsPagesScreen = {
@@ -26,7 +27,7 @@ export type DroitsPagesTheme = {
   screens: DroitsPagesScreen[];
 };
 
-/** Ordre d’affichage (plan #54). */
+/** Ordre d’affichage (plan #54 + sync Produits livré). */
 export const DROITS_PAGES_THEMES: readonly DroitsPagesTheme[] = [
   {
     id: "budget",
@@ -54,8 +55,8 @@ export const DROITS_PAGES_THEMES: readonly DroitsPagesTheme[] = [
     screens: [{ key: "Page_equipe", label: "Équipe" }],
   },
   {
-    id: "a_venir",
-    label: "À venir",
+    id: "produits",
+    label: "Produits",
     screens: [{ key: "Page_produits", label: "Produits" }],
   },
   {
@@ -81,6 +82,55 @@ export const DROITS_PAGES_ROLE_SHORT: Record<DroitsPagesRoleName, string> = {
   Freelance: "Freelance",
   Invité: "Invité",
 };
+
+/**
+ * Écrans hors `Page_*` : accès fixé par rôle (et éventuellement département).
+ * Affichés en lecture seule sur `/outils/droits-pages` pour la carte complète.
+ */
+export type DroitsPagesRoleFixedScreen = {
+  id: string;
+  label: string;
+  /** Qui voit Oui dans la grille info (indépendant de `Droits_pages`). */
+  accessByRole: Record<DroitsPagesRoleName, boolean>;
+  /** Précision courte sous le libellé (ex. filtre département). */
+  hint?: string;
+};
+
+export const DROITS_PAGES_ROLE_FIXED: readonly DroitsPagesRoleFixedScreen[] = [
+  {
+    id: "mon_carnet",
+    label: "Mon carnet",
+    accessByRole: {
+      Admin: true,
+      "Responsable de département": true,
+      Freelance: true,
+      Invité: false,
+    },
+    hint: "Admin / Resp. : lecture missions du département ; Freelance : saisie CRA.",
+  },
+  {
+    id: "revue_cra",
+    label: "Revue CRA équipe",
+    accessByRole: {
+      Admin: true,
+      "Responsable de département": true,
+      Freelance: false,
+      Invité: false,
+    },
+    hint: "Uniquement si le département (`Equipe.Equipe`) est renseigné.",
+  },
+  {
+    id: "droits_pages",
+    label: "Droits des pages",
+    accessByRole: {
+      Admin: true,
+      "Responsable de département": false,
+      Freelance: false,
+      Invité: false,
+    },
+    hint: "Réservé Admin — pas d’interrupteur (évite de se couper l’accès).",
+  },
+] as const;
 
 export function isAdminRole(role: string | null | undefined): boolean {
   return (role?.trim() ?? "") === "Admin";

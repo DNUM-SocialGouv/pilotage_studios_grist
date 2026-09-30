@@ -48,16 +48,16 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 | Plans d’activité | `/pa` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Couche 5 ; données encore ouvertes (couche 6 plus tard) |
 | Bons de commande | `/bdc` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Idem |
 | Prestation / CRA (liste) | `/cra` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Freelances : déclaration via `/cra/declarer` |
-| Déclarer mon CRA / **Mon carnet** | `/cra/declarer` | **oui*** | **oui*** | **oui** | **non** | **Appliqué** UX (rôle) | *Admin/Resp. : liste lecture missions via prestations du **département** (`Equipe.Equipe`) ; Freelance : saisie CRA « moi » ; nav niveau 1 ; hors `Page_*` ; Invité masqué |
-| Revue CRA équipe | `/cra/revue-equipe` | **oui*** | **oui*** | **non** | **non** | **Appliqué** UX (rôle + dép.) | *Uniquement si `Equipe.Equipe` renseigné ; périmètre = même département ; hors `Page_*` ; ACL `Realise` par rôle **faite** (#47/#70) |
+| Déclarer mon CRA / **Mon carnet** | `/cra/declarer` | **oui*** | **oui*** | **oui** | **non** | **Appliqué** UX (rôle) | *Admin/Resp. : liste lecture missions via prestations du **département** (`Equipe.Equipe`) ; Freelance : saisie CRA « moi » ; nav niveau 1 ; hors `Page_*` ; rappel lecture seule Admin « Fixés par rôle » ; Invité masqué |
+| Revue CRA équipe | `/cra/revue-equipe` | **oui*** | **oui*** | **non** | **non** | **Appliqué** UX (rôle + dép.) | *Uniquement si `Equipe.Equipe` renseigné ; périmètre = même département ; hors `Page_*` ; rappel lecture seule Admin « Fixés par rôle » ; ACL `Realise` par rôle **faite** (#47/#70) |
 | Récap porteurs | `/outils/recap-porteurs` | **oui** | **non** | **non** | **non** | **Appliqué** UX | |
 | Procès-verbaux | `/pv` | **oui** | **non** | **non** | **non** | **Appliqué** UX (stub) | |
 | Missions | `/missions` | oui | oui | oui | oui | **Appliqué** UX | Fiche : Modifier / Dupliquer CRA sous prestation = **Admin** seulement (drawer) |
 | Équipe | `/equipe` | oui | oui | oui | oui | **Configurable** Admin | Flag `Page_equipe` ; réglé via `/outils/droits-pages` ([#54](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/54)) |
 | Créer fiche Équipe | `/equipe` (drawer) | **oui** | **non** | **non** | **non** | **Appliqué** UX + ACL | Bouton Admin ; `Equipe` create allowlisté |
 | Éditer fiche Équipe | `/equipe/:id` (drawer) | **oui** | **non** | **non** | **non** | **Appliqué** UX + ACL | Bouton Modifier Admin ; `Equipe` update allowlisté ([#63](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/63)) |
-| Droits des pages | `/outils/droits-pages` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Garde rôle Admin (pas de `Page_*`) ; édite `Droits_pages` |
-| Produits | `/produits`, `/produits/:id` | oui | oui | oui | oui | **Appliqué** UX (liste + fiche lecture) | Flag `Page_produits` |
+| Droits des pages | `/outils/droits-pages` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Garde rôle Admin (pas de `Page_*`) ; édite `Droits_pages` ; rappel lecture seule dans section « Fixés par rôle » |
+| Produits | `/produits`, `/produits/:id` | oui | oui | oui | oui | **Appliqué** UX (liste + fiche lecture) | Flag `Page_produits` ; section Admin « Produits » (plus « À venir ») |
 
 ---
 
@@ -101,6 +101,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-09-30 | Page Admin Droits des pages : section Produits (ex « À venir ») ; section **Fixés par rôle** (lecture seule : Mon carnet, Revue CRA équipe, Droits des pages) ; pas de nouveaux `Page_*` ; rule/checklist revue `Page_*` à chaque nouvel écran | 5 | Sync inventaire droits pages (A) |
 | 2026-09-28 | Fiche mission drawer CRA Admin : + BDC (`BDC_cible`) + bloc calcul TTC indicatif (TJM × markup 15 % × TVA) ; `Calcul_TTC` lecture seule | 5 | Kanban `cra-fiche-mission` (TTC/BDC) |
 | 2026-09-28 | Fiche mission : Admin peut Modifier / Dupliquer un CRA sous prestation (drawer mois · jours · description ; create prérempli ; collision mois refusée) ; hors Admin = lecture seule des sous-lignes | 5 | Kanban `cra-fiche-mission` |
 | 2026-09-25 | Mon carnet : Admin/Resp. = liste lecture missions du département (presta intervenant même `Equipe.Equipe`, missions mixtes incluses) ; Freelance = saisie inchangée ; Invité masqué ; Resp. ajouté à la nav/garde ; note Revue CRA : ACL `Realise` faite | 5 | Carnet périmètre département / PR #90 |

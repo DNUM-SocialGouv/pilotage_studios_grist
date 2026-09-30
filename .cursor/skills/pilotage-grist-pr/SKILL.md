@@ -44,6 +44,7 @@ gh pr create --repo DNUM-SocialGouv/pilotage_studios_grist \
 ## Documentation
 - [ ] `docs/fonctionnel/` à jour ou N/A
 - [ ] Matrice rôles (`docs/fonctionnel/roles/matrice-droits.md`) à jour ou N/A
+- [ ] Droits pages / `Page_*` : nouvel écran → **Page_*** | **fixé par rôle** | **N/A** (rule `roles-matrice`)
 - [ ] Portage app solo : N/A | fiche `docs/portage/`
 
 ## Impact
