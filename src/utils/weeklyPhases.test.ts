@@ -73,4 +73,21 @@ describe("buildWeeklyCards", () => {
     assert.equal(g.autonomie.length, 1);
     assert.equal(g.prochainement.length, 0);
   });
+
+  it("en cas de doublons Weekly_phase, garde le plus petit id", () => {
+    const cards = buildWeeklyCards({
+      missions,
+      missionEnfants: enfants,
+      intervenants: [{ id: 5, Prenom_Nom: "Alice" }],
+      produits: [],
+      phaseRows: [
+        { id: 200, Mission: 10, Phase: "cadrage" },
+        { id: 100, Mission: 10, Phase: "actif" },
+      ],
+    });
+    const alpha = cards.find((c) => c.missionId === 10);
+    assert.ok(alpha);
+    assert.equal(alpha.phaseRowId, 100);
+    assert.equal(alpha.phase, "actif");
+  });
 });

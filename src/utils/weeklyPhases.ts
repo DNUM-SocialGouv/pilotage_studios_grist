@@ -78,6 +78,10 @@ export function resolveWeeklyPhase(
   return "prochainement";
 }
 
+/**
+ * Index phase par mission. Si doublons (courses create), on garde la ligne
+ * au **plus petit id** (la plus ancienne) pour stabiliser upserts suivants.
+ */
 export function phaseRowsToMap(
   rows: readonly WeeklyPhaseRow[],
 ): Map<number, { phaseId: number; phase: WeeklyPhaseKey }> {
@@ -87,6 +91,8 @@ export function phaseRowsToMap(
     if (missionId == null) continue;
     const key = (row.Phase ?? "").trim();
     if (!isWeeklyPhaseKey(key)) continue;
+    const existing = map.get(missionId);
+    if (existing != null && existing.phaseId <= row.id) continue;
     map.set(missionId, { phaseId: row.id, phase: key });
   }
   return map;

@@ -40,8 +40,15 @@ plus tard.
 Timer weekly, clôture / historique, suivi perso, fiche Weekly dédiée, écriture
 `Meteo` / bloquant sur `Missions`, CRA.
 
-## ACL (HITL Owner)
+## ACL (HITL Owner — UI Grist uniquement)
 
-Les tables satellites sont créées ; les **Access Rules** (lecture + C/U pour les
-rôles concernés, pas de delete widget) restent à poser / vérifier côté Owner UI
-Grist — pas via le widget.
+Même jeu de règles sur **`Weekly_phase`** et **`Weekly_agenda`** (ressource `*` /
+Toutes). Ordre : du plus spécifique au défaut. **`OWNER` sans guillemets**.
+
+| # | Condition (coller tel quel) | Droits | Mémo UI |
+|---|----------------------------|--------|---------|
+| 1 | `user.Access == OWNER or user.Equipe.Role_ACL == "Admin"` | `+CRUD` | Owner / Admin : ménage (dont suppression des doublons de phase). |
+| 2 | `user.Equipe.Role_ACL == "Responsable de département" or user.Equipe.Role_ACL == "Freelance"` | `+CRU` | Coachs : lire, créer, modifier ; pas de delete. |
+| 3 | `True` | `-CRUD` | Invité et autres : aucun accès. |
+
+User Attribute `Equipe` déjà requis. Après pose : View As Freelance / Invité / Admin.

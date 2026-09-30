@@ -135,6 +135,18 @@ L’annuaire `/equipe` s’adapte : si `Statut` / `Portage` / `Rôle` sont illis
 
 Vérifié MCP `grist_get_acl_rules` (resources 41 / 42, rules 39–42). Ordre : Owner/Admin au-dessus de `True`. User Attribute `Equipe` requis. Anciennes tables `Retours` / `Roadmap` : hors widget.
 
+## Tables Weekly (`Weekly_phase` / `Weekly_agenda`) — **à poser** Owner UI
+
+Même 3 règles sur chaque table (`*` / Toutes). **`OWNER` sans guillemets**.
+
+| # | Condition | Droits | Mémo |
+|---|-----------|--------|------|
+| 1 | `user.Access == OWNER or user.Equipe.Role_ACL == "Admin"` | `+CRUD` | Owner / Admin : ménage (delete doublons phase inclus). |
+| 2 | `user.Equipe.Role_ACL == "Responsable de département" or user.Equipe.Role_ACL == "Freelance"` | `+CRU` | Coachs Weekly : lecture + create/update ; pas de delete. |
+| 3 | `True` | `-CRUD` | Invité / autres : refus total. |
+
+Après pose : View As + vérif MCP `grist_get_acl_rules`. Détail produit : [`docs/fonctionnel/weekly/README.md`](../weekly/README.md).
+
 ## Qui peut modifier quoi
 
 | Action | Qui |

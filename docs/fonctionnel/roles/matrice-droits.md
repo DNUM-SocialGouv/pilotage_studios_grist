@@ -81,8 +81,8 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | `Realise` (CRA) hors montants | CRUD | R/U département | **R/U + C** ses lignes | — | **Appliqué** (ACL) + widget | Déclaration `#33` ; revue `#70` ; mur `#47` HITL 2026-09-21 ; fiche mission Modifier/Dupliquer Admin (`cra-fiche-mission`) |
 | `Realise.Calcul_TTC` | R ; U Owner | R | R | R | **Appliqué** | `+R -U` si non-Owner |
 | `Missions` / `Missions_enfants` | CRUD | R/U dép. | R ses missions | R / — | Non (rôle) | |
-| `Weekly_phase` | CRU | CRU | CRU | — | **Widget** ; ACL Owner à poser | Satellite Weekly ; pas de delete widget ; Ref → `Missions` |
-| `Weekly_agenda` | CRU | CRU | CRU | — | **Widget** ; ACL Owner à poser | Satellite Weekly ; create + update `Traite` ; pas de delete widget |
+| `Weekly_phase` | CRUD* | CRU | CRU | — | **Widget** ; **ACL à poser** Owner (voir [access-rules.md](access-rules.md) § Weekly) | *Delete = Owner/Admin seulement ; Ref → `Missions` ; 1 ligne / mission (doublons → plus petit id côté widget) |
+| `Weekly_agenda` | CRUD* | CRU | CRU | — | **Widget** ; **ACL à poser** Owner (idem) | *Delete = Owner/Admin ; create + update `Traite` ; pas de delete widget |
 | `Kanban` (feedback + produit) | CRU (liste + colonne Admin) | C (+ R) ; U colonne Admin | C (+ R) | C (+ R) | **Appliqué** (ACL) + widget | Owner/Admin `+CRUD` ; `True` → `+CR-UD` |
 | `Kanban_commentaires` | CR | C (+ R) | C (+ R) | C (+ R) | **Appliqué** (ACL) + widget | Owner/Admin `+CRUD` ; `True` → `+CR-UD` |
 | `Retours` / `Roadmap` (legacy) | — | — | — | — | **Hors widget** (migrées → `Kanban`) | Archivables Owner |
@@ -104,6 +104,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-10-01 | Weekly ACL : formules Owner UI documentées (`Weekly_phase` / `Weekly_agenda` — Owner/Admin CRUD ; Resp./Freelance CRU ; `True` −CRUD) ; à poser / vérif MCP | 6 (doc HITL) | PR #95 revue |
 | 2026-09-30 | Weekly (`/weekly`) : nav + garde Admin/Resp./Freelance (hors `Page_*`) ; kanban missions + agenda ; tables satellites `Weekly_phase` / `Weekly_agenda` (allowlist) ; ACL couches 6 à finaliser Owner | 5, 6 (doc) | Kanban `weekly-coachs-ab` |
 | 2026-09-30 | Spike datatable (`/outils/spike-datatable`) : page labo Admin-only (`adminOnly` + `AdminRoleGuard`), hors `Page_*` ; lecture `Realise` ; N/A tableau A (pas un écran métier) | 5 | POC TanStack + TableShell |
 | 2026-09-30 | Page Admin Droits des pages : section Produits (ex « À venir ») ; section **Fixés par rôle** (lecture seule : Mon carnet, Revue CRA équipe, Droits des pages) ; pas de nouveaux `Page_*` ; rule/checklist revue `Page_*` à chaque nouvel écran | 5 | Sync inventaire droits pages (A) |

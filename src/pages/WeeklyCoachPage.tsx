@@ -18,6 +18,8 @@ import {
   WEEKLY_PHASES,
   buildWeeklyCards,
   groupCardsByPhase,
+  isWeeklyPhaseKey,
+  phaseRowsToMap,
   type WeeklyCard,
   type WeeklyPhaseKey,
 } from "../utils/weeklyPhases";
@@ -143,11 +145,13 @@ function WeeklyCardView({
   busy,
   onPhaseChange,
   onDragStart,
+  onDragEnd,
 }: {
   card: WeeklyCard;
   busy: boolean;
   onPhaseChange: (missionId: number, phase: WeeklyPhaseKey) => void;
   onDragStart: (missionId: number) => void;
+  onDragEnd: () => void;
 }) {
   const phaseId = `phase-${card.missionId}`;
   const hasMeteo = Boolean(card.meteo);
@@ -158,6 +162,7 @@ function WeeklyCardView({
     <article
       draggable={!busy}
       onDragStart={() => onDragStart(card.missionId)}
+      onDragEnd={onDragEnd}
       aria-label={card.titre}
       style={{
         background: "#fff",
@@ -264,9 +269,11 @@ function WeeklyCardView({
           id={phaseId}
           disabled={busy}
           value={card.phase}
-          onChange={(e) =>
-            onPhaseChange(card.missionId, e.target.value as WeeklyPhaseKey)
-          }
+          onChange={(e) => {
+            const next = e.target.value;
+            if (!isWeeklyPhaseKey(next)) return;
+            onPhaseChange(card.missionId, next);
+          }}
         >
           {WEEKLY_PHASES.map((p) => (
             <option key={p.key} value={p.key}>
@@ -350,11 +357,14 @@ export function WeeklyCoachPage() {
   const changePhase = async (missionId: number, phase: WeeklyPhaseKey) => {
     const card = cards.find((c) => c.missionId === missionId);
     if (!card || card.phase === phase) return;
+    // Réutilise une ligne existante (y compris après course create) avant un create.
+    const existingPhaseId =
+      card.phaseRowId ?? phaseRowsToMap(data.phases).get(missionId)?.phaseId ?? null;
     setPhaseError(null);
     setBusyMissionId(missionId);
     try {
       await upsertWeeklyPhase({
-        phaseRowId: card.phaseRowId,
+        phaseRowId: existingPhaseId,
         missionId,
         phase,
       });
@@ -371,8 +381,10 @@ export function WeeklyCoachPage() {
 
   const onDropColumn = (phase: WeeklyPhaseKey) => (e: DragEvent) => {
     e.preventDefault();
-    if (dragMissionId == null) return;
-    void changePhase(dragMissionId, phase);
+    const missionId = dragMissionId;
+    setDragMissionId(null);
+    if (missionId == null) return;
+    void changePhase(missionId, phase);
   };
 
   const onAddSujet = async (e: FormEvent) => {
@@ -679,6 +691,7 @@ export function WeeklyCoachPage() {
                       busy={busyMissionId === card.missionId || data.isReloading}
                       onPhaseChange={(id, phase) => void changePhase(id, phase)}
                       onDragStart={setDragMissionId}
+                      onDragEnd={() => setDragMissionId(null)}
                     />
                   ))}
                 </div>
