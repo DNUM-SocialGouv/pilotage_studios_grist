@@ -3,6 +3,7 @@
 export const FEEDBACK_PAGE_OPTIONS = [
   "Accueil",
   "Mon carnet",
+  "Weekly",
   "Bons de commande",
   "Plans d’activité",
   "Produits",
@@ -27,6 +28,9 @@ export function pageOptionFromPathname(pathname: string): FeedbackPageOption {
   }
   if (pathname === "/cra/declarer" || pathname.startsWith("/cra/declarer/")) {
     return "Mon carnet";
+  }
+  if (pathname === "/weekly" || pathname.startsWith("/weekly/")) {
+    return "Weekly";
   }
   if (pathname === "/pa" || pathname.startsWith("/pa/")) {
     return "Plans d’activité";

@@ -4,6 +4,8 @@ import {
   KANBAN_COMMENTAIRES_TABLE_ID,
   KANBAN_TABLE_ID,
   ACL_PROFIL_TABLE_ID,
+  WEEKLY_AGENDA_TABLE_ID,
+  WEEKLY_PHASE_TABLE_ID,
 } from "./writeTableAllowlist.ts";
 
 /**
@@ -19,7 +21,7 @@ export type RelatedTableId = (typeof RELATED_TABLE_IDS)[number];
 
 /**
  * Tables lazy (pas au boot PA) : onglet Dépenses fiche BDC, écrans `/missions`, `/cra`,
- * `/outils/recap-porteurs`, `/equipe`, `/produits`, select auteur du widget feedback.
+ * `/outils/recap-porteurs`, `/equipe`, `/produits`, `/weekly`, select auteur du widget feedback.
  * Lecture seule ; jeton REST `readOnly: true` quand la table passe par REST.
  */
 export const BDC_DEPENSES_TABLE_IDS = [
@@ -28,6 +30,12 @@ export const BDC_DEPENSES_TABLE_IDS = [
   "Missions_enfants",
   "Equipe",
   "Tableau_de_pilotage_SDPC_Produits_SDPC",
+] as const;
+
+/** Tables satellite Weekly (lazy `/weekly`) — phase kanban + sujets agenda. */
+export const WEEKLY_TABLE_IDS = [
+  WEEKLY_PHASE_TABLE_ID,
+  WEEKLY_AGENDA_TABLE_ID,
 ] as const;
 
 /**
@@ -49,6 +57,7 @@ export const FETCH_TABLE_ALLOWLIST = [
   PA_TABLE_ID,
   ...RELATED_TABLE_IDS,
   ...BDC_DEPENSES_TABLE_IDS,
+  ...WEEKLY_TABLE_IDS,
   ACL_PROFIL_TABLE_ID,
   DROITS_PAGES_TABLE_ID,
   KANBAN_TABLE_ID,

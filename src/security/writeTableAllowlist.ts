@@ -10,6 +10,8 @@
  * - `Droits_pages` : update only (page Admin droits des écrans — pas de create/delete).
  * - `Acl_profil` : create only (fiche session auto si absente — pas d’update/delete).
  * - `Equipe` : create + update (drawer Admin nouvelle / modifier personne — pas de delete).
+ * - `Weekly_phase` : create + update (phase kanban Weekly — pas de delete).
+ * - `Weekly_agenda` : create + update (sujets à aborder — pas de delete).
  */
 
 export const KANBAN_TABLE_ID = "Kanban";
@@ -20,6 +22,8 @@ export const REALISE_TABLE_ID = "Realise";
 export const DROITS_PAGES_TABLE_ID = "Droits_pages";
 export const ACL_PROFIL_TABLE_ID = "Acl_profil";
 export const EQUIPE_TABLE_ID = "Equipe";
+export const WEEKLY_PHASE_TABLE_ID = "Weekly_phase";
+export const WEEKLY_AGENDA_TABLE_ID = "Weekly_agenda";
 
 export const WRITE_TABLE_ALLOWLIST = [
   KANBAN_TABLE_ID,
@@ -29,6 +33,8 @@ export const WRITE_TABLE_ALLOWLIST = [
   REALISE_TABLE_ID,
   ACL_PROFIL_TABLE_ID,
   EQUIPE_TABLE_ID,
+  WEEKLY_PHASE_TABLE_ID,
+  WEEKLY_AGENDA_TABLE_ID,
 ] as const;
 
 export type WritableTableId = (typeof WRITE_TABLE_ALLOWLIST)[number];
@@ -41,6 +47,8 @@ export const WRITE_TABLE_UPDATE_ALLOWLIST = [
   REALISE_TABLE_ID,
   DROITS_PAGES_TABLE_ID,
   EQUIPE_TABLE_ID,
+  WEEKLY_PHASE_TABLE_ID,
+  WEEKLY_AGENDA_TABLE_ID,
 ] as const;
 
 export type WritableUpdateTableId = (typeof WRITE_TABLE_UPDATE_ALLOWLIST)[number];

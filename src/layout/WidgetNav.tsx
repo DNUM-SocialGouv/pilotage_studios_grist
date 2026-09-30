@@ -5,7 +5,7 @@ import { MainNavigation } from "@codegouvfr/react-dsfr/MainNavigation";
 import type { MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation";
 import { useAclProfil } from "../AclProfilContext";
 import { canAccessHref } from "../security/pageAccess";
-import { isAdminRole, isCraDeclarerRole, isCraRevueEquipeRole } from "../utils/droitsPagesThemes";
+import { isAdminRole, isCraDeclarerRole, isCraRevueEquipeRole, isWeeklyCoachRole } from "../utils/droitsPagesThemes";
 import {
   WIDGET_NAV_ITEMS,
   filterNavItemsByPageAccess,
@@ -44,10 +44,11 @@ export function WidgetNav() {
   const navigate = useNavigate();
   const { status, flags, error, role, equipeLabel } = useAclProfil();
 
-  // Pendant le chargement : nav complète hors liens adminOnly / craDeclarerOnly / craRevueEquipeOnly (évite flash).
+  // Pendant le chargement : nav complète hors liens adminOnly / craDeclarerOnly / weeklyOnly / craRevueEquipeOnly (évite flash).
   // Après résolution : filtre selon `Page_*` (fail-closed si empty/error) + rôles.
   const isAdmin = status === "standalone" || isAdminRole(role);
   const canDeclareCra = status === "standalone" || isCraDeclarerRole(role);
+  const canWeekly = status === "standalone" || isWeeklyCoachRole(role);
   // Revue : rôle manager + département renseigné (masque le cas Admin transverse sans équipe).
   const canRevueCraEquipe =
     status === "standalone" ||
@@ -57,12 +58,13 @@ export function WidgetNav() {
       ? filterNavItemsByPageAccess(WIDGET_NAV_ITEMS, () => true, {
           isAdmin: false,
           canDeclareCra: false,
+          canWeekly: false,
           canRevueCraEquipe: false,
         })
       : filterNavItemsByPageAccess(
           WIDGET_NAV_ITEMS,
           (href) => canAccessHref(href, flags),
-          { isAdmin, canDeclareCra, canRevueCraEquipe },
+          { isAdmin, canDeclareCra, canWeekly, canRevueCraEquipe },
         );
 
   const onNavClick = (href: string) => (e: MouseEvent<HTMLAnchorElement>) => {

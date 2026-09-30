@@ -94,6 +94,26 @@ export interface Mission {
   Docs?: unknown;
   Volumes_d_usages_utilisateurs_utilisations_?: string;
   Derniere_mise_a_jour?: number;
+  /** Météo d’accompagnement (lecture Weekly) — colonne Grist `Meteo`. */
+  Meteo?: string;
+}
+
+/** Phase kanban Weekly (table satellite `Weekly_phase`). */
+export interface WeeklyPhaseRow {
+  id: number;
+  Mission?: unknown;
+  Phase?: string;
+}
+
+/** Sujet agenda Weekly (table satellite `Weekly_agenda`). */
+export interface WeeklyAgendaRow {
+  id: number;
+  Texte?: string;
+  Auteur?: string;
+  Email?: string;
+  Mission?: unknown;
+  Traite?: boolean;
+  Cree_le?: string | number;
 }
 
 export interface MissionEnfant {

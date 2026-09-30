@@ -49,6 +49,7 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 | Bons de commande | `/bdc` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Idem |
 | Prestation / CRA (liste) | `/cra` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Freelances : déclaration via `/cra/declarer` |
 | Déclarer mon CRA / **Mon carnet** | `/cra/declarer` | **oui*** | **oui*** | **oui** | **non** | **Appliqué** UX (rôle) | *Admin/Resp. : liste lecture missions via prestations du **département** (`Equipe.Equipe`) ; Freelance : saisie CRA « moi » ; nav niveau 1 ; hors `Page_*` ; rappel lecture seule Admin « Fixés par rôle » ; Invité masqué |
+| **Weekly** | `/weekly` | **oui** | **oui** | **oui** | **non** | **Appliqué** UX (rôle) | Kanban missions + agenda ; hors `Page_*` ; tables satellites `Weekly_phase` / `Weekly_agenda` ; Invité masqué |
 | Revue CRA équipe | `/cra/revue-equipe` | **oui*** | **oui*** | **non** | **non** | **Appliqué** UX (rôle + dép.) | *Uniquement si `Equipe.Equipe` renseigné ; périmètre = même département ; hors `Page_*` ; rappel lecture seule Admin « Fixés par rôle » ; ACL `Realise` par rôle **faite** (#47/#70) |
 | Récap porteurs | `/outils/recap-porteurs` | **oui** | **non** | **non** | **non** | **Appliqué** UX | |
 | Procès-verbaux | `/pv` | **oui** | **non** | **non** | **non** | **Appliqué** UX (stub) | |
@@ -80,6 +81,8 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | `Realise` (CRA) hors montants | CRUD | R/U département | **R/U + C** ses lignes | — | **Appliqué** (ACL) + widget | Déclaration `#33` ; revue `#70` ; mur `#47` HITL 2026-09-21 ; fiche mission Modifier/Dupliquer Admin (`cra-fiche-mission`) |
 | `Realise.Calcul_TTC` | R ; U Owner | R | R | R | **Appliqué** | `+R -U` si non-Owner |
 | `Missions` / `Missions_enfants` | CRUD | R/U dép. | R ses missions | R / — | Non (rôle) | |
+| `Weekly_phase` | CRU | CRU | CRU | — | **Widget** ; ACL Owner à poser | Satellite Weekly ; pas de delete widget ; Ref → `Missions` |
+| `Weekly_agenda` | CRU | CRU | CRU | — | **Widget** ; ACL Owner à poser | Satellite Weekly ; create + update `Traite` ; pas de delete widget |
 | `Kanban` (feedback + produit) | CRU (liste + colonne Admin) | C (+ R) ; U colonne Admin | C (+ R) | C (+ R) | **Appliqué** (ACL) + widget | Owner/Admin `+CRUD` ; `True` → `+CR-UD` |
 | `Kanban_commentaires` | CR | C (+ R) | C (+ R) | C (+ R) | **Appliqué** (ACL) + widget | Owner/Admin `+CRUD` ; `True` → `+CR-UD` |
 | `Retours` / `Roadmap` (legacy) | — | — | — | — | **Hors widget** (migrées → `Kanban`) | Archivables Owner |
@@ -101,6 +104,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-09-30 | Weekly (`/weekly`) : nav + garde Admin/Resp./Freelance (hors `Page_*`) ; kanban missions + agenda ; tables satellites `Weekly_phase` / `Weekly_agenda` (allowlist) ; ACL couches 6 à finaliser Owner | 5, 6 (doc) | Kanban `weekly-coachs-ab` |
 | 2026-09-30 | Spike datatable (`/outils/spike-datatable`) : page labo Admin-only (`adminOnly` + `AdminRoleGuard`), hors `Page_*` ; lecture `Realise` ; N/A tableau A (pas un écran métier) | 5 | POC TanStack + TableShell |
 | 2026-09-30 | Page Admin Droits des pages : section Produits (ex « À venir ») ; section **Fixés par rôle** (lecture seule : Mon carnet, Revue CRA équipe, Droits des pages) ; pas de nouveaux `Page_*` ; rule/checklist revue `Page_*` à chaque nouvel écran | 5 | Sync inventaire droits pages (A) |
 | 2026-09-28 | Fiche mission drawer CRA Admin : + BDC (`BDC_cible`) + bloc calcul TTC indicatif (TJM × markup 15 % × TVA) ; `Calcul_TTC` lecture seule | 5 | Kanban `cra-fiche-mission` (TTC/BDC) |

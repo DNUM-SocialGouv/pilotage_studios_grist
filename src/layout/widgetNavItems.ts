@@ -16,6 +16,11 @@ export type WidgetNavLink = {
    */
   craDeclarerOnly?: boolean;
   /**
+   * Visible seulement si rôle Freelance, Admin ou Responsable de département
+   * (Weekly coachs). Indépendant des `Page_*`.
+   */
+  weeklyOnly?: boolean;
+  /**
    * Visible seulement si rôle Admin ou Responsable de département
    * (revue CRA équipe). Indépendant des `Page_*`.
    */
@@ -41,6 +46,12 @@ export const WIDGET_NAV_ITEMS: WidgetNavItem[] = [
     href: "/cra/declarer",
     status: "in_progress",
     craDeclarerOnly: true,
+  },
+  {
+    text: "Weekly",
+    href: "/weekly",
+    status: "in_progress",
+    weeklyOnly: true,
   },
   {
     text: "Budget",
@@ -110,7 +121,8 @@ export function isGroupActive(pathname: string, group: WidgetNavGroup): boolean 
 /**
  * Filtre nav selon drapeaux `Page_*` (couche 5).
  * `adminOnly` : lien réservé rôle Admin (indépendant de `Page_*`).
- * `craDeclarerOnly` : lien réservé Freelance / Admin (indépendant de `Page_*`).
+ * `craDeclarerOnly` : lien réservé Freelance / Admin / Resp. (indépendant de `Page_*`).
+ * `weeklyOnly` : lien réservé Freelance / Admin / Resp. (Weekly, indépendant de `Page_*`).
  * `craRevueEquipeOnly` : lien réservé Admin / Resp. (indépendant de `Page_*`).
  */
 export function filterNavItemsByPageAccess(
@@ -119,11 +131,13 @@ export function filterNavItemsByPageAccess(
   options?: {
     isAdmin?: boolean;
     canDeclareCra?: boolean;
+    canWeekly?: boolean;
     canRevueCraEquipe?: boolean;
   },
 ): WidgetNavItem[] {
   const isAdmin = options?.isAdmin === true;
   const canDeclareCra = options?.canDeclareCra === true;
+  const canWeekly = options?.canWeekly === true;
   const canRevueCraEquipe = options?.canRevueCraEquipe === true;
   const out: WidgetNavItem[] = [];
   for (const item of items) {
@@ -134,6 +148,9 @@ export function filterNavItemsByPageAccess(
         }
         if (child.craDeclarerOnly) {
           return canDeclareCra;
+        }
+        if (child.weeklyOnly) {
+          return canWeekly;
         }
         if (child.craRevueEquipeOnly) {
           return canRevueCraEquipe;
@@ -150,6 +167,12 @@ export function filterNavItemsByPageAccess(
     }
     if (item.craDeclarerOnly) {
       if (canDeclareCra) {
+        out.push(item);
+      }
+      continue;
+    }
+    if (item.weeklyOnly) {
+      if (canWeekly) {
         out.push(item);
       }
       continue;

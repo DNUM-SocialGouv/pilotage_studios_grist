@@ -120,6 +120,17 @@ export const DROITS_PAGES_ROLE_FIXED: readonly DroitsPagesRoleFixedScreen[] = [
     hint: "Uniquement si le département (`Equipe.Equipe`) est renseigné.",
   },
   {
+    id: "weekly",
+    label: "Weekly",
+    accessByRole: {
+      Admin: true,
+      "Responsable de département": true,
+      Freelance: true,
+      Invité: false,
+    },
+    hint: "Kanban missions + agenda synchro Ops / coachs (hors Page_*).",
+  },
+  {
     id: "droits_pages",
     label: "Droits des pages",
     accessByRole: {
@@ -151,6 +162,9 @@ export function isCraDeclarerRole(role: string | null | undefined): boolean {
 
 /** @see isCraDeclarerRole */
 export const isMonCarnetRole = isCraDeclarerRole;
+
+/** Rôles autorisés à ouvrir Weekly coachs (couche 5, hors Page_*). */
+export const isWeeklyCoachRole = isCraDeclarerRole;
 
 /**
  * Admin / Resp. : vue lecture des missions du département (pas la saisie CRA).

@@ -10,6 +10,8 @@ import type {
   PlanActivite,
   ProduitSdpc,
   SuiviMensuel,
+  WeeklyAgendaRow,
+  WeeklyPhaseRow,
 } from "./types";
 import { asGristChoice } from "./utils/gristReferences";
 import { missionEnfantFromGrist } from "./utils/missionEnfants";
@@ -169,6 +171,7 @@ export function toMission(record: GristRecord): Mission {
       record.Volumes_d_usages_utilisateurs_utilisations_,
     ),
     Derniere_mise_a_jour: asNumber(record.Derniere_mise_a_jour),
+    Meteo: asGristChoice(record.Meteo) ?? asString(record.Meteo),
   };
 }
 
@@ -185,6 +188,30 @@ export function toMissionEnfant(record: GristRecord): MissionEnfant {
     Jours_envisages: asNumber(record.Jours_envisages),
     Statut: asGristChoice(record.Statut) ?? asString(record.Statut),
     Date_de_debut: asNumber(record.Date_de_debut),
+  };
+}
+
+export function toWeeklyPhase(record: GristRecord): WeeklyPhaseRow {
+  return {
+    id: record.id,
+    Mission: record.Mission,
+    Phase: asGristChoice(record.Phase) ?? asString(record.Phase),
+  };
+}
+
+export function toWeeklyAgenda(record: GristRecord): WeeklyAgendaRow {
+  const traite = record.Traite;
+  return {
+    id: record.id,
+    Texte: asString(record.Texte) ?? asMultilineText(record.Texte),
+    Auteur: asString(record.Auteur),
+    Email: asString(record.Email),
+    Mission: record.Mission,
+    Traite: typeof traite === "boolean" ? traite : traite === true || traite === "true",
+    Cree_le:
+      typeof record.Cree_le === "number" || typeof record.Cree_le === "string"
+        ? record.Cree_le
+        : undefined,
   };
 }
 

@@ -51,7 +51,7 @@ describe("droitsPagesThemes", () => {
   it("liste les écrans fixés par rôle (lecture seule Admin)", () => {
     assert.deepEqual(
       DROITS_PAGES_ROLE_FIXED.map((s) => s.id),
-      ["mon_carnet", "revue_cra", "droits_pages"],
+      ["mon_carnet", "revue_cra", "weekly", "droits_pages"],
     );
     const carnet = DROITS_PAGES_ROLE_FIXED.find((s) => s.id === "mon_carnet");
     assert.equal(carnet?.accessByRole.Freelance, true);
@@ -59,6 +59,9 @@ describe("droitsPagesThemes", () => {
     const revue = DROITS_PAGES_ROLE_FIXED.find((s) => s.id === "revue_cra");
     assert.equal(revue?.accessByRole.Freelance, false);
     assert.equal(revue?.accessByRole["Responsable de département"], true);
+    const weekly = DROITS_PAGES_ROLE_FIXED.find((s) => s.id === "weekly");
+    assert.equal(weekly?.accessByRole.Freelance, true);
+    assert.equal(weekly?.accessByRole.Invité, false);
     const droits = DROITS_PAGES_ROLE_FIXED.find((s) => s.id === "droits_pages");
     assert.equal(droits?.accessByRole.Admin, true);
     assert.equal(droits?.accessByRole.Freelance, false);
@@ -147,7 +150,7 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
     const filtered = filterNavItemsByPageAccess(
       WIDGET_NAV_ITEMS,
       (href) => canAccessHref(href, PAGE_ACCESS_FAIL_CLOSED),
-      { isAdmin: false, canDeclareCra: true, canRevueCraEquipe: false },
+      { isAdmin: false, canDeclareCra: true, canWeekly: true, canRevueCraEquipe: false },
     );
     assert.equal(
       filtered.some((item) => isWidgetNavGroup(item) && item.text === "Budget"),
@@ -158,6 +161,10 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
     );
     assert.ok(carnet && !isWidgetNavGroup(carnet));
     assert.equal(carnet.text, "Mon carnet");
+    assert.equal(
+      filtered.some((item) => !isWidgetNavGroup(item) && item.href === "/weekly"),
+      true,
+    );
   });
 
   it("montre Revue CRA équipe pour Resp. même sans Page_cra", () => {
