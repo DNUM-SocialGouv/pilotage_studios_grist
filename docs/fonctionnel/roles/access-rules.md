@@ -135,6 +135,32 @@ L’annuaire `/equipe` s’adapte : si `Statut` / `Portage` / `Rôle` sont illis
 
 Vérifié MCP `grist_get_acl_rules` (resources 41 / 42, rules 39–42). Ordre : Owner/Admin au-dessus de `True`. User Attribute `Equipe` requis. Anciennes tables `Retours` / `Roadmap` : hors widget.
 
+## Tables Weekly — **à poser** Owner UI
+
+Détail produit + User Attribute : [`docs/fonctionnel/weekly/README.md`](../weekly/README.md).  
+**`OWNER` sans guillemets.** E-mails **uniquement** dans Grist (`Weekly_coachs`), jamais dans git.
+
+### `Weekly_coachs` (`*`)
+
+| # | Condition | Droits | Mémo |
+|---|-----------|--------|------|
+| 1 | `user.Access == OWNER or user.Equipe.Role_ACL == "Admin"` | `+CRUD` | Gérer la liste. |
+| 2 | `user.Email == rec.E_mail` | `+R` | Lecture de **sa** ligne seulement. |
+| 3 | `True` | `-CRUD` | Refus défaut. |
+
+User Attribute : Name `Weekly_coach` ← `user.Email` → table `Weekly_coachs` / colonne `E_mail`.
+
+### `Weekly_phase` / `Weekly_agenda` (`*` — mêmes règles)
+
+| # | Condition | Droits | Mémo |
+|---|-----------|--------|------|
+| 1 | `user.Access == OWNER or user.Equipe.Role_ACL == "Admin"` | `+CRUD` | Ménage (delete doublons). |
+| 2 | `user.Equipe.Role_ACL == "Responsable de département"` | `+CRU` | Responsables. |
+| 3 | `user.Weekly_coach.E_mail != ""` | `+CRU` | Coachs de la table `Weekly_coachs`. |
+| 4 | `True` | `-CRUD` | Refus défaut. |
+
+Après pose : View As + vérif MCP `grist_get_acl_rules`.
+
 ## Qui peut modifier quoi
 
 | Action | Qui |

@@ -4,6 +4,7 @@ import { AdminRoleGuard } from "./components/AdminRoleGuard";
 import { CraDeclarerRoleGuard } from "./components/CraDeclarerRoleGuard";
 import { CraRevueEquipeRoleGuard } from "./components/CraRevueEquipeRoleGuard";
 import { PageAccessGuard } from "./components/PageAccessGuard";
+import { WeeklyCoachRoleGuard } from "./components/WeeklyCoachRoleGuard";
 import { GristPaProvider } from "./GristPaContext";
 import { WidgetLayout } from "./layout/WidgetLayout";
 import { BdcDetailView } from "./pages/BdcDetailView";
@@ -27,6 +28,7 @@ import { ProduitsListView } from "./pages/ProduitsListView";
 import { SpikeDatatablePage } from "./pages/SpikeDatatablePage";
 import { StubPage } from "./pages/StubPage";
 import { WelcomePage } from "./pages/WelcomePage";
+import { WeeklyCoachPage } from "./pages/WeeklyCoachPage";
 import { getEmbedTrust } from "./security/embedTrust";
 import { NothingHerePage } from "./security/NothingHerePage";
 
@@ -128,6 +130,14 @@ export default function App() {
                   <CraDeclarerRoleGuard>
                     <CraDeclarerPage />
                   </CraDeclarerRoleGuard>
+                }
+              />
+              <Route
+                path="weekly"
+                element={
+                  <WeeklyCoachRoleGuard>
+                    <WeeklyCoachPage />
+                  </WeeklyCoachRoleGuard>
                 }
               />
               <Route

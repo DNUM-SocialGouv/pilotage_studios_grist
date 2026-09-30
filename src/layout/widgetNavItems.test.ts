@@ -76,6 +76,7 @@ describe("flattenNavLinks", () => {
     assert.deepEqual(hrefs, [
       "/",
       "/cra/declarer",
+      "/weekly",
       "/bdc",
       "/pa",
       "/cra",
@@ -97,6 +98,7 @@ describe("WIDGET_MODULE_LINKS", () => {
       WIDGET_MODULE_LINKS.map(({ text, href, status }) => ({ text, href, status })),
       [
         { text: "Mon carnet", href: "/cra/declarer", status: "in_progress" },
+        { text: "Weekly", href: "/weekly", status: "in_progress" },
         { text: "Bons de commande", href: "/bdc", status: "in_progress" },
         { text: "Plans d’activité", href: "/pa", status: "in_progress" },
         { text: "Prestation / CRA", href: "/cra", status: "in_progress" },

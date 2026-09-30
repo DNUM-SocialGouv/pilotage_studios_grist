@@ -9,7 +9,7 @@
 
 Les **Admin** peuvent ouvrir **Outils → Droits des pages** pour activer ou désactiver, rôle par rôle (interrupteurs), quels écrans apparaissent dans le menu du widget (Budget, Missions, Équipe…). Chaque interrupteur s’enregistre **immédiatement** dans Grist. C’est du **confort de menu** : ça ne verrouille pas les données.
 
-Une section **Fixés par rôle** rappelle en lecture seule les écrans dont l’accès ne se règle pas ici (Mon carnet, Revue CRA équipe, cette page elle-même).
+Une section **Fixés par rôle** rappelle en lecture seule les écrans dont l’accès ne se règle pas ici (Mon carnet, Weekly, Revue CRA équipe, cette page elle-même).
 
 ## Qui y accède
 

@@ -120,6 +120,17 @@ export const DROITS_PAGES_ROLE_FIXED: readonly DroitsPagesRoleFixedScreen[] = [
     hint: "Uniquement si le département (`Equipe.Equipe`) est renseigné.",
   },
   {
+    id: "weekly",
+    label: "Weekly",
+    accessByRole: {
+      Admin: true,
+      "Responsable de département": true,
+      Freelance: true,
+      Invité: false,
+    },
+    hint: "Freelance : seulement les e-mails listés dans la table Grist `Weekly_coachs` (pas tout le rôle).",
+  },
+  {
     id: "droits_pages",
     label: "Droits des pages",
     accessByRole: {
