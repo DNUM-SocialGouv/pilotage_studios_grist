@@ -20,7 +20,9 @@ export type WeeklyCoachAllowlistState = {
 const EMPTY = new Set<string>();
 
 export function useWeeklyCoachAllowlist(enabled: boolean): WeeklyCoachAllowlistState {
-  const [status, setStatus] = useState<WeeklyCoachAllowlistStatus>("idle");
+  const [status, setStatus] = useState<WeeklyCoachAllowlistStatus>(() =>
+    enabled ? "loading" : "idle",
+  );
   const [emails, setEmails] = useState<ReadonlySet<string>>(EMPTY);
   const [error, setError] = useState<string | null>(null);
 

@@ -57,7 +57,11 @@ export function WeeklyCoachRoleGuard({ children }: WeeklyCoachRoleGuardProps) {
     return <>{children}</>;
   }
 
-  if (needsAllowlist && allowlist.status === "loading") {
+  // `idle` = premier rendu avant le useEffect de chargement — ne pas refuser encore.
+  if (
+    needsAllowlist &&
+    (allowlist.status === "idle" || allowlist.status === "loading")
+  ) {
     return (
       <p className="fr-text--sm fr-mt-2w" role="status">
         Vérification de vos droits d’accès…
