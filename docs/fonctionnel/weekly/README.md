@@ -14,11 +14,12 @@ plus tard.
 |--|--|
 | Route | `/weekly` |
 | Nav | **Weekly** (niveau 1) |
-| Accès | Hors `Page_*` : **Admin** · **Responsable de département** · **Freelances** dont l’e-mail figure dans la table Grist **`Weekly_coachs`** |
-| Autres Freelances / Invité | Masqué |
+| Accès | Hors `Page_*` : **uniquement** les personnes dont l’e-mail est dans **`Weekly_coachs`** (Admin, Resp. ou Freelance hors liste → pas d’accès) |
+| Autres | Masqué |
 
-Les e-mails des coachs **ne sont pas** dans le dépôt git : uniquement dans Grist
-(`Weekly_coachs.E_mail`). Owner / Admin maintiennent la liste dans l’UI Grist.
+Les e-mails **ne sont pas** dans le dépôt git : uniquement dans Grist
+(`Weekly_coachs.E_mail`). Owner / Admin (rôle) maintiennent la liste dans l’UI Grist
+— cela n’ouvre **pas** l’écran Weekly s’ils ne sont pas eux-mêmes dans la table.
 
 ## Données
 
@@ -58,19 +59,18 @@ Access Rules → **User Attributes** :
 
 | # | Condition | Droits | Mémo |
 |---|-----------|--------|------|
-| 1 | `user.Access == OWNER or user.Equipe.Role_ACL == "Admin"` | `+CRUD` | Owner / Admin : gérer la liste des coachs. |
+| 1 | `user.Access == OWNER or user.Equipe.Role_ACL == "Admin"` | `+CRUD` | Owner / Admin : **gérer la liste** (pas l’écran Weekly). |
 | 2 | `user.Email == rec.E_mail` | `+R` | Chacun ne lit **que sa** ligne (le widget vérifie la présence). |
 | 3 | `True` | `-CRUD` | Autres : aucun accès. |
 
 ### Tables `Weekly_phase` et `Weekly_agenda` (`*` / Toutes)
 
-Ordre 1 → 4. **`OWNER` sans guillemets**.
+Ordre 1 → 3. **`OWNER` sans guillemets**. Pas d’accès automatique Admin / Resp. par rôle.
 
 | # | Condition | Droits | Mémo |
 |---|-----------|--------|------|
-| 1 | `user.Access == OWNER or user.Equipe.Role_ACL == "Admin"` | `+CRUD` | Owner / Admin : ménage (dont suppression des doublons de phase). |
-| 2 | `user.Equipe.Role_ACL == "Responsable de département"` | `+CRU` | Responsables : lire, créer, modifier ; pas de delete. |
-| 3 | `user.Weekly_coach.E_mail != ""` | `+CRU` | Coachs listés dans `Weekly_coachs` : lire / créer / modifier ; pas de delete. |
-| 4 | `True` | `-CRUD` | Autres Freelances, Invité, etc. : aucun accès. |
+| 1 | `user.Access == OWNER` | `+CRUD` | Owner document : ménage (doublons, etc.). |
+| 2 | `user.Weekly_coach.E_mail != ""` | `+CRU` | Personnes listées dans `Weekly_coachs` uniquement. |
+| 3 | `True` | `-CRUD` | Tout le reste (y compris Admin hors liste) : aucun accès. |
 
-Après pose : View As un coach listé / un autre Freelance / Invité / Admin.
+Après pose : View As une personne listée / un Admin hors liste / Invité.

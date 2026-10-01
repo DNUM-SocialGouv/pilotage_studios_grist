@@ -1,9 +1,8 @@
 /**
- * Accès Weekly coachs (couche 5) : Admin / Resp. + e-mails présents dans
- * la table Grist `Weekly_coachs` (lecture runtime — pas d’e-mails dans le repo).
+ * Accès Weekly : uniquement les e-mails présents dans Grist `Weekly_coachs`
+ * (lecture runtime — pas d’e-mails dans le repo). Aucun rôle (Admin inclus)
+ * n’ouvre la page sans figurer dans cette table.
  */
-
-import { isMonCarnetManagerRole } from "./droitsPagesThemes.ts";
 
 export function normalizeWeeklyCoachEmail(
   email: string | null | undefined,
@@ -25,17 +24,12 @@ export function weeklyCoachEmailSetFromRows(
 
 /**
  * Qui peut ouvrir `/weekly` (nav + garde).
- * Admin / Responsable : oui. Freelance : e-mail dans `coachEmails`. Invité : non.
- * `coachEmails` = contenu lu depuis Grist (`Weekly_coachs`) ; ensemble vide → Freelance refusé.
+ * Critère unique : e-mail de session ∈ `coachEmails` (table `Weekly_coachs`).
  */
 export function canAccessWeeklyCoach(input: {
-  role: string | null | undefined;
   email: string | null | undefined;
   coachEmails: ReadonlySet<string>;
 }): boolean {
-  if (isMonCarnetManagerRole(input.role)) return true;
-  const role = (input.role ?? "").trim();
-  if (role !== "Freelance") return false;
   const n = normalizeWeeklyCoachEmail(input.email);
   return n.length > 0 && input.coachEmails.has(n);
 }

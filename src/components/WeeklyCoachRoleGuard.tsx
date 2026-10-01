@@ -3,7 +3,6 @@ import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Navigate } from "react-router-dom";
 import { useAclProfil } from "../AclProfilContext";
 import { useWeeklyCoachAllowlist } from "../hooks/useWeeklyCoachAllowlist";
-import { isMonCarnetManagerRole } from "../utils/droitsPagesThemes";
 import { canAccessWeeklyCoach } from "../utils/weeklyCoachAccess";
 
 type WeeklyCoachRoleGuardProps = {
@@ -11,13 +10,12 @@ type WeeklyCoachRoleGuardProps = {
 };
 
 /**
- * Garde Weekly (hors `Page_*`) : Admin / Resp. + Freelance présents dans
- * `Weekly_coachs` (Grist). Standalone : ouvert. Autres → Accueil.
+ * Garde Weekly (hors `Page_*`) : e-mail présent dans `Weekly_coachs` uniquement.
+ * Standalone : ouvert. Autres → Accueil.
  */
 export function WeeklyCoachRoleGuard({ children }: WeeklyCoachRoleGuardProps) {
-  const { status, role, email, error } = useAclProfil();
-  const needsAllowlist =
-    status === "ok" && !isMonCarnetManagerRole(role) && (role ?? "").trim() === "Freelance";
+  const { status, email, error } = useAclProfil();
+  const needsAllowlist = status === "ok";
   const allowlist = useWeeklyCoachAllowlist(needsAllowlist);
 
   if (status === "loading") {
@@ -85,7 +83,6 @@ export function WeeklyCoachRoleGuard({ children }: WeeklyCoachRoleGuardProps) {
 
   if (
     canAccessWeeklyCoach({
-      role,
       email,
       coachEmails: allowlist.emails,
     })

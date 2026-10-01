@@ -123,12 +123,12 @@ export const DROITS_PAGES_ROLE_FIXED: readonly DroitsPagesRoleFixedScreen[] = [
     id: "weekly",
     label: "Weekly",
     accessByRole: {
-      Admin: true,
-      "Responsable de département": true,
-      Freelance: true,
+      Admin: false,
+      "Responsable de département": false,
+      Freelance: false,
       Invité: false,
     },
-    hint: "Freelance : seulement les e-mails listés dans la table Grist `Weekly_coachs` (pas tout le rôle).",
+    hint: "Pas par rôle : uniquement les e-mails listés dans la table Grist `Weekly_coachs` (y compris Admin).",
   },
   {
     id: "droits_pages",

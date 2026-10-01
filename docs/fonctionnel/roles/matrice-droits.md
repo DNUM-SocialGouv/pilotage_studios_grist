@@ -49,7 +49,7 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 | Bons de commande | `/bdc` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Idem |
 | Prestation / CRA (liste) | `/cra` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Freelances : déclaration via `/cra/declarer` |
 | Déclarer mon CRA / **Mon carnet** | `/cra/declarer` | **oui*** | **oui*** | **oui** | **non** | **Appliqué** UX (rôle) | *Admin/Resp. : liste lecture missions via prestations du **département** (`Equipe.Equipe`) ; Freelance : saisie CRA « moi » ; nav niveau 1 ; hors `Page_*` ; rappel lecture seule Admin « Fixés par rôle » ; Invité masqué |
-| **Weekly** | `/weekly` | **oui** | **oui** | **liste Grist*** | **non** | **Appliqué** UX (`Weekly_coachs`) | *Freelances dont `E_mail` est dans `Weekly_coachs` (pas dans git) ; hors `Page_*` |
+| **Weekly** | `/weekly` | **si table*** | **si table*** | **si table*** | **si table*** | **Appliqué** UX (`Weekly_coachs`) | *E-mail dans `Weekly_coachs` uniquement — **pas** d’accès automatique Admin/Resp. ; hors `Page_*` |
 | Revue CRA équipe | `/cra/revue-equipe` | **oui*** | **oui*** | **non** | **non** | **Appliqué** UX (rôle + dép.) | *Uniquement si `Equipe.Equipe` renseigné ; périmètre = même département ; hors `Page_*` ; rappel lecture seule Admin « Fixés par rôle » ; ACL `Realise` par rôle **faite** (#47/#70) |
 | Récap porteurs | `/outils/recap-porteurs` | **oui** | **non** | **non** | **non** | **Appliqué** UX | |
 | Procès-verbaux | `/pv` | **oui** | **non** | **non** | **non** | **Appliqué** UX (stub) | |
@@ -81,9 +81,9 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | `Realise` (CRA) hors montants | CRUD | R/U département | **R/U + C** ses lignes | — | **Appliqué** (ACL) + widget | Déclaration `#33` ; revue `#70` ; mur `#47` HITL 2026-09-21 ; fiche mission Modifier/Dupliquer Admin (`cra-fiche-mission`) |
 | `Realise.Calcul_TTC` | R ; U Owner | R | R | R | **Appliqué** | `+R -U` si non-Owner |
 | `Missions` / `Missions_enfants` | CRUD | R/U dép. | R ses missions | R / — | Non (rôle) | |
-| `Weekly_phase` | CRUD* | CRU | CRU (si dans `Weekly_coachs`) | — | **Widget** ; **ACL à poser** Owner ([access-rules.md](access-rules.md) § Weekly) | *Delete = Owner/Admin ; User Attribute `Weekly_coach` |
-| `Weekly_agenda` | CRUD* | CRU | CRU (si dans `Weekly_coachs`) | — | **Widget** ; **ACL à poser** Owner (idem) | *Delete = Owner/Admin |
-| `Weekly_coachs` | CRUD | — | R soi | — | **Widget lecture** ; **ACL à poser** | Allowlist e-mails coachs — **pas** dans git ; pas d’écriture widget |
+| `Weekly_phase` | CRUD* | —† | —† | — | **Widget** ; **ACL à poser/resserrer** Owner | *Owner document ; †accès si e-mail dans `Weekly_coachs` (`user.Weekly_coach`) |
+| `Weekly_agenda` | CRUD* | —† | —† | — | **Widget** ; **ACL à poser/resserrer** Owner | Idem |
+| `Weekly_coachs` | CRUD | — | R soi | — | **Widget lecture** ; **ACL à poser** | Allowlist e-mails — **pas** dans git ; pas d’écriture widget |
 | `Kanban` (feedback + produit) | CRU (liste + colonne Admin) | C (+ R) ; U colonne Admin | C (+ R) | C (+ R) | **Appliqué** (ACL) + widget | Owner/Admin `+CRUD` ; `True` → `+CR-UD` |
 | `Kanban_commentaires` | CR | C (+ R) | C (+ R) | C (+ R) | **Appliqué** (ACL) + widget | Owner/Admin `+CRUD` ; `True` → `+CR-UD` |
 | `Retours` / `Roadmap` (legacy) | — | — | — | — | **Hors widget** (migrées → `Kanban`) | Archivables Owner |
@@ -105,6 +105,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-10-01 | Weekly : accès **uniquement** via `Weekly_coachs` (plus d’ouverture auto Admin/Resp.) ; ACL phase/agenda resserrées (Owner + listés) | 5, 6 (doc HITL) | Suite PR #95 |
 | 2026-10-01 | Weekly : allowlist coachs = table Grist `Weekly_coachs` (e-mails hors git) ; User Attribute `Weekly_coach` + formules ACL documentées ; widget lit la table (Freelance) | 5, 6 (doc HITL) | PR #95 |
 | 2026-10-01 | Weekly : accès Freelance restreint (allowlist) ; Admin/Resp. inchangés ; pas de colonne Équipe | 5, 6 (doc HITL) | PR #95 |
 | 2026-10-01 | Weekly ACL : formules Owner UI documentées (`Weekly_phase` / `Weekly_agenda`) ; à poser / vérif MCP | 6 (doc HITL) | PR #95 revue |
