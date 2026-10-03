@@ -44,7 +44,7 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 
 | Écran / parcours | Route | Admin | Resp. | Freelance | Invité | Statut | Notes |
 |------------------|-------|-------|-------|-----------|--------|--------|-------|
-| Accueil | `/` | oui | oui | oui | oui | **Appliqué** (widget + `Droits_pages`) | Kanban Grist + drawer conversation |
+| Accueil | `/` | oui | oui | oui | oui | **Appliqué** (widget + `Droits_pages`) | `Page_accueil` inchangé ; **CTA par rôle** (N/A `Page_*` — variante sur `Role` + mêmes gardes que la nav) ; kanban encore sous les CTA jusqu’à `/feuille-de-route` (PR-B, hors `Page_*`) |
 | Plans d’activité | `/pa` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Couche 5 ; données encore ouvertes (couche 6 plus tard) |
 | Bons de commande | `/bdc` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Idem |
 | Prestation / CRA (liste) | `/cra` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Freelances : déclaration via `/cra/declarer` |
@@ -106,6 +106,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-10-04 | Accueil `/` par rôle (CTA Freelance / Resp. / Admin / Invité) : **N/A `Page_*`** (variante d’écran sur `Role` + gardes nav) ; `Page_accueil` inchangé ; kanban temporaire sous les CTA ; pas de nouvelle route | 5 | feat/accueil-par-role · kanban `accueil-nav-refonte` |
 | 2026-10-04 | Chrome nav PR0 (Retour MemoryRouter + slot menu user) : **pas** de nouvel écran / garde / `Page_*` — N/A tableaux A/B ; kanban `accueil-nav-refonte` | 5 (confort) | feat/nav-fondation-retour-user-slot |
 | 2026-10-03 | Guide règles métier V1 (`/outils/regles-metier`) : nav Outils ; `Page_regles_metier` (widget + thématique Admin) ; défaut tous rôles oui ; colonne Grist = Owner UI (pas d’ACL API) ; N/A kanban Feedback id=34 (K3) | 4, 5 | feat/guide-regles-metier · HITL Owner OK create colonne |
 | 2026-10-03 | Weekly ACL appliquées : User Attribute `Weekly_coach` ; `Weekly_coachs` Owner/Admin CRUD + soi R ; phase/agenda Owner + listés CRUD ; formule cible `user.Email == user.Weekly_coach.E_mail` | 6 | HITL Owner + vérif MCP |

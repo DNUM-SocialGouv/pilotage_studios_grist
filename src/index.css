@@ -1292,6 +1292,36 @@ button.fr-link:disabled {
   max-width: 90rem;
 }
 
+.welcome-role-home__role {
+  font-weight: 700;
+}
+
+.welcome-role-home__ctas {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (min-width: 48em) {
+  .welcome-role-home__ctas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 62em) {
+  .welcome-role-home__ctas {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.welcome-role-home__cta {
+  border: 1px solid var(--border-default-grey);
+  padding: 1rem;
+}
+
 .welcome-kanban__column-head {
   align-items: center;
   display: flex;
