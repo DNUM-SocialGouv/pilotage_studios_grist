@@ -58,7 +58,7 @@ Nav principale : Accueil, **Mon carnet** (Freelance/Admin/Resp., `/cra/declarer`
 
 Entrée MemoryRouter : `/` (`WelcomePage` — **feuille de route kanban** Feedback · Backlog · En cours · Livré, table Grist unique `Kanban`, conversation `Kanban_commentaires`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
 
-**Chrome nav** (`WidgetNav`) : à gauche **Page précédente** (historique MemoryRouter uniquement — désactivé si pile vide ; jamais `window.history` / Grist) ; au centre la nav métier ; à droite **menu utilisateur** (icône compte — identité lecture + entrée « Feuille de route » en coquille, route dédiée à venir). Le Retour n’est **pas** dans le menu user.
+**Chrome nav** (`WidgetNav`) : à gauche **Page précédente** (historique MemoryRouter uniquement — désactivé si pile vide ; jamais `window.history` / Grist) ; au centre la nav métier ; à droite **menu utilisateur** (avatar Équipe `EquipeAvatar` / seed `Equipe.Avatar` — identité lecture + entrée « Feuille de route » en coquille, route dédiée à venir). Le Retour n’est **pas** dans le menu user.
 
 ### Feuille de route (priorité métier)
 

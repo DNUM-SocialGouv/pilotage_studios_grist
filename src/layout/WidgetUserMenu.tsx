@@ -2,6 +2,7 @@
  * Coquille menu utilisateur (PR0) — identité lecture + entrée Feuille de route
  * désactivée tant que la route `/feuille-de-route` n’existe pas (PR-B).
  * Déclencheur = avatar Équipe (DiceBear) comme sur la liste Équipe.
+ * Pattern : disclosure simple (`aria-expanded` / Escape), pas de `role="menu"`.
  */
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Button } from "@codegouvfr/react-dsfr/Button";
@@ -40,7 +41,7 @@ function identityLines(params: {
 export function WidgetUserMenu() {
   const { email, role, equipeLabel, equipeId, avatar, status } = useAclProfil();
   const reactId = useId();
-  const menuId = `${reactId}-user-menu`;
+  const panelId = `${reactId}-user-panel`;
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
@@ -91,8 +92,7 @@ export function WidgetUserMenu() {
         nativeButtonProps={{
           ref: triggerRef,
           "aria-expanded": open,
-          "aria-haspopup": "menu",
-          "aria-controls": menuId,
+          "aria-controls": panelId,
           "aria-label": "Menu utilisateur",
         }}
         onClick={() => setOpen((v) => !v)}
@@ -109,16 +109,10 @@ export function WidgetUserMenu() {
             aria-hidden="true"
           />
         )}
-        <span className="fr-sr-only">Menu utilisateur</span>
       </Button>
       {open ? (
-        <div
-          id={menuId}
-          className="widget-user-menu__panel"
-          role="menu"
-          aria-label="Menu utilisateur"
-        >
-          <div className="widget-user-menu__identity" role="presentation">
+        <div id={panelId} className="widget-user-menu__panel">
+          <div className="widget-user-menu__identity">
             {lines.map((line) => (
               <p key={line} className="widget-user-menu__identity-line">
                 {line}
@@ -126,14 +120,12 @@ export function WidgetUserMenu() {
             ))}
           </div>
           <ul className="widget-user-menu__list">
-            <li role="none">
+            <li>
               <button
                 type="button"
                 className="fr-btn fr-btn--tertiary-no-outline fr-btn--sm widget-user-menu__item"
-                role="menuitem"
                 disabled
                 title="Bientôt : feuille de route sur une page dédiée"
-                aria-disabled="true"
               >
                 Feuille de route
               </button>
