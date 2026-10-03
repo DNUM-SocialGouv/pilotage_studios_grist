@@ -106,6 +106,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-10-04 | Chrome nav PR0 (Retour MemoryRouter + slot menu user) : **pas** de nouvel écran / garde / `Page_*` — N/A tableaux A/B ; kanban `accueil-nav-refonte` | 5 (confort) | feat/nav-fondation-retour-user-slot |
 | 2026-10-03 | Guide règles métier V1 (`/outils/regles-metier`) : nav Outils ; `Page_regles_metier` (widget + thématique Admin) ; défaut tous rôles oui ; colonne Grist = Owner UI (pas d’ACL API) ; N/A kanban Feedback id=34 (K3) | 4, 5 | feat/guide-regles-metier · HITL Owner OK create colonne |
 | 2026-10-03 | Weekly ACL appliquées : User Attribute `Weekly_coach` ; `Weekly_coachs` Owner/Admin CRUD + soi R ; phase/agenda Owner + listés CRUD ; formule cible `user.Email == user.Weekly_coach.E_mail` | 6 | HITL Owner + vérif MCP |
 | 2026-10-01 | Weekly : accès **uniquement** via `Weekly_coachs` (plus d’ouverture auto Admin/Resp.) ; ACL phase/agenda resserrées (Owner + listés) | 5, 6 (doc HITL) | Suite PR #95 |
