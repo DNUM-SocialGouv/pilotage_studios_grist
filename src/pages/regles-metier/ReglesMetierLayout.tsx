@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { WidgetBreadcrumb } from "../../components/WidgetBreadcrumb";
+import { GuidePageNav } from "./GuidePageNav";
 import { GUIDE_BASE, GUIDE_NAV, guideNavIndex } from "./guideNav";
 
 /**
@@ -58,6 +59,7 @@ export function ReglesMetierLayout() {
 
         <div className="fr-col-12 fr-col-md-8 fr-col-lg-9">
           <Outlet />
+          <GuidePageNav />
         </div>
       </div>
     </>

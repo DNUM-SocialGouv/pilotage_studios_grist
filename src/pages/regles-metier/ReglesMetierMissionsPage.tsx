@@ -22,7 +22,7 @@ export function ReglesMetierMissionsPage() {
         <p>
           Une <strong>mission</strong> est un lot d’accompagnement (contexte, produit,
           statut). Une <strong>prestation</strong> décrit qui intervient, sur quel métier, et
-          sur quelle période — c’est le staffing concret sous la mission.
+          sur quelle période — c’est la composition concrète de l’équipe sous la mission.
         </p>
       </section>
 
@@ -56,8 +56,8 @@ export function ReglesMetierMissionsPage() {
             produit concerné.
           </li>
           <li>
-            Les prestations portent le <strong>staffing</strong> : intervenant, jours prévus,
-            statut, date de début.
+            Les prestations portent <strong>qui intervient</strong> : intervenant, jours
+            prévus, statut, date de début.
           </li>
           <li>
             Les réalisations mensuelles (CRA) se rattachent d’abord à une{" "}
@@ -65,6 +65,10 @@ export function ReglesMetierMissionsPage() {
           </li>
           <li>
             Une même mission peut mélanger plusieurs métiers (par exemple Design et Product).
+          </li>
+          <li>
+            Création et modification des missions et prestations :{" "}
+            <strong>Admin uniquement</strong>.
           </li>
         </ul>
       </section>

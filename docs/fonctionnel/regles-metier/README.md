@@ -14,13 +14,13 @@ Un **petit guide produit** dans le widget : cinq pages courtes qui expliquent le
 
 | Page | Route | Contenu |
 |------|-------|---------|
-| Accueil du guide | `/outils/regles-metier` | Pourquoi ce guide + vue d’ensemble + appel feedback |
-| Missions & prestations | `/outils/regles-metier/missions` | Mission = lot ; prestation = personne × métier × période |
-| CRA / réalisations | `/outils/regles-metier/cra` | Réalisation = personne × prestation × mois ; déclaration → revue |
+| Accueil du guide | `/outils/regles-metier` | Pourquoi ce guide + amorces Freelance / responsable + vue d’ensemble + appel feedback |
+| Missions & prestations | `/outils/regles-metier/missions` | Mission = lot ; prestation = qui intervient (personne × métier × période) ; édition Admin |
+| CRA / réalisations | `/outils/regles-metier/cra` | Réalisation = personne × prestation × mois ; déclaration → revue → rattachement BDC |
 | BDC & PA | `/outils/regles-metier/bdc-pa` | PA enveloppe → BDC engage → CRA consomme |
 | Qui voit quoi | `/outils/regles-metier/qui-voit-quoi` | Rôles en langage métier + encadrés Admin |
 
-Layout : sommaire + contenu (DSFR), fil d’Ariane, navigation clavier.
+Layout : sommaire + contenu (DSFR), fil d’Ariane, liens **Précédent / Suivant**, navigation clavier.
 
 ## Droits
 

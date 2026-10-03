@@ -65,6 +65,22 @@ export function ReglesMetierCraPage() {
         </ul>
       </section>
 
+      <section className="fr-mb-3w" aria-labelledby="a-retenir-cra">
+        <h3 className="fr-h6" id="a-retenir-cra">
+          À retenir
+        </h3>
+        <ul>
+          <li>
+            En revue, le <strong>rattachement à un bon de commande</strong> est ce qui
+            alimente le suivi de consommation — même si vous n’avez pas le menu Budget.
+          </li>
+          <li>
+            Sans rattachement BDC, une réalisation peut exister mais ne contribue pas
+            correctement au suivi de consommation.
+          </li>
+        </ul>
+      </section>
+
       <GuideAdminCallout>
         <p className="fr-mb-0">
           Sur une fiche mission, un Admin peut aussi modifier ou dupliquer une ligne de CRA

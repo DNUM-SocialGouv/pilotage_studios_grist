@@ -1,8 +1,9 @@
 import { Button } from "@codegouvfr/react-dsfr/Button";
+import { CallOut } from "@codegouvfr/react-dsfr/CallOut";
 import { Link } from "react-router-dom";
 import { MermaidDiagram } from "../../components/MermaidDiagram";
 import { requestOpenFeedback } from "../../utils/feedbackOpen";
-import { GUIDE_NAV } from "./guideNav";
+import { GUIDE_BASE, GUIDE_NAV } from "./guideNav";
 
 const OVERVIEW_CHART = `
 flowchart LR
@@ -32,6 +33,52 @@ export function ReglesMetierAccueilPage() {
           de commande, et qui voit quoi selon son rôle. Objectif : une lecture fluide pour
           toute l’équipe, sans jargon technique.
         </p>
+      </section>
+
+      <section className="fr-mb-3w" aria-labelledby="par-ou-commencer">
+        <h3 className="fr-h6" id="par-ou-commencer">
+          Par où commencer
+        </h3>
+        <CallOut
+          title="Vous êtes freelance ?"
+          titleAs="h4"
+          colorVariant="blue-cumulus"
+          className="fr-mb-2w"
+          bodyAs="div"
+        >
+          <p className="fr-mb-0">
+            Lisez d’abord{" "}
+            <Link className="fr-link" to={`${GUIDE_BASE}/missions`}>
+              Missions & prestations
+            </Link>{" "}
+            (environ 2 minutes), puis{" "}
+            <Link className="fr-link" to={`${GUIDE_BASE}/cra`}>
+              CRA / réalisations
+            </Link>
+            . La page Budget est{" "}
+            <strong>optionnelle</strong> : elle explique la suite, vous n’avez pas besoin
+            d’y agir au quotidien.
+          </p>
+        </CallOut>
+        <CallOut
+          title="Vous êtes responsable ?"
+          titleAs="h4"
+          colorVariant="blue-cumulus"
+          bodyAs="div"
+        >
+          <p className="fr-mb-0">
+            Même point de départ :{" "}
+            <Link className="fr-link" to={`${GUIDE_BASE}/missions`}>
+              Missions
+            </Link>{" "}
+            puis{" "}
+            <Link className="fr-link" to={`${GUIDE_BASE}/cra`}>
+              CRA
+            </Link>{" "}
+            (déclaration et revue). Le Budget reste utile pour comprendre le rattachement
+            au bon de commande en revue — même si le menu Budget est masqué chez vous.
+          </p>
+        </CallOut>
       </section>
 
       <section className="fr-mb-3w" aria-labelledby="comment-lire">

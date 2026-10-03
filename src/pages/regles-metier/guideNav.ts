@@ -18,7 +18,7 @@ export const GUIDE_NAV: readonly GuideNavItem[] = [
   {
     path: `${GUIDE_BASE}/missions`,
     label: "Missions & prestations",
-    teaser: "Lot d’accompagnement et staffing personne × métier × période",
+    teaser: "Lot d’accompagnement et qui intervient (personne × métier × période)",
   },
   {
     path: `${GUIDE_BASE}/cra`,
@@ -44,4 +44,16 @@ export function guideNavIndex(pathname: string): number {
     return exact;
   }
   return 0;
+}
+
+/** Voisins Précédent / Suivant (null aux extrémités). */
+export function guideNavNeighbors(pathname: string): {
+  prev: GuideNavItem | null;
+  next: GuideNavItem | null;
+} {
+  const index = guideNavIndex(pathname);
+  return {
+    prev: index > 0 ? (GUIDE_NAV[index - 1] ?? null) : null,
+    next: index < GUIDE_NAV.length - 1 ? (GUIDE_NAV[index + 1] ?? null) : null,
+  };
 }
