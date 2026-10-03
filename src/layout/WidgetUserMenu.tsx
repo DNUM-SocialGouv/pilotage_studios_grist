@@ -1,11 +1,13 @@
 /**
  * Coquille menu utilisateur (PR0) — identité lecture + entrée Feuille de route
  * désactivée tant que la route `/feuille-de-route` n’existe pas (PR-B).
+ * Déclencheur = avatar Équipe (DiceBear) comme sur la liste Équipe.
  */
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import { useAclProfil } from "../AclProfilContext";
+import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
 
 function identityLines(params: {
   email: string | null;
@@ -36,7 +38,7 @@ function identityLines(params: {
 }
 
 export function WidgetUserMenu() {
-  const { email, role, equipeLabel, status } = useAclProfil();
+  const { email, role, equipeLabel, equipeId, avatar, status } = useAclProfil();
   const reactId = useId();
   const menuId = `${reactId}-user-menu`;
   const rootRef = useRef<HTMLDivElement>(null);
@@ -74,6 +76,7 @@ export function WidgetUserMenu() {
   }, [close, open]);
 
   const lines = identityLines({ email, role, equipeLabel, status });
+  const hasAvatar = equipeId != null && equipeId > 0;
 
   return (
     <div
@@ -83,7 +86,6 @@ export function WidgetUserMenu() {
       <Button
         type="button"
         priority="tertiary no outline"
-        iconId="fr-icon-account-circle-line"
         title="Menu utilisateur"
         className="widget-user-menu__trigger"
         nativeButtonProps={{
@@ -91,9 +93,22 @@ export function WidgetUserMenu() {
           "aria-expanded": open,
           "aria-haspopup": "menu",
           "aria-controls": menuId,
+          "aria-label": "Menu utilisateur",
         }}
         onClick={() => setOpen((v) => !v)}
       >
+        {hasAvatar ? (
+          <EquipeAvatar
+            avatar={avatar ?? undefined}
+            memberId={equipeId}
+            size="md"
+          />
+        ) : (
+          <span
+            className="fr-icon-account-circle-line widget-user-menu__fallback-icon"
+            aria-hidden="true"
+          />
+        )}
         <span className="fr-sr-only">Menu utilisateur</span>
       </Button>
       {open ? (

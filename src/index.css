@@ -110,7 +110,8 @@ span.fr-tag.fr-tag--beige-gris-galet {
 }
 
 .widget-nav__back-btn {
-  white-space: nowrap;
+  /* Chevron seul — taille sm DSFR, pas de libellé visible. */
+  flex-shrink: 0;
 }
 
 .widget-nav__main {
@@ -130,7 +131,17 @@ span.fr-tag.fr-tag--beige-gris-galet {
 }
 
 .widget-user-menu__trigger {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
   min-height: 3.5rem;
+  min-width: 3.5rem;
+  padding: 0.5rem;
+}
+
+.widget-user-menu__fallback-icon {
+  font-size: 1.75rem;
+  line-height: 1;
 }
 
 .widget-user-menu__panel {
@@ -940,6 +951,11 @@ span.fr-tag.fr-tag--beige-gris-galet {
 .equipe-avatar--sm {
   height: 2rem;
   width: 2rem;
+}
+
+.equipe-avatar--md {
+  height: 2.5rem;
+  width: 2.5rem;
 }
 
 .equipe-avatar--lg {
