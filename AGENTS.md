@@ -58,6 +58,8 @@ Nav principale : Accueil, **Mon carnet** (Freelance/Admin/Resp., `/cra/declarer`
 
 Entrée MemoryRouter : `/` (`WelcomePage` — **feuille de route kanban** Feedback · Backlog · En cours · Livré, table Grist unique `Kanban`, conversation `Kanban_commentaires`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
 
+**Chrome nav** (`WidgetNav`) : à gauche **Page précédente** (historique MemoryRouter uniquement — désactivé si pile vide ; jamais `window.history` / Grist) ; au centre la nav métier ; à droite **menu utilisateur** (avatar Équipe `EquipeAvatar` / seed `Equipe.Avatar` — identité lecture + entrée « Feuille de route » en coquille, route dédiée à venir). Le Retour n’est **pas** dans le menu user.
+
 ### Feuille de route (priorité métier)
 
 1 PR par unité bornée + **docs/**. Ordre **Grist-first** (cœur = missions + prestations + CRA) :
@@ -83,7 +85,7 @@ Visibilité users : section roadmap sur `/` + issues rédigées selon [`docs/iss
 | Zone | Fichiers |
 |------|----------|
 | Routes | `src/App.tsx` |
-| Nav | `src/layout/WidgetNav.tsx` + [`widgetNavItems.ts`](src/layout/widgetNavItems.ts) (`WIDGET_NAV_ITEMS`, groupe Budget) |
+| Nav | `src/layout/WidgetNav.tsx` + [`widgetNavItems.ts`](src/layout/widgetNavItems.ts) (`WIDGET_NAV_ITEMS`, groupe Budget) + `WidgetNavBackButton` / `WidgetUserMenu` (chrome Retour + menu user) |
 | Pages | `src/pages/WelcomePage.tsx`, `Pa*.tsx`, `Bdc*.tsx`, `Missions*.tsx`, `Equipe*.tsx`, `Produits*.tsx`, `CraListView.tsx`, `CraDeclarerPage.tsx`, `CraRevueEquipePage.tsx`, `CraRecapPorteursPage.tsx`, `WeeklyCoachPage.tsx`, `regles-metier/*`, `DroitsPagesAdminPage.tsx`, `SpikeDatatablePage.tsx`, `StubPage.tsx` |
 | Contenu public | Table Grist `Kanban` + `Kanban_commentaires` (accueil) ; libellés / parse dans [`src/utils/kanbanTickets.ts`](src/utils/kanbanTickets.ts) |
 | Données | `src/hooks/useGristPaData.ts`, `useBdcDepensesData.ts`, `useMissionsData.ts`, `useEquipeData.ts`, `useEquipeMemberMissionsData.ts`, `GristPaContext.tsx`, `gristMap.ts`, `gristRest.ts`, `gristAccessToken.ts` |

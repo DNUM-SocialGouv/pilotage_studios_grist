@@ -1,0 +1,138 @@
+/**
+ * Coquille menu utilisateur (PR0) — identité lecture + entrée Feuille de route
+ * désactivée tant que la route `/feuille-de-route` n’existe pas (PR-B).
+ * Déclencheur = avatar Équipe (DiceBear) comme sur la liste Équipe.
+ * Pattern : disclosure simple (`aria-expanded` / Escape), pas de `role="menu"`.
+ */
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { Button } from "@codegouvfr/react-dsfr/Button";
+import { cx } from "@codegouvfr/react-dsfr/tools/cx";
+import { useAclProfil } from "../AclProfilContext";
+import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
+
+function identityLines(params: {
+  email: string | null;
+  role: string | null;
+  equipeLabel: string | null;
+  status: string;
+}): string[] {
+  const lines: string[] = [];
+  if (params.email?.trim()) {
+    lines.push(params.email.trim());
+  }
+  if (params.role?.trim()) {
+    lines.push(`Rôle : ${params.role.trim()}`);
+  }
+  if (params.equipeLabel?.trim()) {
+    lines.push(`Département : ${params.equipeLabel.trim()}`);
+  }
+  if (lines.length === 0) {
+    if (params.status === "standalone") {
+      lines.push("Session locale (hors Grist)");
+    } else if (params.status === "loading") {
+      lines.push("Profil en cours de chargement…");
+    } else {
+      lines.push("Identité indisponible");
+    }
+  }
+  return lines;
+}
+
+export function WidgetUserMenu() {
+  const { email, role, equipeLabel, equipeId, avatar, status } = useAclProfil();
+  const reactId = useId();
+  const panelId = `${reactId}-user-panel`;
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const [open, setOpen] = useState(false);
+
+  const close = useCallback((restoreFocus = false) => {
+    setOpen(false);
+    if (restoreFocus) {
+      triggerRef.current?.focus();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    const onPointer = (e: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
+        close();
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        close(true);
+      }
+    };
+    document.addEventListener("mousedown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [close, open]);
+
+  const lines = identityLines({ email, role, equipeLabel, status });
+  const hasAvatar = equipeId != null && equipeId > 0;
+
+  return (
+    <div
+      ref={rootRef}
+      className={cx("widget-user-menu", open && "widget-user-menu--open")}
+    >
+      <Button
+        type="button"
+        priority="tertiary no outline"
+        title="Menu utilisateur"
+        className="widget-user-menu__trigger"
+        nativeButtonProps={{
+          ref: triggerRef,
+          "aria-expanded": open,
+          "aria-controls": panelId,
+          "aria-label": "Menu utilisateur",
+        }}
+        onClick={() => setOpen((v) => !v)}
+      >
+        {hasAvatar ? (
+          <EquipeAvatar
+            avatar={avatar ?? undefined}
+            memberId={equipeId}
+            size="md"
+          />
+        ) : (
+          <span
+            className="fr-icon-account-circle-line widget-user-menu__fallback-icon"
+            aria-hidden="true"
+          />
+        )}
+      </Button>
+      {open ? (
+        <div id={panelId} className="widget-user-menu__panel">
+          <div className="widget-user-menu__identity">
+            {lines.map((line) => (
+              <p key={line} className="widget-user-menu__identity-line">
+                {line}
+              </p>
+            ))}
+          </div>
+          <ul className="widget-user-menu__list">
+            <li>
+              <button
+                type="button"
+                className="fr-btn fr-btn--tertiary-no-outline fr-btn--sm widget-user-menu__item"
+                disabled
+                title="Bientôt : feuille de route sur une page dédiée"
+              >
+                Feuille de route
+              </button>
+            </li>
+          </ul>
+        </div>
+      ) : null}
+    </div>
+  );
+}

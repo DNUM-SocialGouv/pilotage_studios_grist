@@ -4,9 +4,11 @@ import { equipeAvatarUrl } from "../../utils/equipeAvatar";
 type EquipeAvatarProps = {
   avatar?: string;
   memberId: number;
-  /** Liste = petite ; fiche = plus grande. */
-  size?: "sm" | "lg";
+  /** Liste = sm ; menu nav = md ; fiche = lg. */
+  size?: "sm" | "md" | "lg";
 };
+
+const AVATAR_PX = { sm: 32, md: 40, lg: 64 } as const;
 
 /**
  * Avatar Glyphs décoratif (DiceBear) — seed Grist `Avatar` ou repli id.
@@ -14,9 +16,8 @@ type EquipeAvatarProps = {
  */
 export function EquipeAvatar({ avatar, memberId, size = "sm" }: EquipeAvatarProps) {
   const [failed, setFailed] = useState(false);
-  const className =
-    size === "lg" ? "equipe-avatar equipe-avatar--lg" : "equipe-avatar equipe-avatar--sm";
-  const px = size === "lg" ? 64 : 32;
+  const className = `equipe-avatar equipe-avatar--${size}`;
+  const px = AVATAR_PX[size];
 
   useEffect(() => {
     setFailed(false);

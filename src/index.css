@@ -94,6 +94,111 @@ span.fr-tag.fr-tag--beige-gris-galet {
   margin-bottom: 1rem;
 }
 
+/* Chrome : Retour (gauche) · MainNavigation · menu utilisateur (droite). */
+.widget-nav__chrome {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.25rem 0.5rem;
+  padding-inline: 0.5rem;
+}
+
+.widget-nav__back {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.widget-nav__back-btn {
+  /* Chevron seul — taille sm DSFR, pas de libellé visible. */
+  flex-shrink: 0;
+}
+
+.widget-nav__main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.widget-nav__user {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.widget-user-menu {
+  position: relative;
+}
+
+.widget-user-menu__trigger {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+  min-height: 3.5rem;
+  min-width: 3.5rem;
+  padding: 0.5rem;
+}
+
+.widget-user-menu__fallback-icon {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.widget-user-menu__panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: calc(var(--ground) + 1000);
+  min-width: 16rem;
+  max-width: min(22rem, calc(100vw - 2rem));
+  margin: 0;
+  padding: 0;
+  background-color: var(--background-overlap-grey);
+  filter: drop-shadow(var(--overlap-shadow));
+  background-image: linear-gradient(
+    0deg,
+    var(--background-open-blue-france),
+    var(--background-open-blue-france)
+  );
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+}
+
+.widget-user-menu__identity {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-default-grey);
+}
+
+.widget-user-menu__identity-line {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+  word-break: break-word;
+}
+
+.widget-user-menu__identity-line + .widget-user-menu__identity-line {
+  margin-top: 0.25rem;
+  color: var(--text-mention-grey);
+}
+
+.widget-user-menu__list {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0;
+}
+
+.widget-user-menu__item {
+  width: 100%;
+  justify-content: flex-start;
+  border-radius: 0;
+}
+
+.widget-user-menu__item:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 /* Fiches produit / mission : le hero beige doit coller au menu (pas de bandeau blanc). */
 .widget-shell:has(.produit-fiche) .widget-nav,
 .widget-shell:has(.mission-fiche) .widget-nav {
@@ -846,6 +951,11 @@ span.fr-tag.fr-tag--beige-gris-galet {
 .equipe-avatar--sm {
   height: 2rem;
   width: 2rem;
+}
+
+.equipe-avatar--md {
+  height: 2.5rem;
+  width: 2.5rem;
 }
 
 .equipe-avatar--lg {

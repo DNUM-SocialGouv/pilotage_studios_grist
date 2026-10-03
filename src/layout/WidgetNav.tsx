@@ -16,6 +16,8 @@ import {
   isWidgetNavGroup,
   type WidgetNavLink,
 } from "./widgetNavItems";
+import { WidgetNavBackButton } from "./WidgetNavBackButton";
+import { WidgetUserMenu } from "./WidgetUserMenu";
 
 export type {
   WidgetNavGroup,
@@ -113,7 +115,17 @@ export function WidgetNav() {
 
   return (
     <div className="widget-nav">
-      <MainNavigation items={items} />
+      <div className="widget-nav__chrome">
+        <div className="widget-nav__back">
+          <WidgetNavBackButton />
+        </div>
+        <div className="widget-nav__main">
+          <MainNavigation items={items} />
+        </div>
+        <div className="widget-nav__user">
+          <WidgetUserMenu />
+        </div>
+      </div>
       {showProfilIssue ? (
         <Alert
           className="fr-mt-2w"
