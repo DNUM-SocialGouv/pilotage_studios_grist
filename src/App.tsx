@@ -26,6 +26,12 @@ import { ProduitsDetailView } from "./pages/ProduitsDetailView";
 import { ProduitsLayout } from "./pages/ProduitsLayout";
 import { ProduitsListView } from "./pages/ProduitsListView";
 import { SpikeDatatablePage } from "./pages/SpikeDatatablePage";
+import { ReglesMetierAccueilPage } from "./pages/regles-metier/ReglesMetierAccueilPage";
+import { ReglesMetierBdcPaPage } from "./pages/regles-metier/ReglesMetierBdcPaPage";
+import { ReglesMetierCraPage } from "./pages/regles-metier/ReglesMetierCraPage";
+import { ReglesMetierLayout } from "./pages/regles-metier/ReglesMetierLayout";
+import { ReglesMetierMissionsPage } from "./pages/regles-metier/ReglesMetierMissionsPage";
+import { ReglesMetierRolesPage } from "./pages/regles-metier/ReglesMetierRolesPage";
 import { StubPage } from "./pages/StubPage";
 import { WelcomePage } from "./pages/WelcomePage";
 import { WeeklyCoachPage } from "./pages/WeeklyCoachPage";
@@ -164,6 +170,20 @@ export default function App() {
                   </PageAccessGuard>
                 }
               />
+              <Route
+                path="outils/regles-metier"
+                element={
+                  <PageAccessGuard>
+                    <ReglesMetierLayout />
+                  </PageAccessGuard>
+                }
+              >
+                <Route index element={<ReglesMetierAccueilPage />} />
+                <Route path="missions" element={<ReglesMetierMissionsPage />} />
+                <Route path="cra" element={<ReglesMetierCraPage />} />
+                <Route path="bdc-pa" element={<ReglesMetierBdcPaPage />} />
+                <Route path="qui-voit-quoi" element={<ReglesMetierRolesPage />} />
+              </Route>
               <Route
                 path="outils/droits-pages"
                 element={

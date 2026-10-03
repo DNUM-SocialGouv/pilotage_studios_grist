@@ -4,6 +4,15 @@ Référence pour le skill [`pilotage-grist-issue`](SKILL.md). Complète [`docs/R
 
 **`AGENTS.md`** = technique (routes, hooks, allowlist) · **`docs/`** = fonctionnel (parcours, règles métier, limites) · **`SECURITY.md`** = menace iframe / secrets.
 
+Deux publics docs à ne pas confondre :
+
+| Doc | Public | Où |
+|-----|--------|-----|
+| **Doc contributeurs** | Agents / dev | `docs/fonctionnel/<module>/` (routes, tables, allowlists) |
+| **Guide métier widget** | Équipe métier | Pages Outils → Règles métier (contenu UI, zéro code/chemin) |
+
+Si une PR change une **règle visible** (qui déclare quoi, qui voit quoi, lien CRA–BDC…), mettre à jour le **guide métier** (ou cocher N/A). Cela **ne remplace pas** la MAJ de `docs/fonctionnel/` ni de la matrice rôles.
+
 ---
 
 ## 1. Avant de coder (si parcours UI)
@@ -28,6 +37,7 @@ Repérer si le module est **documenté**, **stub** ou **à documenter**.
 | `/cra` | `cra/` |
 | `/cra/declarer` | `cra/` (déclaration) |
 | `/outils/recap-porteurs` | `cra/` (récap porteurs) |
+| `/outils/regles-metier` | `regles-metier/` (guide métier widget) |
 | `/outils/droits-pages` | `roles/` ([droits-pages-admin.md](../../../docs/fonctionnel/roles/droits-pages-admin.md)) |
 | `/produits`, `/produits/:id` | `produits/` |
 | `/analyse` | N/A — hors scope widget |
@@ -87,5 +97,6 @@ Avant code :
 Après code :
 - [ ] docs/ alignée avec le comportement livré
 - [ ] Sommaire à jour si nouveau module
+- [ ] Guide métier widget : MAJ ou N/A (motif)
 - [ ] PR : case Documentation cochée ou N/A
 ```

@@ -11,6 +11,7 @@
 - [ ] Doc fonctionnelle : `docs/fonctionnel/` MAJ ou **N/A** justifié ([DOC-FONCTIONNEL.md](../pilotage-grist-issue/DOC-FONCTIONNEL.md))
 - [ ] Matrice rôles : [`matrice-droits.md`](../../docs/fonctionnel/roles/matrice-droits.md) MAJ (tableau A/B + journal) ou **N/A** si hors permissions / écrans sensibles
 - [ ] Droits pages / `Page_*` : si nouvel écran nav ou garde de route → choix explicite **nouvelle `Page_*`** | **fixé par rôle** (`DROITS_PAGES_ROLE_FIXED`) | **N/A** (justifié) — rule [`roles-matrice`](../../.cursor/rules/roles-matrice.mdc) ; pas de colonne Grist sans HITL Owner
+- [ ] **Guide métier (règles)** : si la PR change une règle visible (qui déclare quoi, qui voit quoi, lien CRA–BDC…) → mettre à jour les pages widget Outils → Règles métier ; sinon **N/A** (motif). Distinct de `docs/fonctionnel/` agents.
 - [ ] Portage app solo : **N/A** | fiche créée sous `docs/portage/` ([template](../../docs/portage/_TEMPLATE.md))
 - [ ] Si roadmap / issue publique : libellés métier OK ([issues-publiques.md](../../docs/issues-publiques.md)) ; pas de nominatif
 - [ ] Simplification challengée (rien d’ajouté « au cas où »)

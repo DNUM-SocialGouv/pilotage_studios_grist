@@ -74,6 +74,11 @@ export const WIDGET_NAV_ITEMS: WidgetNavItem[] = [
   {
     text: "Outils",
     children: [
+      {
+        text: "Règles métier",
+        href: "/outils/regles-metier",
+        status: "in_progress",
+      },
       { text: "Récap porteurs", href: "/outils/recap-porteurs", status: "in_progress" },
       {
         text: "Droits des pages",

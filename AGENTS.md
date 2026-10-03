@@ -46,6 +46,7 @@ Réduire la complexité ; pas d’ajout « au cas où ». Les agents **proposent
 | `/cra/revue-equipe` | Implémenté (revue manager — jours / description / BDC, même département) |
 | `/weekly` | Implémenté (kanban missions + agenda synchro Ops / coachs) |
 | `/outils/recap-porteurs` | Implémenté (récap mensuel par portage) |
+| `/outils/regles-metier` (+ sous-pages) | Implémenté (guide métier V1 : accueil · missions · CRA · BDC/PA · rôles) |
 | `/outils/droits-pages` | Implémenté (Admin : matrice `Droits_pages`) |
 | `/outils/spike-datatable` | Labo Admin (POC `@tanstack/react-table` + `TableShell`, lecture `Realise`) |
 | `/equipe`, `/equipe/:id` | Implémenté (liste + fiche lecture) |
@@ -53,7 +54,7 @@ Réduire la complexité ; pas d’ajout « au cas où ». Les agents **proposent
 | `/pv` | Stub « À venir » (nav) |
 | `/evaluations`, `/analyse` | Stub hors nav |
 
-Nav principale : Accueil, **Mon carnet** (Freelance/Admin/Resp., `/cra/declarer`), **Weekly** (e-mails listés dans `Weekly_coachs` uniquement, `/weekly`), **Budget** (sous-menu Bons de commande · Plans d’activité · Prestation / CRA · Revue CRA équipe · Procès-verbaux — masqué si aucun enfant accessible, typiquement côté Freelance), Produits, Missions, **Équipe**, **Outils** (Récap porteurs · Droits des pages · Spike datatable — Admin). Pas de route `/budget`. `/intervenants` redirige vers `/equipe`.
+Nav principale : Accueil, **Mon carnet** (Freelance/Admin/Resp., `/cra/declarer`), **Weekly** (e-mails listés dans `Weekly_coachs` uniquement, `/weekly`), **Budget** (sous-menu Bons de commande · Plans d’activité · Prestation / CRA · Revue CRA équipe · Procès-verbaux — masqué si aucun enfant accessible, typiquement côté Freelance), Produits, Missions, **Équipe**, **Outils** (Règles métier · Récap porteurs · Droits des pages · Spike datatable — Admin). Pas de route `/budget`. `/intervenants` redirige vers `/equipe`.
 
 Entrée MemoryRouter : `/` (`WelcomePage` — **feuille de route kanban** Feedback · Backlog · En cours · Livré, table Grist unique `Kanban`, conversation `Kanban_commentaires`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
 
@@ -83,7 +84,7 @@ Visibilité users : section roadmap sur `/` + issues rédigées selon [`docs/iss
 |------|----------|
 | Routes | `src/App.tsx` |
 | Nav | `src/layout/WidgetNav.tsx` + [`widgetNavItems.ts`](src/layout/widgetNavItems.ts) (`WIDGET_NAV_ITEMS`, groupe Budget) |
-| Pages | `src/pages/WelcomePage.tsx`, `Pa*.tsx`, `Bdc*.tsx`, `Missions*.tsx`, `Equipe*.tsx`, `Produits*.tsx`, `CraListView.tsx`, `CraDeclarerPage.tsx`, `CraRevueEquipePage.tsx`, `CraRecapPorteursPage.tsx`, `WeeklyCoachPage.tsx`, `DroitsPagesAdminPage.tsx`, `SpikeDatatablePage.tsx`, `StubPage.tsx` |
+| Pages | `src/pages/WelcomePage.tsx`, `Pa*.tsx`, `Bdc*.tsx`, `Missions*.tsx`, `Equipe*.tsx`, `Produits*.tsx`, `CraListView.tsx`, `CraDeclarerPage.tsx`, `CraRevueEquipePage.tsx`, `CraRecapPorteursPage.tsx`, `WeeklyCoachPage.tsx`, `regles-metier/*`, `DroitsPagesAdminPage.tsx`, `SpikeDatatablePage.tsx`, `StubPage.tsx` |
 | Contenu public | Table Grist `Kanban` + `Kanban_commentaires` (accueil) ; libellés / parse dans [`src/utils/kanbanTickets.ts`](src/utils/kanbanTickets.ts) |
 | Données | `src/hooks/useGristPaData.ts`, `useBdcDepensesData.ts`, `useMissionsData.ts`, `useEquipeData.ts`, `useEquipeMemberMissionsData.ts`, `GristPaContext.tsx`, `gristMap.ts`, `gristRest.ts`, `gristAccessToken.ts` |
 | Sécu | `src/security/embedTrust.ts`, `NothingHerePage.tsx`, `ensureFreshBuild.ts`, `fetchTableAllowlist.ts`, `writeTableAllowlist.ts` |
@@ -208,6 +209,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 | Équipe | `docs/fonctionnel/equipe/`, `useEquipeData`, `useEquipeMemberMissionsData`, `EquipeLayout` / `EquipeListView` / `EquipeDetailView`, `EquipeAvatar` (seed `Equipe.Avatar` → DiceBear Glyphs) |
 | Produits | `docs/fonctionnel/produits/`, `useProduitsData`, `useProduitMissionsData`, `ProduitsLayout` / `ProduitsListView` / `ProduitsDetailView`, `produitsList` |
 | Feedback | `docs/fonctionnel/feedback/` (+ [`alertes.md`](docs/fonctionnel/feedback/alertes.md)), `FeedbackWidget`, `writeTableAllowlist` |
+| Guide règles métier | `docs/fonctionnel/regles-metier/`, `src/pages/regles-metier/`, `Page_regles_metier` (+ Owner UI [`page-regles-metier-owner.md`](docs/fonctionnel/roles/page-regles-metier-owner.md)) |
 | Tableau DSFR | rule `dsfr-tableaux.mdc`, MCP `user-dsfr` |
 | Embed / secrets | `embedTrust.ts`, `NothingHerePage`, `ensureFreshBuild`, SECURITY |
 | Rôles / ACL document | `docs/fonctionnel/roles/` (+ **matrice-droits.md** registre vivant) ; inventaire via MCP **local** `grist-mcp-server` — hors bundle widget |

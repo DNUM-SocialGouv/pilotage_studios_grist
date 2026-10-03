@@ -2077,3 +2077,46 @@ button.fr-link:disabled {
   border: 1px solid var(--border-default-grey);
 }
 
+/* Guide métier — sommaire + schémas Mermaid */
+.regles-metier-sommaire {
+  margin: 0;
+  padding-left: 1.25rem;
+  list-style: decimal;
+}
+
+.regles-metier-page-nav {
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-default-grey);
+}
+
+.regles-metier-page-nav__list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.regles-metier-page-nav__item--next {
+  margin-left: auto;
+  text-align: right;
+}
+
+.regles-metier-diagram {
+  margin: 0 0 1.5rem;
+  padding: 1rem 1.25rem;
+  background-color: var(--background-alt-grey);
+  border: 1px solid var(--border-default-grey);
+}
+
+.regles-metier-diagram__svg {
+  overflow-x: auto;
+}
+
+.regles-metier-diagram__svg svg {
+  max-width: 100%;
+  height: auto;
+}
+

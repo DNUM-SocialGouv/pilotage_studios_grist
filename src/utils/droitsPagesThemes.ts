@@ -42,7 +42,10 @@ export const DROITS_PAGES_THEMES: readonly DroitsPagesTheme[] = [
   {
     id: "outils",
     label: "Outils",
-    screens: [{ key: "Page_recap_porteurs", label: "Récap porteurs" }],
+    screens: [
+      { key: "Page_regles_metier", label: "Règles métier" },
+      { key: "Page_recap_porteurs", label: "Récap porteurs" },
+    ],
   },
   {
     id: "missions",

@@ -39,9 +39,13 @@ Budget · Outils · Missions · Équipe · Produits · Accueil — **un tableau 
 | Section | Contenu |
 |---------|---------|
 | Budget | BDC, PA, Prestation/CRA, PV (`Page_*`) |
-| Outils | Récap porteurs (`Page_recap_porteurs`) |
+| Outils | Règles métier (`Page_regles_metier`) · Récap porteurs (`Page_recap_porteurs`) |
 | Missions / Équipe / Produits / Accueil | `Page_missions`, `Page_equipe`, `Page_produits`, `Page_accueil` |
-| Fixés par rôle | Mon carnet · Revue CRA équipe · Droits des pages (hors `Page_*`) |
+| Fixés par rôle | Mon carnet · Revue CRA équipe · Weekly · Droits des pages (hors `Page_*`) |
+
+### Nouvelle colonne `Page_regles_metier`
+
+HITL Owner **OK pour créer** (2026-10-03). Création **UI Grist uniquement** — procédure : [page-regles-metier-owner.md](page-regles-metier-owner.md). Valeurs par défaut : **oui** pour les 4 rôles.
 
 ## Hors scope
 

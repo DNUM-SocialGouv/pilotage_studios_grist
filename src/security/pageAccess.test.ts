@@ -43,10 +43,12 @@ describe("pageAccessFromRecord", () => {
       Page_missions: true,
       Page_equipe: true,
       Page_recap_porteurs: false,
+      Page_regles_metier: true,
     });
     assert.equal(flags.Page_cra, true);
     assert.equal(flags.Page_pv, false);
     assert.equal(flags.Page_recap_porteurs, false);
+    assert.equal(flags.Page_regles_metier, true);
   });
 });
 
@@ -59,6 +61,8 @@ describe("pageAccessKeyForPath / canAccessPath", () => {
     assert.equal(pageAccessKeyForPath("/cra/declarer"), null);
     assert.equal(pageAccessKeyForPath("/cra/revue-equipe"), null);
     assert.equal(pageAccessKeyForPath("/outils/recap-porteurs"), "Page_recap_porteurs");
+    assert.equal(pageAccessKeyForPath("/outils/regles-metier"), "Page_regles_metier");
+    assert.equal(pageAccessKeyForPath("/outils/regles-metier/cra"), "Page_regles_metier");
     assert.equal(pageAccessKeyForPath("/outils/droits-pages"), null);
     assert.equal(pageAccessKeyForPath("/outils/spike-datatable"), null);
     assert.equal(pageAccessKeyForPath("/equipe"), "Page_equipe");
@@ -72,6 +76,7 @@ describe("pageAccessKeyForPath / canAccessPath", () => {
     assert.equal(canAccessPath("/cra/revue-equipe", PAGE_ACCESS_FAIL_CLOSED), true);
     assert.equal(canAccessPath("/missions", PAGE_ACCESS_FAIL_CLOSED), true);
     assert.equal(canAccessPath("/equipe", PAGE_ACCESS_FAIL_CLOSED), true);
+    assert.equal(canAccessPath("/outils/regles-metier", PAGE_ACCESS_FAIL_CLOSED), true);
     assert.equal(canAccessPath("/outils/droits-pages", PAGE_ACCESS_FAIL_CLOSED), true);
     assert.equal(canAccessPath("/outils/spike-datatable", PAGE_ACCESS_FAIL_CLOSED), true);
     assert.equal(canAccessPath("/cra", PAGE_ACCESS_ALL_OPEN), true);
@@ -79,7 +84,7 @@ describe("pageAccessKeyForPath / canAccessPath", () => {
 });
 
 describe("filterNavItemsByPageAccess", () => {
-  it("retire Budget sensible et Outils pour non-Admin", () => {
+  it("retire Budget sensible ; garde Outils (guide) pour non-Admin", () => {
     const filtered = filterNavItemsByPageAccess(WIDGET_NAV_ITEMS, (href) =>
       canAccessHref(href, PAGE_ACCESS_FAIL_CLOSED),
     );
@@ -87,7 +92,13 @@ describe("filterNavItemsByPageAccess", () => {
     assert.ok(texts.includes("Accueil"));
     assert.ok(texts.includes("Missions"));
     assert.ok(!texts.includes("Budget"));
-    assert.ok(!texts.includes("Outils"));
+    assert.ok(texts.includes("Outils"));
+    const outils = filtered.find((item) => "children" in item && item.text === "Outils");
+    assert.ok(outils && "children" in outils);
+    assert.deepEqual(
+      outils.children.map((c) => c.href),
+      ["/outils/regles-metier"],
+    );
   });
 
   it("garde Budget si BDC autorisé seul", () => {
