@@ -45,7 +45,13 @@ describe("droitsPagesThemes", () => {
     const accueil = DROITS_PAGES_THEMES.find((t) => t.id === "accueil");
     assert.equal(accueil?.screens[0]?.readOnly, true);
     assert.ok(editablePageAccessKeys().includes("Page_equipe"));
+    assert.ok(editablePageAccessKeys().includes("Page_regles_metier"));
     assert.equal(editablePageAccessKeys().includes("Page_accueil"), false);
+    const outils = DROITS_PAGES_THEMES.find((t) => t.id === "outils");
+    assert.deepEqual(
+      outils?.screens.map((s) => s.key),
+      ["Page_regles_metier", "Page_recap_porteurs"],
+    );
   });
 
   it("liste les écrans fixés par rôle (lecture seule Admin)", () => {
@@ -227,5 +233,28 @@ describe("feedbackPages droits-pages", () => {
 
   it("mappe le spike datatable", () => {
     assert.equal(pageOptionFromPathname("/outils/spike-datatable"), "Spike datatable");
+  });
+
+  it("mappe le guide règles métier", () => {
+    assert.equal(pageOptionFromPathname("/outils/regles-metier"), "Règles métier");
+    assert.equal(pageOptionFromPathname("/outils/regles-metier/cra"), "Règles métier");
+  });
+});
+
+describe("filterNavItemsByPageAccess regles-metier", () => {
+  it("montre Règles métier en fail-closed (ouvert par défaut)", () => {
+    const filtered = filterNavItemsByPageAccess(
+      WIDGET_NAV_ITEMS,
+      (href) => canAccessHref(href, PAGE_ACCESS_FAIL_CLOSED),
+      { isAdmin: false, canDeclareCra: true },
+    );
+    const outils = filtered.find(
+      (item) => isWidgetNavGroup(item) && item.text === "Outils",
+    );
+    assert.ok(outils && isWidgetNavGroup(outils));
+    assert.equal(
+      outils.children.some((c) => c.href === "/outils/regles-metier"),
+      true,
+    );
   });
 });

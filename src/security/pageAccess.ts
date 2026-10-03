@@ -14,6 +14,7 @@ export const PAGE_ACCESS_KEYS = [
   "Page_missions",
   "Page_equipe",
   "Page_recap_porteurs",
+  "Page_regles_metier",
 ] as const;
 
 export type PageAccessKey = (typeof PAGE_ACCESS_KEYS)[number];
@@ -34,6 +35,8 @@ export const PAGE_ACCESS_FAIL_CLOSED: PageAccessFlags = {
   Page_missions: true,
   Page_equipe: true,
   Page_recap_porteurs: false,
+  /** Ouvert par défaut (guide pour toute l’équipe) si colonne absente / profil incomplet. */
+  Page_regles_metier: true,
 };
 
 /** Dev hors iframe : tout visible pour prévisualiser l’UI. */
@@ -47,10 +50,12 @@ export const PAGE_ACCESS_ALL_OPEN: PageAccessFlags = {
   Page_missions: true,
   Page_equipe: true,
   Page_recap_porteurs: true,
+  Page_regles_metier: true,
 };
 
 /** Route (pathname) → clé `Page_*`. Routes hors map = non filtrées. */
 export const ROUTE_PAGE_ACCESS: ReadonlyArray<{ prefix: string; key: PageAccessKey }> = [
+  { prefix: "/outils/regles-metier", key: "Page_regles_metier" },
   { prefix: "/outils/recap-porteurs", key: "Page_recap_porteurs" },
   { prefix: "/equipe", key: "Page_equipe" },
   { prefix: "/intervenants", key: "Page_equipe" },

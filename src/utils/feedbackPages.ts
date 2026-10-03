@@ -10,6 +10,7 @@ export const FEEDBACK_PAGE_OPTIONS = [
   "Missions",
   "Équipe",
   "Prestation / CRA",
+  "Règles métier",
   "Récap porteurs",
   "Droits des pages",
   "Spike datatable",
@@ -54,6 +55,12 @@ export function pageOptionFromPathname(pathname: string): FeedbackPageOption {
   }
   if (pathname === "/cra" || pathname.startsWith("/cra/")) {
     return "Prestation / CRA";
+  }
+  if (
+    pathname === "/outils/regles-metier" ||
+    pathname.startsWith("/outils/regles-metier/")
+  ) {
+    return "Règles métier";
   }
   if (
     pathname === "/outils/recap-porteurs" ||

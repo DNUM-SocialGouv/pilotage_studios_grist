@@ -52,6 +52,7 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 | **Weekly** | `/weekly` | **si table*** | **si table*** | **si table*** | **si table*** | **Appliqué** UX (`Weekly_coachs`) | *E-mail dans `Weekly_coachs` uniquement — **pas** d’accès automatique Admin/Resp. ; hors `Page_*` |
 | Revue CRA équipe | `/cra/revue-equipe` | **oui*** | **oui*** | **non** | **non** | **Appliqué** UX (rôle + dép.) | *Uniquement si `Equipe.Equipe` renseigné ; périmètre = même département ; hors `Page_*` ; rappel lecture seule Admin « Fixés par rôle » ; ACL `Realise` par rôle **faite** (#47/#70) |
 | Récap porteurs | `/outils/recap-porteurs` | **oui** | **non** | **non** | **non** | **Appliqué** UX | |
+| **Règles métier** (guide) | `/outils/regles-metier` | **oui** | **oui** | **oui** | **oui** | **Appliqué** UX (widget) · **Owner UI** colonne | Flag `Page_regles_metier` ; défaut tous rôles oui ; colonne Grist = checklist Owner ([page-regles-metier-owner.md](page-regles-metier-owner.md)) ; fail-closed widget = ouvert |
 | Procès-verbaux | `/pv` | **oui** | **non** | **non** | **non** | **Appliqué** UX (stub) | |
 | Missions | `/missions` | oui | oui | oui | oui | **Appliqué** UX | Fiche : Modifier / Dupliquer CRA sous prestation = **Admin** seulement (drawer) |
 | Équipe | `/equipe` | oui | oui | oui | oui | **Configurable** Admin | Flag `Page_equipe` ; réglé via `/outils/droits-pages` ([#54](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/54)) |
@@ -105,6 +106,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-10-03 | Guide règles métier V1 (`/outils/regles-metier`) : nav Outils ; `Page_regles_metier` (widget + thématique Admin) ; défaut tous rôles oui ; colonne Grist = Owner UI (pas d’ACL API) ; N/A kanban Feedback id=34 (K3) | 4, 5 | feat/guide-regles-metier · HITL Owner OK create colonne |
 | 2026-10-03 | Weekly ACL appliquées : User Attribute `Weekly_coach` ; `Weekly_coachs` Owner/Admin CRUD + soi R ; phase/agenda Owner + listés CRUD ; formule cible `user.Email == user.Weekly_coach.E_mail` | 6 | HITL Owner + vérif MCP |
 | 2026-10-01 | Weekly : accès **uniquement** via `Weekly_coachs` (plus d’ouverture auto Admin/Resp.) ; ACL phase/agenda resserrées (Owner + listés) | 5, 6 (doc HITL) | Suite PR #95 |
 | 2026-10-01 | Weekly : allowlist coachs = table Grist `Weekly_coachs` (e-mails hors git) ; User Attribute `Weekly_coach` + formules ACL documentées ; widget lit la table (Freelance) | 5, 6 (doc HITL) | PR #95 |

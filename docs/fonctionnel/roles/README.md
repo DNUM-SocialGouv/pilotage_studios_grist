@@ -30,6 +30,7 @@ Schéma canvas (IDE) : `roles-droits-schema.canvas.tsx`.
 |---------|---------|
 | **[matrice-droits.md](matrice-droits.md)** | **Registre vivant** — écrans × rôles, tables × rôles, journal |
 | [droits-pages-admin.md](droits-pages-admin.md) | Page Admin `/outils/droits-pages` (édition `Droits_pages`) |
+| [page-regles-metier-owner.md](page-regles-metier-owner.md) | Checklist Owner UI : colonne `Page_regles_metier` (`Droits_pages` + formule `Acl_profil`) |
 | [access-rules.md](access-rules.md) | Snapshot ACL Grist + procédure |
 | [inventaire-partage.md](inventaire-partage.md) | Synthèse anonymisée du partage |
 | [prep-equipe.md](prep-equipe.md) | Colonne Role + backlog emails |
