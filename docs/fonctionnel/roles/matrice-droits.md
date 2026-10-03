@@ -81,9 +81,9 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | `Realise` (CRA) hors montants | CRUD | R/U département | **R/U + C** ses lignes | — | **Appliqué** (ACL) + widget | Déclaration `#33` ; revue `#70` ; mur `#47` HITL 2026-09-21 ; fiche mission Modifier/Dupliquer Admin (`cra-fiche-mission`) |
 | `Realise.Calcul_TTC` | R ; U Owner | R | R | R | **Appliqué** | `+R -U` si non-Owner |
 | `Missions` / `Missions_enfants` | CRUD | R/U dép. | R ses missions | R / — | Non (rôle) | |
-| `Weekly_phase` | CRUD* | —† | —† | — | **Widget** ; **ACL à poser/resserrer** Owner | *Owner document ; †accès si e-mail dans `Weekly_coachs` (`user.Weekly_coach`) |
-| `Weekly_agenda` | CRUD* | —† | —† | — | **Widget** ; **ACL à poser/resserrer** Owner | Idem |
-| `Weekly_coachs` | CRUD | — | R soi | — | **Widget lecture** ; **ACL à poser** | Allowlist e-mails — **pas** dans git ; pas d’écriture widget |
+| `Weekly_phase` | CRUD* | —† | —† | — | **Appliqué** ACL + widget (allowlist) | *Owner document ; †si `user.Email == user.Weekly_coach.E_mail` |
+| `Weekly_agenda` | CRUD* | —† | —† | — | **Appliqué** ACL + widget (allowlist) | Idem |
+| `Weekly_coachs` | CRUD | — | R soi | — | **Appliqué** ACL ; widget lecture | Allowlist e-mails — **pas** dans git ; pas d’écriture widget |
 | `Kanban` (feedback + produit) | CRU (liste + colonne Admin) | C (+ R) ; U colonne Admin | C (+ R) | C (+ R) | **Appliqué** (ACL) + widget | Owner/Admin `+CRUD` ; `True` → `+CR-UD` |
 | `Kanban_commentaires` | CR | C (+ R) | C (+ R) | C (+ R) | **Appliqué** (ACL) + widget | Owner/Admin `+CRUD` ; `True` → `+CR-UD` |
 | `Retours` / `Roadmap` (legacy) | — | — | — | — | **Hors widget** (migrées → `Kanban`) | Archivables Owner |
@@ -105,6 +105,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-10-03 | Weekly ACL appliquées : User Attribute `Weekly_coach` ; `Weekly_coachs` Owner/Admin CRUD + soi R ; phase/agenda Owner + listés CRUD ; formule cible `user.Email == user.Weekly_coach.E_mail` | 6 | HITL Owner + vérif MCP |
 | 2026-10-01 | Weekly : accès **uniquement** via `Weekly_coachs` (plus d’ouverture auto Admin/Resp.) ; ACL phase/agenda resserrées (Owner + listés) | 5, 6 (doc HITL) | Suite PR #95 |
 | 2026-10-01 | Weekly : allowlist coachs = table Grist `Weekly_coachs` (e-mails hors git) ; User Attribute `Weekly_coach` + formules ACL documentées ; widget lit la table (Freelance) | 5, 6 (doc HITL) | PR #95 |
 | 2026-10-01 | Weekly : accès Freelance restreint (allowlist) ; Admin/Resp. inchangés ; pas de colonne Équipe | 5, 6 (doc HITL) | PR #95 |

@@ -65,12 +65,13 @@ Access Rules → **User Attributes** :
 
 ### Tables `Weekly_phase` et `Weekly_agenda` (`*` / Toutes)
 
-Ordre 1 → 3. **`OWNER` sans guillemets**. Pas d’accès automatique Admin / Resp. par rôle.
+Ordre 1 → 3. **`OWNER` sans guillemets**. Pas d’accès automatique Admin / Resp. par rôle.  
+**Appliqué** Owner UI (vérif MCP 2026-10-03).
 
 | # | Condition | Droits | Mémo |
 |---|-----------|--------|------|
 | 1 | `user.Access == OWNER` | `+CRUD` | Owner document : ménage (doublons, etc.). |
-| 2 | `user.Weekly_coach.E_mail != ""` | `+CRU` | Personnes listées dans `Weekly_coachs` uniquement. |
+| 2 | `user.Email == user.Weekly_coach.E_mail` | `+CRUD` | Listé dans `Weekly_coachs` (lookup réussi) — préférer à `!= ""` (plus sûr en View As). |
 | 3 | `True` | `-CRUD` | Tout le reste (y compris Admin hors liste) : aucun accès. |
 
 Après pose : View As une personne listée / un Admin hors liste / Invité.

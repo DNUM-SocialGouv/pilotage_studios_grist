@@ -155,10 +155,10 @@ User Attribute : Name `Weekly_coach` ← `user.Email` → table `Weekly_coachs` 
 | # | Condition | Droits | Mémo |
 |---|-----------|--------|------|
 | 1 | `user.Access == OWNER` | `+CRUD` | Ménage Owner uniquement. |
-| 2 | `user.Weekly_coach.E_mail != ""` | `+CRU` | Listés dans `Weekly_coachs` seulement. |
+| 2 | `user.Email == user.Weekly_coach.E_mail` | `+CRUD` | Listés dans `Weekly_coachs` (lookup OK) — préférer à `!= ""`. |
 | 3 | `True` | `-CRUD` | Admin / Resp. / Freelance hors liste : refus. |
 
-Après pose : View As + vérif MCP `grist_get_acl_rules`.
+**Appliqué** 2026-10-03 (User Attribute `Weekly_coach` + règles tables ; vérif MCP). View As Admin hors liste : page = après merge PR widget allowlist-only.
 
 ## Qui peut modifier quoi
 
