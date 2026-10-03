@@ -170,33 +170,64 @@ span.fr-tag.fr-tag--beige-gris-galet {
   border-bottom: 1px solid var(--border-default-grey);
 }
 
-.widget-user-menu__identity-line {
+.widget-user-menu__identity-primary {
   margin: 0;
   font-size: 0.875rem;
+  font-weight: 700;
   line-height: 1.5rem;
   word-break: break-word;
 }
 
-.widget-user-menu__identity-line + .widget-user-menu__identity-line {
-  margin-top: 0.25rem;
+.widget-user-menu__identity-line {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
   color: var(--text-mention-grey);
+  word-break: break-word;
 }
 
 .widget-user-menu__list {
   list-style: none;
   margin: 0;
   padding: 0.25rem 0;
+  /* Tokens hover hérités par fr-btn--tertiary-no-outline (--hover: inherit). */
+  --idle: transparent;
+  --hover: var(--background-default-grey-hover);
+  --active: var(--background-default-grey-active);
 }
 
 .widget-user-menu__item {
   width: 100%;
   justify-content: flex-start;
   border-radius: 0;
+  text-decoration: none;
+  /* Texte action high lisible au repos, hover et focus (pas d’inverted blanc). */
+  color: var(--text-action-high-blue-france);
+  background-color: transparent;
+  --hover: var(--background-default-grey-hover);
+  --active: var(--background-default-grey-active);
 }
 
-.widget-user-menu__item:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
+.widget-user-menu__item:hover,
+.widget-user-menu__item:focus-visible {
+  color: var(--text-action-high-blue-france);
+}
+
+.widget-user-menu__item--active {
+  /* Fond action-low + texte action-high : contraste OK aussi au hover DSFR. */
+  background-color: var(--background-action-low-blue-france);
+  color: var(--text-action-high-blue-france);
+  --hover: var(--background-action-low-blue-france-hover);
+  --active: var(--background-action-low-blue-france-active);
+}
+
+.widget-user-menu__item--active:hover,
+.widget-user-menu__item--active:focus-visible {
+  color: var(--text-action-high-blue-france);
+}
+
+.widget-user-menu__item:focus-visible {
+  outline-offset: -2px;
 }
 
 /* Fiches produit / mission : le hero beige doit coller au menu (pas de bandeau blanc). */

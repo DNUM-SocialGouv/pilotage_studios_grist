@@ -57,8 +57,14 @@ describe("droitsPagesThemes", () => {
   it("liste les écrans fixés par rôle (lecture seule Admin)", () => {
     assert.deepEqual(
       DROITS_PAGES_ROLE_FIXED.map((s) => s.id),
-      ["mon_carnet", "revue_cra", "weekly", "droits_pages"],
+      ["feuille_de_route", "mon_carnet", "revue_cra", "weekly", "droits_pages"],
     );
+    const feuille = DROITS_PAGES_ROLE_FIXED.find(
+      (s) => s.id === "feuille_de_route",
+    );
+    assert.equal(feuille?.accessByRole.Admin, true);
+    assert.equal(feuille?.accessByRole.Freelance, true);
+    assert.equal(feuille?.accessByRole.Invité, true);
     const carnet = DROITS_PAGES_ROLE_FIXED.find((s) => s.id === "mon_carnet");
     assert.equal(carnet?.accessByRole.Freelance, true);
     assert.equal(carnet?.accessByRole.Invité, false);
