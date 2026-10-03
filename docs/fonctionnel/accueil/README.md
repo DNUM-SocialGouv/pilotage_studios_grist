@@ -5,42 +5,55 @@
 > **Route** : `/`  
 > **Studio** : Tech  
 > **Page** : `src/pages/WelcomePage.tsx`  
-> **Tickets** : table Grist unique `Kanban` (`Nature` = Feedback \| Produit)  
+> **Contenu rôle** : `src/utils/welcomeHomeByRole.ts` + `WelcomeRoleHome`  
+> **Tickets** (transitoire sous les CTA) : table Grist `Kanban` (`Nature` = Feedback \| Produit)  
 > **Conversation** : table Grist `Kanban_commentaires` + drawer `TicketDrawer`
 
 ## Objet
 
-Première page affichée à l’ouverture du Custom Widget dans Grist : titre + pictogramme + **feuille de route en kanban** (Feedback · Backlog · En cours · Livré). Chaque carte ouvre un **tiroir** (résumé → en pratique / détail → pastilles méta → actions → conversation). La navigation des modules se fait via la **nav** (`WidgetNav`), pas une liste sur l’accueil.
+Première page affichée à l’ouverture du Custom Widget dans Grist : un **accueil léger selon le rôle** (Freelance, Responsable de département, Admin, Invité) avec quelques boutons utiles, puis — **temporairement** tant que PR-B n’est pas livrée — la **feuille de route en kanban** (Feedback · Backlog · En cours · Livré). La navigation complète reste dans la **nav** (`WidgetNav`) ; l’accueil ne recopie pas tout le menu.
 
 ## Comportement
 
 | Élément | Détail |
 |---------|--------|
 | Entrée | `MemoryRouter` démarre sur `/` (`initialEntries`) |
-| En-tête | Titre « Pilotage studios » + pictogramme `Factory` |
-| Kanban | Titre « Feuille de route » + **4 colonnes** : **Feedback** (CTA + tickets `Nature=Feedback` en colonne `feedback`) · **Backlog** · **En cours** · **Livré** (dernier livré en haut) |
-| Carte | Cliquable → drawer SM (`TicketDrawer`) |
-| Drawer (ordre) | En-tête (badges + titre + colonne **Admin** compacte) → Résumé → En pratique (Produit, si guide) ou Détail (`Message` : **Markdown** léger pour Produit via `MissionProse` ; texte brut pour Feedback) → pastilles méta → actions (page / GitHub) → Conversation |
-| Colonne Admin | Update `Colonne_kanban` (+ sync `Statut_produit` / `Statut` feedback) via widget ; ACL Grist = vraie barrière |
-| Conversation | Tout utilisateur peut commenter (identité via liste Équipe) |
-| Nav | `WidgetNav` : chrome **Page précédente** (chevron seul + `aria-label`, gauche) · Accueil icône home + modules · **menu utilisateur** (droite, avatar `EquipeAvatar` / seed `Equipe.Avatar`) ; **Mon carnet** (Freelance/Admin/Resp.) ; **Budget** / **Outils** en menus |
-| Layout | Panneau large (`welcome-page__panel--wide`) pour 4 colonnes |
+| Accueil par rôle | Salutation « Bonjour » + libellé de rôle + message court + **2–4 CTA** filtrés comme la nav (`Page_*` + flags rôle / département) |
+| Freelance | CTA : Mon carnet · Missions · Règles métier ; rappel déclarer les jours ; pas de Budget |
+| Responsable | CTA : Revue CRA équipe (si département) · Mon carnet · Missions ; hint département ; pas de CTA Weekly générique |
+| Admin | CTA : Missions · Bons de commande · Droits des pages ; lien Feuille de route **après PR-B** (`includeFeuilleDeRoute`) |
+| Invité | CTA : Missions · Produits · Règles métier ; pas de carnet / revue / droits |
+| Profil vide / erreur | Message explicite + CTA limités (Règles / Missions si ouverts en fail-closed) — **pas** de 5ᵉ rôle inventé |
+| Kanban | Titre « Feuille de route » **sous** les CTA (état transitoire) ; 4 colonnes + drawer inchangés |
+| Carte / drawer | Inchangés (voir historique kanban) |
+| Nav | `WidgetNav` : chrome **Page précédente** · Accueil · modules · **menu utilisateur** (droite) |
+| Layout | Panneau large (`welcome-page__panel--wide`) |
 | Fallback | Route `*` → redirection vers `/` |
 
-> **Refonte en cours** (kanban `accueil-nav-refonte`) : PR0 = chrome Retour + slot menu user. Le kanban reste sur `/` jusqu’à PR-B (`/feuille-de-route`). Accueils par rôle = PR-A.
+> **Refonte** (kanban `accueil-nav-refonte`) : PR0 chrome livrée · **PR-A** = cet accueil par rôle · **PR-B** = menu user actif + déplacement kanban vers `/feuille-de-route` (alors retirer le kanban de `/`).
+
+### Droits / `Page_*`
+
+| Sujet | Choix | Motif |
+|-------|-------|--------|
+| Route `/` | `Page_accueil` existante (non modifiable Admin) | Pas de nouvelle colonne |
+| Variante CTA par rôle | **N/A `Page_*`** — branchement sur `Role` (+ mêmes gardes que la nav) | Variante d’écran, pas nouvel interrupteur |
+| Feuille de route dédiée | PR-B — **fixé ouvert** sans `Page_*` | Décision porteur |
 
 ## Données Grist
 
-- `Kanban` : create Feedback via bouton « Un retour ? » ; lecture kanban ; update colonne **Admin** (UX) / Owner·Admin (ACL).
-- Cartes **unifiées** (Feedback et Produit) : titre · badge · thème · résumé · auteur/date si présents.
-- `Kanban_commentaires` : create + lecture fil (`Cible_id` = id ligne `Kanban`) — ordre **plus récent en haut**.
-- Anciennes tables `Retours` / `Roadmap` : migrées ; plus utilisées par le widget (archivables Owner).
+- Profil session : `Acl_profil` (rôle + `Page_*`) via `useAclProfil` — déjà chargé pour la nav.
+- `Kanban` / `Kanban_commentaires` : inchangés (create Feedback, lecture, update colonne Admin, conversation).
+- Pas de nouvelle table ni d’écriture pour l’accueil rôle.
 
 ## Hors scope
 
-- Contenu marketing / branding Marianne
-- Liste de modules / raccourcis sur l’accueil (retirée — doublon nav + roadmap)
-- Drag-and-drop des cartes
-- Édition du texte / guide depuis le widget
-- Modifier / supprimer un commentaire côté widget
+- Contenu marketing / branding Marianne / hero image
+- Tuiles recopiant **toute** la nav
+- Tableaux de bord chiffrés (reste BDC, jours CRA, alertes)
+- Mini-kanban Admin en plus de la page dédiée
+- Redirection auto Freelance → `/cra/declarer`
+- Personnalisation éditable dans Grist (CMS d’accueil)
+- Drag-and-drop des cartes ; édition texte tickets / commentaires
 - Sync automatique GitHub ↔ Grist ; notifications mail
+- Features IA / analyse
