@@ -20,30 +20,9 @@ describe("weeklyCoachAccess", () => {
     assert.equal(coachEmails.has("coach.two@example.com"), true);
   });
 
-  it("ouvre Weekly pour Admin et Responsable sans allowlist", () => {
-    const empty = new Set<string>();
+  it("n’ouvre Weekly que si l’e-mail est dans la table (tout rôle)", () => {
     assert.equal(
       canAccessWeeklyCoach({
-        role: "Admin",
-        email: "x@example.com",
-        coachEmails: empty,
-      }),
-      true,
-    );
-    assert.equal(
-      canAccessWeeklyCoach({
-        role: "Responsable de département",
-        email: "y@example.com",
-        coachEmails: empty,
-      }),
-      true,
-    );
-  });
-
-  it("restreint Freelance à l’ensemble fourni (données Grist)", () => {
-    assert.equal(
-      canAccessWeeklyCoach({
-        role: "Freelance",
         email: "Coach.One@example.com",
         coachEmails,
       }),
@@ -51,19 +30,31 @@ describe("weeklyCoachAccess", () => {
     );
     assert.equal(
       canAccessWeeklyCoach({
-        role: "Freelance",
-        email: "autre@example.com",
+        email: "admin.hors.liste@example.com",
         coachEmails,
+      }),
+      false,
+    );
+    assert.equal(
+      canAccessWeeklyCoach({
+        email: "autre@example.com",
+        coachEmails: new Set(),
       }),
       false,
     );
   });
 
-  it("refuse Invité même présent dans l’ensemble", () => {
+  it("accepte un Admin listé et refuse un Invité hors liste", () => {
     assert.equal(
       canAccessWeeklyCoach({
-        role: "Invité",
-        email: "coach.one@example.com",
+        email: "coach.two@example.com",
+        coachEmails,
+      }),
+      true,
+    );
+    assert.equal(
+      canAccessWeeklyCoach({
+        email: "invite@example.com",
         coachEmails,
       }),
       false,

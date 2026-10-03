@@ -122,7 +122,7 @@ export function isGroupActive(pathname: string, group: WidgetNavGroup): boolean 
  * Filtre nav selon drapeaux `Page_*` (couche 5).
  * `adminOnly` : lien réservé rôle Admin (indépendant de `Page_*`).
  * `craDeclarerOnly` : lien réservé Freelance / Admin / Resp. (indépendant de `Page_*`).
- * `weeklyOnly` : lien réservé Admin / Resp. + Freelances listés dans `Weekly_coachs` (hors `Page_*`).
+ * `weeklyOnly` : lien réservé aux e-mails de `Weekly_coachs` (hors `Page_*`, pas par rôle).
  * `craRevueEquipeOnly` : lien réservé Admin / Resp. (indépendant de `Page_*`).
  */
 export function filterNavItemsByPageAccess(

@@ -60,7 +60,8 @@ describe("droitsPagesThemes", () => {
     assert.equal(revue?.accessByRole.Freelance, false);
     assert.equal(revue?.accessByRole["Responsable de département"], true);
     const weekly = DROITS_PAGES_ROLE_FIXED.find((s) => s.id === "weekly");
-    assert.equal(weekly?.accessByRole.Freelance, true);
+    assert.equal(weekly?.accessByRole.Freelance, false);
+    assert.equal(weekly?.accessByRole.Admin, false);
     assert.equal(weekly?.accessByRole.Invité, false);
     const droits = DROITS_PAGES_ROLE_FIXED.find((s) => s.id === "droits_pages");
     assert.equal(droits?.accessByRole.Admin, true);

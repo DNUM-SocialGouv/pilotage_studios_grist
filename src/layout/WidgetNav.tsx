@@ -5,7 +5,7 @@ import { MainNavigation } from "@codegouvfr/react-dsfr/MainNavigation";
 import type { MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation";
 import { useAclProfil } from "../AclProfilContext";
 import { canAccessHref } from "../security/pageAccess";
-import { isAdminRole, isCraDeclarerRole, isCraRevueEquipeRole, isMonCarnetManagerRole } from "../utils/droitsPagesThemes";
+import { isAdminRole, isCraDeclarerRole, isCraRevueEquipeRole } from "../utils/droitsPagesThemes";
 import { canAccessWeeklyCoach } from "../utils/weeklyCoachAccess";
 import { useWeeklyCoachAllowlist } from "../hooks/useWeeklyCoachAllowlist";
 import {
@@ -50,25 +50,15 @@ export function WidgetNav() {
   // Après résolution : filtre selon `Page_*` (fail-closed si empty/error) + rôles.
   const isAdmin = status === "standalone" || isAdminRole(role);
   const canDeclareCra = status === "standalone" || isCraDeclarerRole(role);
-  const needsWeeklyAllowlist =
-    status === "ok" &&
-    !isMonCarnetManagerRole(role) &&
-    (role ?? "").trim() === "Freelance";
+  const needsWeeklyAllowlist = status === "ok";
   const weeklyAllowlist = useWeeklyCoachAllowlist(needsWeeklyAllowlist);
   const canWeekly =
     status === "standalone" ||
-    (needsWeeklyAllowlist
-      ? weeklyAllowlist.status === "ok" &&
-        canAccessWeeklyCoach({
-          role,
-          email,
-          coachEmails: weeklyAllowlist.emails,
-        })
-      : canAccessWeeklyCoach({
-          role,
-          email,
-          coachEmails: weeklyAllowlist.emails,
-        }));
+    (weeklyAllowlist.status === "ok" &&
+      canAccessWeeklyCoach({
+        email,
+        coachEmails: weeklyAllowlist.emails,
+      }));
   // Revue : rôle manager + département renseigné (masque le cas Admin transverse sans équipe).
   const canRevueCraEquipe =
     status === "standalone" ||
