@@ -190,6 +190,10 @@ span.fr-tag.fr-tag--beige-gris-galet {
   list-style: none;
   margin: 0;
   padding: 0.25rem 0;
+  /* Tokens hover hérités par fr-btn--tertiary-no-outline (--hover: inherit). */
+  --idle: transparent;
+  --hover: var(--background-default-grey-hover);
+  --active: var(--background-default-grey-active);
 }
 
 .widget-user-menu__item {
@@ -197,11 +201,29 @@ span.fr-tag.fr-tag--beige-gris-galet {
   justify-content: flex-start;
   border-radius: 0;
   text-decoration: none;
+  /* Texte action high lisible au repos, hover et focus (pas d’inverted blanc). */
+  color: var(--text-action-high-blue-france);
+  background-color: transparent;
+  --hover: var(--background-default-grey-hover);
+  --active: var(--background-default-grey-active);
+}
+
+.widget-user-menu__item:hover,
+.widget-user-menu__item:focus-visible {
+  color: var(--text-action-high-blue-france);
 }
 
 .widget-user-menu__item--active {
-  background-color: var(--background-active-blue-france);
-  color: var(--text-inverted-blue-france);
+  /* Fond action-low + texte action-high : contraste OK aussi au hover DSFR. */
+  background-color: var(--background-action-low-blue-france);
+  color: var(--text-action-high-blue-france);
+  --hover: var(--background-action-low-blue-france-hover);
+  --active: var(--background-action-low-blue-france-active);
+}
+
+.widget-user-menu__item--active:hover,
+.widget-user-menu__item--active:focus-visible {
+  color: var(--text-action-high-blue-france);
 }
 
 .widget-user-menu__item:focus-visible {
