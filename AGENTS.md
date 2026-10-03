@@ -37,7 +37,8 @@ Réduire la complexité ; pas d’ajout « au cas où ». Les agents **proposent
 
 | Path | Statut V1 |
 |------|-----------|
-| `/` | Accueil par rôle (CTA selon Freelance / Resp. / Admin / Invité) + kanban feuille de route **transitoire** sous les CTA (déplacement → `/feuille-de-route` en PR-B) |
+| `/` | Accueil par rôle (CTA selon Freelance / Resp. / Admin / Invité) — **sans** kanban |
+| `/feuille-de-route` | Feuille de route (kanban Feedback · Backlog · En cours · Livré) — ouvert à tous, hors `Page_*` ; entrée menu compte |
 | `/pa`, `/pa/:id` | Implémenté (liste + fiche) |
 | `/bdc`, `/bdc/:id` | Implémenté (liste + fiche) |
 | `/missions`, `/missions/:id` | Implémenté (liste + fiche + drawer create/edit master) |
@@ -56,9 +57,9 @@ Réduire la complexité ; pas d’ajout « au cas où ». Les agents **proposent
 
 Nav principale : Accueil, **Mon carnet** (Freelance/Admin/Resp., `/cra/declarer`), **Weekly** (e-mails listés dans `Weekly_coachs` uniquement, `/weekly`), **Budget** (sous-menu Bons de commande · Plans d’activité · Prestation / CRA · Revue CRA équipe · Procès-verbaux — masqué si aucun enfant accessible, typiquement côté Freelance), Produits, Missions, **Équipe**, **Outils** (Règles métier · Récap porteurs · Droits des pages · Spike datatable — Admin). Pas de route `/budget`. `/intervenants` redirige vers `/equipe`.
 
-Entrée MemoryRouter : `/` (`WelcomePage` — **accueil par rôle** via `welcomeHomeByRole` / `WelcomeRoleHome` ; kanban Feedback · Backlog · En cours · Livré encore sous les CTA jusqu’à PR-B ; table Grist `Kanban` + `Kanban_commentaires`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
+Entrée MemoryRouter : `/` (`WelcomePage` — **accueil par rôle** via `welcomeHomeByRole` / `WelcomeRoleHome`). Kanban : route `/feuille-de-route` (`FeuilleDeRoutePage` — table Grist `Kanban` + `Kanban_commentaires`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
 
-**Chrome nav** (`WidgetNav`) : à gauche **Page précédente** (historique MemoryRouter uniquement — désactivé si pile vide ; jamais `window.history` / Grist) ; au centre la nav métier ; à droite **menu utilisateur** (avatar Équipe `EquipeAvatar` / seed `Equipe.Avatar` — identité lecture + entrée « Feuille de route » en coquille, route dédiée à venir). Le Retour n’est **pas** dans le menu user.
+**Chrome nav** (`WidgetNav`) : à gauche **Page précédente** (historique MemoryRouter uniquement — désactivé si pile vide ; jamais `window.history` / Grist) ; au centre la nav métier ; à droite **menu compte** (avatar Équipe `EquipeAvatar` / seed `Equipe.Avatar` — panneau type « En-tête connectée » DSFR : identité + lien **Feuille de route** → `/feuille-de-route`). Le Retour n’est **pas** dans le menu compte.
 
 ### Feuille de route (priorité métier)
 
@@ -71,7 +72,7 @@ Entrée MemoryRouter : `/` (`WelcomePage` — **accueil par rôle** via `welcome
 5. **Produits** ([#3](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3)) — **livré** (liste + fiche lecture) ; plus tard : forfait ([#36](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/36)), dates←CRA ([#37](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/37)), PV, Évaluations
 6. Analyse : rester stub (hors scope widget)
 
-Visibilité users : accueil par rôle sur `/` (+ kanban transitoire) ; issues rédigées selon [`docs/issues-publiques.md`](docs/issues-publiques.md).
+Visibilité users : accueil par rôle sur `/` ; feuille de route via menu compte ; issues rédigées selon [`docs/issues-publiques.md`](docs/issues-publiques.md).
 
 ---
 
@@ -86,9 +87,9 @@ Visibilité users : accueil par rôle sur `/` (+ kanban transitoire) ; issues r�
 |------|----------|
 | Routes | `src/App.tsx` |
 | Nav | `src/layout/WidgetNav.tsx` + [`widgetNavItems.ts`](src/layout/widgetNavItems.ts) (`WIDGET_NAV_ITEMS`, groupe Budget) + `WidgetNavBackButton` / `WidgetUserMenu` (chrome Retour + menu user) |
-| Pages | `src/pages/WelcomePage.tsx`, `Pa*.tsx`, `Bdc*.tsx`, `Missions*.tsx`, `Equipe*.tsx`, `Produits*.tsx`, `CraListView.tsx`, `CraDeclarerPage.tsx`, `CraRevueEquipePage.tsx`, `CraRecapPorteursPage.tsx`, `WeeklyCoachPage.tsx`, `regles-metier/*`, `DroitsPagesAdminPage.tsx`, `SpikeDatatablePage.tsx`, `StubPage.tsx` |
+| Pages | `src/pages/WelcomePage.tsx`, `FeuilleDeRoutePage.tsx`, `Pa*.tsx`, `Bdc*.tsx`, `Missions*.tsx`, `Equipe*.tsx`, `Produits*.tsx`, `CraListView.tsx`, `CraDeclarerPage.tsx`, `CraRevueEquipePage.tsx`, `CraRecapPorteursPage.tsx`, `WeeklyCoachPage.tsx`, `regles-metier/*`, `DroitsPagesAdminPage.tsx`, `SpikeDatatablePage.tsx`, `StubPage.tsx` |
 | Accueil rôle | [`src/utils/welcomeHomeByRole.ts`](src/utils/welcomeHomeByRole.ts), [`WelcomeRoleHome`](src/components/welcome/WelcomeRoleHome.tsx) |
-| Contenu public | Table Grist `Kanban` + `Kanban_commentaires` (kanban accueil / feuille de route) ; libellés / parse dans [`src/utils/kanbanTickets.ts`](src/utils/kanbanTickets.ts) |
+| Contenu public | Table Grist `Kanban` + `Kanban_commentaires` (`/feuille-de-route`) ; libellés / parse dans [`src/utils/kanbanTickets.ts`](src/utils/kanbanTickets.ts) |
 | Données | `src/hooks/useGristPaData.ts`, `useBdcDepensesData.ts`, `useMissionsData.ts`, `useEquipeData.ts`, `useEquipeMemberMissionsData.ts`, `GristPaContext.tsx`, `gristMap.ts`, `gristRest.ts`, `gristAccessToken.ts` |
 | Sécu | `src/security/embedTrust.ts`, `NothingHerePage.tsx`, `ensureFreshBuild.ts`, `fetchTableAllowlist.ts`, `writeTableAllowlist.ts` |
 | Finance / refs | `src/utils/paFinance.ts`, `montantReste.tsx`, `gristReferences.ts`, `equipeBadge.ts` |
@@ -110,7 +111,7 @@ Visibilité users : accueil par rôle sur `/` (+ kanban transitoire) ; issues r�
 | Weekly `/weekly` (lazy) | `Weekly_phase` (phase kanban), `Weekly_agenda` (sujets), `Weekly_coachs` (allowlist e-mails, lecture) + lecture `Missions` / `Missions_enfants` / `Equipe` / produits |
 | Fiche `/equipe/:id` (lazy, lecture — section Missions & prestations) | `Missions`, `Missions_enfants` (filtre `Intervenant` = personne) ; avatar = `Equipe.Avatar` (seed) |
 | Fiche `/produits/:id` (lazy, lecture — onglet Missions : prestations + CRA) | `Missions` (filtre `Produit_SDPC`), `Missions_enfants`, `Equipe`, `Realise` (via `loadMissionsTables`) |
-| Kanban accueil (Feedback + produit, lecture + create Feedback + update colonne Admin) | `Kanban` |
+| Feuille de route `/feuille-de-route` (Feedback + produit, lecture + create Feedback + update colonne Admin) | `Kanban` |
 | Conversation tickets (create + lecture drawer) | `Kanban_commentaires` |
 | Droits pages session (nav + gardes) | `Acl_profil` (lecture ; create auto si absente ; `Page_*` formules ← `Droits_pages`) |
 | Matrice écrans Admin (`/outils/droits-pages`) | `Droits_pages` (lecture + update ; Owner / Admin ACL) |
@@ -119,7 +120,7 @@ Visibilité users : accueil par rôle sur `/` (+ kanban transitoire) ; issues r�
 
 **Allowlist lecture** : uniquement via [`src/security/fetchTableAllowlist.ts`](src/security/fetchTableAllowlist.ts) (`FETCH_TABLE_ALLOWLIST`, `fetchAllowlistedTable`) **et** REST `fetchGristRecordsViaToken` (même allowlist). Pas d’ID libre depuis l’UI. Nouvelle table lecture = MAJ ce fichier + §4 + docs + [`SECURITY.md`](SECURITY.md).
 
-**Allowlist écriture** : [`src/security/writeTableAllowlist.ts`](src/security/writeTableAllowlist.ts) — `Kanban` (create Feedback + update `Colonne_kanban`) ; `Kanban_commentaires` (create) ; `Missions` (create + update drawer) ; `Missions_enfants` (create + update drawer prestation) ; `Realise` (create + update déclaration CRA + revue équipe) ; `Acl_profil` (create only, fiche session auto) ; `Droits_pages` (update only, page Admin) ; `Equipe` (create + update drawer Admin) ; `Weekly_phase` (create + update phase) ; `Weekly_agenda` (create + update `Traite`). Pas de delete widget. `Kanban` / `Kanban_commentaires` sont aussi en **lecture** (`FETCH_TABLE_ALLOWLIST`) pour le kanban d’accueil.
+**Allowlist écriture** : [`src/security/writeTableAllowlist.ts`](src/security/writeTableAllowlist.ts) — `Kanban` (create Feedback + update `Colonne_kanban`) ; `Kanban_commentaires` (create) ; `Missions` (create + update drawer) ; `Missions_enfants` (create + update drawer prestation) ; `Realise` (create + update déclaration CRA + revue équipe) ; `Acl_profil` (create only, fiche session auto) ; `Droits_pages` (update only, page Admin) ; `Equipe` (create + update drawer Admin) ; `Weekly_phase` (create + update phase) ; `Weekly_agenda` (create + update `Traite`). Pas de delete widget. `Kanban` / `Kanban_commentaires` sont aussi en **lecture** (`FETCH_TABLE_ALLOWLIST`) pour `/feuille-de-route`.
 
 **BDC** : chargée via `docApi.getAccessToken({ readOnly: true })` → REST `/tables/BDC/records?auth=…` (jeton court, droits utilisateur) — pas de clé API dans le bundle. Attachments devis idem.
 

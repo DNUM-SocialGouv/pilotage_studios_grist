@@ -52,8 +52,7 @@ export type WelcomeHomeAccess = {
   canRevueCraEquipe: boolean;
   isAdmin: boolean;
   /**
-   * Lien Feuille de route (`/feuille-de-route`) — activé seulement après PR-B.
-   * V1 PR-A : laisser `false` (kanban encore sous les CTA sur `/`).
+   * Lien Feuille de route (`/feuille-de-route`) — CTA Admin vers la page dédiée.
    */
   includeFeuilleDeRoute?: boolean;
 };

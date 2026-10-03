@@ -65,6 +65,7 @@ describe("pageAccessKeyForPath / canAccessPath", () => {
     assert.equal(pageAccessKeyForPath("/outils/regles-metier/cra"), "Page_regles_metier");
     assert.equal(pageAccessKeyForPath("/outils/droits-pages"), null);
     assert.equal(pageAccessKeyForPath("/outils/spike-datatable"), null);
+    assert.equal(pageAccessKeyForPath("/feuille-de-route"), null);
     assert.equal(pageAccessKeyForPath("/equipe"), "Page_equipe");
     assert.equal(pageAccessKeyForPath("/equipe/4"), "Page_equipe");
     assert.equal(pageAccessKeyForPath("/analyse"), null);
@@ -79,6 +80,7 @@ describe("pageAccessKeyForPath / canAccessPath", () => {
     assert.equal(canAccessPath("/outils/regles-metier", PAGE_ACCESS_FAIL_CLOSED), true);
     assert.equal(canAccessPath("/outils/droits-pages", PAGE_ACCESS_FAIL_CLOSED), true);
     assert.equal(canAccessPath("/outils/spike-datatable", PAGE_ACCESS_FAIL_CLOSED), true);
+    assert.equal(canAccessPath("/feuille-de-route", PAGE_ACCESS_FAIL_CLOSED), true);
     assert.equal(canAccessPath("/cra", PAGE_ACCESS_ALL_OPEN), true);
   });
 });

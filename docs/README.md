@@ -15,7 +15,7 @@ App sœur (hors iframe) : [pilotage_studios](https://github.com/DNUM-SocialGouv/
 
 | Module | Documentation | Statut |
 |--------|---------------|--------|
-| **Accueil** | [fonctionnel/accueil/](fonctionnel/accueil/) | Documenté (accueil par rôle + kanban feuille de route transitoire) |
+| **Accueil** | [fonctionnel/accueil/](fonctionnel/accueil/) — [feuille de route](fonctionnel/accueil/feuille-de-route.md) | Documenté (accueil par rôle · kanban `/feuille-de-route`) |
 | **Plan d’activité** | [fonctionnel/pa/](fonctionnel/pa/) — [liste](fonctionnel/pa/liste.md) · [fiche](fonctionnel/pa/fiche.md) | Documenté |
 | **Bons de commande** | [fonctionnel/bdc/](fonctionnel/bdc/) — [liste](fonctionnel/bdc/liste.md) · [fiche](fonctionnel/bdc/fiche.md) | Documenté |
 | **Missions** | [fonctionnel/missions/](fonctionnel/missions/) — [liste](fonctionnel/missions/liste.md) · [fiche](fonctionnel/missions/fiche.md) | Documenté (lecture + drawer master ; CRUD prestations = [#31](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/31)) |
