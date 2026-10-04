@@ -42,6 +42,8 @@ Page dédiée au **kanban partagé** (Feedback · Backlog · En cours · Livré)
 
 Pas d’édition Titre / guides / commentaires depuis ce chantier. ACL document déjà Owner/Admin `+CRUD` sur `Kanban`.
 
+**Liens dans le corps** (Feedback et Produit) : Markdown léger via `MissionProse` — `http(s)://…` (nouvel onglet) et **chemins internes** MemoryRouter `[Documentation](/outils/regles-metier)` (navigation dans le widget, sans recharger la page Grist). Schémas `javascript:` et URLs `//…` refusés.
+
 ## Hors scope
 
 - Drag-and-drop des cartes ; édition commentaires ; édition Titre / guides

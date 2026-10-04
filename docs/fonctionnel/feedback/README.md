@@ -12,7 +12,7 @@ Référence design : [`design/feedback_widget/`](../../../design/feedback_widget
 | Types | Anomalie / Suggestion / Question (segmentés) → badge carte |
 | Titre | Obligatoire — titre de la carte kanban |
 | En une phrase (`Resume`) | Obligatoire — corps de carte + « Résumé » du drawer |
-| Détail (`Message`) | Optionnel ; si vide = même contenu que le résumé |
+| Détail (`Message`) | Optionnel ; si vide = même contenu que le résumé ; rendu Markdown léger (`MissionProse`) — liens `http(s)` et pages internes `[libelle](/chemin)` |
 | Page concernée | Select prérempli ; écrit aussi dans `Theme` (ligne thème carte) |
 | Niveau de gêne | Visible seulement si type = Anomalie |
 | Identité | Select searchable sur `Equipe` — obligatoire |

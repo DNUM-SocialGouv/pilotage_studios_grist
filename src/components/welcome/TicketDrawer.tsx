@@ -341,11 +341,7 @@ export function TicketDrawer({
                     />
                     <Input
                       label="Détail"
-                      hintText={
-                        ticket.nature === "Produit"
-                          ? "Optionnel. Markdown léger (titres, listes, liens)."
-                          : "Optionnel. Précisions pour la conversation."
-                      }
+                      hintText="Optionnel. Markdown léger (titres, listes, liens http(s) ou page interne). Ex. [Documentation](/outils/regles-metier)."
                       textArea
                       nativeTextAreaProps={{
                         id: detailFieldId,
@@ -397,7 +393,11 @@ export function TicketDrawer({
                           className="ticket-drawer-lead fr-mb-0"
                           style={{ whiteSpace: "pre-wrap" }}
                         >
-                          {resumeText}
+                          <MissionProse
+                            value={resumeText}
+                            inline
+                            onInternalLinkClick={close}
+                          />
                         </p>
                       </section>
                     ) : isAdmin ? (
@@ -414,18 +414,12 @@ export function TicketDrawer({
                         <p id="ticket-detail-title" className="ticket-drawer-label">
                           Détail
                         </p>
-                        {ticket.nature === "Produit" ? (
-                          <div className="ticket-drawer-detail">
-                            <MissionProse value={detailText} />
-                          </div>
-                        ) : (
-                          <p
-                            className="fr-text--sm fr-mb-0"
-                            style={{ whiteSpace: "pre-wrap" }}
-                          >
-                            {detailText}
-                          </p>
-                        )}
+                        <div className="ticket-drawer-detail">
+                          <MissionProse
+                            value={detailText}
+                            onInternalLinkClick={close}
+                          />
+                        </div>
                       </section>
                     ) : null}
                   </>

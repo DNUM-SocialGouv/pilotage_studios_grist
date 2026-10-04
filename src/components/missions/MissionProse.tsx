@@ -1,14 +1,37 @@
+import { Link } from "react-router-dom";
 import {
   parseMissionProse,
+  parseMissionProseInlines,
   type MissionProseHeadingLevel,
   type MissionProseInline,
 } from "../../utils/missionProseFormat.ts";
 
-function MissionProseInlines({ inlines }: { inlines: MissionProseInline[] }) {
+type MissionProseInlinesProps = {
+  inlines: MissionProseInline[];
+  /** Fermeture drawer / analytics — ne remplace pas la navigation `Link`. */
+  onInternalLinkClick?: (path: string) => void;
+};
+
+function MissionProseInlines({
+  inlines,
+  onInternalLinkClick,
+}: MissionProseInlinesProps) {
   return (
     <>
       {inlines.map((part, i) => {
         if (part.type === "link") {
+          if (part.kind === "internal") {
+            return (
+              <Link
+                key={i}
+                className="fr-link"
+                to={part.href}
+                onClick={() => onInternalLinkClick?.(part.href)}
+              >
+                {part.label}
+              </Link>
+            );
+          }
           return (
             <a
               key={i}
@@ -47,9 +70,11 @@ function headingTag(level: MissionProseHeadingLevel): "h3" | "h4" | "h5" | "h6" 
 function ProseTable({
   headers,
   rows,
+  onInternalLinkClick,
 }: {
   headers: MissionProseInline[][];
   rows: MissionProseInline[][][];
+  onInternalLinkClick?: (path: string) => void;
 }) {
   return (
     <div className="fr-table fr-table--sm fr-table--no-caption fr-table--multiline mission-fiche-prose__table">
@@ -62,7 +87,10 @@ function ProseTable({
                 <tr>
                   {headers.map((cell, j) => (
                     <th key={j} scope="col">
-                      <MissionProseInlines inlines={cell} />
+                      <MissionProseInlines
+                        inlines={cell}
+                        onInternalLinkClick={onInternalLinkClick}
+                      />
                     </th>
                   ))}
                 </tr>
@@ -72,7 +100,10 @@ function ProseTable({
                   <tr key={r}>
                     {row.map((cell, c) => (
                       <td key={c}>
-                        <MissionProseInlines inlines={cell} />
+                        <MissionProseInlines
+                          inlines={cell}
+                          onInternalLinkClick={onInternalLinkClick}
+                        />
                       </td>
                     ))}
                   </tr>
@@ -86,15 +117,46 @@ function ProseTable({
   );
 }
 
-/** Texte narratif : titres, paragraphes, listes, tableaux, gras, liens Markdown http(s). */
-export function MissionProse({ value }: { value: string }) {
+export type MissionProseProps = {
+  value: string;
+  /**
+   * Cliqué sur un lien interne (path `/…`) — ex. fermer le drawer ticket.
+   * La navigation reste gérée par React Router (`Link`), pas `window.location`.
+   */
+  onInternalLinkClick?: (path: string) => void;
+  /**
+   * Résumé / une ligne : liens + gras seulement, sans blocs (titres, listes…).
+   */
+  inline?: boolean;
+  className?: string;
+};
+
+/** Texte narratif : titres, paragraphes, listes, tableaux, gras, liens Markdown. */
+export function MissionProse({
+  value,
+  onInternalLinkClick,
+  inline = false,
+  className,
+}: MissionProseProps) {
+  if (inline) {
+    const inlines = parseMissionProseInlines(value);
+    return (
+      <span className={className ?? "mission-fiche-prose mission-fiche-prose--inline"}>
+        <MissionProseInlines
+          inlines={inlines}
+          onInternalLinkClick={onInternalLinkClick}
+        />
+      </span>
+    );
+  }
+
   const blocks = parseMissionProse(value);
   if (blocks.length === 0) {
     return null;
   }
 
   return (
-    <div className="mission-fiche-prose">
+    <div className={className ?? "mission-fiche-prose"}>
       {blocks.map((block, i) => {
         if (block.type === "heading") {
           const Tag = headingTag(block.level);
@@ -103,7 +165,10 @@ export function MissionProse({ value }: { value: string }) {
               key={i}
               className={`mission-fiche-prose__heading mission-fiche-prose__heading--${block.level}`}
             >
-              <MissionProseInlines inlines={block.inlines} />
+              <MissionProseInlines
+                inlines={block.inlines}
+                onInternalLinkClick={onInternalLinkClick}
+              />
             </Tag>
           );
         }
@@ -116,7 +181,10 @@ export function MissionProse({ value }: { value: string }) {
             >
               {block.items.map((item, j) => (
                 <li key={j}>
-                  <MissionProseInlines inlines={item} />
+                  <MissionProseInlines
+                    inlines={item}
+                    onInternalLinkClick={onInternalLinkClick}
+                  />
                 </li>
               ))}
             </ListTag>
@@ -124,12 +192,20 @@ export function MissionProse({ value }: { value: string }) {
         }
         if (block.type === "table") {
           return (
-            <ProseTable key={i} headers={block.headers} rows={block.rows} />
+            <ProseTable
+              key={i}
+              headers={block.headers}
+              rows={block.rows}
+              onInternalLinkClick={onInternalLinkClick}
+            />
           );
         }
         return (
           <p key={i} className="fr-mb-2w">
-            <MissionProseInlines inlines={block.inlines} />
+            <MissionProseInlines
+              inlines={block.inlines}
+              onInternalLinkClick={onInternalLinkClick}
+            />
           </p>
         );
       })}
