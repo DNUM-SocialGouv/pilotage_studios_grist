@@ -105,6 +105,14 @@ export function FeuilleDeRoutePage() {
         onColumnChanged={() => {
           reload();
         }}
+        onBodyChanged={(ticketId, body) => {
+          setTicket((prev) =>
+            prev && prev.id === ticketId
+              ? { ...prev, resume: body.resume, message: body.message }
+              : prev,
+          );
+          reload();
+        }}
       />
     </div>
   );

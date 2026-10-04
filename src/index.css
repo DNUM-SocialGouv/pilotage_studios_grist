@@ -1460,6 +1460,32 @@ button.fr-link:disabled {
   padding: 1.25rem 1.5rem 1.5rem;
 }
 
+.ticket-drawer-body-toolbar {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.ticket-drawer-body-toolbar__title {
+  color: var(--text-title-grey);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.ticket-drawer-body-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ticket-drawer-body-edit__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
 .ticket-drawer-section {
   margin: 0;
 }

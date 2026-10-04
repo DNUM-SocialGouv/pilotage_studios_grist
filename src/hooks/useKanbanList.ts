@@ -19,7 +19,7 @@ export type KanbanListData = {
   feedbackItems: KanbanTicket[];
   productGroups: KanbanProductGroup[];
   error: string | null;
-  /** Recharge après create feedback / update colonne. */
+  /** Recharge après create feedback / update colonne ou corps. */
   reload: () => void;
 };
 
