@@ -13,9 +13,11 @@ type WelcomeRoleHomeProps = {
 /**
  * Tableau de bord léger d’accueil (PR-A) : salutation, rôle, CTA filtrés.
  * Pas de KPI ni de liste exhaustive de la nav.
+ * Accueil Freelance : pas de libellé produit / rôle / lead (titre « Bonjour [Prénom] »).
  */
 export function WelcomeRoleHome({ content, loading }: WelcomeRoleHomeProps) {
   const navigate = useNavigate();
+  const showProductLabel = content.showProductLabel !== false;
 
   const onCtaClick = (href: string) => (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -29,7 +31,9 @@ export function WelcomeRoleHome({ content, loading }: WelcomeRoleHomeProps) {
         aria-labelledby="welcome-role-title"
         aria-busy="true"
       >
-        <p className="fr-text--sm fr-hint-text fr-mb-1w">Pilotage studios</p>
+        {showProductLabel ? (
+          <p className="fr-text--sm fr-hint-text fr-mb-1w">Pilotage studios</p>
+        ) : null}
         <h1 id="welcome-role-title" className="fr-h3">
           Bonjour
         </h1>
@@ -45,7 +49,9 @@ export function WelcomeRoleHome({ content, loading }: WelcomeRoleHomeProps) {
       className="welcome-role-home fr-mb-3w"
       aria-labelledby="welcome-role-title"
     >
-      <p className="fr-text--sm fr-hint-text fr-mb-1w">Pilotage studios</p>
+      {showProductLabel ? (
+        <p className="fr-text--sm fr-hint-text fr-mb-1w">Pilotage studios</p>
+      ) : null}
       <h1 id="welcome-role-title" className="fr-h3">
         {content.title}
       </h1>
@@ -55,10 +61,15 @@ export function WelcomeRoleHome({ content, loading }: WelcomeRoleHomeProps) {
           <span className="welcome-role-home__role">{content.roleLabel}</span>
         </p>
       ) : null}
-      <p className="fr-mb-3w">{content.lead}</p>
+      {content.lead?.trim() ? (
+        <p className="fr-mb-3w">{content.lead}</p>
+      ) : null}
 
       {content.ctas.length > 0 ? (
-        <nav aria-label="Raccourcis selon votre rôle">
+        <nav
+          aria-label="Raccourcis selon votre rôle"
+          className={content.lead?.trim() ? undefined : "fr-mt-3w"}
+        >
           <ul className="welcome-role-home__ctas fr-mb-0">
             {content.ctas.map((cta) => (
               <li key={cta.id} className="welcome-role-home__cta">

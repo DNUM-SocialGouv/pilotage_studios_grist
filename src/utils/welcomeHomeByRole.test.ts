@@ -7,7 +7,9 @@ import {
 } from "../security/pageAccess.ts";
 import {
   buildWelcomeHome,
+  firstNameFromDisplayName,
   welcomeAccessFromSession,
+  welcomeGreetingTitle,
   welcomeRoleKind,
 } from "./welcomeHomeByRole.ts";
 
@@ -30,11 +32,28 @@ describe("welcomeRoleKind", () => {
   });
 });
 
+describe("firstNameFromDisplayName / welcomeGreetingTitle", () => {
+  it("extrait le prénom (Prénom Nom ou NOM Prénom)", () => {
+    assert.equal(firstNameFromDisplayName("Nathalie Molines"), "Nathalie");
+    assert.equal(firstNameFromDisplayName("MOLINES Nathalie"), "Nathalie");
+    assert.equal(firstNameFromDisplayName("Nathalie"), "Nathalie");
+    assert.equal(firstNameFromDisplayName(null), null);
+    assert.equal(firstNameFromDisplayName("  "), null);
+  });
+
+  it("titre Bonjour [Prénom] ou Bonjour seul", () => {
+    assert.equal(welcomeGreetingTitle("Nathalie Molines"), "Bonjour Nathalie");
+    assert.equal(welcomeGreetingTitle(null), "Bonjour");
+    assert.equal(welcomeGreetingTitle(""), "Bonjour");
+  });
+});
+
 describe("buildWelcomeHome", () => {
-  it("Freelance : Mon carnet · Missions · Règles (pas Budget)", () => {
+  it("Freelance : titre prénom, CTA sans Budget, hint déclaration seul", () => {
     const content = buildWelcomeHome({
       role: "Freelance",
       status: "ok",
+      displayName: "Nathalie Molines",
       access: welcomeAccessFromSession({
         role: "Freelance",
         status: "ok",
@@ -42,12 +61,31 @@ describe("buildWelcomeHome", () => {
       }),
     });
     assert.equal(content.kind, "freelance");
+    assert.equal(content.title, "Bonjour Nathalie");
+    assert.equal(content.roleLabel, null);
+    assert.equal(content.lead, null);
+    assert.equal(content.showProductLabel, false);
+    assert.equal(content.hint, "Pensez à déclarer les jours du mois.");
+    assert.ok(!content.hint?.includes("Budget"));
     assert.deepEqual(
       content.ctas.map((c) => c.id),
       ["mon_carnet", "missions", "regles_metier"],
     );
     assert.ok(!content.ctas.some((c) => c.id === "bdc"));
-    assert.ok(content.hint?.includes("Budget"));
+  });
+
+  it("Freelance sans Prenom_Nom : Bonjour seul", () => {
+    const content = buildWelcomeHome({
+      role: "Freelance",
+      status: "ok",
+      displayName: null,
+      access: welcomeAccessFromSession({
+        role: "Freelance",
+        status: "ok",
+        flags: PAGE_ACCESS_ALL_OPEN,
+      }),
+    });
+    assert.equal(content.title, "Bonjour");
   });
 
   it("masque Missions si Page_missions fermé", () => {

@@ -36,11 +36,17 @@ export type WelcomeRoleKind =
 
 export type WelcomeHomeContent = {
   kind: WelcomeRoleKind;
-  /** Titre principal (ex. « Bonjour »). */
+  /** Titre principal (ex. « Bonjour » / « Bonjour Nathalie »). */
   title: string;
   roleLabel: string | null;
-  lead: string;
+  /** Sous-titre d’intro ; `null` = ne pas afficher (accueil Freelance épuré). */
+  lead: string | null;
   hint: string | null;
+  /**
+   * Affiche le libellé produit « Pilotage studios » au-dessus du titre.
+   * Désactivé pour l’accueil Freelance (demande porteur).
+   */
+  showProductLabel?: boolean;
   ctas: WelcomeCta[];
 };
 
@@ -170,8 +176,43 @@ export type BuildWelcomeHomeParams = {
   /** Statut profil session (`ok` | `empty` | `error` | `standalone` | `loading`). */
   status: string;
   equipeLabel?: string | null;
+  /**
+   * `Equipe.Prenom_Nom` de la personne connectée (même source que le menu compte).
+   * Sert au titre Freelance « Bonjour [Prénom] » — pas de clé API.
+   */
+  displayName?: string | null;
   access: WelcomeHomeAccess;
 };
+
+/**
+ * Extrait le prénom depuis `Equipe.Prenom_Nom`.
+ * - « Nathalie Molines » → Nathalie
+ * - « MOLINES Nathalie » (NOM Prénom) → Nathalie
+ * - vide / absent → null (titre = « Bonjour » seul)
+ */
+export function firstNameFromDisplayName(
+  displayName: string | null | undefined,
+): string | null {
+  const parts = (displayName?.trim() ?? "").split(/\s+/).filter(Boolean);
+  if (parts.length === 0) {
+    return null;
+  }
+  if (parts.length === 1) {
+    return parts[0]!;
+  }
+  const first = parts[0]!;
+  const looksLikeNomFirst =
+    first === first.toLocaleUpperCase("fr-FR") && /[A-Za-zÀ-ÿ]/.test(first);
+  return looksLikeNomFirst ? parts[parts.length - 1]! : first;
+}
+
+/** Titre d’accueil Freelance : « Bonjour Nathalie » ou « Bonjour » si prénom absent. */
+export function welcomeGreetingTitle(
+  displayName: string | null | undefined,
+): string {
+  const prenom = firstNameFromDisplayName(displayName);
+  return prenom ? `Bonjour ${prenom}` : "Bonjour";
+}
 
 /**
  * Construit le contenu d’accueil selon le rôle.
@@ -180,7 +221,7 @@ export type BuildWelcomeHomeParams = {
 export function buildWelcomeHome(
   params: BuildWelcomeHomeParams,
 ): WelcomeHomeContent {
-  const { status, equipeLabel, access } = params;
+  const { status, equipeLabel, access, displayName } = params;
   const role =
     status === "standalone" && !params.role?.trim()
       ? "Admin"
@@ -209,10 +250,11 @@ export function buildWelcomeHome(
   if (kind === "freelance") {
     return {
       kind,
-      title: "Bonjour",
-      roleLabel: "Freelance",
-      lead: "Votre carnet et vos missions — déclarez vos jours, puis retrouvez vos prestations.",
-      hint: "Pensez à déclarer les jours du mois. Le menu Budget reste masqué pour ce rôle.",
+      title: welcomeGreetingTitle(displayName),
+      roleLabel: null,
+      lead: null,
+      hint: "Pensez à déclarer les jours du mois.",
+      showProductLabel: false,
       ctas: filterCtas(ROLE_CTA_IDS.freelance, access),
     };
   }

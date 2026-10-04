@@ -17,11 +17,11 @@ Première page affichée à l’ouverture du Custom Widget dans Grist : un **acc
 | Élément | Détail |
 |---------|--------|
 | Entrée | `MemoryRouter` démarre sur `/` (`initialEntries`) |
-| Accueil par rôle | Salutation « Bonjour » + libellé de rôle + message court + **2–4 CTA** filtrés comme la nav (`Page_*` + flags rôle / département) |
-| Freelance | CTA : Mon carnet · Missions · Documentation ; rappel déclarer les jours ; pas de Budget |
-| Responsable | CTA : Revue CRA équipe (si département) · Mon carnet · Missions ; hint département ; pas de CTA Weekly générique |
-| Admin | CTA : Missions · Bons de commande · Droits des pages · **Feuille de route** |
-| Invité | CTA : Missions · Produits · Documentation (si `Page_regles_metier`) ; pas de carnet / revue / droits |
+| Accueil par rôle | Salutation + (selon rôle) libellé / message court + **2–4 CTA** filtrés comme la nav (`Page_*` + flags rôle / département) |
+| Freelance | Titre **« Bonjour [Prénom] »** (`Equipe.Prenom_Nom`, même source que le menu compte ; fallback « Bonjour » si prénom absent) ; **pas** de libellé « Pilotage studios », ni sous-titre rôle, ni phrase d’intro ; CTA : Mon carnet · Missions · Documentation ; « À savoir » = rappel déclarer les jours (sans mention Budget) |
+| Responsable | « Pilotage studios » + « Bonjour » + libellé rôle ; CTA : Revue CRA équipe (si département) · Mon carnet · Missions ; hint département ; pas de CTA Weekly générique |
+| Admin | « Pilotage studios » + « Bonjour » + libellé rôle ; CTA : Missions · Bons de commande · Droits des pages · **Feuille de route** |
+| Invité | « Pilotage studios » + « Bonjour » + libellé rôle ; CTA : Missions · Produits · Documentation (si `Page_regles_metier`) ; pas de carnet / revue / droits |
 | Profil vide / erreur | Message explicite + CTA limités (Documentation / Missions si ouverts en fail-closed) — **pas** de 5ᵉ rôle inventé |
 | Kanban | **Absent** de `/` — voir [`feuille-de-route.md`](feuille-de-route.md) |
 | Nav | `WidgetNav` : chrome **Page précédente** · Accueil · modules · **menu compte** (Mon carnet · Feuille de route · Documentation) |
@@ -39,6 +39,7 @@ Première page affichée à l’ouverture du Custom Widget dans Grist : un **acc
 ## Données Grist
 
 - Profil session : `Acl_profil` (rôle + `Page_*`) via `useAclProfil` — déjà chargé pour la nav.
+- Prénom accueil Freelance : `Equipe.Prenom_Nom` résolu avec l’e-mail de session (`displayName` dans `useAclProfil`, déjà utilisé pour le menu compte) — **pas** de clé API ni d’appel REST dédié.
 - Kanban / commentaires : utilisés sur `/feuille-de-route`, plus sur `/`.
 - Pas de nouvelle table ni d’écriture pour l’accueil rôle.
 

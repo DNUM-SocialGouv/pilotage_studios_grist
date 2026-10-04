@@ -11,6 +11,7 @@ export function WelcomePage() {
     role,
     flags,
     equipeLabel,
+    displayName,
   } = useAclProfil();
 
   const homeLoading = aclStatus === "loading";
@@ -20,6 +21,7 @@ export function WelcomePage() {
         role,
         status: aclStatus,
         equipeLabel,
+        displayName,
         access: welcomeAccessFromSession({
           role,
           status: aclStatus,
@@ -38,7 +40,7 @@ export function WelcomePage() {
               kind: "unknown",
               title: "Bonjour",
               roleLabel: null,
-              lead: "",
+              lead: null,
               hint: null,
               ctas: [],
             }}
