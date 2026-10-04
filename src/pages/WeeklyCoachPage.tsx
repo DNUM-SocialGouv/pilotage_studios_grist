@@ -52,7 +52,7 @@ function AgendaSujetRow({
   return (
     <article
       style={{
-        background: "#fff",
+        background: "var(--background-default-grey)",
         boxShadow: "inset 0 0 0 1px var(--border-default-grey)",
         padding: "0.625rem 0.75rem",
         display: "grid",
@@ -165,7 +165,7 @@ function WeeklyCardView({
       onDragEnd={onDragEnd}
       aria-label={card.titre}
       style={{
-        background: "#fff",
+        background: "var(--background-default-grey)",
         boxShadow: "inset 0 0 0 1px var(--border-default-grey)",
         padding: "0.75rem",
         marginBottom: "0.625rem",
@@ -436,11 +436,7 @@ export function WeeklyCoachPage() {
 
   return (
     <div>
-      <h1 className="fr-h3 fr-mb-1w">Weekly coachs</h1>
-      <p className="fr-text--sm fr-mb-3w" style={{ color: "#3a3a3a" }}>
-        Synchro Product Ops et coachs — une carte = une mission ; la phase et les
-        sujets sont partagés (tables satellites Grist).
-      </p>
+      <h1 className="fr-h3 fr-mb-3w">Weekly Ops</h1>
 
       {pa.loading ? (
         <p className="fr-text--sm" role="status">
@@ -513,12 +509,6 @@ export function WeeklyCoachPage() {
               </h2>
               <span className="fr-hint-text" style={{ margin: 0 }}>
                 {traiteCount}/{agendaSorted.length} traités
-              </span>
-              <span
-                className="fr-hint-text"
-                style={{ margin: 0, marginLeft: "auto" }}
-              >
-                À ajouter avant le weekly par chaque coach
               </span>
             </div>
 

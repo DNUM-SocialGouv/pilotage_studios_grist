@@ -1,4 +1,4 @@
-# Weekly coachs
+# Weekly Ops
 
 ## En clair
 
@@ -13,13 +13,19 @@ plus tard.
 | | |
 |--|--|
 | Route | `/weekly` |
-| Nav | **Weekly** (niveau 1) |
+| Nav | **Weekly Ops** (niveau 1) |
 | Accès | Hors `Page_*` : **uniquement** les personnes dont l’e-mail est dans **`Weekly_coachs`** (Admin, Resp. ou Freelance hors liste → pas d’accès) |
 | Autres | Masqué |
 
 Les e-mails **ne sont pas** dans le dépôt git : uniquement dans Grist
 (`Weekly_coachs.E_mail`). Owner / Admin (rôle) maintiennent la liste dans l’UI Grist
-— cela n’ouvre **pas** l’écran Weekly s’ils ne sont pas eux-mêmes dans la table.
+— cela n’ouvre **pas** l’écran Weekly Ops s’ils ne sont pas eux-mêmes dans la table.
+
+## Affichage (clair / sombre)
+
+Fonds de colonnes et cartes : tokens DSFR (`background-contrast-*`,
+`background-default-grey`, `text-label-*`, `text-mention-grey`, `fr-hint-text`).
+Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 
 ## Données
 
@@ -59,7 +65,7 @@ Access Rules → **User Attributes** :
 
 | # | Condition | Droits | Mémo |
 |---|-----------|--------|------|
-| 1 | `user.Access == OWNER or user.Equipe.Role_ACL == "Admin"` | `+CRUD` | Owner / Admin : **gérer la liste** (pas l’écran Weekly). |
+| 1 | `user.Access == OWNER or user.Equipe.Role_ACL == "Admin"` | `+CRUD` | Owner / Admin : **gérer la liste** (pas l’écran Weekly Ops). |
 | 2 | `user.Email == rec.E_mail` | `+R` | Chacun ne lit **que sa** ligne (le widget vérifie la présence). |
 | 3 | `True` | `-CRUD` | Autres : aucun accès. |
 
