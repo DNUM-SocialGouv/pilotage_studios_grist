@@ -104,10 +104,11 @@ describe("buildWelcomeHome", () => {
     );
   });
 
-  it("Responsable : Revue si département · Mon carnet · Missions", () => {
+  it("Responsable : titre prénom, sans branding / rôle / lead / À savoir ; CTA selon département", () => {
     const withDept = buildWelcomeHome({
       role: "Responsable de département",
       status: "ok",
+      displayName: "Nathalie Molines",
       equipeLabel: "Design",
       access: welcomeAccessFromSession({
         role: "Responsable de département",
@@ -117,15 +118,20 @@ describe("buildWelcomeHome", () => {
       }),
     });
     assert.equal(withDept.kind, "responsable");
+    assert.equal(withDept.title, "Bonjour Nathalie");
+    assert.equal(withDept.roleLabel, null);
+    assert.equal(withDept.lead, null);
+    assert.equal(withDept.hint, null);
+    assert.equal(withDept.showProductLabel, false);
     assert.deepEqual(
       withDept.ctas.map((c) => c.id),
       ["revue_cra", "mon_carnet", "missions"],
     );
-    assert.ok(withDept.hint?.includes("Design"));
 
     const noDept = buildWelcomeHome({
       role: "Responsable de département",
       status: "ok",
+      displayName: "MOLINES Nathalie",
       equipeLabel: null,
       access: welcomeAccessFromSession({
         role: "Responsable de département",
@@ -134,10 +140,31 @@ describe("buildWelcomeHome", () => {
         equipeLabel: null,
       }),
     });
+    assert.equal(noDept.title, "Bonjour Nathalie");
+    assert.equal(noDept.hint, null);
     assert.deepEqual(
       noDept.ctas.map((c) => c.id),
       ["mon_carnet", "missions"],
     );
+  });
+
+  it("Responsable sans Prenom_Nom : Bonjour seul", () => {
+    const content = buildWelcomeHome({
+      role: "Responsable de département",
+      status: "ok",
+      displayName: null,
+      equipeLabel: "Design",
+      access: welcomeAccessFromSession({
+        role: "Responsable de département",
+        status: "ok",
+        flags: PAGE_ACCESS_ALL_OPEN,
+        equipeLabel: "Design",
+      }),
+    });
+    assert.equal(content.title, "Bonjour");
+    assert.equal(content.roleLabel, null);
+    assert.equal(content.hint, null);
+    assert.equal(content.showProductLabel, false);
   });
 
   it("Admin : titre prénom, sans branding / rôle / lead / À savoir ; CTA selon opt-in Feuille de route", () => {

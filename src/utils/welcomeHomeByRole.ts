@@ -39,13 +39,13 @@ export type WelcomeHomeContent = {
   /** Titre principal (ex. « Bonjour » / « Bonjour Nathalie »). */
   title: string;
   roleLabel: string | null;
-  /** Sous-titre d’intro ; `null` = ne pas afficher (accueil Freelance / Admin épuré). */
+  /** Sous-titre d’intro ; `null` = ne pas afficher (Freelance / Admin / Resp. épurés). */
   lead: string | null;
-  /** Bloc « À savoir » ; `null` = ne pas afficher (Admin épuré). */
+  /** Bloc « À savoir » ; `null` = ne pas afficher (Admin / Resp. épurés). */
   hint: string | null;
   /**
    * Affiche le libellé produit « Pilotage studios » au-dessus du titre.
-   * Désactivé pour Freelance / Admin (demande porteur).
+   * Désactivé pour Freelance / Admin / Responsable (demande porteur).
    */
   showProductLabel?: boolean;
   ctas: WelcomeCta[];
@@ -179,7 +179,7 @@ export type BuildWelcomeHomeParams = {
   equipeLabel?: string | null;
   /**
    * `Equipe.Prenom_Nom` de la personne connectée (même source que le menu compte).
-   * Sert au titre « Bonjour [Prénom] » (Freelance / Admin) — pas de clé API.
+   * Sert au titre « Bonjour [Prénom] » (Freelance / Admin / Resp.) — pas de clé API.
    */
   displayName?: string | null;
   access: WelcomeHomeAccess;
@@ -207,7 +207,7 @@ export function firstNameFromDisplayName(
   return looksLikeNomFirst ? parts[parts.length - 1]! : first;
 }
 
-/** Titre d’accueil (Freelance / Admin) : « Bonjour Nathalie » ou « Bonjour » si prénom absent. */
+/** Titre d’accueil (Freelance / Admin / Resp.) : « Bonjour Nathalie » ou « Bonjour » si prénom absent. */
 export function welcomeGreetingTitle(
   displayName: string | null | undefined,
 ): string {
@@ -222,7 +222,7 @@ export function welcomeGreetingTitle(
 export function buildWelcomeHome(
   params: BuildWelcomeHomeParams,
 ): WelcomeHomeContent {
-  const { status, equipeLabel, access, displayName } = params;
+  const { status, access, displayName } = params;
   const role =
     status === "standalone" && !params.role?.trim()
       ? "Admin"
@@ -261,15 +261,13 @@ export function buildWelcomeHome(
   }
 
   if (kind === "responsable") {
-    const dept = equipeLabel?.trim() || null;
     return {
       kind,
-      title: "Bonjour",
-      roleLabel: "Responsable de département",
-      lead: "Suivre l’équipe et le carnet — revue des jours, puis missions.",
-      hint: dept
-        ? `Département : ${dept}. Weekly n’apparaît que si votre e-mail est listé parmi les coachs.`
-        : "Renseignez votre département dans Équipe pour ouvrir la revue CRA. Weekly n’apparaît que si votre e-mail est listé parmi les coachs.",
+      title: welcomeGreetingTitle(displayName),
+      roleLabel: null,
+      lead: null,
+      hint: null,
+      showProductLabel: false,
       ctas: filterCtas(ROLE_CTA_IDS.responsable, access),
     };
   }

@@ -13,8 +13,8 @@ type WelcomeRoleHomeProps = {
 /**
  * Tableau de bord léger d’accueil (PR-A) : salutation, rôle, CTA filtrés.
  * Pas de KPI ni de liste exhaustive de la nav.
- * Accueil Freelance / Admin : pas de libellé produit / rôle / lead (titre « Bonjour [Prénom] »).
- * Admin : pas de bloc « À savoir » non plus (`hint` null).
+ * Accueil Freelance / Admin / Responsable : pas de libellé produit / rôle / lead
+ * (titre « Bonjour [Prénom] »). Admin / Responsable : pas de bloc « À savoir » (`hint` null).
  */
 export function WelcomeRoleHome({ content, loading }: WelcomeRoleHomeProps) {
   const navigate = useNavigate();
