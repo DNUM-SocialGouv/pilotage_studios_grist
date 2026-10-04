@@ -44,7 +44,8 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 
 | Écran / parcours | Route | Admin | Resp. | Freelance | Invité | Statut | Notes |
 |------------------|-------|-------|-------|-----------|--------|--------|-------|
-| Accueil | `/` | oui | oui | oui | oui | **Appliqué** (widget + `Droits_pages`) | `Page_accueil` inchangé ; **CTA par rôle** (N/A `Page_*` — variante sur `Role` + mêmes gardes que la nav) ; kanban **déplacé** vers `/feuille-de-route` |
+| Accueil | `/` | oui | oui | oui | oui | **Appliqué** (widget + `Droits_pages`) | `Page_accueil` inchangé ; **CTA par rôle** (N/A `Page_*` — variante sur `Role` + mêmes gardes que la nav) ; kanban **déplacé** vers `/feuille-de-route` ; **recherche** Admin/Resp./Freelance (N/A `Page_*`) — pas Invité |
+| Recherche d’accueil (suggestions) | `/` (inline) | **oui*** | **oui*** | **oui*** | **non** | **Appliqué** UX | *Si au moins une cible `Page_produits` / `Page_missions` / `Page_equipe` ouverte ; navigation fiches existantes ; **pas** de route `/recherche` ni nouvelle `Page_*` |
 | **Feuille de route** | `/feuille-de-route` | oui | oui | oui | oui | **Appliqué** UX (hors `Page_*`) | **Fixé ouvert** — menu compte + CTA Admin accueil ; rappel lecture seule Admin « Fixés par rôle » ; pas de nouvelle colonne `Page_*` |
 | Plans d’activité | `/pa` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Couche 5 ; données encore ouvertes (couche 6 plus tard) |
 | Bons de commande | `/bdc` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Idem |
@@ -107,6 +108,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-10-04 | Recherche d’accueil `/` : barre sous le bonjour (Admin / Resp. / Freelance) ; cibles Produit + Mission + Personne ; **N/A `Page_*`** (variante rôle) ; résultats filtrés par `Page_produits` / `Page_missions` / `Page_equipe` ; pas de route `/recherche` ; Invité / profil KO = composant non monté | 5 | feat/recherche-accueil · kanban `recherche-accueil` |
 | 2026-10-04 | Feuille de route : Admin peut éditer le corps carte (`Resume` / `Message`) dans le drawer ; allowlist écriture élargie ; ACL déjà Owner/Admin CRUD ; hors `Page_*` | 5, 6 (doc) | feat/kanban-edit-body-admin |
 | 2026-10-04 | Invité : `Droits_pages.Page_regles_metier` = **true** (HITL porteur OK) ; autres rôles inchangés ; formule `Acl_profil` déjà miroir `Droits_pages.lookupOne(Role=$Role).Page_regles_metier` | 5 | feat/feuille-de-route-user-menu · suite #100 |
 | 2026-10-04 | Menu compte : **Mon carnet** + **Documentation** (`/outils/regles-metier`, libellé) + Feuille de route ; retrait nav principale / Outils (anti-doublon) ; gardes inchangées (`Page_regles_metier` / rôle carnet) | 5 | cursor/user-menu-docs-carnet · suite #100 |
