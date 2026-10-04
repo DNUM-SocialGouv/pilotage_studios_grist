@@ -6,31 +6,27 @@
 > **Studio** : Tech  
 > **Page** : `src/pages/WelcomePage.tsx`  
 > **Contenu rôle** : `src/utils/welcomeHomeByRole.ts` + `WelcomeRoleHome`  
-> **Tickets** (transitoire sous les CTA) : table Grist `Kanban` (`Nature` = Feedback \| Produit)  
-> **Conversation** : table Grist `Kanban_commentaires` + drawer `TicketDrawer`
+> **Feuille de route** (kanban) : route dédiée [`feuille-de-route.md`](feuille-de-route.md) — `/feuille-de-route`
 
 ## Objet
 
-Première page affichée à l’ouverture du Custom Widget dans Grist : un **accueil léger selon le rôle** (Freelance, Responsable de département, Admin, Invité) avec quelques boutons utiles, puis — **temporairement** tant que PR-B n’est pas livrée — la **feuille de route en kanban** (Feedback · Backlog · En cours · Livré). La navigation complète reste dans la **nav** (`WidgetNav`) ; l’accueil ne recopie pas tout le menu.
+Première page affichée à l’ouverture du Custom Widget dans Grist : un **accueil léger selon le rôle** (Freelance, Responsable de département, Admin, Invité) avec quelques boutons utiles. La **feuille de route** (kanban Feedback · Backlog · En cours · Livré) n’est **plus** sur cette page : elle s’ouvre depuis le **menu compte** (avatar en haut à droite). La navigation complète reste dans la **nav** (`WidgetNav`) ; l’accueil ne recopie pas tout le menu.
 
 ## Comportement
 
 | Élément | Détail |
 |---------|--------|
 | Entrée | `MemoryRouter` démarre sur `/` (`initialEntries`) |
-| Accueil par rôle | Salutation « Bonjour » + libellé de rôle + message court + **2–4 CTA** filtrés comme la nav (`Page_*` + flags rôle / département) |
-| Freelance | CTA : Mon carnet · Missions · Règles métier ; rappel déclarer les jours ; pas de Budget |
-| Responsable | CTA : Revue CRA équipe (si département) · Mon carnet · Missions ; hint département ; pas de CTA Weekly générique |
-| Admin | CTA : Missions · Bons de commande · Droits des pages ; lien Feuille de route **après PR-B** (`includeFeuilleDeRoute`) |
-| Invité | CTA : Missions · Produits · Règles métier ; pas de carnet / revue / droits |
-| Profil vide / erreur | Message explicite + CTA limités (Règles / Missions si ouverts en fail-closed) — **pas** de 5ᵉ rôle inventé |
-| Kanban | Titre « Feuille de route » **sous** les CTA (état transitoire) ; 4 colonnes + drawer inchangés |
-| Carte / drawer | Inchangés (voir historique kanban) |
-| Nav | `WidgetNav` : chrome **Page précédente** · Accueil · modules · **menu utilisateur** (droite) |
+| Accueil par rôle | Salutation + (selon rôle) libellé / message court + **2–4 CTA** filtrés comme la nav (`Page_*` + flags rôle / département) |
+| Freelance | Titre **« Bonjour [Prénom] »** (`Equipe.Prenom_Nom`, même source que le menu compte ; fallback « Bonjour » si prénom absent) ; **pas** de libellé « Pilotage studios », ni sous-titre rôle, ni phrase d’intro ; CTA : Mon carnet · Missions · Documentation ; « À savoir » = rappel déclarer les jours (sans mention Budget) |
+| Responsable | Même épurage que Admin : titre **« Bonjour [Prénom] »** ; **pas** de « Pilotage studios », ni sous-titre « Responsable de département », ni phrase d’intro, ni bloc « À savoir » ; CTA : Revue CRA équipe (si département) · Mon carnet · Missions ; pas de CTA Weekly générique |
+| Admin | Même épurage que Freelance : titre **« Bonjour [Prénom] »** ; **pas** de « Pilotage studios », ni sous-titre « Admin », ni phrase d’intro, ni bloc « À savoir » ; CTA : Missions · Bons de commande · Droits des pages · **Feuille de route** |
+| Invité | « Pilotage studios » + « Bonjour » + libellé rôle ; CTA : Missions · Produits · Documentation (si `Page_regles_metier`) ; pas de carnet / revue / droits |
+| Profil vide / erreur | Message explicite + CTA limités (Documentation / Missions si ouverts en fail-closed) — **pas** de 5ᵉ rôle inventé |
+| Kanban | **Absent** de `/` — voir [`feuille-de-route.md`](feuille-de-route.md) |
+| Nav | `WidgetNav` : chrome **Page précédente** · Accueil · modules · **menu compte** (Mon carnet · Feuille de route · Documentation) |
 | Layout | Panneau large (`welcome-page__panel--wide`) |
 | Fallback | Route `*` → redirection vers `/` |
-
-> **Refonte** (kanban `accueil-nav-refonte`) : PR0 chrome livrée · **PR-A** = cet accueil par rôle · **PR-B** = menu user actif + déplacement kanban vers `/feuille-de-route` (alors retirer le kanban de `/`).
 
 ### Droits / `Page_*`
 
@@ -38,12 +34,13 @@ Première page affichée à l’ouverture du Custom Widget dans Grist : un **acc
 |-------|-------|--------|
 | Route `/` | `Page_accueil` existante (non modifiable Admin) | Pas de nouvelle colonne |
 | Variante CTA par rôle | **N/A `Page_*`** — branchement sur `Role` (+ mêmes gardes que la nav) | Variante d’écran, pas nouvel interrupteur |
-| Feuille de route dédiée | PR-B — **fixé ouvert** sans `Page_*` | Décision porteur |
+| Feuille de route dédiée | **Fixé ouvert** sans `Page_*` | Décision porteur — voir [`feuille-de-route.md`](feuille-de-route.md) |
 
 ## Données Grist
 
 - Profil session : `Acl_profil` (rôle + `Page_*`) via `useAclProfil` — déjà chargé pour la nav.
-- `Kanban` / `Kanban_commentaires` : inchangés (create Feedback, lecture, update colonne Admin, conversation).
+- Prénom accueil Freelance : `Equipe.Prenom_Nom` résolu avec l’e-mail de session (`displayName` dans `useAclProfil`, déjà utilisé pour le menu compte) — **pas** de clé API ni d’appel REST dédié.
+- Kanban / commentaires : utilisés sur `/feuille-de-route`, plus sur `/`.
 - Pas de nouvelle table ni d’écriture pour l’accueil rôle.
 
 ## Hors scope

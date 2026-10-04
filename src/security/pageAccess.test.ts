@@ -65,6 +65,7 @@ describe("pageAccessKeyForPath / canAccessPath", () => {
     assert.equal(pageAccessKeyForPath("/outils/regles-metier/cra"), "Page_regles_metier");
     assert.equal(pageAccessKeyForPath("/outils/droits-pages"), null);
     assert.equal(pageAccessKeyForPath("/outils/spike-datatable"), null);
+    assert.equal(pageAccessKeyForPath("/feuille-de-route"), null);
     assert.equal(pageAccessKeyForPath("/equipe"), "Page_equipe");
     assert.equal(pageAccessKeyForPath("/equipe/4"), "Page_equipe");
     assert.equal(pageAccessKeyForPath("/analyse"), null);
@@ -79,12 +80,13 @@ describe("pageAccessKeyForPath / canAccessPath", () => {
     assert.equal(canAccessPath("/outils/regles-metier", PAGE_ACCESS_FAIL_CLOSED), true);
     assert.equal(canAccessPath("/outils/droits-pages", PAGE_ACCESS_FAIL_CLOSED), true);
     assert.equal(canAccessPath("/outils/spike-datatable", PAGE_ACCESS_FAIL_CLOSED), true);
+    assert.equal(canAccessPath("/feuille-de-route", PAGE_ACCESS_FAIL_CLOSED), true);
     assert.equal(canAccessPath("/cra", PAGE_ACCESS_ALL_OPEN), true);
   });
 });
 
 describe("filterNavItemsByPageAccess", () => {
-  it("retire Budget sensible ; garde Outils (guide) pour non-Admin", () => {
+  it("retire Budget sensible ; Outils masqué (Documentation hors nav) pour non-Admin", () => {
     const filtered = filterNavItemsByPageAccess(WIDGET_NAV_ITEMS, (href) =>
       canAccessHref(href, PAGE_ACCESS_FAIL_CLOSED),
     );
@@ -92,13 +94,8 @@ describe("filterNavItemsByPageAccess", () => {
     assert.ok(texts.includes("Accueil"));
     assert.ok(texts.includes("Missions"));
     assert.ok(!texts.includes("Budget"));
-    assert.ok(texts.includes("Outils"));
-    const outils = filtered.find((item) => "children" in item && item.text === "Outils");
-    assert.ok(outils && "children" in outils);
-    assert.deepEqual(
-      outils.children.map((c) => c.href),
-      ["/outils/regles-metier"],
-    );
+    // Documentation (guide) est dans le menu compte ; Récap fail-closed fermé → pas d’Outils.
+    assert.ok(!texts.includes("Outils"));
   });
 
   it("garde Budget si BDC autorisé seul", () => {

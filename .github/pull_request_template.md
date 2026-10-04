@@ -33,5 +33,5 @@
 
 - [ ] `docs/fonctionnel/` mis à jour (parcours) ou **N/A**
 - [ ] Matrice rôles [`docs/fonctionnel/roles/matrice-droits.md`](../docs/fonctionnel/roles/matrice-droits.md) mise à jour (écrans / données / journal) ou **N/A**
-- [ ] **Guide métier (règles)** : mis à jour / **N/A** (motif) — pages widget Outils → Règles métier
+- [ ] **Guide métier (règles)** : mis à jour / **N/A** (motif) — pages widget menu compte → Documentation
 - [ ] `AGENTS.md` / skills mis à jour (ou N/A)

@@ -3,8 +3,8 @@
 [← Documentation](../../README.md) › **Règles métier**
 
 > **Routes** : `/outils/regles-metier` (+ sous-pages)  
-> **Nav** : Outils → Règles métier  
-> **Accès** : interrupteur `Page_regles_metier` (tous rôles à oui par défaut)
+> **Entrée** : menu compte → **Documentation** (libellé) — plus sous Outils  
+> **Accès** : interrupteur `Page_regles_metier` — **oui** pour les 4 rôles (Invité activé HITL porteur 2026-10-04)
 
 ## En clair
 
@@ -29,7 +29,7 @@ Layout : sommaire + contenu (DSFR), fil d’Ariane, liens **Précédent / Suivan
 | Flag | `Page_regles_metier` (`Droits_pages` + formule `Acl_profil`) |
 | Défaut métier | **oui** pour Admin, Resp., Freelance, Invité |
 | Fail-closed widget | **ouvert** si colonne absente / profil incomplet (guide pédagogique) |
-| Colonne Grist | **À créer par Owner UI** — voir [checklist Owner](../roles/page-regles-metier-owner.md) |
+| Colonne Grist | Posée (Owner UI) — voir [checklist Owner](../roles/page-regles-metier-owner.md) |
 
 ## Relation avec `docs/fonctionnel/`
 

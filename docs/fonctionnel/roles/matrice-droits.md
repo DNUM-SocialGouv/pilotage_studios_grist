@@ -44,15 +44,16 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 
 | Écran / parcours | Route | Admin | Resp. | Freelance | Invité | Statut | Notes |
 |------------------|-------|-------|-------|-----------|--------|--------|-------|
-| Accueil | `/` | oui | oui | oui | oui | **Appliqué** (widget + `Droits_pages`) | `Page_accueil` inchangé ; **CTA par rôle** (N/A `Page_*` — variante sur `Role` + mêmes gardes que la nav) ; kanban encore sous les CTA jusqu’à `/feuille-de-route` (PR-B, hors `Page_*`) |
+| Accueil | `/` | oui | oui | oui | oui | **Appliqué** (widget + `Droits_pages`) | `Page_accueil` inchangé ; **CTA par rôle** (N/A `Page_*` — variante sur `Role` + mêmes gardes que la nav) ; kanban **déplacé** vers `/feuille-de-route` |
+| **Feuille de route** | `/feuille-de-route` | oui | oui | oui | oui | **Appliqué** UX (hors `Page_*`) | **Fixé ouvert** — menu compte + CTA Admin accueil ; rappel lecture seule Admin « Fixés par rôle » ; pas de nouvelle colonne `Page_*` |
 | Plans d’activité | `/pa` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Couche 5 ; données encore ouvertes (couche 6 plus tard) |
 | Bons de commande | `/bdc` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Idem |
 | Prestation / CRA (liste) | `/cra` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Freelances : déclaration via `/cra/declarer` |
-| Déclarer mon CRA / **Mon carnet** | `/cra/declarer` | **oui*** | **oui*** | **oui** | **non** | **Appliqué** UX (rôle) | *Admin/Resp. : liste lecture missions via prestations du **département** (`Equipe.Equipe`) ; Freelance : saisie CRA « moi » ; nav niveau 1 ; hors `Page_*` ; rappel lecture seule Admin « Fixés par rôle » ; Invité masqué |
+| Déclarer mon CRA / **Mon carnet** | `/cra/declarer` | **oui*** | **oui*** | **oui** | **non** | **Appliqué** UX (rôle) | *Admin/Resp. : liste lecture missions via prestations du **département** (`Equipe.Equipe`) ; Freelance : saisie CRA « moi » ; **menu compte** (plus nav niveau 1) ; hors `Page_*` ; rappel lecture seule Admin « Fixés par rôle » ; Invité masqué |
 | **Weekly** | `/weekly` | **si table*** | **si table*** | **si table*** | **si table*** | **Appliqué** UX (`Weekly_coachs`) | *E-mail dans `Weekly_coachs` uniquement — **pas** d’accès automatique Admin/Resp. ; hors `Page_*` |
 | Revue CRA équipe | `/cra/revue-equipe` | **oui*** | **oui*** | **non** | **non** | **Appliqué** UX (rôle + dép.) | *Uniquement si `Equipe.Equipe` renseigné ; périmètre = même département ; hors `Page_*` ; rappel lecture seule Admin « Fixés par rôle » ; ACL `Realise` par rôle **faite** (#47/#70) |
 | Récap porteurs | `/outils/recap-porteurs` | **oui** | **non** | **non** | **non** | **Appliqué** UX | |
-| **Règles métier** (guide) | `/outils/regles-metier` | **oui** | **oui** | **oui** | **oui** | **Appliqué** UX (widget) · **Owner UI** colonne | Flag `Page_regles_metier` ; défaut tous rôles oui ; colonne Grist = checklist Owner ([page-regles-metier-owner.md](page-regles-metier-owner.md)) ; fail-closed widget = ouvert |
+| **Documentation** (guide règles métier) | `/outils/regles-metier` | **oui** | **oui** | **oui** | **oui** | **Appliqué** UX (widget) · **Owner UI** colonne | Libellé menu **Documentation** ; entrée **menu compte** (plus Outils) ; flag `Page_regles_metier` ; fail-closed widget = ouvert ; Invité = `true` en `Droits_pages` (HITL porteur 2026-10-04) |
 | Procès-verbaux | `/pv` | **oui** | **non** | **non** | **non** | **Appliqué** UX (stub) | |
 | Missions | `/missions` | oui | oui | oui | oui | **Appliqué** UX | Fiche : Modifier / Dupliquer CRA sous prestation = **Admin** seulement (drawer) |
 | Équipe | `/equipe` | oui | oui | oui | oui | **Configurable** Admin | Flag `Page_equipe` ; réglé via `/outils/droits-pages` ([#54](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/54)) |
@@ -106,6 +107,9 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-10-04 | Invité : `Droits_pages.Page_regles_metier` = **true** (HITL porteur OK) ; autres rôles inchangés ; formule `Acl_profil` déjà miroir `Droits_pages.lookupOne(Role=$Role).Page_regles_metier` | 5 | feat/feuille-de-route-user-menu · suite #100 |
+| 2026-10-04 | Menu compte : **Mon carnet** + **Documentation** (`/outils/regles-metier`, libellé) + Feuille de route ; retrait nav principale / Outils (anti-doublon) ; gardes inchangées (`Page_regles_metier` / rôle carnet) | 5 | cursor/user-menu-docs-carnet · suite #100 |
+| 2026-10-04 | Feuille de route `/feuille-de-route` : **fixé ouvert** hors `Page_*` (tous rôles) ; menu compte (identité + lien) ; kanban retiré de `/` ; rappel Admin `DROITS_PAGES_ROLE_FIXED` | 5 | feat/feuille-de-route-user-menu · kanban `accueil-nav-refonte` |
 | 2026-10-04 | Accueil `/` par rôle (CTA Freelance / Resp. / Admin / Invité) : **N/A `Page_*`** (variante d’écran sur `Role` + gardes nav) ; `Page_accueil` inchangé ; kanban temporaire sous les CTA ; pas de nouvelle route | 5 | feat/accueil-par-role · kanban `accueil-nav-refonte` |
 | 2026-10-04 | Chrome nav PR0 (Retour MemoryRouter + slot menu user) : **pas** de nouvel écran / garde / `Page_*` — N/A tableaux A/B ; kanban `accueil-nav-refonte` | 5 (confort) | feat/nav-fondation-retour-user-slot |
 | 2026-10-03 | Guide règles métier V1 (`/outils/regles-metier`) : nav Outils ; `Page_regles_metier` (widget + thématique Admin) ; défaut tous rôles oui ; colonne Grist = Owner UI (pas d’ACL API) ; N/A kanban Feedback id=34 (K3) | 4, 5 | feat/guide-regles-metier · HITL Owner OK create colonne |

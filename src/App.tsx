@@ -33,6 +33,7 @@ import { ReglesMetierLayout } from "./pages/regles-metier/ReglesMetierLayout";
 import { ReglesMetierMissionsPage } from "./pages/regles-metier/ReglesMetierMissionsPage";
 import { ReglesMetierRolesPage } from "./pages/regles-metier/ReglesMetierRolesPage";
 import { StubPage } from "./pages/StubPage";
+import { FeuilleDeRoutePage } from "./pages/FeuilleDeRoutePage";
 import { WelcomePage } from "./pages/WelcomePage";
 import { WeeklyCoachPage } from "./pages/WeeklyCoachPage";
 import { getEmbedTrust } from "./security/embedTrust";
@@ -63,6 +64,8 @@ export default function App() {
           <Routes>
             <Route element={<WidgetLayout />}>
               <Route index element={<WelcomePage />} />
+              {/* Feuille de route : ouvert à tous, hors Page_* (équivalent kanban d’accueil). */}
+              <Route path="feuille-de-route" element={<FeuilleDeRoutePage />} />
               <Route
                 path="pa"
                 element={

@@ -36,11 +36,18 @@ export type WelcomeRoleKind =
 
 export type WelcomeHomeContent = {
   kind: WelcomeRoleKind;
-  /** Titre principal (ex. « Bonjour »). */
+  /** Titre principal (ex. « Bonjour » / « Bonjour Nathalie »). */
   title: string;
   roleLabel: string | null;
-  lead: string;
+  /** Sous-titre d’intro ; `null` = ne pas afficher (Freelance / Admin / Resp. épurés). */
+  lead: string | null;
+  /** Bloc « À savoir » ; `null` = ne pas afficher (Admin / Resp. épurés). */
   hint: string | null;
+  /**
+   * Affiche le libellé produit « Pilotage studios » au-dessus du titre.
+   * Désactivé pour Freelance / Admin / Responsable (demande porteur).
+   */
+  showProductLabel?: boolean;
   ctas: WelcomeCta[];
 };
 
@@ -52,8 +59,7 @@ export type WelcomeHomeAccess = {
   canRevueCraEquipe: boolean;
   isAdmin: boolean;
   /**
-   * Lien Feuille de route (`/feuille-de-route`) — activé seulement après PR-B.
-   * V1 PR-A : laisser `false` (kanban encore sous les CTA sur `/`).
+   * Lien Feuille de route (`/feuille-de-route`) — CTA Admin vers la page dédiée.
    */
   includeFeuilleDeRoute?: boolean;
 };
@@ -73,7 +79,7 @@ const CTA_CATALOG: Record<WelcomeCtaId, WelcomeCta> = {
   },
   regles_metier: {
     id: "regles_metier",
-    label: "Règles métier",
+    label: "Documentation",
     href: "/outils/regles-metier",
     description: "Guide court des règles de base",
   },
@@ -171,8 +177,43 @@ export type BuildWelcomeHomeParams = {
   /** Statut profil session (`ok` | `empty` | `error` | `standalone` | `loading`). */
   status: string;
   equipeLabel?: string | null;
+  /**
+   * `Equipe.Prenom_Nom` de la personne connectée (même source que le menu compte).
+   * Sert au titre « Bonjour [Prénom] » (Freelance / Admin / Resp.) — pas de clé API.
+   */
+  displayName?: string | null;
   access: WelcomeHomeAccess;
 };
+
+/**
+ * Extrait le prénom depuis `Equipe.Prenom_Nom`.
+ * - « Nathalie Molines » → Nathalie
+ * - « MOLINES Nathalie » (NOM Prénom) → Nathalie
+ * - vide / absent → null (titre = « Bonjour » seul)
+ */
+export function firstNameFromDisplayName(
+  displayName: string | null | undefined,
+): string | null {
+  const parts = (displayName?.trim() ?? "").split(/\s+/).filter(Boolean);
+  if (parts.length === 0) {
+    return null;
+  }
+  if (parts.length === 1) {
+    return parts[0]!;
+  }
+  const first = parts[0]!;
+  const looksLikeNomFirst =
+    first === first.toLocaleUpperCase("fr-FR") && /[A-Za-zÀ-ÿ]/.test(first);
+  return looksLikeNomFirst ? parts[parts.length - 1]! : first;
+}
+
+/** Titre d’accueil (Freelance / Admin / Resp.) : « Bonjour Nathalie » ou « Bonjour » si prénom absent. */
+export function welcomeGreetingTitle(
+  displayName: string | null | undefined,
+): string {
+  const prenom = firstNameFromDisplayName(displayName);
+  return prenom ? `Bonjour ${prenom}` : "Bonjour";
+}
 
 /**
  * Construit le contenu d’accueil selon le rôle.
@@ -181,7 +222,7 @@ export type BuildWelcomeHomeParams = {
 export function buildWelcomeHome(
   params: BuildWelcomeHomeParams,
 ): WelcomeHomeContent {
-  const { status, equipeLabel, access } = params;
+  const { status, access, displayName } = params;
   const role =
     status === "standalone" && !params.role?.trim()
       ? "Admin"
@@ -210,24 +251,23 @@ export function buildWelcomeHome(
   if (kind === "freelance") {
     return {
       kind,
-      title: "Bonjour",
-      roleLabel: "Freelance",
-      lead: "Votre carnet et vos missions — déclarez vos jours, puis retrouvez vos prestations.",
-      hint: "Pensez à déclarer les jours du mois. Le menu Budget reste masqué pour ce rôle.",
+      title: welcomeGreetingTitle(displayName),
+      roleLabel: null,
+      lead: null,
+      hint: "Pensez à déclarer les jours du mois.",
+      showProductLabel: false,
       ctas: filterCtas(ROLE_CTA_IDS.freelance, access),
     };
   }
 
   if (kind === "responsable") {
-    const dept = equipeLabel?.trim() || null;
     return {
       kind,
-      title: "Bonjour",
-      roleLabel: "Responsable de département",
-      lead: "Suivre l’équipe et le carnet — revue des jours, puis missions.",
-      hint: dept
-        ? `Département : ${dept}. Weekly n’apparaît que si votre e-mail est listé parmi les coachs.`
-        : "Renseignez votre département dans Équipe pour ouvrir la revue CRA. Weekly n’apparaît que si votre e-mail est listé parmi les coachs.",
+      title: welcomeGreetingTitle(displayName),
+      roleLabel: null,
+      lead: null,
+      hint: null,
+      showProductLabel: false,
       ctas: filterCtas(ROLE_CTA_IDS.responsable, access),
     };
   }
@@ -235,12 +275,11 @@ export function buildWelcomeHome(
   if (kind === "admin") {
     return {
       kind,
-      title: "Bonjour",
-      roleLabel: status === "standalone" ? "Admin (aperçu local)" : "Admin",
-      lead: "Pilotage et outils — allez à l’essentiel sans tout relister.",
-      hint: access.includeFeuilleDeRoute
-        ? "Pas de liste exhaustive des écrans. Weekly reste un lien de navigation seulement si votre e-mail est listé parmi les coachs."
-        : "La feuille de route (kanban) reste affichée plus bas sur cette page jusqu’au déplacement vers une page dédiée. Weekly n’est pas un raccourci générique ici.",
+      title: welcomeGreetingTitle(displayName),
+      roleLabel: null,
+      lead: null,
+      hint: null,
+      showProductLabel: false,
       ctas: filterCtas(ROLE_CTA_IDS.admin, access),
     };
   }

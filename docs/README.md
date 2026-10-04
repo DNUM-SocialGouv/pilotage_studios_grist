@@ -15,7 +15,7 @@ App sœur (hors iframe) : [pilotage_studios](https://github.com/DNUM-SocialGouv/
 
 | Module | Documentation | Statut |
 |--------|---------------|--------|
-| **Accueil** | [fonctionnel/accueil/](fonctionnel/accueil/) | Documenté (accueil par rôle + kanban feuille de route transitoire) |
+| **Accueil** | [fonctionnel/accueil/](fonctionnel/accueil/) — [feuille de route](fonctionnel/accueil/feuille-de-route.md) | Documenté (accueil par rôle · kanban `/feuille-de-route`) |
 | **Plan d’activité** | [fonctionnel/pa/](fonctionnel/pa/) — [liste](fonctionnel/pa/liste.md) · [fiche](fonctionnel/pa/fiche.md) | Documenté |
 | **Bons de commande** | [fonctionnel/bdc/](fonctionnel/bdc/) — [liste](fonctionnel/bdc/liste.md) · [fiche](fonctionnel/bdc/fiche.md) | Documenté |
 | **Missions** | [fonctionnel/missions/](fonctionnel/missions/) — [liste](fonctionnel/missions/liste.md) · [fiche](fonctionnel/missions/fiche.md) | Documenté (lecture + drawer master ; CRUD prestations = [#31](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/31)) |
@@ -24,7 +24,7 @@ App sœur (hors iframe) : [pilotage_studios](https://github.com/DNUM-SocialGouv/
 | **Équipe** | [fonctionnel/equipe/](fonctionnel/equipe/) — [liste](fonctionnel/equipe/liste.md) · [fiche](fonctionnel/equipe/fiche.md) | Documenté (lecture `/equipe` ; [#53](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/53)) |
 | **Produits** | [fonctionnel/produits/](fonctionnel/produits/) — [liste](fonctionnel/produits/liste.md) · [fiche](fonctionnel/produits/fiche.md) | Documenté (lecture `/produits` ; [#3](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3)) |
 | **Weekly** | [fonctionnel/weekly/](fonctionnel/weekly/) | Documenté (kanban missions + agenda ; tables satellites) |
-| **Règles métier** (guide widget) | [fonctionnel/regles-metier/](fonctionnel/regles-metier/) | Documenté V1 — guide utilisateur (5 pages) ; distinct de la doc contributeurs |
+| **Documentation** (guide règles métier) | [fonctionnel/regles-metier/](fonctionnel/regles-metier/) | Documenté V1 — menu compte « Documentation » ; route `/outils/regles-metier` ; distinct de la doc contributeurs |
 | **Rôles & droits Grist** | [fonctionnel/roles/](fonctionnel/roles/) — **[matrice](fonctionnel/roles/matrice-droits.md)** (registre vivant) · [Droits des pages Admin](fonctionnel/roles/droits-pages-admin.md) · [Owner `Page_regles_metier`](fonctionnel/roles/page-regles-metier-owner.md) · [ACL](fonctionnel/roles/access-rules.md) · [inventaire](fonctionnel/roles/inventaire-partage.md) | 6 couches + tableaux écrans/données ; prep [#47](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/47) ; Admin [#54](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/54) |
 | **Issues publiques** | [issues-publiques.md](issues-publiques.md) | Template rédaction (repo public) |
 | **Recherche utilisateur (RU)** | [ru/](ru/) — [insights](ru/insights/) | Base d’enseignements (Design / Access.) ; distinct de `fonctionnel/` |

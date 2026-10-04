@@ -1,49 +1,48 @@
 /**
- * Coquille menu utilisateur (PR0) — identité lecture + entrée Feuille de route
- * désactivée tant que la route `/feuille-de-route` n’existe pas (PR-B).
- * Déclencheur = avatar Équipe (DiceBear) comme sur la liste Équipe.
- * Pattern : disclosure simple (`aria-expanded` / Escape), pas de `role="menu"`.
+ * Menu compte (slot user) — pattern « En-tête connectée » DSFR (bêta, pas encore
+ * dans `@codegouvfr/react-dsfr`) : disclosure identité + liens internes.
+ * Déclencheur = avatar Équipe (`EquipeAvatar`), pas l’icône générique seule.
+ * Pas de `role="menu"` incomplet — `aria-expanded` / Escape / clic extérieur.
+ *
+ * Ordre liens (perso → espace partagé → aide) :
+ * Mon carnet · Feuille de route · Documentation
  */
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type MouseEvent,
+} from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import { useAclProfil } from "../AclProfilContext";
 import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
+import { canAccessHref } from "../security/pageAccess";
+import { isCraDeclarerRole } from "../utils/droitsPagesThemes";
+import { isNavActive } from "./widgetNavItems";
 
-function identityLines(params: {
-  email: string | null;
-  role: string | null;
-  equipeLabel: string | null;
-  status: string;
-}): string[] {
-  const lines: string[] = [];
-  if (params.email?.trim()) {
-    lines.push(params.email.trim());
-  }
-  if (params.role?.trim()) {
-    lines.push(`Rôle : ${params.role.trim()}`);
-  }
-  if (params.equipeLabel?.trim()) {
-    lines.push(`Département : ${params.equipeLabel.trim()}`);
-  }
-  if (lines.length === 0) {
-    if (params.status === "standalone") {
-      lines.push("Session locale (hors Grist)");
-    } else if (params.status === "loading") {
-      lines.push("Profil en cours de chargement…");
-    } else {
-      lines.push("Identité indisponible");
-    }
-  }
-  return lines;
-}
+const MON_CARNET_HREF = "/cra/declarer";
+const FEUILLE_DE_ROUTE_HREF = "/feuille-de-route";
+const DOCUMENTATION_HREF = "/outils/regles-metier";
+
+type UserMenuLink = {
+  href: string;
+  label: string;
+};
 
 export function WidgetUserMenu() {
-  const { email, role, equipeLabel, equipeId, avatar, status } = useAclProfil();
+  const { email, role, equipeLabel, equipeId, avatar, displayName, status, flags } =
+    useAclProfil();
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
   const reactId = useId();
   const panelId = `${reactId}-user-panel`;
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const firstLinkRef = useRef<HTMLAnchorElement>(null);
   const [open, setOpen] = useState(false);
 
   const close = useCallback((restoreFocus = false) => {
@@ -57,7 +56,7 @@ export function WidgetUserMenu() {
     if (!open) {
       return;
     }
-    const onPointer = (e: MouseEvent) => {
+    const onPointer = (e: globalThis.MouseEvent) => {
       if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
         close();
       }
@@ -70,14 +69,42 @@ export function WidgetUserMenu() {
     };
     document.addEventListener("mousedown", onPointer);
     document.addEventListener("keydown", onKey);
+    // Focus le premier lien (pattern panneau compte) après ouverture.
+    window.requestAnimationFrame(() => {
+      firstLinkRef.current?.focus();
+    });
     return () => {
       document.removeEventListener("mousedown", onPointer);
       document.removeEventListener("keydown", onKey);
     };
   }, [close, open]);
 
-  const lines = identityLines({ email, role, equipeLabel, status });
+  const { primary, secondary } = identityLines({
+    displayName,
+    email,
+    role,
+    equipeLabel,
+    status,
+  });
   const hasAvatar = equipeId != null && equipeId > 0;
+  const canDeclareCra = status === "standalone" || isCraDeclarerRole(role);
+  const showDocumentation = canAccessHref(DOCUMENTATION_HREF, flags);
+
+  const links: UserMenuLink[] = [];
+  if (canDeclareCra) {
+    links.push({ href: MON_CARNET_HREF, label: "Mon carnet" });
+  }
+  // Feuille de route : fixé ouvert (hors Page_*) — toujours proposée.
+  links.push({ href: FEUILLE_DE_ROUTE_HREF, label: "Feuille de route" });
+  if (showDocumentation) {
+    links.push({ href: DOCUMENTATION_HREF, label: "Documentation" });
+  }
+
+  const onLinkClick = (href: string) => (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    close();
+    navigate(href);
+  };
 
   return (
     <div
@@ -87,13 +114,14 @@ export function WidgetUserMenu() {
       <Button
         type="button"
         priority="tertiary no outline"
-        title="Menu utilisateur"
+        title="Mon compte"
         className="widget-user-menu__trigger"
         nativeButtonProps={{
           ref: triggerRef,
           "aria-expanded": open,
           "aria-controls": panelId,
-          "aria-label": "Menu utilisateur",
+          "aria-haspopup": "true",
+          "aria-label": "Mon compte",
         }}
         onClick={() => setOpen((v) => !v)}
       >
@@ -111,28 +139,84 @@ export function WidgetUserMenu() {
         )}
       </Button>
       {open ? (
-        <div id={panelId} className="widget-user-menu__panel">
+        <div
+          id={panelId}
+          className="widget-user-menu__panel"
+          role="region"
+          aria-label="Mon compte"
+        >
           <div className="widget-user-menu__identity">
-            {lines.map((line) => (
+            <p className="widget-user-menu__identity-primary">{primary}</p>
+            {secondary.map((line) => (
               <p key={line} className="widget-user-menu__identity-line">
                 {line}
               </p>
             ))}
           </div>
-          <ul className="widget-user-menu__list">
-            <li>
-              <button
-                type="button"
-                className="fr-btn fr-btn--tertiary-no-outline fr-btn--sm widget-user-menu__item"
-                disabled
-                title="Bientôt : feuille de route sur une page dédiée"
-              >
-                Feuille de route
-              </button>
-            </li>
-          </ul>
+          {links.length > 0 ? (
+            <ul className="widget-user-menu__list">
+              {links.map((link, index) => {
+                const active = isNavActive(pathname, link.href);
+                return (
+                  <li key={link.href}>
+                    <a
+                      ref={index === 0 ? firstLinkRef : undefined}
+                      href={link.href}
+                      className={cx(
+                        "fr-btn",
+                        "fr-btn--tertiary-no-outline",
+                        "fr-btn--sm",
+                        "widget-user-menu__item",
+                        active && "widget-user-menu__item--active",
+                      )}
+                      aria-current={active ? "page" : undefined}
+                      onClick={onLinkClick(link.href)}
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
         </div>
       ) : null}
     </div>
   );
+}
+
+function identityLines(params: {
+  displayName: string | null;
+  email: string | null;
+  role: string | null;
+  equipeLabel: string | null;
+  status: string;
+}): { primary: string; secondary: string[] } {
+  const secondary: string[] = [];
+  const name = params.displayName?.trim() || null;
+  const email = params.email?.trim() || null;
+
+  if (email && email !== name) {
+    secondary.push(email);
+  }
+  if (params.role?.trim()) {
+    secondary.push(`Rôle : ${params.role.trim()}`);
+  }
+  if (params.equipeLabel?.trim()) {
+    secondary.push(`Département : ${params.equipeLabel.trim()}`);
+  }
+
+  if (name) {
+    return { primary: name, secondary };
+  }
+  if (email) {
+    return { primary: email, secondary: secondary.filter((l) => l !== email) };
+  }
+  if (params.status === "standalone") {
+    return { primary: "Session locale (hors Grist)", secondary: [] };
+  }
+  if (params.status === "loading") {
+    return { primary: "Profil en cours de chargement…", secondary: [] };
+  }
+  return { primary: "Identité indisponible", secondary: [] };
 }

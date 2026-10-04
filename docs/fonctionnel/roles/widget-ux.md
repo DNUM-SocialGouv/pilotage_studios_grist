@@ -21,9 +21,9 @@ Suivi des cellules : [`matrice-droits.md`](matrice-droits.md) tableau **A**.
 - Ne jamais présenter l’UX comme « sécurisé » sans couche 6.
 - Toute nouvelle garde de route / filtre nav → **MAJ matrice** (rule `roles-matrice`).
 - Pas de deny Admin-only global sur `Realise` tant que la saisie freelance n’est pas tranchée.
-- Fail-closed si profil absent / erreur : pas de PA / BDC / CRA / PV / récap ; Accueil / Missions / Produits / Équipe / **Règles métier** restent ouverts (aligné seed non-Admin + guide pédagogique).
+- Fail-closed si profil absent / erreur : pas de PA / BDC / CRA / PV / récap ; Accueil / Missions / Produits / Équipe / **Documentation** (`Page_regles_metier`) restent ouverts (aligné seed non-Admin + guide pédagogique).
 - Page Admin `/outils/droits-pages` : réservée rôle Admin (lien `adminOnly` + `AdminRoleGuard`) — hors `Page_*` ; rappel dans la section Admin « Fixés par rôle ».
-- Mon carnet / Revue CRA équipe : hors `Page_*` (gardes rôle) ; rappel lecture seule sur la page Admin.
+- Mon carnet / Revue CRA équipe : hors `Page_*` (gardes rôle) ; Mon carnet + Documentation + Feuille de route dans le **menu compte** ; rappel lecture seule sur la page Admin.
 - Nouvel écran nav / garde → revue obligatoire (nouvelle `Page_*` | fixé par rôle | N/A) — rule `roles-matrice`.
 
 ## Technique widget

@@ -29,6 +29,8 @@ export type AclProfilData = {
    * « Revue CRA équipe » si vide (cas admin transverse).
    */
   equipeLabel: string | null;
+  /** Prénom/Nom (`Equipe.Prenom_Nom`) — panneau compte ; null si hors Grist / introuvable. */
+  displayName: string | null;
   /** Id fiche `Equipe` matchée (avatar menu user) — null si hors Grist / introuvable. */
   equipeId: number | null;
   /** Seed DiceBear (`Equipe.Avatar`) — null si absent / introuvable. */
@@ -44,6 +46,7 @@ const INITIAL_WITHOUT_REFRESH: Omit<AclProfilData, "refresh"> = {
   role: null,
   email: null,
   equipeLabel: null,
+  displayName: null,
   equipeId: null,
   avatar: null,
   flags: PAGE_ACCESS_FAIL_CLOSED,
@@ -75,12 +78,14 @@ function sleep(ms: number): Promise<void> {
 
 type SelfEquipeSnippet = {
   equipeLabel: string | null;
+  displayName: string | null;
   equipeId: number | null;
   avatar: string | null;
 };
 
 const EMPTY_SELF_EQUIPE: SelfEquipeSnippet = {
   equipeLabel: null,
+  displayName: null,
   equipeId: null,
   avatar: null,
 };
@@ -98,8 +103,10 @@ async function resolveSelfEquipeSnippet(
       return EMPTY_SELF_EQUIPE;
     }
     const label = self.equipeLabel?.trim() ?? "";
+    const name = self.prenomNom?.trim() ?? "";
     return {
       equipeLabel: label || null,
+      displayName: name || null,
       equipeId: self.id,
       avatar: self.avatar?.trim() || null,
     };
@@ -130,6 +137,7 @@ export function useAclProfilData(): AclProfilData {
         role: null,
         email: null,
         equipeLabel: null,
+        displayName: null,
         equipeId: null,
         avatar: null,
         flags: PAGE_ACCESS_ALL_OPEN,
@@ -144,6 +152,7 @@ export function useAclProfilData(): AclProfilData {
         role: null,
         email: null,
         equipeLabel: null,
+        displayName: null,
         equipeId: null,
         avatar: null,
         flags: PAGE_ACCESS_FAIL_CLOSED,
@@ -158,6 +167,7 @@ export function useAclProfilData(): AclProfilData {
         role: null,
         email: null,
         equipeLabel: null,
+        displayName: null,
         equipeId: null,
         avatar: null,
         flags: PAGE_ACCESS_ALL_OPEN,
@@ -214,6 +224,7 @@ export function useAclProfilData(): AclProfilData {
                   role: null,
                   email: null,
                   equipeLabel: null,
+                  displayName: null,
                   equipeId: null,
                   avatar: null,
                   flags: PAGE_ACCESS_FAIL_CLOSED,
@@ -235,6 +246,7 @@ export function useAclProfilData(): AclProfilData {
               role: null,
               email: null,
               equipeLabel: null,
+              displayName: null,
               equipeId: null,
               avatar: null,
               flags: PAGE_ACCESS_FAIL_CLOSED,
@@ -255,6 +267,7 @@ export function useAclProfilData(): AclProfilData {
             role: roleFromRecord(fields),
             email,
             equipeLabel: selfEquipe.equipeLabel,
+            displayName: selfEquipe.displayName,
             equipeId: selfEquipe.equipeId,
             avatar: selfEquipe.avatar,
             flags: pageAccessFromRecord(fields),
@@ -279,6 +292,7 @@ export function useAclProfilData(): AclProfilData {
         role: null,
         email: null,
         equipeLabel: null,
+        displayName: null,
         equipeId: null,
         avatar: null,
         flags: PAGE_ACCESS_FAIL_CLOSED,

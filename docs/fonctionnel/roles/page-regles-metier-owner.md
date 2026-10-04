@@ -6,7 +6,7 @@
 
 Pour que les Admin puissent activer ou désactiver le **guide Règles métier** rôle par rôle, il faut ajouter une colonne dans Grist. **Seul le Owner** du document doit le faire dans l’interface Grist. Les agents **ne modifient pas** les Access Rules (ACL) via API.
 
-**Statut** : OK Owner pour créer (HITL 2026-10-03) · **colonne à poser manuellement** (MCP Cloud absent / pas de mutation ACL API).
+**Statut** : colonnes posées · 4 rôles `Droits_pages.Page_regles_metier` = oui (Invité activé HITL porteur 2026-10-04) · formule `Acl_profil` miroir en place.
 
 ## Étapes Owner (UI Grist)
 
@@ -37,11 +37,11 @@ Si les autres `Page_*` utilisent une variante (référence Role, autre LOOKUP), 
 
 | Contrôle | Attendu |
 |----------|---------|
-| 4 lignes `Droits_pages` | `Page_regles_metier` = oui |
+| 4 lignes `Droits_pages` | `Page_regles_metier` = oui (dont Invité, 2026-10-04) |
 | Fiche `Acl_profil` d’un Freelance | `Page_regles_metier` = oui (formule) |
-| Widget → Outils | Lien **Règles métier** visible |
-| Admin → Droits des pages → Outils | Interrupteur **Règles métier** éditable |
-| Couper Invité à non | Lien masqué pour Invité après refresh profil |
+| Widget → menu compte | Lien **Documentation** visible (si `Page_regles_metier`) |
+| Admin → Droits des pages → Outils | Interrupteur **Documentation** (`Page_regles_metier`) éditable |
+| Couper Invité à non (test) | Lien masqué pour Invité après refresh profil |
 
 ### 4. Ne pas faire
 
