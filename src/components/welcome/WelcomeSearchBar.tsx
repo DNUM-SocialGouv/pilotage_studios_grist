@@ -3,6 +3,7 @@ import {
   useId,
   useRef,
   useState,
+  type FocusEvent,
   type KeyboardEvent,
   type MouseEvent,
 } from "react";
@@ -103,10 +104,25 @@ export function WelcomeSearchBar({ targets }: WelcomeSearchBarProps) {
     navigate(hit.href);
   };
 
-  const onSelectIndex = (index: number) => {
-    const hit = flatHits[index];
-    if (hit) {
-      goToHit(hit);
+  /** Navigue vers le hit actif (flèches) ou le premier résultat synchrone. */
+  const goToActiveOrFirst = (text: string) => {
+    if (text.trim().length < WELCOME_SEARCH_MIN_CHARS) {
+      return;
+    }
+    if (activeIndex >= 0 && flatHits[activeIndex]) {
+      goToHit(flatHits[activeIndex]!);
+      return;
+    }
+    const immediate = buildWelcomeSearchGroups({
+      query: text,
+      targets,
+      produits: data.produits,
+      missions: data.missions,
+      members: data.members,
+    });
+    const first = flattenWelcomeSearchHits(immediate)[0];
+    if (first) {
+      goToHit(first);
     }
   };
 
@@ -117,9 +133,35 @@ export function WelcomeSearchBar({ targets }: WelcomeSearchBarProps) {
     setOpen(true);
   };
 
-  const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+  /**
+   * Capture avant les listeners natifs du SearchButton DSFR
+   * (Enter → onButtonClick + blur ; Escape → blur) pour garder le focus
+   * et respecter activeIndex.
+   */
+  const onKeyDownCapture = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Escape") {
       e.preventDefault();
+      e.stopPropagation();
+      setOpen(false);
+      setActiveIndex(-1);
+      return;
+    }
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+      e.stopPropagation();
+      const live = e.currentTarget.value.trim();
+      if (live.length < WELCOME_SEARCH_MIN_CHARS) {
+        return;
+      }
+      activate();
+      setOpen(true);
+      goToActiveOrFirst(e.currentTarget.value);
+    }
+  };
+
+  const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Tab") {
       setOpen(false);
       setActiveIndex(-1);
       return;
@@ -143,22 +185,16 @@ export function WelcomeSearchBar({ targets }: WelcomeSearchBarProps) {
       }
       setOpen(true);
       setActiveIndex((i) => (i <= 0 ? flatHits.length - 1 : i - 1));
+    }
+  };
+
+  const onRootBlur = (e: FocusEvent<HTMLDivElement>) => {
+    const next = e.relatedTarget as Node | null;
+    if (rootRef.current && next && rootRef.current.contains(next)) {
       return;
     }
-
-    if (e.key === "Enter") {
-      if (!open || trimmed.length < WELCOME_SEARCH_MIN_CHARS) {
-        return;
-      }
-      e.preventDefault();
-      if (activeIndex >= 0) {
-        onSelectIndex(activeIndex);
-        return;
-      }
-      if (flatHits[0]) {
-        goToHit(flatHits[0]);
-      }
-    }
+    setOpen(false);
+    setActiveIndex(-1);
   };
 
   const activeDescendant =
@@ -195,6 +231,7 @@ export function WelcomeSearchBar({ targets }: WelcomeSearchBarProps) {
                   type="button"
                   id={optionId}
                   role="option"
+                  tabIndex={-1}
                   aria-selected={selected}
                   className={
                     selected
@@ -247,7 +284,11 @@ export function WelcomeSearchBar({ targets }: WelcomeSearchBarProps) {
   ];
 
   return (
-    <div ref={rootRef} className="welcome-search fr-mb-3w">
+    <div
+      ref={rootRef}
+      className="welcome-search fr-mb-3w"
+      onBlur={onRootBlur}
+    >
       <SearchBar
         id={`${reactId}-search`}
         label="Rechercher un produit, une mission ou une personne"
@@ -256,20 +297,7 @@ export function WelcomeSearchBar({ targets }: WelcomeSearchBarProps) {
           setQuery(text);
           activate();
           setOpen(true);
-          if (text.trim().length >= WELCOME_SEARCH_MIN_CHARS && flatHits[0]) {
-            // Après debounce les hits peuvent être obsolètes : naviguer au 1er match synchrone
-            const immediate = buildWelcomeSearchGroups({
-              query: text,
-              targets,
-              produits: data.produits,
-              missions: data.missions,
-              members: data.members,
-            });
-            const first = flattenWelcomeSearchHits(immediate)[0];
-            if (first) {
-              goToHit(first);
-            }
-          }
+          goToActiveOrFirst(text);
         }}
         renderInput={({ className, id, placeholder, type }) => (
           <input
@@ -293,6 +321,7 @@ export function WelcomeSearchBar({ targets }: WelcomeSearchBarProps) {
               setOpen(true);
               activate();
             }}
+            onKeyDownCapture={onKeyDownCapture}
             onKeyDown={onKeyDown}
           />
         )}
