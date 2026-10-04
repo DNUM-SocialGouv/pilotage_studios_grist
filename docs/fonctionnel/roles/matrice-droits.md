@@ -108,6 +108,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-10-05 | Weekly Ops : colonne `Detail` confirmée (MCP) → flag `WEEKLY_AGENDA_DETAIL_COLUMN_READY=true` ; lecture/écriture + rendu markdown drawer ; **N/A `Page_*`** | 5, 6 (doc) | #105 suite |
 | 2026-10-05 | Weekly Ops sujets : `Texte` = titre ; update `Mission` en édition ; UI détail → colonne `Detail` (**HITL Owner** création colonne) ; allowlist create/update `Texte` / `Detail` / `Mission` / `Traite` ; **N/A `Page_*`** | 5, 6 (doc) | #105 |
 | 2026-10-04 | Weekly Ops agenda : update `Weekly_agenda.Texte` (modale Voir/Modifier) en plus de `Traite` ; prénom auteur ; date `Cree_le` ; **N/A `Page_*`** (écran déjà hors Page_*) ; ACL couche 6 inchangée (CRUD coachs) | 5, 6 (doc) | #105 · kanban `update-page-weekly` |
 | 2026-10-04 | Paramètres d’affichage V1 (clair / sombre / système) : entrée **menu compte** ; modale DSFR ; défaut `system` ; préférence `localStorage` navigateur ; **N/A `Page_*`** (pas d’écran nav / garde) ; N/A tableaux A/B | 5 (confort) | feat/parametres-affichage · kanban `parametres-affichage` |

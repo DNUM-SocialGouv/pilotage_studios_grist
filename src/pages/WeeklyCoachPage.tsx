@@ -12,6 +12,7 @@ import { Button } from "@codegouvfr/react-dsfr/Button";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { Link } from "react-router-dom";
+import { MissionProse } from "../components/missions/MissionProse";
 import { useAclProfil } from "../AclProfilContext";
 import { useGristPa } from "../GristPaContext";
 import { useWeeklyCoachData } from "../hooks/useWeeklyCoachData";
@@ -24,7 +25,6 @@ import {
   weeklyAgendaAuteurPrenom,
 } from "../utils/weeklyAgenda";
 import {
-  WEEKLY_AGENDA_DETAIL_COLUMN_READY,
   createWeeklyAgendaRecord,
   updateWeeklyAgendaSujet,
   updateWeeklyAgendaTraite,
@@ -305,12 +305,9 @@ function AgendaSujetDialog({
                     {titre || "—"}
                   </h3>
                   {detail ? (
-                    <p
-                      className="fr-text--md"
-                      style={{ whiteSpace: "pre-wrap", marginBottom: "0.75rem" }}
-                    >
-                      {detail}
-                    </p>
+                    <div className="fr-mb-2w">
+                      <MissionProse value={detail} onInternalLinkClick={close} />
+                    </div>
                   ) : (
                     <p
                       className="fr-text--sm fr-mb-2w"
@@ -362,11 +359,7 @@ function AgendaSujetDialog({
                   <Input
                     className="fr-mt-2w"
                     label="Détail"
-                    hintText={
-                      WEEKLY_AGENDA_DETAIL_COLUMN_READY
-                        ? "Optionnel — visible uniquement ici, pas dans la liste."
-                        : "Optionnel — visible ici. Enregistrement Grist en attente de la colonne Detail (Owner)."
-                    }
+                    hintText="Optionnel — Markdown léger (titres, listes, liens http(s) ou page interne). Visible uniquement ici, pas dans la liste."
                     textArea
                     nativeTextAreaProps={{
                       id: detailFieldId,
@@ -726,8 +719,6 @@ export function WeeklyCoachPage() {
       setAgendaError("Saisissez un titre.");
       return;
     }
-    const detailPending =
-      !WEEKLY_AGENDA_DETAIL_COLUMN_READY && newDetail.trim().length > 0;
     const name =
       auteur.trim() ||
       defaultWeeklyAuteurPrenom(displayName, sessionEmail) ||
@@ -746,11 +737,6 @@ export function WeeklyCoachPage() {
       setNewDetail("");
       setNewMissionId("");
       await data.reload();
-      if (detailPending) {
-        setAgendaError(
-          "Sujet ajouté (titre / mission). Le détail n’est pas encore enregistré : colonne Grist Detail en attente Owner.",
-        );
-      }
     } catch (err) {
       setAgendaError(
         err instanceof Error ? err.message : "Impossible d’ajouter le sujet.",
@@ -787,8 +773,6 @@ export function WeeklyCoachPage() {
     missionId: number | null;
   }) => {
     setAgendaError(null);
-    const detailPending =
-      !WEEKLY_AGENDA_DETAIL_COLUMN_READY && input.detail.trim().length > 0;
     setAgendaBusy(true);
     try {
       await updateWeeklyAgendaSujet(input.id, {
@@ -798,11 +782,6 @@ export function WeeklyCoachPage() {
       });
       setDialogSujet(null);
       await data.reload();
-      if (detailPending) {
-        setAgendaError(
-          "Titre / mission enregistrés. Le détail n’est pas encore persisté : colonne Grist Detail en attente Owner.",
-        );
-      }
     } catch (err) {
       setAgendaError(
         err instanceof Error ? err.message : "Impossible d’enregistrer le sujet.",
@@ -973,11 +952,7 @@ export function WeeklyCoachPage() {
               <Input
                 className="fr-mt-2w"
                 label="Détail"
-                hintText={
-                  WEEKLY_AGENDA_DETAIL_COLUMN_READY
-                    ? "Optionnel — visible seulement dans Voir / Modifier, pas dans la liste."
-                    : "Optionnel — visible dans Voir / Modifier. Enregistrement Grist en attente de la colonne Detail (Owner)."
-                }
+                hintText="Optionnel — Markdown léger (titres, listes, liens). Visible seulement dans Voir / Modifier, pas dans la liste."
                 textArea
                 nativeTextAreaProps={{
                   value: newDetail,

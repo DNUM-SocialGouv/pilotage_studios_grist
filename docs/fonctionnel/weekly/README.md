@@ -44,17 +44,17 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 | UI | Colonne Grist |
 |----|---------------|
 | **Titre** (liste + drawer + create) | `Texte` |
-| **Détail** (drawer lecture / édition + create optionnel — **pas** dans la liste) | `Detail` (TEXT) — **HITL Owner** si absente |
+| **Détail** (drawer lecture / édition + create optionnel — **pas** dans la liste) | `Detail` (TEXT, markdown léger) — active |
 | **Mission liée** (create + édition drawer) | `Mission` (Ref → `Missions`, optionnel) |
 | Méta liste / drawer | `Auteur` (prénom) · `Cree_le` (date relative) · `Traite` |
 
 - Liste compacte : **titre** + méta `Prénom · date relative` (+ lien mission éventuel) + **Voir** / **Modifier** — pas le détail.
-- Drawer lecture : titre, détail, mission (lien fiche), méta date / auteur.
-- Drawer édition / create : titre, détail optionnel, select mission, enregistrement.
+- Drawer lecture : titre, détail (`MissionProse` — markdown léger + liens internes), mission (lien fiche), méta date / auteur.
+- Drawer édition / create : titre, détail optionnel (textarea markdown), select mission, enregistrement.
 - Champ auteur « Votre prénom » : prérempli avec le **prénom seul** —
   1. `Equipe.Prenom_Nom` de la session (`firstNameFromDisplayName`) ;
   2. sinon premier segment de l’e-mail de session (avant `.` / `_` / `-`, pas `prenom.nom`).
-- Flag code `WEEKLY_AGENDA_DETAIL_COLUMN_READY` : rester `false` tant que la colonne `Detail` n’existe pas ; passer à `true` après création Owner.
+- Flag code `WEEKLY_AGENDA_DETAIL_COLUMN_READY = true` (colonne `Detail` confirmée MCP doc `nei9DeARs5Eo`).
 
 ### Règles kanban
 

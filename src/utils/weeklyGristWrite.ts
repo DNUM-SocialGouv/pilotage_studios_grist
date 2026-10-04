@@ -12,12 +12,10 @@ import {
 import type { WeeklyPhaseKey } from "./weeklyPhases.ts";
 
 /**
- * Colonne Grist `Weekly_agenda.Detail` (TEXT).
- * `false` tant que l’Owner n’a pas créé la colonne (HITL) — titre / mission restent
- * enregistrables ; le détail UI n’est pas écrit tant que ce flag est faux.
- * Après création Owner → passer à `true`.
+ * Colonne Grist `Weekly_agenda.Detail` (TEXT) — confirmée MCP doc `nei9DeARs5Eo`
+ * (id `Detail`, type TEXT). Lecture + écriture actives.
  */
-export const WEEKLY_AGENDA_DETAIL_COLUMN_READY = false;
+export const WEEKLY_AGENDA_DETAIL_COLUMN_READY = true;
 
 function parseCreateId(result: GristTableCreateResult): number {
   const first = Array.isArray(result) ? result[0] : result;
@@ -65,7 +63,7 @@ export async function upsertWeeklyPhase(input: {
 export async function createWeeklyAgendaRecord(input: {
   /** Titre (`Weekly_agenda.Texte`). */
   texte: string;
-  /** Détail optionnel (`Weekly_agenda.Detail` — colonne HITL Owner). */
+  /** Détail optionnel (`Weekly_agenda.Detail`). */
   detail?: string;
   auteur: string;
   email: string;

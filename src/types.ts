@@ -111,7 +111,7 @@ export interface WeeklyAgendaRow {
   /** Titre du sujet (colonne Grist `Texte`). */
   Texte?: string;
   /**
-   * Détail optionnel (colonne Grist `Detail` — HITL Owner si absente).
+   * Détail optionnel (colonne Grist `Detail`, markdown léger).
    * Affiché uniquement dans le drawer, pas dans la liste compacte.
    */
   Detail?: string;
