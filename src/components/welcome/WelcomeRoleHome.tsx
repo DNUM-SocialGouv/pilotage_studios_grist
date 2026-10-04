@@ -3,11 +3,22 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { CallOut } from "@codegouvfr/react-dsfr/CallOut";
 import type { WelcomeHomeContent } from "../../utils/welcomeHomeByRole";
+import {
+  hasWelcomeSearchTargets,
+  shouldShowWelcomeSearch,
+  type WelcomeSearchTargetFlags,
+} from "../../utils/welcomeSearch";
+import { WelcomeSearchBar } from "./WelcomeSearchBar";
 
 type WelcomeRoleHomeProps = {
   content: WelcomeHomeContent;
   /** Pendant le chargement du profil : message court sans CTA. */
   loading?: boolean;
+  /**
+   * Cibles recherche selon `Page_*` (Produits / Missions / Équipe).
+   * Absentes ou toutes fermées → pas de barre.
+   */
+  searchTargets?: WelcomeSearchTargetFlags;
 };
 
 /**
@@ -15,10 +26,21 @@ type WelcomeRoleHomeProps = {
  * Pas de KPI ni de liste exhaustive de la nav.
  * Accueil Freelance / Admin / Responsable : pas de libellé produit / rôle / lead
  * (titre « Bonjour [Prénom] »). Admin / Responsable : pas de bloc « À savoir » (`hint` null).
+ * Recherche V1 — option A : « Bonjour » + barre dans un bandeau pleine largeur ;
+ * CTA hors bandeau en dessous (Admin / Resp. / Freelance ; pas Invité).
  */
-export function WelcomeRoleHome({ content, loading }: WelcomeRoleHomeProps) {
+export function WelcomeRoleHome({
+  content,
+  loading,
+  searchTargets,
+}: WelcomeRoleHomeProps) {
   const navigate = useNavigate();
   const showProductLabel = content.showProductLabel !== false;
+  const showSearch =
+    !loading &&
+    searchTargets != null &&
+    shouldShowWelcomeSearch(content.kind) &&
+    hasWelcomeSearchTargets(searchTargets);
 
   const onCtaClick = (href: string) => (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -45,11 +67,8 @@ export function WelcomeRoleHome({ content, loading }: WelcomeRoleHomeProps) {
     );
   }
 
-  return (
-    <section
-      className="welcome-role-home fr-mb-3w"
-      aria-labelledby="welcome-role-title"
-    >
+  const greetingBlock = (
+    <>
       {showProductLabel ? (
         <p className="fr-text--sm fr-hint-text fr-mb-1w">Pilotage studios</p>
       ) : null}
@@ -63,13 +82,31 @@ export function WelcomeRoleHome({ content, loading }: WelcomeRoleHomeProps) {
         </p>
       ) : null}
       {content.lead?.trim() ? (
-        <p className="fr-mb-3w">{content.lead}</p>
+        <p className={showSearch ? "fr-mb-2w" : "fr-mb-3w"}>{content.lead}</p>
       ) : null}
+    </>
+  );
+
+  return (
+    <section
+      className="welcome-role-home fr-mb-3w"
+      aria-labelledby="welcome-role-title"
+    >
+      {showSearch && searchTargets ? (
+        <div className="welcome-role-home__bandeau">
+          {greetingBlock}
+          <WelcomeSearchBar targets={searchTargets} />
+        </div>
+      ) : (
+        greetingBlock
+      )}
 
       {content.ctas.length > 0 ? (
         <nav
           aria-label="Raccourcis selon votre rôle"
-          className={content.lead?.trim() ? undefined : "fr-mt-3w"}
+          className={
+            showSearch || content.lead?.trim() ? undefined : "fr-mt-3w"
+          }
         >
           <ul className="welcome-role-home__ctas fr-mb-0">
             {content.ctas.map((cta) => (

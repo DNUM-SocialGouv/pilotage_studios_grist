@@ -47,7 +47,14 @@ export function WelcomePage() {
             loading
           />
         ) : (
-          <WelcomeRoleHome content={homeContent} />
+          <WelcomeRoleHome
+            content={homeContent}
+            searchTargets={{
+              produits: flags.Page_produits,
+              missions: flags.Page_missions,
+              equipe: flags.Page_equipe,
+            }}
+          />
         )}
       </div>
     </div>

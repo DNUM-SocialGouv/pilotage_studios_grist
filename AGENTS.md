@@ -88,7 +88,7 @@ Visibilité users : accueil par rôle sur `/` ; feuille de route via menu compte
 | Routes | `src/App.tsx` |
 | Nav | `src/layout/WidgetNav.tsx` + [`widgetNavItems.ts`](src/layout/widgetNavItems.ts) (`WIDGET_NAV_ITEMS`, groupe Budget) + `WidgetNavBackButton` / `WidgetUserMenu` (chrome Retour + menu user) |
 | Pages | `src/pages/WelcomePage.tsx`, `FeuilleDeRoutePage.tsx`, `Pa*.tsx`, `Bdc*.tsx`, `Missions*.tsx`, `Equipe*.tsx`, `Produits*.tsx`, `CraListView.tsx`, `CraDeclarerPage.tsx`, `CraRevueEquipePage.tsx`, `CraRecapPorteursPage.tsx`, `WeeklyCoachPage.tsx`, `regles-metier/*`, `DroitsPagesAdminPage.tsx`, `SpikeDatatablePage.tsx`, `StubPage.tsx` |
-| Accueil rôle | [`src/utils/welcomeHomeByRole.ts`](src/utils/welcomeHomeByRole.ts), [`WelcomeRoleHome`](src/components/welcome/WelcomeRoleHome.tsx) |
+| Accueil rôle | [`src/utils/welcomeHomeByRole.ts`](src/utils/welcomeHomeByRole.ts), [`WelcomeRoleHome`](src/components/welcome/WelcomeRoleHome.tsx), recherche [`WelcomeSearchBar`](src/components/welcome/WelcomeSearchBar.tsx) + [`welcomeSearch.ts`](src/utils/welcomeSearch.ts) (lazy Produit/Mission/Personne) |
 | Contenu public | Table Grist `Kanban` + `Kanban_commentaires` (`/feuille-de-route`) ; libellés / parse dans [`src/utils/kanbanTickets.ts`](src/utils/kanbanTickets.ts) |
 | Données | `src/hooks/useGristPaData.ts`, `useBdcDepensesData.ts`, `useMissionsData.ts`, `useEquipeData.ts`, `useEquipeMemberMissionsData.ts`, `GristPaContext.tsx`, `gristMap.ts`, `gristRest.ts`, `gristAccessToken.ts` |
 | Sécu | `src/security/embedTrust.ts`, `NothingHerePage.tsx`, `ensureFreshBuild.ts`, `fetchTableAllowlist.ts`, `writeTableAllowlist.ts` |
