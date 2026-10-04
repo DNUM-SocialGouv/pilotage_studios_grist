@@ -26,7 +26,8 @@ type WelcomeRoleHomeProps = {
  * Pas de KPI ni de liste exhaustive de la nav.
  * Accueil Freelance / Admin / Responsable : pas de libellé produit / rôle / lead
  * (titre « Bonjour [Prénom] »). Admin / Responsable : pas de bloc « À savoir » (`hint` null).
- * Recherche V1 (P1) sous le bonjour pour Admin / Resp. / Freelance.
+ * Recherche V1 — option A : « Bonjour » + barre dans un bandeau centré ;
+ * CTA hors bandeau en dessous (Admin / Resp. / Freelance ; pas Invité).
  */
 export function WelcomeRoleHome({
   content,
@@ -66,11 +67,8 @@ export function WelcomeRoleHome({
     );
   }
 
-  return (
-    <section
-      className="welcome-role-home fr-mb-3w"
-      aria-labelledby="welcome-role-title"
-    >
+  const greetingBlock = (
+    <>
       {showProductLabel ? (
         <p className="fr-text--sm fr-hint-text fr-mb-1w">Pilotage studios</p>
       ) : null}
@@ -86,10 +84,22 @@ export function WelcomeRoleHome({
       {content.lead?.trim() ? (
         <p className={showSearch ? "fr-mb-2w" : "fr-mb-3w"}>{content.lead}</p>
       ) : null}
+    </>
+  );
 
+  return (
+    <section
+      className="welcome-role-home fr-mb-3w"
+      aria-labelledby="welcome-role-title"
+    >
       {showSearch && searchTargets ? (
-        <WelcomeSearchBar targets={searchTargets} />
-      ) : null}
+        <div className="welcome-role-home__bandeau">
+          {greetingBlock}
+          <WelcomeSearchBar targets={searchTargets} />
+        </div>
+      ) : (
+        greetingBlock
+      )}
 
       {content.ctas.length > 0 ? (
         <nav
