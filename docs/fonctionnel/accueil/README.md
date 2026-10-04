@@ -51,6 +51,6 @@ Première page affichée à l’ouverture du Custom Widget dans Grist : un **acc
 - Mini-kanban Admin en plus de la page dédiée
 - Redirection auto Freelance → `/cra/declarer`
 - Personnalisation éditable dans Grist (CMS d’accueil)
-- Drag-and-drop des cartes ; édition texte tickets / commentaires
+- Drag-and-drop des cartes ; édition commentaires (corps Résumé/Détail Admin = feuille de route)
 - Sync automatique GitHub ↔ Grist ; notifications mail
 - Features IA / analyse

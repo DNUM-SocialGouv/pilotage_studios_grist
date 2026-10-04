@@ -12,7 +12,7 @@ Référence design : [`design/feedback_widget/`](../../../design/feedback_widget
 | Types | Anomalie / Suggestion / Question (segmentés) → badge carte |
 | Titre | Obligatoire — titre de la carte kanban |
 | En une phrase (`Resume`) | Obligatoire — corps de carte + « Résumé » du drawer |
-| Détail (`Message`) | Optionnel ; si vide = même contenu que le résumé |
+| Détail (`Message`) | Optionnel ; si vide = même contenu que le résumé ; rendu Markdown léger (`MissionProse`) — liens `http(s)` et pages internes `[libelle](/chemin)` |
 | Page concernée | Select prérempli ; écrit aussi dans `Theme` (ligne thème carte) |
 | Niveau de gêne | Visible seulement si type = Anomalie |
 | Identité | Select searchable sur `Equipe` — obligatoire |
@@ -36,7 +36,7 @@ Pas d’auto-détection Grist (le jeton widget ne fournit pas un profil fiable).
 | Guides, `Lien_github`, champs produit | Non (suivi / enrichissement dans Grist ou Admin) |
 
 Écriture widget : **create** via `grist.getTable('Kanban').create`, gardée par [`writeTableAllowlist.ts`](../../../src/security/writeTableAllowlist.ts).  
-Update widget : **`Colonne_kanban` seulement** (select Admin dans le drawer).
+Update widget (Admin) : **`Colonne_kanban`** (select) + corps **`Resume` / `Message`** (formulaire drawer). Pas d’édition Titre / commentaires.
 
 Lecture widget : `fetchAllowlistedTable('Kanban')` — colonne Feedback = `Nature=Feedback` et `Colonne_kanban=feedback`. Placeholder d’invitation **toujours visible**. **Clic carte** → drawer (`TicketDrawer`) + conversation.
 
@@ -58,7 +58,7 @@ Recommandation :
 
 | Table | Read | Create | Update / Delete |
 |-------|------|--------|-----------------|
-| `Kanban` | Population widget | Population widget (feedback) | Owner / `Role_ACL` Admin (dont `Colonne_kanban`) |
+| `Kanban` | Population widget | Population widget (feedback) | Owner / `Role_ACL` Admin (colonne + corps `Resume` / `Message`) |
 | `Kanban_commentaires` | Population widget | Population widget | Owner / Admin |
 
 Sans règles Update/Delete, tout utilisateur *Editor* du doc peut aussi modifier les tickets / commentaires des autres.

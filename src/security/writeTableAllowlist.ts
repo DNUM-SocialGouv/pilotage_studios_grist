@@ -2,7 +2,7 @@
  * Allowlist des tableIds autorisés pour une écriture widget (`getTable().create|update`).
  * Ne jamais accepter un id libre depuis l’UI — passer uniquement par les gardes dédiées.
  *
- * - `Kanban` : create (feedback) + update colonne (Admin).
+ * - `Kanban` : create (feedback) + update colonne / corps Resume+Message (Admin).
  * - `Kanban_commentaires` : create only (conversation tickets).
  * - `Missions` : create + update (drawer mission master — pas de delete).
  * - `Missions_enfants` : create + update (drawer prestation — pas de delete).

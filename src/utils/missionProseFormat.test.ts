@@ -1,6 +1,30 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { parseMissionProse, parseMissionProseInlines } from "./missionProseFormat.ts";
+import {
+  classifyMissionProseHref,
+  isSafeInternalPath,
+  parseMissionProse,
+  parseMissionProseInlines,
+} from "./missionProseFormat.ts";
+
+describe("classifyMissionProseHref / isSafeInternalPath", () => {
+  it("accepte http(s) et paths app", () => {
+    assert.equal(classifyMissionProseHref("https://example.com/x"), "external");
+    assert.equal(classifyMissionProseHref("http://localhost:5175/"), "external");
+    assert.equal(classifyMissionProseHref("/outils/regles-metier"), "internal");
+    assert.equal(classifyMissionProseHref("/"), "internal");
+    assert.equal(classifyMissionProseHref("/missions/12#contexte"), "internal");
+  });
+
+  it("refuse schémas dangereux et URLs protocol-relative", () => {
+    assert.equal(classifyMissionProseHref("javascript:alert(1)"), null);
+    assert.equal(classifyMissionProseHref("data:text/html,x"), null);
+    assert.equal(classifyMissionProseHref("//evil.example/"), null);
+    assert.equal(isSafeInternalPath("//evil.example/"), false);
+    assert.equal(isSafeInternalPath("/http://evil.example"), false);
+    assert.equal(isSafeInternalPath("outils/regles-metier"), false);
+  });
+});
 
 describe("parseMissionProseInlines", () => {
   it("conserve le texte sans lien", () => {
@@ -13,13 +37,39 @@ describe("parseMissionProseInlines", () => {
     const inlines = parseMissionProseInlines("voir [DOPAMIN](https://example.com/x) ici");
     assert.deepEqual(inlines, [
       { type: "text", value: "voir " },
-      { type: "link", href: "https://example.com/x", label: "DOPAMIN" },
+      {
+        type: "link",
+        href: "https://example.com/x",
+        label: "DOPAMIN",
+        kind: "external",
+      },
       { type: "text", value: " ici" },
     ]);
   });
 
-  it("laisse tel quel un schéma non http", () => {
+  it("extrait un lien Markdown vers un chemin interne", () => {
+    const inlines = parseMissionProseInlines(
+      "Voir [Documentation](/outils/regles-metier) pour le guide.",
+    );
+    assert.deepEqual(inlines, [
+      { type: "text", value: "Voir " },
+      {
+        type: "link",
+        href: "/outils/regles-metier",
+        label: "Documentation",
+        kind: "internal",
+      },
+      { type: "text", value: " pour le guide." },
+    ]);
+  });
+
+  it("laisse tel quel un schéma non autorisé", () => {
     const raw = "[x](javascript:alert(1))";
+    assert.deepEqual(parseMissionProseInlines(raw), [{ type: "text", value: raw }]);
+  });
+
+  it("laisse tel quel une URL protocol-relative", () => {
+    const raw = "[x](//evil.example/phish)";
     assert.deepEqual(parseMissionProseInlines(raw), [{ type: "text", value: raw }]);
   });
 
@@ -36,7 +86,7 @@ describe("parseMissionProseInlines", () => {
       [
         { type: "bold", value: "Intro" },
         { type: "text", value: " puis " },
-        { type: "link", href: "https://a.test", label: "lien" },
+        { type: "link", href: "https://a.test", label: "lien", kind: "external" },
         { type: "text", value: "." },
       ],
     );

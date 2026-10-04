@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
+import { Input } from "@codegouvfr/react-dsfr/Input";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { useAclProfil } from "../../AclProfilContext";
 import { isAdminRole } from "../../utils/droitsPagesThemes";
@@ -16,15 +17,23 @@ import {
   type KanbanTicket,
 } from "../../utils/kanbanTickets";
 import { safeHttpUrl } from "../../utils/produitsList";
+import { updateKanbanBody } from "../../utils/updateKanbanBody";
 import { updateKanbanColonne } from "../../utils/updateKanbanColonne";
 import { MissionProse } from "../missions/MissionProse";
 import { TicketConversation } from "./TicketConversation";
+
+export type TicketBodyPatch = {
+  resume: string;
+  message: string;
+};
 
 export type TicketDrawerProps = {
   ticket: KanbanTicket | null;
   onClose: () => void;
   /** Après changement de colonne Admin — rafraîchir la liste. */
   onColumnChanged?: (ticketId: number, column: KanbanColumnId) => void;
+  /** Après édition Résumé / Détail Admin — sync ticket ouvert + liste. */
+  onBodyChanged?: (ticketId: number, body: TicketBodyPatch) => void;
 };
 
 type MetaChip = { label: string; value: string };
@@ -46,10 +55,17 @@ function buildMetaChips(ticket: KanbanTicket): MetaChip[] {
   return chips;
 }
 
-export function TicketDrawer({ ticket, onClose, onColumnChanged }: TicketDrawerProps) {
+export function TicketDrawer({
+  ticket,
+  onClose,
+  onColumnChanged,
+  onBodyChanged,
+}: TicketDrawerProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const columnSelectId = useId();
+  const resumeFieldId = useId();
+  const detailFieldId = useId();
   const navigate = useNavigate();
   const { status: aclStatus, role } = useAclProfil();
   const isAdmin = aclStatus === "standalone" || isAdminRole(role);
@@ -58,10 +74,25 @@ export function TicketDrawer({ ticket, onClose, onColumnChanged }: TicketDrawerP
   const [savingColumn, setSavingColumn] = useState(false);
   const [columnError, setColumnError] = useState<string | null>(null);
 
+  const [localResume, setLocalResume] = useState<string | null>(null);
+  const [localMessage, setLocalMessage] = useState<string | null>(null);
+  const [editingBody, setEditingBody] = useState(false);
+  const [draftResume, setDraftResume] = useState("");
+  const [draftMessage, setDraftMessage] = useState("");
+  const [savingBody, setSavingBody] = useState(false);
+  const [bodyError, setBodyError] = useState<string | null>(null);
+
   useEffect(() => {
     setLocalColumn(ticket?.column ?? null);
     setColumnError(null);
     setSavingColumn(false);
+    setLocalResume(null);
+    setLocalMessage(null);
+    setEditingBody(false);
+    setDraftResume("");
+    setDraftMessage("");
+    setSavingBody(false);
+    setBodyError(null);
   }, [ticket?.id, ticket?.column]);
 
   useEffect(() => {
@@ -87,20 +118,69 @@ export function TicketDrawer({ ticket, onClose, onColumnChanged }: TicketDrawerP
   const title = ticket?.title ?? "Ticket";
   const githubHref = ticket?.lienGithub ? safeHttpUrl(ticket.lienGithub) : undefined;
 
+  const storedResume = localResume ?? ticket?.resume ?? "";
+  const storedMessage = localMessage ?? ticket?.message ?? "";
+
   const resumeText =
-    ticket?.resume ||
+    storedResume ||
     (ticket?.nature === "Produit" ? ticket.guideLead : "") ||
-    (ticket?.nature === "Feedback" ? ticket.message : "") ||
+    (ticket?.nature === "Feedback" ? storedMessage : "") ||
     "";
 
   const detailText =
-    ticket?.message && ticket.message !== resumeText ? ticket.message : "";
+    storedMessage && storedMessage !== resumeText ? storedMessage : "";
 
   const hasPratique =
     Boolean(ticket?.guideIntro) || (ticket?.guideSteps.length ?? 0) > 0;
 
   const metaChips = ticket ? buildMetaChips(ticket) : [];
   const hasActions = Boolean(ticket?.pagePath) || Boolean(githubHref);
+  const hasBodyContent = Boolean(resumeText) || Boolean(detailText);
+
+  const startBodyEdit = () => {
+    if (!ticket || !isAdmin || savingBody) {
+      return;
+    }
+    // Formulaire = colonnes Grist ; si Message == Resume (create Feedback), Détail vide.
+    setDraftResume(storedResume);
+    setDraftMessage(storedMessage && storedMessage !== storedResume ? storedMessage : "");
+    setBodyError(null);
+    setEditingBody(true);
+  };
+
+  const cancelBodyEdit = () => {
+    if (savingBody) {
+      return;
+    }
+    setEditingBody(false);
+    setBodyError(null);
+  };
+
+  const saveBodyEdit = async () => {
+    if (!ticket || !isAdmin || savingBody) {
+      return;
+    }
+    setSavingBody(true);
+    setBodyError(null);
+    try {
+      const fields = await updateKanbanBody(
+        ticket.id,
+        { resume: draftResume, message: draftMessage },
+        { isAdmin: true },
+      );
+      setLocalResume(fields.Resume);
+      setLocalMessage(fields.Message);
+      setEditingBody(false);
+      onBodyChanged?.(ticket.id, {
+        resume: fields.Resume,
+        message: fields.Message,
+      });
+    } catch (err) {
+      setBodyError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSavingBody(false);
+    }
+  };
 
   const onColumnSelect = async (raw: string) => {
     if (!ticket || !isAdmin || savingColumn) {
@@ -225,45 +305,125 @@ export function TicketDrawer({ ticket, onClose, onColumnChanged }: TicketDrawerP
 
             {ticket ? (
               <div className="pilotage-drawer-dialog__body ticket-drawer-body">
-                {resumeText ? (
-                  <section
-                    className="ticket-drawer-section"
-                    aria-labelledby="ticket-resume-title"
-                  >
-                    <p id="ticket-resume-title" className="ticket-drawer-label">
-                      Résumé
-                    </p>
-                    <p
-                      className="ticket-drawer-lead fr-mb-0"
-                      style={{ whiteSpace: "pre-wrap" }}
-                    >
-                      {resumeText}
-                    </p>
-                  </section>
+                {isAdmin ? (
+                  <div className="ticket-drawer-body-toolbar">
+                    <p className="ticket-drawer-body-toolbar__title fr-mb-0">Contenu</p>
+                    {!editingBody ? (
+                      <button
+                        type="button"
+                        className="fr-btn fr-btn--tertiary fr-btn--sm fr-icon-edit-line fr-btn--icon-left"
+                        onClick={startBodyEdit}
+                      >
+                        {hasBodyContent ? "Modifier" : "Ajouter"}
+                      </button>
+                    ) : null}
+                  </div>
                 ) : null}
 
-                {detailText ? (
-                  <section
-                    className="ticket-drawer-section"
-                    aria-labelledby="ticket-detail-title"
-                  >
-                    <p id="ticket-detail-title" className="ticket-drawer-label">
-                      Détail
-                    </p>
-                    {ticket.nature === "Produit" ? (
-                      <div className="ticket-drawer-detail">
-                        <MissionProse value={detailText} />
-                      </div>
-                    ) : (
-                      <p
-                        className="fr-text--sm fr-mb-0"
-                        style={{ whiteSpace: "pre-wrap" }}
+                {editingBody ? (
+                  <div className="ticket-drawer-body-edit">
+                    <Input
+                      label="Résumé"
+                      hintText="Phrase courte affichée sur la carte et en tête du panneau."
+                      textArea
+                      state={bodyError && !draftResume.trim() ? "error" : "default"}
+                      stateRelatedMessage={
+                        bodyError && !draftResume.trim() ? bodyError : undefined
+                      }
+                      nativeTextAreaProps={{
+                        id: resumeFieldId,
+                        value: draftResume,
+                        rows: 3,
+                        disabled: savingBody,
+                        "aria-required": true,
+                        onChange: (e) => setDraftResume(e.target.value),
+                      }}
+                    />
+                    <Input
+                      label="Détail"
+                      hintText="Optionnel. Markdown léger (titres, listes, liens http(s) ou page interne). Ex. [Documentation](/outils/regles-metier)."
+                      textArea
+                      nativeTextAreaProps={{
+                        id: detailFieldId,
+                        value: draftMessage,
+                        rows: ticket.nature === "Produit" ? 8 : 5,
+                        disabled: savingBody,
+                        onChange: (e) => setDraftMessage(e.target.value),
+                      }}
+                    />
+                    {bodyError && draftResume.trim() ? (
+                      <Alert
+                        className="fr-mb-2w"
+                        severity="error"
+                        small
+                        title="Enregistrement impossible"
+                        description={bodyError}
+                      />
+                    ) : null}
+                    <div className="ticket-drawer-body-edit__actions">
+                      <button
+                        type="button"
+                        className="fr-btn fr-btn--sm"
+                        onClick={() => void saveBodyEdit()}
+                        disabled={savingBody}
                       >
-                        {detailText}
+                        {savingBody ? "Enregistrement…" : "Enregistrer"}
+                      </button>
+                      <button
+                        type="button"
+                        className="fr-btn fr-btn--secondary fr-btn--sm"
+                        onClick={cancelBodyEdit}
+                        disabled={savingBody}
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {resumeText ? (
+                      <section
+                        className="ticket-drawer-section"
+                        aria-labelledby="ticket-resume-title"
+                      >
+                        <p id="ticket-resume-title" className="ticket-drawer-label">
+                          Résumé
+                        </p>
+                        <p
+                          className="ticket-drawer-lead fr-mb-0"
+                          style={{ whiteSpace: "pre-wrap" }}
+                        >
+                          <MissionProse
+                            value={resumeText}
+                            inline
+                            onInternalLinkClick={close}
+                          />
+                        </p>
+                      </section>
+                    ) : isAdmin ? (
+                      <p className="fr-text--sm fr-hint-text fr-mb-0">
+                        Aucun résumé — utilisez « Ajouter » pour renseigner le contenu.
                       </p>
-                    )}
-                  </section>
-                ) : null}
+                    ) : null}
+
+                    {detailText ? (
+                      <section
+                        className="ticket-drawer-section"
+                        aria-labelledby="ticket-detail-title"
+                      >
+                        <p id="ticket-detail-title" className="ticket-drawer-label">
+                          Détail
+                        </p>
+                        <div className="ticket-drawer-detail">
+                          <MissionProse
+                            value={detailText}
+                            onInternalLinkClick={close}
+                          />
+                        </div>
+                      </section>
+                    ) : null}
+                  </>
+                )}
 
                 {hasPratique ? (
                   <section

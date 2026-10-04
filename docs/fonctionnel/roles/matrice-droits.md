@@ -86,7 +86,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | `Weekly_phase` | CRUD* | —† | —† | — | **Appliqué** ACL + widget (allowlist) | *Owner document ; †si `user.Email == user.Weekly_coach.E_mail` |
 | `Weekly_agenda` | CRUD* | —† | —† | — | **Appliqué** ACL + widget (allowlist) | Idem |
 | `Weekly_coachs` | CRUD | — | R soi | — | **Appliqué** ACL ; widget lecture | Allowlist e-mails — **pas** dans git ; pas d’écriture widget |
-| `Kanban` (feedback + produit) | CRU (liste + colonne Admin) | C (+ R) ; U colonne Admin | C (+ R) | C (+ R) | **Appliqué** (ACL) + widget | Owner/Admin `+CRUD` ; `True` → `+CR-UD` |
+| `Kanban` (feedback + produit) | CRU (liste + colonne + corps Admin) | C (+ R) | C (+ R) | C (+ R) | **Appliqué** (ACL) + widget | Owner/Admin `+CRUD` (colonne + `Resume`/`Message`) ; `True` → `+CR-UD` |
 | `Kanban_commentaires` | CR | C (+ R) | C (+ R) | C (+ R) | **Appliqué** (ACL) + widget | Owner/Admin `+CRUD` ; `True` → `+CR-UD` |
 | `Retours` / `Roadmap` (legacy) | — | — | — | — | **Hors widget** (migrées → `Kanban`) | Archivables Owner |
 | `Acl_profil` | CRUD | CRUD | CR soi | CR soi | **Appliqué** | Owner/Admin `+CRUD` ; `user.Email == rec.E_mail` → `+CR` ; `True` → `-CRUD` |
@@ -107,6 +107,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-10-04 | Feuille de route : Admin peut éditer le corps carte (`Resume` / `Message`) dans le drawer ; allowlist écriture élargie ; ACL déjà Owner/Admin CRUD ; hors `Page_*` | 5, 6 (doc) | feat/kanban-edit-body-admin |
 | 2026-10-04 | Invité : `Droits_pages.Page_regles_metier` = **true** (HITL porteur OK) ; autres rôles inchangés ; formule `Acl_profil` déjà miroir `Droits_pages.lookupOne(Role=$Role).Page_regles_metier` | 5 | feat/feuille-de-route-user-menu · suite #100 |
 | 2026-10-04 | Menu compte : **Mon carnet** + **Documentation** (`/outils/regles-metier`, libellé) + Feuille de route ; retrait nav principale / Outils (anti-doublon) ; gardes inchangées (`Page_regles_metier` / rôle carnet) | 5 | cursor/user-menu-docs-carnet · suite #100 |
 | 2026-10-04 | Feuille de route `/feuille-de-route` : **fixé ouvert** hors `Page_*` (tous rôles) ; menu compte (identité + lien) ; kanban retiré de `/` ; rappel Admin `DROITS_PAGES_ROLE_FIXED` | 5 | feat/feuille-de-route-user-menu · kanban `accueil-nav-refonte` |

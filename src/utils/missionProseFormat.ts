@@ -1,14 +1,16 @@
 /**
  * Formatage léger des textes narratifs (missions, détail tickets kanban) :
  * titres `#`–`######`, paragraphes, listes `* / - / •` ou `1.`, gras `**…**`,
- * liens Markdown `[label](https://…)`, tableaux GFM `| … |`.
+ * liens Markdown `[label](https://…)` ou `[label](/chemin/interne)`, tableaux GFM `| … |`.
  * Pas de HTML brut ni de Markdown complet.
  */
+
+export type MissionProseLinkKind = "external" | "internal";
 
 export type MissionProseInline =
   | { type: "text"; value: string }
   | { type: "bold"; value: string }
-  | { type: "link"; href: string; label: string };
+  | { type: "link"; href: string; label: string; kind: MissionProseLinkKind };
 
 export type MissionProseHeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -22,20 +24,56 @@ export type MissionProseBlock =
       rows: MissionProseInline[][][];
     };
 
-const MD_LINK_RE = /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g;
+/**
+ * Captures uniquement les cibles allowlistées (évite de « mâcher » `javascript:…`
+ * ou d’autres schémas). Validation `classifyMissionProseHref` en complément.
+ */
+const MD_LINK_RE =
+  /\[([^\]]+)\]\((https?:\/\/[^)\s]+|\/(?!\/)[^)\s]*)\)/g;
 const MD_BOLD_RE = /\*\*([^*]+)\*\*/g;
 const LIST_ITEM_RE = /^\s*[*•\-]\s+(.*)$/;
 const ORDERED_LIST_ITEM_RE = /^\s*\d+\.\s+(.*)$/;
 const HEADING_RE = /^(#{1,6})\s+(.+)$/;
 const TABLE_SEP_CELL_RE = /^:?-+:?$/;
 
-function isSafeHttpUrl(href: string): boolean {
+export function isSafeHttpUrl(href: string): boolean {
   try {
     const u = new URL(href);
     return u.protocol === "http:" || u.protocol === "https:";
   } catch {
     return false;
   }
+}
+
+/**
+ * Chemin absolu MemoryRouter du widget : `/…`.
+ * Refuse `//…` (URL protocol-relative), schémas (`javascript:`…), antislash / contrôles.
+ */
+export function isSafeInternalPath(href: string): boolean {
+  if (!href.startsWith("/") || href.startsWith("//")) {
+    return false;
+  }
+  if (/[\0\r\n\t\\]/.test(href)) {
+    return false;
+  }
+  // Pas de schéma déguisé dans le path (`/http://…`).
+  if (href.includes("://")) {
+    return false;
+  }
+  return true;
+}
+
+/** Allowlist liens Markdown : http(s) externe ou path app `/…`. */
+export function classifyMissionProseHref(
+  href: string,
+): MissionProseLinkKind | null {
+  if (isSafeHttpUrl(href)) {
+    return "external";
+  }
+  if (isSafeInternalPath(href)) {
+    return "internal";
+  }
+  return null;
 }
 
 function parseBoldInlines(text: string): MissionProseInline[] {
@@ -59,7 +97,7 @@ function parseBoldInlines(text: string): MissionProseInline[] {
   return out.length > 0 ? out : [{ type: "text", value: text }];
 }
 
-/** Découpe le texte inline : liens Markdown http(s), puis gras `**…**`. */
+/** Découpe le texte inline : liens Markdown safe, puis gras `**…**`. */
 export function parseMissionProseInlines(text: string): MissionProseInline[] {
   const out: MissionProseInline[] = [];
   let last = 0;
@@ -72,8 +110,9 @@ export function parseMissionProseInlines(text: string): MissionProseInline[] {
     if (m.index > last) {
       out.push(...parseBoldInlines(text.slice(last, m.index)));
     }
-    if (isSafeHttpUrl(href)) {
-      out.push({ type: "link", href, label });
+    const kind = classifyMissionProseHref(href);
+    if (kind) {
+      out.push({ type: "link", href, label, kind });
     } else {
       out.push(...parseBoldInlines(full));
     }
