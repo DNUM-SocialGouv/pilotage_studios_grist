@@ -92,3 +92,22 @@ export async function updateWeeklyAgendaTraite(
     fields: { Traite: traite },
   });
 }
+
+/** Met à jour le texte d’un sujet (`Weekly_agenda.Texte`) — pas d’autres colonnes. */
+export async function updateWeeklyAgendaTexte(
+  id: number,
+  texte: string,
+): Promise<void> {
+  assertWritableUpdateTableId(WEEKLY_AGENDA_TABLE_ID);
+  if (!Number.isFinite(id) || id <= 0) {
+    throw new Error("Identifiant sujet invalide.");
+  }
+  const next = texte.trim();
+  if (!next) {
+    throw new Error("Le sujet ne peut pas être vide.");
+  }
+  await getWritableTable(WEEKLY_AGENDA_TABLE_ID).update({
+    id,
+    fields: { Texte: next },
+  });
+}

@@ -36,8 +36,16 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 | `Equipe` | Lecture — noms intervenants |
 | Produits SDPC | Lecture — libellé produit |
 | **`Weekly_phase`** | Create + update — 1 ligne / mission : `Mission` (Ref) · `Phase` (`prochainement` \| `cadrage` \| `actif` \| `autonomie`) |
-| **`Weekly_agenda`** | Create + update `Traite` — sujets : `Texte` · `Auteur` · `Email` · `Mission` (opt.) · `Traite` · `Cree_le` |
+| **`Weekly_agenda`** | Create + update `Traite` / `Texte` — sujets : `Texte` · `Auteur` · `Email` · `Mission` (opt.) · `Traite` · `Cree_le` |
 | **`Weekly_coachs`** | Lecture widget (allowlist) — `E_mail` ; écriture **hors widget** (Owner / Admin UI) |
+
+### Agenda (sujets)
+
+- Liste : texte, auteur, **date de création** (`Cree_le`), mission liée éventuelle.
+- Actions : **Voir** / **Modifier** le contenu (`Texte`) dans une modale DSFR (`<dialog>`).
+- Champ auteur « Votre prénom » : prérempli avec le **prénom seul** —
+  1. `Equipe.Prenom_Nom` de la session (`firstNameFromDisplayName`) ;
+  2. sinon premier segment de l’e-mail de session (avant `.` / `_` / `-`, pas `prenom.nom`).
 
 ### Règles kanban
 

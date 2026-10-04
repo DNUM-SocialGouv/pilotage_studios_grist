@@ -108,6 +108,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-10-04 | Weekly Ops agenda : update `Weekly_agenda.Texte` (modale Voir/Modifier) en plus de `Traite` ; prénom auteur ; date `Cree_le` ; **N/A `Page_*`** (écran déjà hors Page_*) ; ACL couche 6 inchangée (CRUD coachs) | 5, 6 (doc) | #105 · kanban `update-page-weekly` |
 | 2026-10-04 | Paramètres d’affichage V1 (clair / sombre / système) : entrée **menu compte** ; modale DSFR ; défaut `system` ; préférence `localStorage` navigateur ; **N/A `Page_*`** (pas d’écran nav / garde) ; N/A tableaux A/B | 5 (confort) | feat/parametres-affichage · kanban `parametres-affichage` |
 | 2026-10-04 | Recherche d’accueil `/` : **option A** — « Bonjour » + barre dans bandeau **pleine largeur** ; CTA hors bandeau ; badge statut missions (`StatutBadge`) ; cibles Produit + Mission + Personne ; **N/A `Page_*`** (variante rôle) ; filtrées par `Page_produits` / `Page_missions` / `Page_equipe` ; pas Invité ; pas de route `/recherche` | 5 | feat/recherche-accueil · #103 · kanban `recherche-accueil` |
 | 2026-10-04 | Feuille de route : Admin peut éditer le corps carte (`Resume` / `Message`) dans le drawer ; allowlist écriture élargie ; ACL déjà Owner/Admin CRUD ; hors `Page_*` | 5, 6 (doc) | feat/kanban-edit-body-admin |

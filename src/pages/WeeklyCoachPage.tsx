@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useState, type DragEvent, type FormEvent } from "react";
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type DragEvent,
+  type FormEvent,
+} from "react";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { Input } from "@codegouvfr/react-dsfr/Input";
@@ -10,7 +18,13 @@ import { useWeeklyCoachData } from "../hooks/useWeeklyCoachData";
 import { NothingHerePage } from "../security/NothingHerePage";
 import { extractGristReferenceId } from "../utils/gristReferences";
 import {
+  defaultWeeklyAuteurPrenom,
+  formatWeeklyAgendaCreatedAt,
+  parseWeeklyAgendaCreatedAt,
+} from "../utils/weeklyAgenda";
+import {
   createWeeklyAgendaRecord,
+  updateWeeklyAgendaTexte,
   updateWeeklyAgendaTraite,
   upsertWeeklyPhase,
 } from "../utils/weeklyGristWrite";
@@ -25,10 +39,7 @@ import {
 } from "../utils/weeklyPhases";
 import type { WeeklyAgendaRow } from "../types";
 
-function defaultAuteurFromEmail(email: string | null | undefined): string {
-  const local = email?.split("@")[0]?.trim() ?? "";
-  return local;
-}
+type AgendaDialogMode = "view" | "edit";
 
 function AgendaSujetRow({
   sujet,
@@ -36,18 +47,24 @@ function AgendaSujetRow({
   missionId,
   busy,
   onToggle,
+  onView,
+  onEdit,
 }: {
   sujet: WeeklyAgendaRow;
   missionLabel?: string;
   missionId: number | null;
   busy: boolean;
   onToggle: (id: number, traite: boolean) => void;
+  onView: (sujet: WeeklyAgendaRow) => void;
+  onEdit: (sujet: WeeklyAgendaRow) => void;
 }) {
   const checkId = `weekly-agenda-${sujet.id}`;
   const titleId = `${checkId}-title`;
   const traite = Boolean(sujet.Traite);
   const texte = (sujet.Texte ?? "Sujet").trim();
   const auteur = (sujet.Auteur || "—").trim();
+  const createdAt = parseWeeklyAgendaCreatedAt(sujet.Cree_le);
+  const createdLabel = formatWeeklyAgendaCreatedAt(sujet.Cree_le);
 
   return (
     <article
@@ -56,7 +73,7 @@ function AgendaSujetRow({
         boxShadow: "inset 0 0 0 1px var(--border-default-grey)",
         padding: "0.625rem 0.75rem",
         display: "grid",
-        gridTemplateColumns: "1.25rem minmax(0, 1fr)",
+        gridTemplateColumns: "1.25rem minmax(0, 1fr) auto",
         gap: "0.75rem",
         alignItems: "start",
       }}
@@ -99,6 +116,12 @@ function AgendaSujetRow({
           }}
         >
           <span>Proposé par {auteur}</span>
+          {createdLabel && createdAt ? (
+            <>
+              <span aria-hidden="true">·</span>
+              <time dateTime={createdAt.toISOString()}>Créé le {createdLabel}</time>
+            </>
+          ) : null}
           {missionId != null && missionLabel ? (
             <>
               <span aria-hidden="true">·</span>
@@ -112,7 +135,202 @@ function AgendaSujetRow({
           ) : null}
         </p>
       </div>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "0.25rem",
+          justifyContent: "flex-end",
+        }}
+      >
+        <Button
+          type="button"
+          priority="tertiary no outline"
+          size="small"
+          iconId="fr-icon-eye-line"
+          disabled={busy}
+          onClick={() => onView(sujet)}
+          title={`Voir le sujet : ${texte}`}
+        >
+          Voir
+        </Button>
+        <Button
+          type="button"
+          priority="tertiary no outline"
+          size="small"
+          iconId="fr-icon-edit-line"
+          disabled={busy}
+          onClick={() => onEdit(sujet)}
+          title={`Modifier le sujet : ${texte}`}
+        >
+          Modifier
+        </Button>
+      </div>
     </article>
+  );
+}
+
+function AgendaSujetDialog({
+  sujet,
+  mode,
+  missionLabel,
+  busy,
+  onClose,
+  onSave,
+  onSwitchToEdit,
+}: {
+  sujet: WeeklyAgendaRow | null;
+  mode: AgendaDialogMode;
+  missionLabel?: string;
+  busy: boolean;
+  onClose: () => void;
+  onSave: (id: number, texte: string) => Promise<void>;
+  onSwitchToEdit: () => void;
+}) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const titleId = useId();
+  const fieldId = useId();
+  const [draft, setDraft] = useState("");
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setDraft((sujet?.Texte ?? "").trim());
+    setLocalError(null);
+  }, [sujet?.id, sujet?.Texte, mode]);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (sujet != null) {
+      if (!dialog.open) dialog.showModal();
+    } else if (dialog.open) {
+      dialog.close();
+    }
+  }, [sujet]);
+
+  const createdLabel = formatWeeklyAgendaCreatedAt(sujet?.Cree_le);
+  const auteur = (sujet?.Auteur || "—").trim();
+
+  const close = () => {
+    dialogRef.current?.close();
+  };
+
+  const submitEdit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (sujet == null) return;
+    const next = draft.trim();
+    if (!next) {
+      setLocalError("Saisissez un sujet.");
+      return;
+    }
+    setLocalError(null);
+    await onSave(sujet.id, next);
+  };
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className="fr-modal"
+      aria-labelledby={titleId}
+      onClose={onClose}
+      onCancel={(e) => {
+        e.preventDefault();
+        close();
+      }}
+    >
+      <div className="fr-container fr-container--fluid fr-container-md">
+        <div className="fr-grid-row fr-grid-row--center">
+          <div className="fr-col-12 fr-col-md-8 fr-col-lg-6">
+            <div className="fr-modal__body">
+              <div className="fr-modal__header">
+                <button
+                  type="button"
+                  className="fr-btn--close fr-btn"
+                  onClick={close}
+                  disabled={busy}
+                >
+                  Fermer
+                </button>
+              </div>
+              <div className="fr-modal__content">
+                <h2 id={titleId} className="fr-modal__title">
+                  {mode === "edit" ? "Modifier le sujet" : "Sujet à aborder"}
+                </h2>
+                {sujet == null ? null : mode === "view" ? (
+                  <>
+                    <p
+                      className="fr-text--md"
+                      style={{ whiteSpace: "pre-wrap", marginBottom: "0.75rem" }}
+                    >
+                      {(sujet.Texte ?? "").trim() || "—"}
+                    </p>
+                    <p className="fr-text--xs" style={{ color: "var(--text-mention-grey)" }}>
+                      Proposé par {auteur}
+                      {createdLabel ? ` · Créé le ${createdLabel}` : ""}
+                      {missionLabel ? ` · ${missionLabel}` : ""}
+                    </p>
+                  </>
+                ) : (
+                  <form ref={formRef} onSubmit={(e) => void submitEdit(e)}>
+                    <Input
+                      label="Contenu du sujet"
+                      hintText="Modifie uniquement le texte ; auteur et date restent inchangés."
+                      textArea
+                      state={localError ? "error" : "default"}
+                      stateRelatedMessage={localError ?? undefined}
+                      nativeTextAreaProps={{
+                        id: fieldId,
+                        value: draft,
+                        onChange: (e) => setDraft(e.target.value),
+                        disabled: busy,
+                        rows: 5,
+                        "aria-required": true,
+                      }}
+                    />
+                  </form>
+                )}
+              </div>
+              <div className="fr-modal__footer">
+                <ul className="fr-btns-group fr-btns-group--right fr-btns-group--inline-reverse fr-btns-group--inline-lg">
+                  {mode === "view" ? (
+                    <>
+                      <li>
+                        <Button type="button" onClick={onSwitchToEdit} disabled={busy}>
+                          Modifier
+                        </Button>
+                      </li>
+                      <li>
+                        <Button type="button" priority="secondary" onClick={close} disabled={busy}>
+                          Fermer
+                        </Button>
+                      </li>
+                    </>
+                  ) : (
+                    <>
+                      <li>
+                        <Button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => formRef.current?.requestSubmit()}
+                        >
+                          Enregistrer
+                        </Button>
+                      </li>
+                      <li>
+                        <Button type="button" priority="secondary" onClick={close} disabled={busy}>
+                          Annuler
+                        </Button>
+                      </li>
+                    </>
+                  )}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </dialog>
   );
 }
 
@@ -295,7 +513,7 @@ function WeeklyCardView({
 
 export function WeeklyCoachPage() {
   const pa = useGristPa();
-  const { email: sessionEmail } = useAclProfil();
+  const { email: sessionEmail, displayName } = useAclProfil();
   const enabled =
     !pa.untrustedEmbed && !pa.outsideGrist && !pa.loading && !pa.error;
   const data = useWeeklyCoachData(enabled);
@@ -308,10 +526,13 @@ export function WeeklyCoachPage() {
   const [newSujet, setNewSujet] = useState("");
   const [newMissionId, setNewMissionId] = useState("");
   const [auteur, setAuteur] = useState("");
+  const [dialogSujet, setDialogSujet] = useState<WeeklyAgendaRow | null>(null);
+  const [dialogMode, setDialogMode] = useState<AgendaDialogMode>("view");
 
   useEffect(() => {
-    setAuteur((prev) => prev.trim() || defaultAuteurFromEmail(sessionEmail));
-  }, [sessionEmail]);
+    const next = defaultWeeklyAuteurPrenom(displayName, sessionEmail);
+    setAuteur((prev) => prev.trim() || next);
+  }, [displayName, sessionEmail]);
 
   const cards = useMemo(
     () =>
@@ -395,7 +616,10 @@ export function WeeklyCoachPage() {
       setAgendaError("Saisissez un sujet.");
       return;
     }
-    const name = auteur.trim() || sessionEmail?.split("@")[0] || "Anonyme";
+    const name =
+      auteur.trim() ||
+      defaultWeeklyAuteurPrenom(displayName, sessionEmail) ||
+      "Anonyme";
     setAgendaBusy(true);
     try {
       const mid = newMissionId ? Number(newMissionId) : null;
@@ -426,6 +650,27 @@ export function WeeklyCoachPage() {
     } catch (err) {
       setAgendaError(
         err instanceof Error ? err.message : "Impossible de mettre à jour le sujet.",
+      );
+    } finally {
+      setAgendaBusy(false);
+    }
+  };
+
+  const openAgendaDialog = (sujet: WeeklyAgendaRow, mode: AgendaDialogMode) => {
+    setDialogMode(mode);
+    setDialogSujet(sujet);
+  };
+
+  const onSaveAgendaTexte = async (id: number, texte: string) => {
+    setAgendaError(null);
+    setAgendaBusy(true);
+    try {
+      await updateWeeklyAgendaTexte(id, texte);
+      setDialogSujet(null);
+      await data.reload();
+    } catch (err) {
+      setAgendaError(
+        err instanceof Error ? err.message : "Impossible d’enregistrer le sujet.",
       );
     } finally {
       setAgendaBusy(false);
@@ -539,6 +784,8 @@ export function WeeklyCoachPage() {
                         }
                         busy={agendaBusy || data.isReloading}
                         onToggle={(id, traite) => void onToggleTraite(id, traite)}
+                        onView={(row) => openAgendaDialog(row, "view")}
+                        onEdit={(row) => openAgendaDialog(row, "edit")}
                       />
                     </li>
                   );
@@ -590,14 +837,32 @@ export function WeeklyCoachPage() {
               <Input
                 className="fr-mt-2w"
                 label="Votre prénom (auteur)"
-                hintText="Signe le sujet. Prérempli avec votre compte de session."
+                hintText="Signe le sujet. Prérempli avec votre prénom (fiche Équipe), sinon le début de votre e-mail de session."
                 nativeInputProps={{
                   value: auteur,
                   onChange: (e) => setAuteur(e.target.value),
                   disabled: agendaBusy,
+                  placeholder: defaultWeeklyAuteurPrenom(displayName, sessionEmail) || undefined,
+                  autoComplete: "given-name",
                 }}
               />
             </form>
+
+            <AgendaSujetDialog
+              sujet={dialogSujet}
+              mode={dialogMode}
+              missionLabel={
+                dialogSujet != null
+                  ? missionTitleById.get(
+                      extractGristReferenceId(dialogSujet.Mission) ?? -1,
+                    )
+                  : undefined
+              }
+              busy={agendaBusy || data.isReloading}
+              onClose={() => setDialogSujet(null)}
+              onSave={onSaveAgendaTexte}
+              onSwitchToEdit={() => setDialogMode("edit")}
+            />
           </section>
 
           <section aria-label="Kanban des missions">
