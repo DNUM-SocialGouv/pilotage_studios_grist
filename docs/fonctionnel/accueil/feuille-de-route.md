@@ -4,7 +4,7 @@
 
 > **Route** : `/feuille-de-route`  
 > **Page** : `src/pages/FeuilleDeRoutePage.tsx`  
-> **Entrée** : menu compte (avatar) → « Feuille de route » · CTA Admin sur l’accueil  
+> **Entrée** : menu compte (avatar) → Mon carnet · **Feuille de route** · Documentation · CTA Admin sur l’accueil  
 > **Tickets** : table Grist `Kanban` (`Nature` = Feedback \| Produit)  
 > **Conversation** : table Grist `Kanban_commentaires` + drawer `TicketDrawer`
 

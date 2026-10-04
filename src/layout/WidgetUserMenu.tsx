@@ -3,6 +3,9 @@
  * dans `@codegouvfr/react-dsfr`) : disclosure identité + liens internes.
  * Déclencheur = avatar Équipe (`EquipeAvatar`), pas l’icône générique seule.
  * Pas de `role="menu"` incomplet — `aria-expanded` / Escape / clic extérieur.
+ *
+ * Ordre liens (perso → espace partagé → aide) :
+ * Mon carnet · Feuille de route · Documentation
  */
 import {
   useCallback,
@@ -17,47 +20,21 @@ import { Button } from "@codegouvfr/react-dsfr/Button";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import { useAclProfil } from "../AclProfilContext";
 import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
+import { canAccessHref } from "../security/pageAccess";
+import { isCraDeclarerRole } from "../utils/droitsPagesThemes";
+import { isNavActive } from "./widgetNavItems";
 
+const MON_CARNET_HREF = "/cra/declarer";
 const FEUILLE_DE_ROUTE_HREF = "/feuille-de-route";
+const DOCUMENTATION_HREF = "/outils/regles-metier";
 
-function identityLines(params: {
-  displayName: string | null;
-  email: string | null;
-  role: string | null;
-  equipeLabel: string | null;
-  status: string;
-}): { primary: string; secondary: string[] } {
-  const secondary: string[] = [];
-  const name = params.displayName?.trim() || null;
-  const email = params.email?.trim() || null;
-
-  if (email && email !== name) {
-    secondary.push(email);
-  }
-  if (params.role?.trim()) {
-    secondary.push(`Rôle : ${params.role.trim()}`);
-  }
-  if (params.equipeLabel?.trim()) {
-    secondary.push(`Département : ${params.equipeLabel.trim()}`);
-  }
-
-  if (name) {
-    return { primary: name, secondary };
-  }
-  if (email) {
-    return { primary: email, secondary: secondary.filter((l) => l !== email) };
-  }
-  if (params.status === "standalone") {
-    return { primary: "Session locale (hors Grist)", secondary: [] };
-  }
-  if (params.status === "loading") {
-    return { primary: "Profil en cours de chargement…", secondary: [] };
-  }
-  return { primary: "Identité indisponible", secondary: [] };
-}
+type UserMenuLink = {
+  href: string;
+  label: string;
+};
 
 export function WidgetUserMenu() {
-  const { email, role, equipeLabel, equipeId, avatar, displayName, status } =
+  const { email, role, equipeLabel, equipeId, avatar, displayName, status, flags } =
     useAclProfil();
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -110,14 +87,23 @@ export function WidgetUserMenu() {
     status,
   });
   const hasAvatar = equipeId != null && equipeId > 0;
-  const feuilleActive =
-    pathname === FEUILLE_DE_ROUTE_HREF ||
-    pathname.startsWith(`${FEUILLE_DE_ROUTE_HREF}/`);
+  const canDeclareCra = status === "standalone" || isCraDeclarerRole(role);
+  const showDocumentation = canAccessHref(DOCUMENTATION_HREF, flags);
 
-  const onFeuilleClick = (e: MouseEvent<HTMLAnchorElement>) => {
+  const links: UserMenuLink[] = [];
+  if (canDeclareCra) {
+    links.push({ href: MON_CARNET_HREF, label: "Mon carnet" });
+  }
+  // Feuille de route : fixé ouvert (hors Page_*) — toujours proposée.
+  links.push({ href: FEUILLE_DE_ROUTE_HREF, label: "Feuille de route" });
+  if (showDocumentation) {
+    links.push({ href: DOCUMENTATION_HREF, label: "Documentation" });
+  }
+
+  const onLinkClick = (href: string) => (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     close();
-    navigate(FEUILLE_DE_ROUTE_HREF);
+    navigate(href);
   };
 
   return (
@@ -167,27 +153,70 @@ export function WidgetUserMenu() {
               </p>
             ))}
           </div>
-          <ul className="widget-user-menu__list">
-            <li>
-              <a
-                ref={firstLinkRef}
-                href={FEUILLE_DE_ROUTE_HREF}
-                className={cx(
-                  "fr-btn",
-                  "fr-btn--tertiary-no-outline",
-                  "fr-btn--sm",
-                  "widget-user-menu__item",
-                  feuilleActive && "widget-user-menu__item--active",
-                )}
-                aria-current={feuilleActive ? "page" : undefined}
-                onClick={onFeuilleClick}
-              >
-                Feuille de route
-              </a>
-            </li>
-          </ul>
+          {links.length > 0 ? (
+            <ul className="widget-user-menu__list">
+              {links.map((link, index) => {
+                const active = isNavActive(pathname, link.href);
+                return (
+                  <li key={link.href}>
+                    <a
+                      ref={index === 0 ? firstLinkRef : undefined}
+                      href={link.href}
+                      className={cx(
+                        "fr-btn",
+                        "fr-btn--tertiary-no-outline",
+                        "fr-btn--sm",
+                        "widget-user-menu__item",
+                        active && "widget-user-menu__item--active",
+                      )}
+                      aria-current={active ? "page" : undefined}
+                      onClick={onLinkClick(link.href)}
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
         </div>
       ) : null}
     </div>
   );
+}
+
+function identityLines(params: {
+  displayName: string | null;
+  email: string | null;
+  role: string | null;
+  equipeLabel: string | null;
+  status: string;
+}): { primary: string; secondary: string[] } {
+  const secondary: string[] = [];
+  const name = params.displayName?.trim() || null;
+  const email = params.email?.trim() || null;
+
+  if (email && email !== name) {
+    secondary.push(email);
+  }
+  if (params.role?.trim()) {
+    secondary.push(`Rôle : ${params.role.trim()}`);
+  }
+  if (params.equipeLabel?.trim()) {
+    secondary.push(`Département : ${params.equipeLabel.trim()}`);
+  }
+
+  if (name) {
+    return { primary: name, secondary };
+  }
+  if (email) {
+    return { primary: email, secondary: secondary.filter((l) => l !== email) };
+  }
+  if (params.status === "standalone") {
+    return { primary: "Session locale (hors Grist)", secondary: [] };
+  }
+  if (params.status === "loading") {
+    return { primary: "Profil en cours de chargement…", secondary: [] };
+  }
+  return { primary: "Identité indisponible", secondary: [] };
 }

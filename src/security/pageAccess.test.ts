@@ -86,7 +86,7 @@ describe("pageAccessKeyForPath / canAccessPath", () => {
 });
 
 describe("filterNavItemsByPageAccess", () => {
-  it("retire Budget sensible ; garde Outils (guide) pour non-Admin", () => {
+  it("retire Budget sensible ; Outils masqué (Documentation hors nav) pour non-Admin", () => {
     const filtered = filterNavItemsByPageAccess(WIDGET_NAV_ITEMS, (href) =>
       canAccessHref(href, PAGE_ACCESS_FAIL_CLOSED),
     );
@@ -94,13 +94,8 @@ describe("filterNavItemsByPageAccess", () => {
     assert.ok(texts.includes("Accueil"));
     assert.ok(texts.includes("Missions"));
     assert.ok(!texts.includes("Budget"));
-    assert.ok(texts.includes("Outils"));
-    const outils = filtered.find((item) => "children" in item && item.text === "Outils");
-    assert.ok(outils && "children" in outils);
-    assert.deepEqual(
-      outils.children.map((c) => c.href),
-      ["/outils/regles-metier"],
-    );
+    // Documentation (guide) est dans le menu compte ; Récap fail-closed fermé → pas d’Outils.
+    assert.ok(!texts.includes("Outils"));
   });
 
   it("garde Budget si BDC autorisé seul", () => {

@@ -3,7 +3,7 @@
 [← CRA](README.md) › **Mon carnet**
 
 > **Route** : `/cra/declarer`  
-> **Nav** : **Mon carnet** (niveau 1 — Freelance, Admin, Responsable de département). Pas sous Budget.
+> **Entrée** : menu compte → **Mon carnet** (Freelance, Admin, Responsable de département). Pas sous Budget ni nav principale.
 
 ## En clair
 
@@ -41,7 +41,7 @@ Le **Total HT** du cadre est un calcul d’affichage (jours saisis × TJM) : il 
 
 ## Parcours Admin / Responsable
 
-1. Ouvrir **Mon carnet** (nav niveau 1).
+1. Ouvrir **Mon carnet** (menu compte).
 2. Onglet **En cours** : missions avec prestations actives du département ; lien vers la fiche mission ; **tableau** par mission (prestation, intervenant, statut, nb CRA, TTC engagé).
 3. Onglet **Passées** : prestations terminées du même périmètre.
 4. Bandeau : Missions · Prestations · Lignes CRA · TTC engagé (le département reste dans le hero / badge).

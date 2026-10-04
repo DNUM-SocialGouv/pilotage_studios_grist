@@ -19,6 +19,7 @@ import {
 import { pageOptionFromPathname } from "./feedbackPages.ts";
 import {
   filterNavItemsByPageAccess,
+  flattenNavLinks,
   WIDGET_NAV_ITEMS,
   isWidgetNavGroup,
 } from "../layout/widgetNavItems.ts";
@@ -159,7 +160,7 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
     );
   });
 
-  it("montre Mon carnet en niveau 1 pour Freelance même sans Page_cra (sans Budget)", () => {
+  it("ne montre plus Mon carnet en nav (menu compte) ; Weekly oui ; sans Budget pour Freelance", () => {
     const filtered = filterNavItemsByPageAccess(
       WIDGET_NAV_ITEMS,
       (href) => canAccessHref(href, PAGE_ACCESS_FAIL_CLOSED),
@@ -169,11 +170,12 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
       filtered.some((item) => isWidgetNavGroup(item) && item.text === "Budget"),
       false,
     );
-    const carnet = filtered.find(
-      (item) => !isWidgetNavGroup(item) && item.href === "/cra/declarer",
+    assert.equal(
+      filtered.some(
+        (item) => !isWidgetNavGroup(item) && item.href === "/cra/declarer",
+      ),
+      false,
     );
-    assert.ok(carnet && !isWidgetNavGroup(carnet));
-    assert.equal(carnet.text, "Mon carnet");
     assert.equal(
       filtered.some((item) => !isWidgetNavGroup(item) && item.href === "/weekly"),
       true,
@@ -196,20 +198,29 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
     );
   });
 
-  it("montre Mon carnet pour Resp. (liste département)", () => {
+  it("Resp. : pas de Mon carnet en nav ; Revue CRA dans Budget", () => {
     const filtered = filterNavItemsByPageAccess(
       WIDGET_NAV_ITEMS,
       (href) => canAccessHref(href, PAGE_ACCESS_FAIL_CLOSED),
       { isAdmin: false, canDeclareCra: true, canRevueCraEquipe: true },
     );
-    const carnet = filtered.find(
-      (item) => !isWidgetNavGroup(item) && item.href === "/cra/declarer",
+    assert.equal(
+      filtered.some(
+        (item) => !isWidgetNavGroup(item) && item.href === "/cra/declarer",
+      ),
+      false,
     );
-    assert.ok(carnet && !isWidgetNavGroup(carnet));
-    assert.equal(carnet.text, "Mon carnet");
+    const budget = filtered.find(
+      (item) => isWidgetNavGroup(item) && item.text === "Budget",
+    );
+    assert.ok(budget && isWidgetNavGroup(budget));
+    assert.equal(
+      budget.children.some((c) => c.href === "/cra/revue-equipe"),
+      true,
+    );
   });
 
-  it("masque Mon carnet si rôle non autorisé", () => {
+  it("masque Revue CRA si rôle non autorisé (Mon carnet hors nav)", () => {
     const filtered = filterNavItemsByPageAccess(WIDGET_NAV_ITEMS, () => true, {
       isAdmin: false,
       canDeclareCra: false,
@@ -241,14 +252,14 @@ describe("feedbackPages droits-pages", () => {
     assert.equal(pageOptionFromPathname("/outils/spike-datatable"), "Spike datatable");
   });
 
-  it("mappe le guide règles métier", () => {
-    assert.equal(pageOptionFromPathname("/outils/regles-metier"), "Règles métier");
-    assert.equal(pageOptionFromPathname("/outils/regles-metier/cra"), "Règles métier");
+  it("mappe le guide Documentation (règles métier)", () => {
+    assert.equal(pageOptionFromPathname("/outils/regles-metier"), "Documentation");
+    assert.equal(pageOptionFromPathname("/outils/regles-metier/cra"), "Documentation");
   });
 });
 
-describe("filterNavItemsByPageAccess regles-metier", () => {
-  it("montre Règles métier en fail-closed (ouvert par défaut)", () => {
+describe("filterNavItemsByPageAccess documentation hors nav", () => {
+  it("n’expose plus Documentation sous Outils (menu compte)", () => {
     const filtered = filterNavItemsByPageAccess(
       WIDGET_NAV_ITEMS,
       (href) => canAccessHref(href, PAGE_ACCESS_FAIL_CLOSED),
@@ -257,10 +268,16 @@ describe("filterNavItemsByPageAccess regles-metier", () => {
     const outils = filtered.find(
       (item) => isWidgetNavGroup(item) && item.text === "Outils",
     );
-    assert.ok(outils && isWidgetNavGroup(outils));
+    // Fail-closed : Récap fermé → Outils peut disparaître (plus de Règles métier).
+    if (outils && isWidgetNavGroup(outils)) {
+      assert.equal(
+        outils.children.some((c) => c.href === "/outils/regles-metier"),
+        false,
+      );
+    }
     assert.equal(
-      outils.children.some((c) => c.href === "/outils/regles-metier"),
-      true,
+      flattenNavLinks(filtered).some((l) => l.href === "/outils/regles-metier"),
+      false,
     );
   });
 });

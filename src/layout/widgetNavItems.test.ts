@@ -64,18 +64,18 @@ describe("groupe Outils", () => {
     assert.equal(isGroupActive("/outils/spike-datatable", outils), true);
   });
 
-  it("n’est pas actif hors Outils", () => {
+  it("n’est pas actif sur Documentation (menu compte) ni hors Outils", () => {
+    assert.equal(isGroupActive("/outils/regles-metier", outils), false);
     assert.equal(isGroupActive("/cra", outils), false);
     assert.equal(isGroupActive("/", outils), false);
   });
 });
 
 describe("flattenNavLinks", () => {
-  it("aplatit Accueil, Mon carnet, sous-menu Budget, liens directs et Outils", () => {
+  it("aplatit Accueil, Weekly, sous-menu Budget, liens directs et Outils (sans carnet / Documentation)", () => {
     const hrefs = flattenNavLinks(WIDGET_NAV_ITEMS).map((link) => link.href);
     assert.deepEqual(hrefs, [
       "/",
-      "/cra/declarer",
       "/weekly",
       "/bdc",
       "/pa",
@@ -85,7 +85,6 @@ describe("flattenNavLinks", () => {
       "/produits",
       "/missions",
       "/equipe",
-      "/outils/regles-metier",
       "/outils/recap-porteurs",
       "/outils/droits-pages",
       "/outils/spike-datatable",
@@ -94,11 +93,10 @@ describe("flattenNavLinks", () => {
 });
 
 describe("WIDGET_MODULE_LINKS", () => {
-  it("liste les modules welcome (hors Accueil)", () => {
+  it("liste les modules welcome (hors Accueil ; carnet / Documentation hors nav)", () => {
     assert.deepEqual(
       WIDGET_MODULE_LINKS.map(({ text, href, status }) => ({ text, href, status })),
       [
-        { text: "Mon carnet", href: "/cra/declarer", status: "in_progress" },
         { text: "Weekly", href: "/weekly", status: "in_progress" },
         { text: "Bons de commande", href: "/bdc", status: "in_progress" },
         { text: "Plans d’activité", href: "/pa", status: "in_progress" },
@@ -108,7 +106,6 @@ describe("WIDGET_MODULE_LINKS", () => {
         { text: "Produits", href: "/produits", status: "in_progress" },
         { text: "Missions", href: "/missions", status: "in_progress" },
         { text: "Équipe", href: "/equipe", status: "in_progress" },
-        { text: "Règles métier", href: "/outils/regles-metier", status: "in_progress" },
         { text: "Récap porteurs", href: "/outils/recap-porteurs", status: "in_progress" },
         { text: "Droits des pages", href: "/outils/droits-pages", status: "in_progress" },
         { text: "Spike datatable", href: "/outils/spike-datatable", status: "in_progress" },

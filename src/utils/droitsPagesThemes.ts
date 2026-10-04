@@ -43,7 +43,10 @@ export const DROITS_PAGES_THEMES: readonly DroitsPagesTheme[] = [
     id: "outils",
     label: "Outils",
     screens: [
-      { key: "Page_regles_metier", label: "Règles métier" },
+      {
+        key: "Page_regles_metier",
+        label: "Documentation",
+      },
       { key: "Page_recap_porteurs", label: "Récap porteurs" },
     ],
   },
@@ -120,7 +123,7 @@ export const DROITS_PAGES_ROLE_FIXED: readonly DroitsPagesRoleFixedScreen[] = [
       Freelance: true,
       Invité: false,
     },
-    hint: "Admin / Resp. : lecture missions du département ; Freelance : saisie CRA.",
+    hint: "Menu compte — Admin / Resp. : lecture missions du département ; Freelance : saisie CRA.",
   },
   {
     id: "revue_cra",

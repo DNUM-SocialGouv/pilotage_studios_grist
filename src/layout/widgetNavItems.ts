@@ -39,14 +39,13 @@ export function isWidgetNavGroup(item: WidgetNavItem): item is WidgetNavGroup {
 }
 
 /** Arborescence de navigation (liens directs + groupes DSFR). */
+/**
+ * Nav principale (hors menu compte).
+ * « Mon carnet » et « Documentation » (`/outils/regles-metier`) sont dans
+ * `WidgetUserMenu` — pas de doublon ici.
+ */
 export const WIDGET_NAV_ITEMS: WidgetNavItem[] = [
   { text: "Accueil", href: "/", iconOnly: "home" },
-  {
-    text: "Mon carnet",
-    href: "/cra/declarer",
-    status: "in_progress",
-    craDeclarerOnly: true,
-  },
   {
     text: "Weekly",
     href: "/weekly",
@@ -74,11 +73,6 @@ export const WIDGET_NAV_ITEMS: WidgetNavItem[] = [
   {
     text: "Outils",
     children: [
-      {
-        text: "Règles métier",
-        href: "/outils/regles-metier",
-        status: "in_progress",
-      },
       { text: "Récap porteurs", href: "/outils/recap-porteurs", status: "in_progress" },
       {
         text: "Droits des pages",

@@ -18,13 +18,13 @@ Première page affichée à l’ouverture du Custom Widget dans Grist : un **acc
 |---------|--------|
 | Entrée | `MemoryRouter` démarre sur `/` (`initialEntries`) |
 | Accueil par rôle | Salutation « Bonjour » + libellé de rôle + message court + **2–4 CTA** filtrés comme la nav (`Page_*` + flags rôle / département) |
-| Freelance | CTA : Mon carnet · Missions · Règles métier ; rappel déclarer les jours ; pas de Budget |
+| Freelance | CTA : Mon carnet · Missions · Documentation ; rappel déclarer les jours ; pas de Budget |
 | Responsable | CTA : Revue CRA équipe (si département) · Mon carnet · Missions ; hint département ; pas de CTA Weekly générique |
 | Admin | CTA : Missions · Bons de commande · Droits des pages · **Feuille de route** |
-| Invité | CTA : Missions · Produits · Règles métier ; pas de carnet / revue / droits |
-| Profil vide / erreur | Message explicite + CTA limités (Règles / Missions si ouverts en fail-closed) — **pas** de 5ᵉ rôle inventé |
+| Invité | CTA : Missions · Produits · Documentation (si `Page_regles_metier`) ; pas de carnet / revue / droits |
+| Profil vide / erreur | Message explicite + CTA limités (Documentation / Missions si ouverts en fail-closed) — **pas** de 5ᵉ rôle inventé |
 | Kanban | **Absent** de `/` — voir [`feuille-de-route.md`](feuille-de-route.md) |
-| Nav | `WidgetNav` : chrome **Page précédente** · Accueil · modules · **menu compte** (droite) |
+| Nav | `WidgetNav` : chrome **Page précédente** · Accueil · modules · **menu compte** (Mon carnet · Feuille de route · Documentation) |
 | Layout | Panneau large (`welcome-page__panel--wide`) |
 | Fallback | Route `*` → redirection vers `/` |
 

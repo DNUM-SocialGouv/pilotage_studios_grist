@@ -39,9 +39,9 @@ Budget · Outils · Missions · Équipe · Produits · Accueil — **un tableau 
 | Section | Contenu |
 |---------|---------|
 | Budget | BDC, PA, Prestation/CRA, PV (`Page_*`) |
-| Outils | Règles métier (`Page_regles_metier`) · Récap porteurs (`Page_recap_porteurs`) |
+| Outils | Documentation (`Page_regles_metier`, entrée menu compte) · Récap porteurs (`Page_recap_porteurs`) |
 | Missions / Équipe / Produits / Accueil | `Page_missions`, `Page_equipe`, `Page_produits`, `Page_accueil` |
-| Fixés par rôle | Feuille de route · Mon carnet · Revue CRA équipe · Weekly · Droits des pages (hors `Page_*`) |
+| Fixés par rôle | Feuille de route · Mon carnet (menu compte) · Revue CRA équipe · Weekly · Droits des pages (hors `Page_*`) |
 
 ### Nouvelle colonne `Page_regles_metier`
 

@@ -9,7 +9,7 @@ Deux publics docs à ne pas confondre :
 | Doc | Public | Où |
 |-----|--------|-----|
 | **Doc contributeurs** | Agents / dev | `docs/fonctionnel/<module>/` (routes, tables, allowlists) |
-| **Guide métier widget** | Équipe métier | Pages Outils → Règles métier (contenu UI, zéro code/chemin) |
+| **Guide métier widget** | Équipe métier | Pages menu compte → Documentation (contenu UI, zéro code/chemin) |
 
 Si une PR change une **règle visible** (qui déclare quoi, qui voit quoi, lien CRA–BDC…), mettre à jour le **guide métier** (ou cocher N/A). Cela **ne remplace pas** la MAJ de `docs/fonctionnel/` ni de la matrice rôles.
 

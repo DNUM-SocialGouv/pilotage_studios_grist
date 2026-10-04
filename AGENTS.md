@@ -55,11 +55,11 @@ Réduire la complexité ; pas d’ajout « au cas où ». Les agents **proposent
 | `/pv` | Stub « À venir » (nav) |
 | `/evaluations`, `/analyse` | Stub hors nav |
 
-Nav principale : Accueil, **Mon carnet** (Freelance/Admin/Resp., `/cra/declarer`), **Weekly** (e-mails listés dans `Weekly_coachs` uniquement, `/weekly`), **Budget** (sous-menu Bons de commande · Plans d’activité · Prestation / CRA · Revue CRA équipe · Procès-verbaux — masqué si aucun enfant accessible, typiquement côté Freelance), Produits, Missions, **Équipe**, **Outils** (Règles métier · Récap porteurs · Droits des pages · Spike datatable — Admin). Pas de route `/budget`. `/intervenants` redirige vers `/equipe`.
+Nav principale : Accueil, **Weekly** (e-mails listés dans `Weekly_coachs` uniquement, `/weekly`), **Budget** (sous-menu Bons de commande · Plans d’activité · Prestation / CRA · Revue CRA équipe · Procès-verbaux — masqué si aucun enfant accessible, typiquement côté Freelance), Produits, Missions, **Équipe**, **Outils** (Récap porteurs · Droits des pages · Spike datatable — Admin). **Mon carnet** (`/cra/declarer`, Freelance/Admin/Resp.) et **Documentation** (`/outils/regles-metier`, si `Page_regles_metier`) sont dans le **menu compte**, pas en nav. Pas de route `/budget`. `/intervenants` redirige vers `/equipe`.
 
 Entrée MemoryRouter : `/` (`WelcomePage` — **accueil par rôle** via `welcomeHomeByRole` / `WelcomeRoleHome`). Kanban : route `/feuille-de-route` (`FeuilleDeRoutePage` — table Grist `Kanban` + `Kanban_commentaires`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
 
-**Chrome nav** (`WidgetNav`) : à gauche **Page précédente** (historique MemoryRouter uniquement — désactivé si pile vide ; jamais `window.history` / Grist) ; au centre la nav métier ; à droite **menu compte** (avatar Équipe `EquipeAvatar` / seed `Equipe.Avatar` — panneau type « En-tête connectée » DSFR : identité + lien **Feuille de route** → `/feuille-de-route`). Le Retour n’est **pas** dans le menu compte.
+**Chrome nav** (`WidgetNav`) : à gauche **Page précédente** (historique MemoryRouter uniquement — désactivé si pile vide ; jamais `window.history` / Grist) ; au centre la nav métier ; à droite **menu compte** (avatar Équipe `EquipeAvatar` / seed `Equipe.Avatar` — panneau type « En-tête connectée » DSFR : identité + liens **Mon carnet** · **Feuille de route** · **Documentation** selon gardes). Le Retour n’est **pas** dans le menu compte.
 
 ### Feuille de route (priorité métier)
 

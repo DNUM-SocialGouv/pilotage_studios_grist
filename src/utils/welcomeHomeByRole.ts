@@ -72,7 +72,7 @@ const CTA_CATALOG: Record<WelcomeCtaId, WelcomeCta> = {
   },
   regles_metier: {
     id: "regles_metier",
-    label: "Règles métier",
+    label: "Documentation",
     href: "/outils/regles-metier",
     description: "Guide court des règles de base",
   },

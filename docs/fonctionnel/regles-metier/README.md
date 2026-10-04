@@ -3,8 +3,8 @@
 [← Documentation](../../README.md) › **Règles métier**
 
 > **Routes** : `/outils/regles-metier` (+ sous-pages)  
-> **Nav** : Outils → Règles métier  
-> **Accès** : interrupteur `Page_regles_metier` (tous rôles à oui par défaut)
+> **Entrée** : menu compte → **Documentation** (libellé) — plus sous Outils  
+> **Accès** : interrupteur `Page_regles_metier` (cible tous rôles à oui ; Invité actuellement false en Grist → HITL)
 
 ## En clair
 

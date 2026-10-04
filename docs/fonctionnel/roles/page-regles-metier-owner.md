@@ -39,8 +39,8 @@ Si les autres `Page_*` utilisent une variante (référence Role, autre LOOKUP), 
 |----------|---------|
 | 4 lignes `Droits_pages` | `Page_regles_metier` = oui |
 | Fiche `Acl_profil` d’un Freelance | `Page_regles_metier` = oui (formule) |
-| Widget → Outils | Lien **Règles métier** visible |
-| Admin → Droits des pages → Outils | Interrupteur **Règles métier** éditable |
+| Widget → menu compte | Lien **Documentation** visible (si `Page_regles_metier`) |
+| Admin → Droits des pages → Outils | Interrupteur **Documentation** (`Page_regles_metier`) éditable |
 | Couper Invité à non | Lien masqué pour Invité après refresh profil |
 
 ### 4. Ne pas faire
