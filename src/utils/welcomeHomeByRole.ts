@@ -39,12 +39,13 @@ export type WelcomeHomeContent = {
   /** Titre principal (ex. « Bonjour » / « Bonjour Nathalie »). */
   title: string;
   roleLabel: string | null;
-  /** Sous-titre d’intro ; `null` = ne pas afficher (accueil Freelance épuré). */
+  /** Sous-titre d’intro ; `null` = ne pas afficher (accueil Freelance / Admin épuré). */
   lead: string | null;
+  /** Bloc « À savoir » ; `null` = ne pas afficher (Admin épuré). */
   hint: string | null;
   /**
    * Affiche le libellé produit « Pilotage studios » au-dessus du titre.
-   * Désactivé pour l’accueil Freelance (demande porteur).
+   * Désactivé pour Freelance / Admin (demande porteur).
    */
   showProductLabel?: boolean;
   ctas: WelcomeCta[];
@@ -178,7 +179,7 @@ export type BuildWelcomeHomeParams = {
   equipeLabel?: string | null;
   /**
    * `Equipe.Prenom_Nom` de la personne connectée (même source que le menu compte).
-   * Sert au titre Freelance « Bonjour [Prénom] » — pas de clé API.
+   * Sert au titre « Bonjour [Prénom] » (Freelance / Admin) — pas de clé API.
    */
   displayName?: string | null;
   access: WelcomeHomeAccess;
@@ -206,7 +207,7 @@ export function firstNameFromDisplayName(
   return looksLikeNomFirst ? parts[parts.length - 1]! : first;
 }
 
-/** Titre d’accueil Freelance : « Bonjour Nathalie » ou « Bonjour » si prénom absent. */
+/** Titre d’accueil (Freelance / Admin) : « Bonjour Nathalie » ou « Bonjour » si prénom absent. */
 export function welcomeGreetingTitle(
   displayName: string | null | undefined,
 ): string {
@@ -276,12 +277,11 @@ export function buildWelcomeHome(
   if (kind === "admin") {
     return {
       kind,
-      title: "Bonjour",
-      roleLabel: status === "standalone" ? "Admin (aperçu local)" : "Admin",
-      lead: "Pilotage et outils — allez à l’essentiel sans tout relister.",
-      hint: access.includeFeuilleDeRoute
-        ? "Pas de liste exhaustive des écrans. Weekly reste un lien de navigation seulement si votre e-mail est listé parmi les coachs."
-        : "La feuille de route (kanban) reste affichée plus bas sur cette page jusqu’au déplacement vers une page dédiée. Weekly n’est pas un raccourci générique ici.",
+      title: welcomeGreetingTitle(displayName),
+      roleLabel: null,
+      lead: null,
+      hint: null,
+      showProductLabel: false,
       ctas: filterCtas(ROLE_CTA_IDS.admin, access),
     };
   }

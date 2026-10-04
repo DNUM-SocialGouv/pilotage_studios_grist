@@ -20,7 +20,7 @@ Première page affichée à l’ouverture du Custom Widget dans Grist : un **acc
 | Accueil par rôle | Salutation + (selon rôle) libellé / message court + **2–4 CTA** filtrés comme la nav (`Page_*` + flags rôle / département) |
 | Freelance | Titre **« Bonjour [Prénom] »** (`Equipe.Prenom_Nom`, même source que le menu compte ; fallback « Bonjour » si prénom absent) ; **pas** de libellé « Pilotage studios », ni sous-titre rôle, ni phrase d’intro ; CTA : Mon carnet · Missions · Documentation ; « À savoir » = rappel déclarer les jours (sans mention Budget) |
 | Responsable | « Pilotage studios » + « Bonjour » + libellé rôle ; CTA : Revue CRA équipe (si département) · Mon carnet · Missions ; hint département ; pas de CTA Weekly générique |
-| Admin | « Pilotage studios » + « Bonjour » + libellé rôle ; CTA : Missions · Bons de commande · Droits des pages · **Feuille de route** |
+| Admin | Même épurage que Freelance : titre **« Bonjour [Prénom] »** ; **pas** de « Pilotage studios », ni sous-titre « Admin », ni phrase d’intro, ni bloc « À savoir » ; CTA : Missions · Bons de commande · Droits des pages · **Feuille de route** |
 | Invité | « Pilotage studios » + « Bonjour » + libellé rôle ; CTA : Missions · Produits · Documentation (si `Page_regles_metier`) ; pas de carnet / revue / droits |
 | Profil vide / erreur | Message explicite + CTA limités (Documentation / Missions si ouverts en fail-closed) — **pas** de 5ᵉ rôle inventé |
 | Kanban | **Absent** de `/` — voir [`feuille-de-route.md`](feuille-de-route.md) |
