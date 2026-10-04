@@ -1,4 +1,7 @@
 import { Outlet } from "react-router-dom";
+// Implémentation réelle (pas l’export déprécié `@codegouvfr/react-dsfr/Display` qui renvoie null).
+// Même chemin que Header/Footer du package — le widget n’a ni Header Marianne ni Footer.
+import { Display } from "@codegouvfr/react-dsfr/Display/Display";
 import { FeedbackWidget } from "../components/feedback/FeedbackWidget";
 import { WidgetNav } from "./WidgetNav";
 
@@ -11,6 +14,8 @@ export function WidgetLayout() {
         <Outlet />
       </main>
       <FeedbackWidget />
+      {/* Modale officielle Paramètres d’affichage (ouvert depuis le menu compte). */}
+      <Display />
     </div>
   );
 }

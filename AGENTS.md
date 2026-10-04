@@ -59,7 +59,7 @@ Nav principale : Accueil, **Weekly** (e-mails listés dans `Weekly_coachs` uniqu
 
 Entrée MemoryRouter : `/` (`WelcomePage` — **accueil par rôle** via `welcomeHomeByRole` / `WelcomeRoleHome`). Kanban : route `/feuille-de-route` (`FeuilleDeRoutePage` — table Grist `Kanban` + `Kanban_commentaires`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
 
-**Chrome nav** (`WidgetNav`) : à gauche **Page précédente** (historique MemoryRouter uniquement — désactivé si pile vide ; jamais `window.history` / Grist) ; au centre la nav métier ; à droite **menu compte** (avatar Équipe `EquipeAvatar` / seed `Equipe.Avatar` — panneau type « En-tête connectée » DSFR : identité + liens **Mon carnet** · **Feuille de route** · **Documentation** selon gardes). Le Retour n’est **pas** dans le menu compte.
+**Chrome nav** (`WidgetNav`) : à gauche **Page précédente** (historique MemoryRouter uniquement — désactivé si pile vide ; jamais `window.history` / Grist) ; au centre la nav métier ; à droite **menu compte** (avatar Équipe `EquipeAvatar` / seed `Equipe.Avatar` — panneau type « En-tête connectée » DSFR : identité + liens **Mon carnet** · **Feuille de route** · **Documentation** selon gardes + **Paramètres d’affichage** pour tous — modale DSFR clair/sombre/système, préférence navigateur, hors `Page_*`). Le Retour n’est **pas** dans le menu compte.
 
 ### Feuille de route (priorité métier)
 
