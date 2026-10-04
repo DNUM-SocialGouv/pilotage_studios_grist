@@ -228,104 +228,114 @@ function AgendaSujetDialog({
     await onSave(sujet.id, next);
   };
 
+  // Drawer pilotage (pas fr-modal) : showModal() + classes DSFR sans JS disclose
+  // laisse un scrim natif invisible / piégé.
   return (
     <dialog
       ref={dialogRef}
-      className="fr-modal"
+      className="pilotage-drawer-dialog pilotage-drawer-dialog--sm"
       aria-labelledby={titleId}
       onClose={onClose}
-      onCancel={(e) => {
-        e.preventDefault();
-        close();
-      }}
     >
-      <div className="fr-container fr-container--fluid fr-container-md">
-        <div className="fr-grid-row fr-grid-row--center">
-          <div className="fr-col-12 fr-col-md-8 fr-col-lg-6">
-            <div className="fr-modal__body">
-              <div className="fr-modal__header">
-                <button
-                  type="button"
-                  className="fr-btn--close fr-btn"
-                  onClick={close}
-                  disabled={busy}
-                >
-                  Fermer
-                </button>
+      <div className="pilotage-drawer-dialog__shell">
+        <div
+          className="pilotage-drawer-dialog__scrim"
+          aria-hidden="true"
+          onClick={() => {
+            if (!busy) close();
+          }}
+        />
+        <div className="pilotage-drawer-dialog__panel">
+          <div className="pilotage-drawer-dialog__inner">
+            <header className="fr-p-3w fr-pb-2w">
+              <div className="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
+                <div className="fr-col">
+                  <h2 id={titleId} className="fr-h5 fr-mb-0">
+                    {mode === "edit" ? "Modifier le sujet" : "Sujet à aborder"}
+                  </h2>
+                </div>
+                <div className="fr-col-auto">
+                  <button
+                    type="button"
+                    className="fr-btn--close fr-btn"
+                    title="Fermer"
+                    onClick={close}
+                    disabled={busy}
+                  >
+                    Fermer
+                  </button>
+                </div>
               </div>
-              <div className="fr-modal__content">
-                <h2 id={titleId} className="fr-modal__title">
-                  {mode === "edit" ? "Modifier le sujet" : "Sujet à aborder"}
-                </h2>
-                {sujet == null ? null : mode === "view" ? (
+            </header>
+
+            <div className="pilotage-drawer-dialog__body fr-px-3w fr-pb-3w fr-pt-0">
+              {sujet == null ? null : mode === "view" ? (
+                <>
+                  <p
+                    className="fr-text--md"
+                    style={{ whiteSpace: "pre-wrap", marginBottom: "0.75rem" }}
+                  >
+                    {(sujet.Texte ?? "").trim() || "—"}
+                  </p>
+                  <p className="fr-text--xs" style={{ color: "var(--text-mention-grey)" }}>
+                    Proposé par {auteur}
+                    {createdLabel ? ` · Créé le ${createdLabel}` : ""}
+                    {missionLabel ? ` · ${missionLabel}` : ""}
+                  </p>
+                </>
+              ) : (
+                <form ref={formRef} onSubmit={(e) => void submitEdit(e)}>
+                  <Input
+                    label="Contenu du sujet"
+                    hintText="Modifie uniquement le texte ; auteur et date restent inchangés."
+                    textArea
+                    state={localError ? "error" : "default"}
+                    stateRelatedMessage={localError ?? undefined}
+                    nativeTextAreaProps={{
+                      id: fieldId,
+                      value: draft,
+                      onChange: (e) => setDraft(e.target.value),
+                      disabled: busy,
+                      rows: 5,
+                      "aria-required": true,
+                    }}
+                  />
+                </form>
+              )}
+
+              <ul className="fr-btns-group fr-btns-group--right fr-btns-group--inline-reverse fr-btns-group--inline-lg fr-mt-3w">
+                {mode === "view" ? (
                   <>
-                    <p
-                      className="fr-text--md"
-                      style={{ whiteSpace: "pre-wrap", marginBottom: "0.75rem" }}
-                    >
-                      {(sujet.Texte ?? "").trim() || "—"}
-                    </p>
-                    <p className="fr-text--xs" style={{ color: "var(--text-mention-grey)" }}>
-                      Proposé par {auteur}
-                      {createdLabel ? ` · Créé le ${createdLabel}` : ""}
-                      {missionLabel ? ` · ${missionLabel}` : ""}
-                    </p>
+                    <li>
+                      <Button type="button" onClick={onSwitchToEdit} disabled={busy}>
+                        Modifier
+                      </Button>
+                    </li>
+                    <li>
+                      <Button type="button" priority="secondary" onClick={close} disabled={busy}>
+                        Fermer
+                      </Button>
+                    </li>
                   </>
                 ) : (
-                  <form ref={formRef} onSubmit={(e) => void submitEdit(e)}>
-                    <Input
-                      label="Contenu du sujet"
-                      hintText="Modifie uniquement le texte ; auteur et date restent inchangés."
-                      textArea
-                      state={localError ? "error" : "default"}
-                      stateRelatedMessage={localError ?? undefined}
-                      nativeTextAreaProps={{
-                        id: fieldId,
-                        value: draft,
-                        onChange: (e) => setDraft(e.target.value),
-                        disabled: busy,
-                        rows: 5,
-                        "aria-required": true,
-                      }}
-                    />
-                  </form>
+                  <>
+                    <li>
+                      <Button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => formRef.current?.requestSubmit()}
+                      >
+                        Enregistrer
+                      </Button>
+                    </li>
+                    <li>
+                      <Button type="button" priority="secondary" onClick={close} disabled={busy}>
+                        Annuler
+                      </Button>
+                    </li>
+                  </>
                 )}
-              </div>
-              <div className="fr-modal__footer">
-                <ul className="fr-btns-group fr-btns-group--right fr-btns-group--inline-reverse fr-btns-group--inline-lg">
-                  {mode === "view" ? (
-                    <>
-                      <li>
-                        <Button type="button" onClick={onSwitchToEdit} disabled={busy}>
-                          Modifier
-                        </Button>
-                      </li>
-                      <li>
-                        <Button type="button" priority="secondary" onClick={close} disabled={busy}>
-                          Fermer
-                        </Button>
-                      </li>
-                    </>
-                  ) : (
-                    <>
-                      <li>
-                        <Button
-                          type="button"
-                          disabled={busy}
-                          onClick={() => formRef.current?.requestSubmit()}
-                        >
-                          Enregistrer
-                        </Button>
-                      </li>
-                      <li>
-                        <Button type="button" priority="secondary" onClick={close} disabled={busy}>
-                          Annuler
-                        </Button>
-                      </li>
-                    </>
-                  )}
-                </ul>
-              </div>
+              </ul>
             </div>
           </div>
         </div>

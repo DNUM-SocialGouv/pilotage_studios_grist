@@ -42,7 +42,7 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 ### Agenda (sujets)
 
 - Liste : texte, auteur, **date de création** (`Cree_le`), mission liée éventuelle.
-- Actions : **Voir** / **Modifier** le contenu (`Texte`) dans une modale DSFR (`<dialog>`).
+- Actions : **Voir** / **Modifier** le contenu (`Texte`) dans le drawer pilotage (`pilotage-drawer-dialog`, même pattern que missions / tickets).
 - Champ auteur « Votre prénom » : prérempli avec le **prénom seul** —
   1. `Equipe.Prenom_Nom` de la session (`firstNameFromDisplayName`) ;
   2. sinon premier segment de l’e-mail de session (avant `.` / `_` / `-`, pas `prenom.nom`).
