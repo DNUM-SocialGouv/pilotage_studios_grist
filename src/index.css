@@ -216,6 +216,18 @@ span.fr-tag.fr-tag--beige-gris-galet {
   --active: var(--background-default-grey-active);
 }
 
+/* fr-btn--display force 1rem ; on aligne sur fr-btn--sm des autres entrées. */
+.widget-user-menu__item.fr-btn--display {
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+  min-height: 2rem;
+  padding: 0.25rem 0.75rem;
+}
+
+.widget-user-menu__item.fr-btn--display::before {
+  --icon-size: 1rem;
+}
+
 .widget-user-menu__item:hover,
 .widget-user-menu__item:focus-visible {
   color: var(--text-action-high-blue-france);

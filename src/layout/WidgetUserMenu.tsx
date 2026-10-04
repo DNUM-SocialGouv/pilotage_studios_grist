@@ -226,9 +226,7 @@ function identityLines(params: {
   const name = params.displayName?.trim() || null;
   const email = params.email?.trim() || null;
 
-  if (email && email !== name) {
-    secondary.push(email);
-  }
+  // Pas d’e-mail dans le panneau (redondant avec le nom) — rôle + département suffisent.
   if (params.role?.trim()) {
     secondary.push(`Rôle : ${params.role.trim()}`);
   }
@@ -239,8 +237,9 @@ function identityLines(params: {
   if (name) {
     return { primary: name, secondary };
   }
+  // Secours si pas de prénom/nom : l’e-mail reste l’identité principale uniquement.
   if (email) {
-    return { primary: email, secondary: secondary.filter((l) => l !== email) };
+    return { primary: email, secondary };
   }
   if (params.status === "standalone") {
     return { primary: "Session locale (hors Grist)", secondary: [] };
