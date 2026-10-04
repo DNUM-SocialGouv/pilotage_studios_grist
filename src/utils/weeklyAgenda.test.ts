@@ -4,6 +4,7 @@ import {
   defaultWeeklyAuteurPrenom,
   formatWeeklyAgendaCreatedAt,
   prenomFromEmailLocalPart,
+  weeklyAgendaAuteurPrenom,
 } from "./weeklyAgenda.ts";
 
 describe("prenomFromEmailLocalPart", () => {
@@ -48,19 +49,40 @@ describe("defaultWeeklyAuteurPrenom", () => {
 });
 
 describe("formatWeeklyAgendaCreatedAt", () => {
-  it("formate un DATETIME Grist (secondes)", () => {
-    // 2026-10-04 ≈ — on vérifie juste un format fr-FR non vide
-    const label = formatWeeklyAgendaCreatedAt(1_791_144_157.112);
-    assert.match(label, /^\d{1,2}\/\d{1,2}\/\d{4}$/);
+  const now = new Date(2026, 9, 4, 15, 0, 0); // 4 oct. 2026 local
+
+  it("DATETIME Grist (secondes) → relatif FR", () => {
+    // 2026-10-03 12:00:00 UTC ≈ hier / aujourd'hui selon fuseau — on fixe via ISO locale
+    const yesterdayLocal = new Date(2026, 9, 3, 12, 0, 0);
+    const seconds = yesterdayLocal.getTime() / 1000;
+    assert.equal(formatWeeklyAgendaCreatedAt(seconds, now), "hier");
   });
 
   it("accepte une ISO string", () => {
-    const label = formatWeeklyAgendaCreatedAt("2026-10-04T10:00:00.000Z");
-    assert.match(label, /^\d{1,2}\/\d{1,2}\/\d{4}$/);
+    const todayLocal = new Date(2026, 9, 4, 9, 0, 0);
+    assert.equal(
+      formatWeeklyAgendaCreatedAt(todayLocal.toISOString(), now),
+      "aujourd'hui",
+    );
   });
 
   it("vide si absent", () => {
-    assert.equal(formatWeeklyAgendaCreatedAt(undefined), "");
-    assert.equal(formatWeeklyAgendaCreatedAt(""), "");
+    assert.equal(formatWeeklyAgendaCreatedAt(undefined, now), "");
+    assert.equal(formatWeeklyAgendaCreatedAt("", now), "");
+  });
+});
+
+describe("weeklyAgendaAuteurPrenom", () => {
+  it("garde un prénom seul", () => {
+    assert.equal(weeklyAgendaAuteurPrenom("Olivier"), "Olivier");
+  });
+
+  it("extrait le prénom d’un nom complet", () => {
+    assert.equal(weeklyAgendaAuteurPrenom("Olivier Toumsy"), "Olivier");
+  });
+
+  it("secours tiret", () => {
+    assert.equal(weeklyAgendaAuteurPrenom(""), "—");
+    assert.equal(weeklyAgendaAuteurPrenom(null), "—");
   });
 });

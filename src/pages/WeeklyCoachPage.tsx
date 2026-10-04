@@ -21,6 +21,7 @@ import {
   defaultWeeklyAuteurPrenom,
   formatWeeklyAgendaCreatedAt,
   parseWeeklyAgendaCreatedAt,
+  weeklyAgendaAuteurPrenom,
 } from "../utils/weeklyAgenda";
 import {
   createWeeklyAgendaRecord,
@@ -62,7 +63,7 @@ function AgendaSujetRow({
   const titleId = `${checkId}-title`;
   const traite = Boolean(sujet.Traite);
   const texte = (sujet.Texte ?? "Sujet").trim();
-  const auteur = (sujet.Auteur || "—").trim();
+  const auteur = weeklyAgendaAuteurPrenom(sujet.Auteur);
   const createdAt = parseWeeklyAgendaCreatedAt(sujet.Cree_le);
   const createdLabel = formatWeeklyAgendaCreatedAt(sujet.Cree_le);
 
@@ -115,13 +116,16 @@ function AgendaSujetRow({
             alignItems: "center",
           }}
         >
-          <span>Proposé par {auteur}</span>
-          {createdLabel && createdAt ? (
-            <>
-              <span aria-hidden="true">·</span>
-              <time dateTime={createdAt.toISOString()}>Créé le {createdLabel}</time>
-            </>
-          ) : null}
+          <span>
+            {auteur}
+            {createdLabel && createdAt ? (
+              <>
+                {" "}
+                <span aria-hidden="true">·</span>{" "}
+                <time dateTime={createdAt.toISOString()}>{createdLabel}</time>
+              </>
+            ) : null}
+          </span>
           {missionId != null && missionLabel ? (
             <>
               <span aria-hidden="true">·</span>
@@ -209,8 +213,9 @@ function AgendaSujetDialog({
     }
   }, [sujet]);
 
+  const createdAt = parseWeeklyAgendaCreatedAt(sujet?.Cree_le);
   const createdLabel = formatWeeklyAgendaCreatedAt(sujet?.Cree_le);
-  const auteur = (sujet?.Auteur || "—").trim();
+  const auteur = weeklyAgendaAuteurPrenom(sujet?.Auteur);
 
   const close = () => {
     dialogRef.current?.close();
@@ -278,9 +283,20 @@ function AgendaSujetDialog({
                     {(sujet.Texte ?? "").trim() || "—"}
                   </p>
                   <p className="fr-text--xs" style={{ color: "var(--text-mention-grey)" }}>
-                    Proposé par {auteur}
-                    {createdLabel ? ` · Créé le ${createdLabel}` : ""}
-                    {missionLabel ? ` · ${missionLabel}` : ""}
+                    {auteur}
+                    {createdLabel && createdAt ? (
+                      <>
+                        {" "}
+                        <span aria-hidden="true">·</span>{" "}
+                        <time dateTime={createdAt.toISOString()}>{createdLabel}</time>
+                      </>
+                    ) : null}
+                    {missionLabel ? (
+                      <>
+                        {" "}
+                        <span aria-hidden="true">·</span> {missionLabel}
+                      </>
+                    ) : null}
                   </p>
                 </>
               ) : (

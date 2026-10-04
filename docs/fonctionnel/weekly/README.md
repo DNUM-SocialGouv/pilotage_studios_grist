@@ -41,7 +41,7 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 
 ### Agenda (sujets)
 
-- Liste : texte, auteur, **date de création** (`Cree_le`), mission liée éventuelle.
+- Liste : texte, méta `Prénom · date relative` (`Cree_le` → aujourd’hui / hier / il y a N jours…), mission liée éventuelle.
 - Actions : **Voir** / **Modifier** le contenu (`Texte`) dans le drawer pilotage (`pilotage-drawer-dialog`, même pattern que missions / tickets).
 - Champ auteur « Votre prénom » : prérempli avec le **prénom seul** —
   1. `Equipe.Prenom_Nom` de la session (`firstNameFromDisplayName`) ;

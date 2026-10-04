@@ -6,7 +6,7 @@
  * 2) sinon e-mail session → segment avant le premier `.` / `_` / `-` (pas `prenom.nom`)
  */
 
-import { formatGristDate } from "./formatGristDate.ts";
+import { formatRelativeDateFr } from "./formatRelativeDateFr.ts";
 import { firstNameFromDisplayName } from "./welcomeHomeByRole.ts";
 
 /** Prénom depuis la partie locale d’un e-mail (`olivier.toumsy` → `Olivier`). */
@@ -56,13 +56,23 @@ export function parseWeeklyAgendaCreatedAt(
 }
 
 /**
- * Affiche `Weekly_agenda.Cree_le` (DATETIME Grist en secondes, ou ISO string).
+ * Affiche `Weekly_agenda.Cree_le` en relatif FR
+ * (aujourd'hui, hier, il y a N jours… — via `formatRelativeDateFr`).
  */
 export function formatWeeklyAgendaCreatedAt(
   value: string | number | null | undefined,
+  now: Date = new Date(),
 ): string {
   const date = parseWeeklyAgendaCreatedAt(value);
   if (!date) return "";
-  const label = formatGristDate(date.getTime() / 1000);
-  return label === "—" ? "" : label;
+  return formatRelativeDateFr(date, now);
+}
+
+/** Prénom seul pour l’affichage méta d’un sujet (secours : valeur brute). */
+export function weeklyAgendaAuteurPrenom(
+  auteur: string | null | undefined,
+): string {
+  const raw = (auteur ?? "").trim();
+  if (!raw || raw === "—") return "—";
+  return firstNameFromDisplayName(raw) ?? raw;
 }
