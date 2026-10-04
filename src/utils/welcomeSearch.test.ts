@@ -138,6 +138,8 @@ describe("buildWelcomeSearchGroups", () => {
     assert.equal(groups.produits[0]?.href, "/produits/1");
     assert.equal(groups.missions.length, 1);
     assert.equal(groups.missions[0]?.href, "/missions/10");
+    assert.equal(groups.missions[0]?.statut, "En cours");
+    assert.equal(groups.missions[0]?.meta, "Pass Culture");
     assert.equal(groups.personnes.length, 0);
 
     const personnes = buildWelcomeSearchGroups({

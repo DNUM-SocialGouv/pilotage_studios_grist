@@ -34,6 +34,8 @@ export type WelcomeSearchHit = {
   /** Ligne secondaire (département, produit, spécialité…). */
   meta: string;
   href: string;
+  /** Statut mission (badge UI) — uniquement `kind === "mission"`. */
+  statut?: string;
 };
 
 export type WelcomeSearchTargetFlags = {
@@ -159,12 +161,14 @@ export function buildWelcomeSearchGroups(
     );
     missionHits = filtered.map((m) => {
       const produit = libelleProduitMission(m, produitsById);
+      const statut = m.Statut?.trim() || undefined;
       return {
         kind: "mission" as const,
         id: m.id,
         label: missionLibelle(m),
-        meta: produit !== "—" ? produit : (m.Statut?.trim() || "Mission"),
+        meta: produit !== "—" ? produit : "Mission",
         href: `/missions/${m.id}`,
+        statut,
       };
     });
   }

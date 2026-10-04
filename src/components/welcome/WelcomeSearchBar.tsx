@@ -8,6 +8,7 @@ import {
 } from "react";
 import { useNavigate } from "react-router-dom";
 import { SearchBar } from "@codegouvfr/react-dsfr/SearchBar";
+import { StatutBadge } from "../StatutBadge";
 import { useWelcomeSearchData } from "../../hooks/useWelcomeSearchData";
 import {
   buildWelcomeSearchGroups,
@@ -206,7 +207,12 @@ export function WelcomeSearchBar({ targets }: WelcomeSearchBarProps) {
                     goToHit(hit);
                   }}
                 >
-                  <span className="welcome-search__option-label">{hit.label}</span>
+                  <span className="welcome-search__option-main">
+                    <span className="welcome-search__option-label">{hit.label}</span>
+                    {hit.kind === "mission" && hit.statut ? (
+                      <StatutBadge statut={hit.statut} />
+                    ) : null}
+                  </span>
                   <span className="welcome-search__option-meta fr-text--xs fr-hint-text">
                     {hit.meta}
                   </span>

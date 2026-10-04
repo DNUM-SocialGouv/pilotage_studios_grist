@@ -26,7 +26,7 @@ type WelcomeRoleHomeProps = {
  * Pas de KPI ni de liste exhaustive de la nav.
  * Accueil Freelance / Admin / Responsable : pas de libellé produit / rôle / lead
  * (titre « Bonjour [Prénom] »). Admin / Responsable : pas de bloc « À savoir » (`hint` null).
- * Recherche V1 — option A : « Bonjour » + barre dans un bandeau centré ;
+ * Recherche V1 — option A : « Bonjour » + barre dans un bandeau pleine largeur ;
  * CTA hors bandeau en dessous (Admin / Resp. / Freelance ; pas Invité).
  */
 export function WelcomeRoleHome({
