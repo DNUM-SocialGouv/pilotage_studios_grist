@@ -11,7 +11,9 @@ async function boot() {
   await ensureFreshBuild();
 
   startReactDsfr({
-    defaultColorScheme: "light",
+    // Défaut « système » (prefers-color-scheme) tant que la personne n’a pas choisi ;
+    // préférence persistée via localStorage « scheme » (mécanisme react-dsfr).
+    defaultColorScheme: "system",
   });
 
   createRoot(document.getElementById("root")!).render(

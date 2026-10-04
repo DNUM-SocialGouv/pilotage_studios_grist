@@ -4,8 +4,8 @@
  * Déclencheur = avatar Équipe (`EquipeAvatar`), pas l’icône générique seule.
  * Pas de `role="menu"` incomplet — `aria-expanded` / Escape / clic extérieur.
  *
- * Ordre liens (perso → espace partagé → aide) :
- * Mon carnet · Feuille de route · Documentation
+ * Ordre liens (perso → espace partagé → aide → confort) :
+ * Mon carnet · Feuille de route · Documentation · Paramètres d’affichage
  */
 import {
   useCallback,
@@ -17,6 +17,8 @@ import {
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@codegouvfr/react-dsfr/Button";
+import { headerFooterDisplayItem } from "@codegouvfr/react-dsfr/Display";
+import { fr } from "@codegouvfr/react-dsfr/fr";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import { useAclProfil } from "../AclProfilContext";
 import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
@@ -106,6 +108,12 @@ export function WidgetUserMenu() {
     navigate(href);
   };
 
+  const onDisplayClick = () => {
+    // Fermer le panneau après le clic DSFR (buttonProps ouvre la modale via aria-controls).
+    // Fermeture synchrone démonterait ce bouton avant l’ouverture.
+    window.setTimeout(() => close(), 0);
+  };
+
   return (
     <div
       ref={rootRef}
@@ -153,32 +161,54 @@ export function WidgetUserMenu() {
               </p>
             ))}
           </div>
-          {links.length > 0 ? (
-            <ul className="widget-user-menu__list">
-              {links.map((link, index) => {
-                const active = isNavActive(pathname, link.href);
-                return (
-                  <li key={link.href}>
-                    <a
-                      ref={index === 0 ? firstLinkRef : undefined}
-                      href={link.href}
-                      className={cx(
-                        "fr-btn",
-                        "fr-btn--tertiary-no-outline",
-                        "fr-btn--sm",
-                        "widget-user-menu__item",
-                        active && "widget-user-menu__item--active",
-                      )}
-                      aria-current={active ? "page" : undefined}
-                      onClick={onLinkClick(link.href)}
-                    >
-                      {link.label}
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : null}
+          <ul className="widget-user-menu__list">
+            {links.map((link, index) => {
+              const active = isNavActive(pathname, link.href);
+              return (
+                <li key={link.href}>
+                  <a
+                    ref={index === 0 ? firstLinkRef : undefined}
+                    href={link.href}
+                    className={cx(
+                      "fr-btn",
+                      "fr-btn--tertiary-no-outline",
+                      "fr-btn--sm",
+                      "widget-user-menu__item",
+                      active && "widget-user-menu__item--active",
+                    )}
+                    aria-current={active ? "page" : undefined}
+                    onClick={onLinkClick(link.href)}
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              );
+            })}
+            {/* Sépare confort (thème) des liens métier du menu. */}
+            <li className="widget-user-menu__separator" role="separator" />
+            <li>
+              {/*
+                Pattern DSFR officiel : `fr-btn--display` (icône thème + libellé visible).
+                Ne pas utiliser `iconId` seul sur fr-btn — ça force l’icône seule.
+              */}
+              <button
+                type="button"
+                {...headerFooterDisplayItem.buttonProps}
+                className={cx(
+                  fr.cx(
+                    "fr-btn",
+                    "fr-btn--tertiary-no-outline",
+                    "fr-btn--sm",
+                    "fr-btn--display",
+                  ),
+                  "widget-user-menu__item",
+                )}
+                onClick={onDisplayClick}
+              >
+                {headerFooterDisplayItem.text}
+              </button>
+            </li>
+          </ul>
         </div>
       ) : null}
     </div>
@@ -196,9 +226,7 @@ function identityLines(params: {
   const name = params.displayName?.trim() || null;
   const email = params.email?.trim() || null;
 
-  if (email && email !== name) {
-    secondary.push(email);
-  }
+  // Pas d’e-mail dans le panneau (redondant avec le nom) — rôle + département suffisent.
   if (params.role?.trim()) {
     secondary.push(`Rôle : ${params.role.trim()}`);
   }
@@ -209,8 +237,9 @@ function identityLines(params: {
   if (name) {
     return { primary: name, secondary };
   }
+  // Secours si pas de prénom/nom : l’e-mail reste l’identité principale uniquement.
   if (email) {
-    return { primary: email, secondary: secondary.filter((l) => l !== email) };
+    return { primary: email, secondary };
   }
   if (params.status === "standalone") {
     return { primary: "Session locale (hors Grist)", secondary: [] };
