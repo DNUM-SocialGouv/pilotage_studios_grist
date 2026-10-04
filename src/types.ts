@@ -108,7 +108,13 @@ export interface WeeklyPhaseRow {
 /** Sujet agenda Weekly (table satellite `Weekly_agenda`). */
 export interface WeeklyAgendaRow {
   id: number;
+  /** Titre du sujet (colonne Grist `Texte`). */
   Texte?: string;
+  /**
+   * Détail optionnel (colonne Grist `Detail` — HITL Owner si absente).
+   * Affiché uniquement dans le drawer, pas dans la liste compacte.
+   */
+  Detail?: string;
   Auteur?: string;
   Email?: string;
   Mission?: unknown;

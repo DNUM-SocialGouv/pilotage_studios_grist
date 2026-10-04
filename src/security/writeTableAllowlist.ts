@@ -11,7 +11,8 @@
  * - `Acl_profil` : create only (fiche session auto si absente — pas d’update/delete).
  * - `Equipe` : create + update (drawer Admin nouvelle / modifier personne — pas de delete).
  * - `Weekly_phase` : create + update (phase kanban Weekly — pas de delete).
- * - `Weekly_agenda` : create + update `Traite` / `Texte` (sujets à aborder — pas de delete).
+ * - `Weekly_agenda` : create + update `Traite` / `Texte` (titre) / `Detail` / `Mission`
+ *   (sujets à aborder — pas de delete).
  */
 
 export const KANBAN_TABLE_ID = "Kanban";

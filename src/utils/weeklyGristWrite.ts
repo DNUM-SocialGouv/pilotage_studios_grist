@@ -11,6 +11,14 @@ import {
 } from "../security/writeTableAllowlist.ts";
 import type { WeeklyPhaseKey } from "./weeklyPhases.ts";
 
+/**
+ * Colonne Grist `Weekly_agenda.Detail` (TEXT).
+ * `false` tant que l’Owner n’a pas créé la colonne (HITL) — titre / mission restent
+ * enregistrables ; le détail UI n’est pas écrit tant que ce flag est faux.
+ * Après création Owner → passer à `true`.
+ */
+export const WEEKLY_AGENDA_DETAIL_COLUMN_READY = false;
+
 function parseCreateId(result: GristTableCreateResult): number {
   const first = Array.isArray(result) ? result[0] : result;
   const id = first && typeof first === "object" && "id" in first ? Number(first.id) : NaN;
@@ -55,7 +63,10 @@ export async function upsertWeeklyPhase(input: {
 }
 
 export async function createWeeklyAgendaRecord(input: {
+  /** Titre (`Weekly_agenda.Texte`). */
   texte: string;
+  /** Détail optionnel (`Weekly_agenda.Detail` — colonne HITL Owner). */
+  detail?: string;
   auteur: string;
   email: string;
   missionId: number | null;
@@ -63,7 +74,7 @@ export async function createWeeklyAgendaRecord(input: {
   assertWritableTableId(WEEKLY_AGENDA_TABLE_ID);
   const texte = input.texte.trim();
   if (!texte) {
-    throw new Error("Le sujet ne peut pas être vide.");
+    throw new Error("Le titre du sujet ne peut pas être vide.");
   }
   const fields: Record<string, unknown> = {
     Texte: texte,
@@ -71,9 +82,11 @@ export async function createWeeklyAgendaRecord(input: {
     Email: input.email.trim(),
     Traite: false,
     Cree_le: new Date().toISOString(),
+    Mission:
+      input.missionId != null && input.missionId > 0 ? input.missionId : null,
   };
-  if (input.missionId != null && input.missionId > 0) {
-    fields.Mission = input.missionId;
+  if (WEEKLY_AGENDA_DETAIL_COLUMN_READY) {
+    fields.Detail = (input.detail ?? "").trim();
   }
   const result = await getWritableTable(WEEKLY_AGENDA_TABLE_ID).create({ fields });
   return parseCreateId(result);
@@ -93,21 +106,33 @@ export async function updateWeeklyAgendaTraite(
   });
 }
 
-/** Met à jour le texte d’un sujet (`Weekly_agenda.Texte`) — pas d’autres colonnes. */
-export async function updateWeeklyAgendaTexte(
+/**
+ * Met à jour titre (`Texte`), détail (`Detail`) et mission liée (`Mission`).
+ * `missionId` null → détache la mission.
+ */
+export async function updateWeeklyAgendaSujet(
   id: number,
-  texte: string,
+  input: {
+    texte: string;
+    detail: string;
+    missionId: number | null;
+  },
 ): Promise<void> {
   assertWritableUpdateTableId(WEEKLY_AGENDA_TABLE_ID);
   if (!Number.isFinite(id) || id <= 0) {
     throw new Error("Identifiant sujet invalide.");
   }
-  const next = texte.trim();
-  if (!next) {
-    throw new Error("Le sujet ne peut pas être vide.");
+  const texte = input.texte.trim();
+  if (!texte) {
+    throw new Error("Le titre du sujet ne peut pas être vide.");
   }
-  await getWritableTable(WEEKLY_AGENDA_TABLE_ID).update({
-    id,
-    fields: { Texte: next },
-  });
+  const fields: Record<string, unknown> = {
+    Texte: texte,
+    Mission:
+      input.missionId != null && input.missionId > 0 ? input.missionId : null,
+  };
+  if (WEEKLY_AGENDA_DETAIL_COLUMN_READY) {
+    fields.Detail = input.detail.trim();
+  }
+  await getWritableTable(WEEKLY_AGENDA_TABLE_ID).update({ id, fields });
 }

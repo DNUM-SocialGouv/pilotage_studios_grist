@@ -36,16 +36,25 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 | `Equipe` | Lecture — noms intervenants |
 | Produits SDPC | Lecture — libellé produit |
 | **`Weekly_phase`** | Create + update — 1 ligne / mission : `Mission` (Ref) · `Phase` (`prochainement` \| `cadrage` \| `actif` \| `autonomie`) |
-| **`Weekly_agenda`** | Create + update `Traite` / `Texte` — sujets : `Texte` · `Auteur` · `Email` · `Mission` (opt.) · `Traite` · `Cree_le` |
+| **`Weekly_agenda`** | Create + update `Traite` / `Texte` (titre) / `Detail` / `Mission` — sujets : `Texte` (titre) · `Detail` (opt., drawer) · `Auteur` · `Email` · `Mission` (opt.) · `Traite` · `Cree_le` |
 | **`Weekly_coachs`** | Lecture widget (allowlist) — `E_mail` ; écriture **hors widget** (Owner / Admin UI) |
 
 ### Agenda (sujets)
 
-- Liste : texte, méta `Prénom · date relative` (`Cree_le` → aujourd’hui / hier / il y a N jours…), mission liée éventuelle.
-- Actions : **Voir** / **Modifier** le contenu (`Texte`) dans le drawer pilotage (`pilotage-drawer-dialog`, même pattern que missions / tickets).
+| UI | Colonne Grist |
+|----|---------------|
+| **Titre** (liste + drawer + create) | `Texte` |
+| **Détail** (drawer lecture / édition + create optionnel — **pas** dans la liste) | `Detail` (TEXT) — **HITL Owner** si absente |
+| **Mission liée** (create + édition drawer) | `Mission` (Ref → `Missions`, optionnel) |
+| Méta liste / drawer | `Auteur` (prénom) · `Cree_le` (date relative) · `Traite` |
+
+- Liste compacte : **titre** + méta `Prénom · date relative` (+ lien mission éventuel) + **Voir** / **Modifier** — pas le détail.
+- Drawer lecture : titre, détail, mission (lien fiche), méta date / auteur.
+- Drawer édition / create : titre, détail optionnel, select mission, enregistrement.
 - Champ auteur « Votre prénom » : prérempli avec le **prénom seul** —
   1. `Equipe.Prenom_Nom` de la session (`firstNameFromDisplayName`) ;
   2. sinon premier segment de l’e-mail de session (avant `.` / `_` / `-`, pas `prenom.nom`).
+- Flag code `WEEKLY_AGENDA_DETAIL_COLUMN_READY` : rester `false` tant que la colonne `Detail` n’existe pas ; passer à `true` après création Owner.
 
 ### Règles kanban
 
