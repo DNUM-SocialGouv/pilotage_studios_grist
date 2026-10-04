@@ -28,7 +28,7 @@ Chaque personne peut choisir comment le widget s’affiche : **clair**, **sombre
 |---------|-------------|
 | Défaut color scheme | `src/main.tsx` — `startReactDsfr({ defaultColorScheme: "system" })` |
 | Modale DSFR | `WidgetLayout` monte `Display` depuis `@codegouvfr/react-dsfr/Display/Display` (pas l’export déprécié qui renvoie `null`) |
-| Bouton menu | `WidgetUserMenu` — `headerFooterDisplayItem` (libellé + icône + `buttonProps`) |
+| Bouton menu | `WidgetUserMenu` — `headerFooterDisplayItem` + classe DSFR `fr-btn--display` (icône + libellé « Paramètres d’affichage ») ; séparateur CSS avant l’entrée |
 | Pas de Header / Footer Marianne | Rule widget-iframe |
 
 ## Limites V1

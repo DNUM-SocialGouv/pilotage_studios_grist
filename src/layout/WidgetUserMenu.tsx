@@ -184,13 +184,23 @@ export function WidgetUserMenu() {
                 </li>
               );
             })}
+            {/* Sépare confort (thème) des liens métier du menu. */}
+            <li className="widget-user-menu__separator" role="separator" />
             <li>
+              {/*
+                Pattern DSFR officiel : `fr-btn--display` (icône thème + libellé visible).
+                Ne pas utiliser `iconId` seul sur fr-btn — ça force l’icône seule.
+              */}
               <button
                 type="button"
                 {...headerFooterDisplayItem.buttonProps}
                 className={cx(
-                  fr.cx("fr-btn", "fr-btn--tertiary-no-outline", "fr-btn--sm"),
-                  headerFooterDisplayItem.iconId,
+                  fr.cx(
+                    "fr-btn",
+                    "fr-btn--tertiary-no-outline",
+                    "fr-btn--sm",
+                    "fr-btn--display",
+                  ),
                   "widget-user-menu__item",
                 )}
                 onClick={onDisplayClick}
