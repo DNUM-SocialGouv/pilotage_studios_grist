@@ -2031,6 +2031,37 @@ button.fr-link:disabled {
   width: min(48rem, 94vw);
 }
 
+/* Weekly kanban — titre carte = ouverture drawer suivi. */
+.weekly-card-title-btn {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  color: var(--text-action-high-blue-france);
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+}
+
+.weekly-card-title-btn:hover:not(:disabled) {
+  color: var(--text-active-blue-france);
+}
+
+.weekly-card-title-btn:focus-visible {
+  outline: 2px solid var(--border-plain-blue-france);
+  outline-offset: 2px;
+}
+
+.weekly-card-title-btn:disabled {
+  color: var(--text-disabled-grey);
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
 /* Weekly drawer — choix météo (3 boutons horizontaux, tokens DSFR). */
 .weekly-meteo-group {
   display: grid;

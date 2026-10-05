@@ -586,7 +586,17 @@ function WeeklyCardView({
           fontWeight: 700,
         }}
       >
-        {card.titre}
+        <button
+          type="button"
+          className="weekly-card-title-btn"
+          disabled={busy}
+          draggable={false}
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={() => onOpenSuivi(card.missionId)}
+        >
+          {card.titre}
+          <span className="fr-sr-only"> — ouvrir le suivi</span>
+        </button>
       </h3>
 
       <div
@@ -687,7 +697,7 @@ function WeeklyCardView({
 
       <Button
         type="button"
-        priority="secondary"
+        priority="tertiary no outline"
         size="small"
         disabled={busy}
         onClick={() => onOpenSuivi(card.missionId)}
