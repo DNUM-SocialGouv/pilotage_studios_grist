@@ -12,7 +12,9 @@ import { Button } from "@codegouvfr/react-dsfr/Button";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { Link } from "react-router-dom";
+import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
 import { MissionProse } from "../components/missions/MissionProse";
+import { WeeklySuiviDrawer } from "../components/weekly/WeeklySuiviDrawer";
 import { useAclProfil } from "../AclProfilContext";
 import { useGristPa } from "../GristPaContext";
 import { useWeeklyCoachData } from "../hooks/useWeeklyCoachData";
@@ -29,16 +31,20 @@ import {
   updateWeeklyAgendaSujet,
   updateWeeklyAgendaTraite,
   upsertWeeklyPhase,
+  upsertWeeklyPhaseSuivi,
 } from "../utils/weeklyGristWrite";
 import {
   WEEKLY_PHASES,
   buildWeeklyCards,
   groupCardsByPhase,
-  isWeeklyPhaseKey,
   phaseRowsToMap,
+  weeklyMeteoIconClass,
+  weeklyMeteoLabel,
+  weeklyMeteoTone,
   type WeeklyCard,
   type WeeklyPhaseKey,
 } from "../utils/weeklyPhases";
+import { firstNameFromDisplayName } from "../utils/welcomeHomeByRole";
 import type { WeeklyAgendaRow } from "../types";
 
 type AgendaDialogMode = "view" | "edit" | "create";
@@ -183,6 +189,8 @@ function AgendaSujetDialog({
   missionId,
   missionOptions,
   defaultAuteur,
+  /** Préremplissage mission en mode create (ex. depuis drawer suivi). */
+  defaultCreateMissionId = null,
   busy,
   onClose,
   onSave,
@@ -196,6 +204,7 @@ function AgendaSujetDialog({
   missionId: number | null;
   missionOptions: { id: number; label: string }[];
   defaultAuteur: string;
+  defaultCreateMissionId?: number | null;
   busy: boolean;
   onClose: () => void;
   onSave: (input: {
@@ -233,7 +242,11 @@ function AgendaSujetDialog({
     if (mode === "create") {
       setDraftTitre("");
       setDraftDetail("");
-      setDraftMissionId("");
+      setDraftMissionId(
+        defaultCreateMissionId != null && defaultCreateMissionId > 0
+          ? String(defaultCreateMissionId)
+          : "",
+      );
       setDraftAuteur(defaultAuteur);
     } else {
       setDraftTitre((sujet?.Texte ?? "").trim());
@@ -252,6 +265,7 @@ function AgendaSujetDialog({
     sujet?.Detail,
     sujet?.Mission,
     defaultAuteur,
+    defaultCreateMissionId,
   ]);
 
   useEffect(() => {
@@ -528,179 +542,133 @@ function AgendaSujetDialog({
   );
 }
 
-function meteoIconClass(meteo: string): string {
-  const t = meteo.toLowerCase();
-  if (
-    t.includes("orage") ||
-    t.includes("difficul") ||
-    t.includes("rouge") ||
-    t.includes("bloq")
-  ) {
-    return "fr-icon-thunderstorms-line";
-  }
-  if (
-    t.includes("nuage") ||
-    t.includes("surveill") ||
-    t.includes("orange") ||
-    t.includes("attention")
-  ) {
-    return "fr-icon-cloudy-2-line";
-  }
-  if (t.includes("vert") || t.includes("beau") || t.includes("soleil") || t.includes("ok")) {
-    return "fr-icon-sun-line";
-  }
-  return "fr-icon-cloudy-2-line";
-}
-
 function WeeklyCardView({
   card,
   busy,
-  onPhaseChange,
+  onOpenSuivi,
   onDragStart,
   onDragEnd,
 }: {
   card: WeeklyCard;
   busy: boolean;
-  onPhaseChange: (missionId: number, phase: WeeklyPhaseKey) => void;
+  onOpenSuivi: (missionId: number) => void;
   onDragStart: (missionId: number) => void;
   onDragEnd: () => void;
 }) {
-  const phaseId = `phase-${card.missionId}`;
-  const hasMeteo = Boolean(card.meteo);
-  const assignee =
-    card.intervenants.length > 0 ? card.intervenants.join(", ") : "À assigner";
+  const suppressClickRef = useRef(false);
+  const meteoTone = card.meteo ? weeklyMeteoTone(card.meteo) : null;
+  const meteoLabel = card.meteo ? weeklyMeteoLabel(card.meteo) : "";
+  const hasNote = Boolean(card.noteOps.trim());
+  const metaParts = [
+    card.produitLabel,
+    ...card.departements,
+  ].filter(Boolean);
+  const membreId =
+    card.membreEquipeId != null && card.membreEquipeId > 0
+      ? card.membreEquipeId
+      : null;
+  const membrePrenom =
+    membreId != null
+      ? firstNameFromDisplayName(card.membreEquipeLabel) ||
+        card.membreEquipeLabel ||
+        `Personne #${membreId}`
+      : null;
+
+  const openSuivi = () => {
+    if (busy) return;
+    onOpenSuivi(card.missionId);
+  };
+
+  // aria-label remplace le contenu pour le nom accessible : y inclure
+  // météo / membre / meta visibles (sinon masqués aux lecteurs d’écran).
+  const ariaLabel = [
+    card.titre,
+    meteoLabel ? `Météo : ${meteoLabel}` : null,
+    membrePrenom ? `Membre : ${membrePrenom}` : null,
+    metaParts.length > 0 ? metaParts.join(", ") : null,
+    hasNote ? "note de suivi" : null,
+    "ouvrir le suivi",
+  ]
+    .filter(Boolean)
+    .join(" — ");
 
   return (
     <article
+      className={`weekly-card${busy ? "" : " weekly-card--interactive"}`}
       draggable={!busy}
-      onDragStart={() => onDragStart(card.missionId)}
-      onDragEnd={onDragEnd}
-      aria-label={card.titre}
-      style={{
-        background: "var(--background-default-grey)",
-        boxShadow: "inset 0 0 0 1px var(--border-default-grey)",
-        padding: "0.75rem",
-        marginBottom: "0.625rem",
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.5rem",
-        cursor: busy ? "default" : "grab",
+      onDragStart={() => {
+        suppressClickRef.current = true;
+        onDragStart(card.missionId);
       }}
+      onDragEnd={onDragEnd}
+      onClick={() => {
+        if (suppressClickRef.current) {
+          suppressClickRef.current = false;
+          return;
+        }
+        openSuivi();
+      }}
+      onKeyDown={(e) => {
+        if (busy) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openSuivi();
+        }
+      }}
+      role="button"
+      tabIndex={busy ? -1 : 0}
+      aria-label={ariaLabel}
+      aria-disabled={busy || undefined}
     >
-      <h3
-        className="fr-text--md"
-        style={{
-          margin: 0,
-          fontSize: "0.9375rem",
-          lineHeight: "1.375rem",
-          fontWeight: 700,
-        }}
-      >
-        {card.titre}
-      </h3>
-
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "0.375rem 0.75rem",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        {card.produitLabel ? (
-          <p
-            className="fr-text--xs"
-            style={{
-              margin: 0,
-              color: "var(--text-mention-grey)",
-              display: "inline-flex",
-              gap: "0.25rem",
-              alignItems: "center",
-            }}
-          >
-            <span className="fr-icon-dashboard-3-line fr-icon--sm" aria-hidden="true" />
-            {card.produitLabel}
-          </p>
-        ) : (
-          <span />
-        )}
-        {hasMeteo ? (
-          <span
-            className={`${meteoIconClass(card.meteo)} fr-icon--sm`}
-            title={`Météo : ${card.meteo}`}
-            aria-label={`Météo : ${card.meteo}`}
-            style={{ color: "var(--text-default-grey)" }}
-          />
-        ) : null}
-      </div>
-
-      <ul
-        className="fr-tags-group fr-tags-group--sm"
-        style={{ margin: 0 }}
-      >
-        {card.departements.map((dep) => (
-          <li key={dep}>
-            <p className="fr-tag fr-tag--sm">{dep}</p>
-          </li>
-        ))}
-        <li>
-          <p
-            className="fr-tag fr-tag--sm fr-icon-user-line fr-tag--icon-left"
-            style={
-              card.intervenants.length === 0
-                ? { color: "var(--text-default-warning)" }
-                : undefined
-            }
-          >
-            {assignee}
-          </p>
-        </li>
-      </ul>
-
-      {card.statut ? (
-        <p
-          className="fr-text--xs"
-          style={{
-            margin: 0,
-            paddingTop: "0.375rem",
-            borderTop: "1px solid var(--border-default-grey)",
-            color: "var(--text-mention-grey)",
-          }}
+      {meteoTone ? (
+        <span
+          className={`weekly-card__meteo-badge weekly-card__meteo-badge--${meteoTone}`}
+          title={`Météo : ${meteoLabel}`}
+          aria-hidden="true"
         >
-          Statut Grist : {card.statut}
+          <span
+            className={`${weeklyMeteoIconClass(card.meteo)} fr-icon--sm`}
+            aria-hidden="true"
+          />
+        </span>
+      ) : null}
+
+      <h3 className="weekly-card__title">{card.titre}</h3>
+
+      {metaParts.length > 0 ? (
+        <p className="weekly-card__meta">
+          {metaParts.map((part, i) => (
+            <span key={`${part}-${i}`}>
+              {i > 0 ? (
+                <span aria-hidden="true" className="weekly-card__meta-sep">
+                  ·
+                </span>
+              ) : null}
+              {part}
+            </span>
+          ))}
         </p>
       ) : null}
 
-      <div className="fr-select-group" style={{ marginBottom: 0 }}>
-        <label className="fr-label fr-sr-only" htmlFor={phaseId}>
-          Phase de {card.titre}
-        </label>
-        <select
-          className="fr-select"
-          id={phaseId}
-          disabled={busy}
-          value={card.phase}
-          onChange={(e) => {
-            const next = e.target.value;
-            if (!isWeeklyPhaseKey(next)) return;
-            onPhaseChange(card.missionId, next);
-          }}
-        >
-          {WEEKLY_PHASES.map((p) => (
-            <option key={p.key} value={p.key}>
-              {p.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      {membreId != null && membrePrenom != null ? (
+        <p className="weekly-card__member">
+          <EquipeAvatar
+            avatar={card.membreEquipeAvatar}
+            memberId={membreId}
+            size="sm"
+          />
+          <span>{membrePrenom}</span>
+        </p>
+      ) : null}
 
-      <Link
-        className="fr-link fr-link--sm"
-        to={`/missions/${card.missionId}`}
-      >
-        Ouvrir la fiche mission
-      </Link>
+      {hasNote ? (
+        <p className="weekly-card__badges" aria-hidden="true">
+          <span
+            className="fr-icon-align-left fr-icon--sm weekly-card__note-icon"
+            title="Note de suivi"
+          />
+        </p>
+      ) : null}
     </article>
   );
 }
@@ -720,6 +688,13 @@ export function WeeklyCoachPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogSujet, setDialogSujet] = useState<WeeklyAgendaRow | null>(null);
   const [dialogMode, setDialogMode] = useState<AgendaDialogMode>("view");
+  const [suiviOpen, setSuiviOpen] = useState(false);
+  const [suiviMissionId, setSuiviMissionId] = useState<number | null>(null);
+  const [suiviBusy, setSuiviBusy] = useState(false);
+  /** Mission préremplie pour create agenda (depuis drawer suivi). */
+  const [createAgendaMissionId, setCreateAgendaMissionId] = useState<
+    number | null
+  >(null);
   const nouveauSujetCtaId = "weekly-nouveau-sujet-cta";
 
   const defaultAuteur = defaultWeeklyAuteurPrenom(displayName, sessionEmail);
@@ -766,9 +741,88 @@ export function WeeklyCoachPage() {
     [cards],
   );
 
+  const equipeOptions = useMemo(
+    () =>
+      data.intervenants
+        .map((p) => ({
+          id: p.id,
+          label: (p.Prenom_Nom ?? "").trim() || `Personne #${p.id}`,
+        }))
+        .filter((p) => p.label.length > 0)
+        .sort((a, b) => a.label.localeCompare(b.label, "fr")),
+    [data.intervenants],
+  );
+
+  const suiviCard = useMemo(
+    () =>
+      suiviMissionId != null
+        ? (cards.find((c) => c.missionId === suiviMissionId) ?? null)
+        : null,
+    [cards, suiviMissionId],
+  );
+
+  const agendaLiesSuivi = useMemo(() => {
+    if (suiviMissionId == null) return [];
+    return agendaSorted.filter(
+      (s) => extractGristReferenceId(s.Mission) === suiviMissionId,
+    );
+  }, [agendaSorted, suiviMissionId]);
+
   if (pa.untrustedEmbed || pa.outsideGrist) {
     return <NothingHerePage />;
   }
+
+  const openSuivi = (missionId: number) => {
+    setSuiviMissionId(missionId);
+    setSuiviOpen(true);
+  };
+
+  const closeSuivi = () => {
+    setSuiviOpen(false);
+    setSuiviMissionId(null);
+  };
+
+  const onSaveSuivi = async (input: {
+    missionId: number;
+    phaseRowId: number | null;
+    phase: WeeklyPhaseKey;
+    meteo: string;
+    noteOps: string;
+    membreEquipeId: number | null;
+  }) => {
+    const existingPhaseId =
+      input.phaseRowId ??
+      phaseRowsToMap(data.phases).get(input.missionId)?.phaseId ??
+      null;
+    setPhaseError(null);
+    setSuiviBusy(true);
+    try {
+      await upsertWeeklyPhaseSuivi({
+        phaseRowId: existingPhaseId,
+        missionId: input.missionId,
+        phase: input.phase,
+        meteo: input.meteo,
+        noteOps: input.noteOps,
+        membreEquipeId: input.membreEquipeId,
+      });
+      // Rester dans le drawer (lecture) — comme le contexte mission.
+      await data.reload();
+    } catch (e) {
+      throw e instanceof Error
+        ? e
+        : new Error("Impossible d’enregistrer le suivi.");
+    } finally {
+      setSuiviBusy(false);
+    }
+  };
+
+  const openCreateAgendaForMission = (missionId: number) => {
+    closeSuivi();
+    setCreateAgendaMissionId(missionId);
+    setDialogMode("create");
+    setDialogSujet(null);
+    setDialogOpen(true);
+  };
 
   const changePhase = async (missionId: number, phase: WeeklyPhaseKey) => {
     const card = cards.find((c) => c.missionId === missionId);
@@ -807,6 +861,7 @@ export function WeeklyCoachPage() {
     const restoreCta = dialogMode === "create";
     setDialogOpen(false);
     setDialogSujet(null);
+    setCreateAgendaMissionId(null);
     if (restoreCta) {
       // Focus retour au CTA après create (succès / Annuler / Échap / scrim).
       requestAnimationFrame(() => {
@@ -836,7 +891,8 @@ export function WeeklyCoachPage() {
     setDialogOpen(true);
   };
 
-  const openCreateAgendaDialog = () => {
+  const openCreateAgendaDialog = (missionId: number | null = null) => {
+    setCreateAgendaMissionId(missionId);
     setDialogMode("create");
     setDialogSujet(null);
     setDialogOpen(true);
@@ -990,7 +1046,7 @@ export function WeeklyCoachPage() {
                 size="small"
                 iconId="fr-icon-add-line"
                 disabled={agendaBusy || data.isReloading}
-                onClick={openCreateAgendaDialog}
+                onClick={() => openCreateAgendaDialog()}
                 nativeButtonProps={{ id: nouveauSujetCtaId }}
               >
                 Nouveau sujet
@@ -1051,6 +1107,7 @@ export function WeeklyCoachPage() {
               }
               missionOptions={missionOptions}
               defaultAuteur={defaultAuteur}
+              defaultCreateMissionId={createAgendaMissionId}
               busy={agendaBusy || data.isReloading}
               onClose={closeAgendaDialog}
               onSave={onSaveAgendaSujet}
@@ -1058,6 +1115,21 @@ export function WeeklyCoachPage() {
               onSwitchToEdit={() => setDialogMode("edit")}
             />
           </section>
+
+          <WeeklySuiviDrawer
+            open={suiviOpen}
+            card={suiviCard}
+            agendaLies={agendaLiesSuivi}
+            equipeOptions={equipeOptions}
+            busy={suiviBusy || data.isReloading}
+            onClose={closeSuivi}
+            onSaveSuivi={onSaveSuivi}
+            onViewSujet={(sujet) => {
+              closeSuivi();
+              openAgendaDialog(sujet, "view");
+            }}
+            onNouveauSujet={openCreateAgendaForMission}
+          />
 
           <section aria-label="Kanban des missions">
             <div
@@ -1138,7 +1210,7 @@ export function WeeklyCoachPage() {
                       key={card.missionId}
                       card={card}
                       busy={busyMissionId === card.missionId || data.isReloading}
-                      onPhaseChange={(id, phase) => void changePhase(id, phase)}
+                      onOpenSuivi={openSuivi}
                       onDragStart={setDragMissionId}
                       onDragEnd={() => setDragMissionId(null)}
                     />

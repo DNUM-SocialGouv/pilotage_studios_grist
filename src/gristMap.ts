@@ -195,6 +195,9 @@ export function toWeeklyPhase(record: GristRecord): WeeklyPhaseRow {
     id: record.id,
     Mission: record.Mission,
     Phase: asGristChoice(record.Phase) ?? asString(record.Phase),
+    Meteo: asGristChoice(record.Meteo) ?? asString(record.Meteo),
+    Note_ops: asMultilineText(record.Note_ops) ?? asString(record.Note_ops),
+    Membre_equipe: record.Membre_equipe,
   };
 }
 
@@ -221,6 +224,7 @@ export function toIntervenant(record: GristRecord): Intervenant {
     Prenom_Nom: asString(record.Prenom_Nom) ?? asGristChoice(record.Prenom_Nom),
     Equipe: asGristChoice(record.Equipe) ?? asString(record.Equipe),
     Portage: asGristChoice(record.Portage) ?? asString(record.Portage),
+    Avatar: asString(record.Avatar) ?? asGristChoice(record.Avatar),
     TJM: asNumber(record.TJM),
   };
 }

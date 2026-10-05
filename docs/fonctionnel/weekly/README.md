@@ -4,9 +4,10 @@
 
 Écran de **synchro** pour la team Product Ops et les coachs : un kanban des
 **missions** (titres issus de Grist) et une liste de **sujets à aborder** partagée.
-La phase du kanban et l’agenda vivent dans des **tables satellites** — on ne
-modifie pas les colonnes de `Missions` / `Missions_enfants`. Le lien CRA viendra
-plus tard.
+Un **clic sur la carte** ouvre un **tiroir** (météo, membre équipe, note,
+échanges liés). La phase, le suivi ops et l’agenda vivent dans des **tables
+satellites Weekly** — on ne modifie **pas** les colonnes de `Missions` /
+`Missions_enfants`. Le lien CRA viendra plus tard.
 
 ## Route & accès
 
@@ -31,13 +32,48 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 
 | Table | Rôle |
 |-------|------|
-| `Missions` | Lecture — titre carte (`Nom_de_la_mission`), statut, département, produit, `Meteo` |
+| `Missions` | Lecture seule — titre carte (`Nom_de_la_mission`), statut, département, produit (**pas** d’écriture suivi ops) |
 | `Missions_enfants` | Lecture — intervenants sur la carte |
 | `Equipe` | Lecture — noms intervenants |
 | Produits SDPC | Lecture — libellé produit |
-| **`Weekly_phase`** | Create + update — 1 ligne / mission : `Mission` (Ref) · `Phase` (`prochainement` \| `cadrage` \| `actif` \| `autonomie`) |
+| **`Weekly_phase`** | Create + update — 1 ligne / mission : `Mission` (Ref) · `Phase` (`prochainement` \| `cadrage` \| `actif` \| `autonomie`) · `Meteo` · `Note_ops` · `Membre_equipe` (Ref → `Equipe`) |
 | **`Weekly_agenda`** | Create + update `Traite` / `Texte` (titre) / `Detail` / `Mission` — sujets : `Texte` (titre) · `Detail` (opt., drawer) · `Auteur` · `Email` · `Mission` (opt.) · `Traite` · `Cree_le` |
 | **`Weekly_coachs`** | Lecture widget (allowlist) — `E_mail` ; écriture **hors widget** (Owner / Admin UI) |
+
+### Cartes kanban (variante A)
+
+| UI | Source |
+|----|--------|
+| Carte entière (clic / clavier) | Ouvre le drawer suivi — titre texte (pas de lien) |
+| Titre | Lecture `Missions.Nom_de_la_mission` |
+| Badge météo (coin) | `Weekly_phase.Meteo` — pastille tonée + icône (absent si vide) |
+| Membre + avatar | `Weekly_phase.Membre_equipe` → avatar carré (`EquipeAvatar`) + **prénom seul** — **absent** si non assigné |
+| Indicateur note | Icône (style Trello) si `Weekly_phase.Note_ops` non vide — **pas** le texte sur la carte |
+| Phase | **Colonne** kanban uniquement — **pas** de select Phase sur la carte |
+
+### Drawer suivi mission (V1)
+
+| UI | Source |
+|----|--------|
+| Titre | Lecture `Missions.Nom_de_la_mission` |
+| Phase | Badge lecture = colonne kanban (`Weekly_phase.Phase`) — **pas** de select |
+| Ouverture | **Lecture** par défaut |
+| Météo + Membre | Lecture ; bouton **Modifier** → édition (3 boutons météo · select membre) puis Enregistrer / Annuler |
+| Note ops | Lecture `MissionProse` ; **Modifier** / **Ajouter** → textarea Markdown (pattern contexte mission / note studio) ; icônes Enregistrer / Annuler — **pas** de fermeture auto du drawer |
+| Derniers échanges | `Weekly_agenda` filtrés par mission + Voir / Nouveau sujet |
+| Lien fiche | Navigation `/missions/:id` (secondaire) — **pas** de sync note/météo |
+
+**Hors V1** : point bloquant · actions structurées · timer · clôture.
+
+**Colonnes ops** (confirmées MCP 2026-10-05, doc `nei9DeARs5Eo`) :
+
+| Colonne (`colId`) | Table | Type | Usage |
+|-------------------|-------|------|-------|
+| `Meteo` | `Weekly_phase` | TEXT | Libellés métier : `Au vert` · `À surveiller` · `En difficulté` (anciens Calme/Nuageux/Orageux normalisés à la lecture) |
+| `Note_ops` | `Weekly_phase` | TEXT | Note markdown |
+| `Membre_equipe` | `Weekly_phase` | INTEGER (Ref → `Equipe`) | Membre équipe (libellé UI « Membre équipe ») |
+
+Flag `WEEKLY_PHASE_OPS_COLUMNS_READY = true`. **Aucune** colonne / écriture sur `Missions`. Coach texte libre **annulé** (remplacé par `Membre_equipe`).
 
 ### Agenda (sujets)
 
@@ -63,13 +99,14 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 
 - 1 carte = 1 mission.
 - Sans ligne `Weekly_phase` : colonne **Prochainement**, sauf `Statut === "Terminé"` → **Terminé** (heuristique lecture seule).
-- Changement de phase (menu accessible ou glisser-déposer) → upsert `Weekly_phase` uniquement.
-- Lien « Ouvrir la fiche mission » → `/missions/:id` (navigue, ne modifie pas la fiche).
+- Changement de phase = **glisser-déposer** vers une autre colonne → upsert `Weekly_phase` uniquement (pas de select Phase carte/drawer).
+- Clic **carte** (clavier Enter/Espace) → drawer suivi (SM) ; lien fiche **dans** le drawer (secondaire).
+- Badge météo carte : `Weekly_phase.Meteo` seulement (jamais `Missions.Meteo` pour le suivi ops).
 
 ## Hors scope (ce bolt)
 
-Timer weekly, clôture / historique, suivi perso, fiche Weekly dédiée, écriture
-`Meteo` / bloquant sur `Missions`, CRA. Colonne Équipe dédiée (modèle plus global plus tard).
+Timer weekly, clôture / historique, point bloquant, actions structurées, écriture
+`Meteo` / note / coach sur `Missions`, CRA. Colonne Équipe dédiée (modèle plus global plus tard).
 
 ## ACL (HITL Owner — UI Grist uniquement)
 

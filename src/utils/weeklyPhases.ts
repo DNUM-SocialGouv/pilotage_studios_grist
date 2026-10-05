@@ -22,6 +22,102 @@ export const WEEKLY_PHASE_KEYS = [
 
 export type WeeklyPhaseKey = (typeof WEEKLY_PHASE_KEYS)[number];
 
+/**
+ * Colonnes ops `Weekly_phase.Meteo` · `Note_ops` · `Membre_equipe` — confirmées
+ * MCP 2026-10-05 (doc `nei9DeARs5Eo`). Écriture drawer active.
+ * Pas d’écriture vers `Missions`.
+ */
+export const WEEKLY_PHASE_OPS_COLUMNS_READY = true;
+
+/**
+ * Choix météo ops V1 — libellés métier stockés dans `Weekly_phase.Meteo` (TEXT).
+ * Pas `Missions.Meteo`. UI = 3 boutons (soleil / nuage / orage).
+ */
+export const WEEKLY_METEO_OPTIONS = [
+  {
+    value: "Au vert",
+    label: "Au vert",
+    iconClass: "fr-icon-sun-line",
+    tone: "vert",
+  },
+  {
+    value: "À surveiller",
+    label: "À surveiller",
+    iconClass: "fr-icon-cloudy-2-line",
+    tone: "surveiller",
+  },
+  {
+    value: "En difficulté",
+    label: "En difficulté",
+    iconClass: "fr-icon-thunderstorms-line",
+    tone: "difficulte",
+  },
+] as const;
+
+export type WeeklyMeteoChoice = (typeof WEEKLY_METEO_OPTIONS)[number]["value"];
+
+/** Valeurs stockées (libellés métier). */
+export const WEEKLY_METEO_CHOICES: readonly WeeklyMeteoChoice[] =
+  WEEKLY_METEO_OPTIONS.map((o) => o.value);
+
+/**
+ * Normalise une valeur lue (libellés métier ou anciens Calme/Nuageux/Orageux).
+ * Chaîne vide / inconnue → "".
+ */
+export function normalizeWeeklyMeteo(raw: string | null | undefined): string {
+  const t = (raw ?? "").trim();
+  if (!t) return "";
+  for (const opt of WEEKLY_METEO_OPTIONS) {
+    if (opt.value === t) return opt.value;
+  }
+  const lower = t.toLowerCase();
+  if (
+    lower === "calme" ||
+    lower.includes("vert") ||
+    lower.includes("soleil") ||
+    lower.includes("beau")
+  ) {
+    return "Au vert";
+  }
+  if (
+    lower === "nuageux" ||
+    lower.includes("surveill") ||
+    lower.includes("nuage") ||
+    lower.includes("attention")
+  ) {
+    return "À surveiller";
+  }
+  if (
+    lower === "orageux" ||
+    lower.includes("difficul") ||
+    lower.includes("orage") ||
+    lower.includes("bloq")
+  ) {
+    return "En difficulté";
+  }
+  return t;
+}
+
+export function weeklyMeteoIconClass(meteo: string): string {
+  const n = normalizeWeeklyMeteo(meteo);
+  const opt = WEEKLY_METEO_OPTIONS.find((o) => o.value === n);
+  return opt?.iconClass ?? "fr-icon-cloudy-2-line";
+}
+
+export function weeklyMeteoLabel(meteo: string): string {
+  const n = normalizeWeeklyMeteo(meteo);
+  return n || meteo.trim();
+}
+
+/** Tone CSS pour badge météo carte (variante A). */
+export function weeklyMeteoTone(
+  meteo: string,
+): "vert" | "surveiller" | "difficulte" | null {
+  const n = normalizeWeeklyMeteo(meteo);
+  const opt = WEEKLY_METEO_OPTIONS.find((o) => o.value === n);
+  return opt?.tone ?? null;
+}
+
 export type WeeklyPhaseMeta = {
   key: WeeklyPhaseKey;
   label: string;
@@ -83,10 +179,19 @@ export function resolveWeeklyPhase(
  * Index phase par mission. Si doublons (courses create), on garde la ligne
  * au **plus petit id** (la plus ancienne) pour stabiliser upserts suivants.
  */
+export type WeeklyPhaseStored = {
+  phaseId: number;
+  phase: WeeklyPhaseKey;
+  meteo: string;
+  noteOps: string;
+  /** Id `Equipe` via `Weekly_phase.Membre_equipe` (0 / vide → null). */
+  membreEquipeId: number | null;
+};
+
 export function phaseRowsToMap(
   rows: readonly WeeklyPhaseRow[],
-): Map<number, { phaseId: number; phase: WeeklyPhaseKey }> {
-  const map = new Map<number, { phaseId: number; phase: WeeklyPhaseKey }>();
+): Map<number, WeeklyPhaseStored> {
+  const map = new Map<number, WeeklyPhaseStored>();
   for (const row of rows) {
     const missionId = extractGristReferenceId(row.Mission);
     if (missionId == null) continue;
@@ -94,7 +199,22 @@ export function phaseRowsToMap(
     if (!isWeeklyPhaseKey(key)) continue;
     const existing = map.get(missionId);
     if (existing != null && existing.phaseId <= row.id) continue;
-    map.set(missionId, { phaseId: row.id, phase: key });
+    const membreRaw = extractGristReferenceId(row.Membre_equipe);
+    const membreEquipeId =
+      WEEKLY_PHASE_OPS_COLUMNS_READY &&
+      membreRaw != null &&
+      membreRaw > 0
+        ? membreRaw
+        : null;
+    map.set(missionId, {
+      phaseId: row.id,
+      phase: key,
+      meteo: WEEKLY_PHASE_OPS_COLUMNS_READY
+        ? normalizeWeeklyMeteo(row.Meteo)
+        : "",
+      noteOps: WEEKLY_PHASE_OPS_COLUMNS_READY ? (row.Note_ops ?? "").trim() : "",
+      membreEquipeId,
+    });
   }
   return map;
 }
@@ -109,7 +229,15 @@ export type WeeklyCard = {
   departements: string[];
   produitLabel: string;
   intervenants: string[];
+  /** Météo ops satellite (`Weekly_phase.Meteo`). */
   meteo: string;
+  noteOps: string;
+  /** Ref `Equipe` (`Weekly_phase.Membre_equipe`). */
+  membreEquipeId: number | null;
+  /** Libellé affiché (Prenom_Nom) si résolu. */
+  membreEquipeLabel: string;
+  /** Seed `Equipe.Avatar` pour EquipeAvatar. */
+  membreEquipeAvatar: string;
 };
 
 export function buildWeeklyCards(input: {
@@ -126,7 +254,16 @@ export function buildWeeklyCards(input: {
   }
 
   const equipeById = new Map(
-    input.intervenants.map((p) => [p.id, (p.Prenom_Nom ?? "").trim()] as const),
+    input.intervenants.map(
+      (p) =>
+        [
+          p.id,
+          {
+            name: (p.Prenom_Nom ?? "").trim(),
+            avatar: (p.Avatar ?? "").trim(),
+          },
+        ] as const,
+    ),
   );
   const produitById = new Map(input.produits.map((p) => [p.id, p] as const));
 
@@ -136,7 +273,7 @@ export function buildWeeklyCards(input: {
     if (parentId == null) continue;
     const intervenantId = extractGristReferenceId(enfant.Intervenant);
     const name =
-      intervenantId != null ? equipeById.get(intervenantId) : undefined;
+      intervenantId != null ? equipeById.get(intervenantId)?.name : undefined;
     if (!name) continue;
     const list = intervenantsByMission.get(parentId) ?? [];
     if (!list.includes(name)) {
@@ -150,6 +287,10 @@ export function buildWeeklyCards(input: {
       const stored = phaseMap.get(m.id);
       const produitId = extractGristReferenceId(m.Produit_SDPC);
       const produit = produitId != null ? produitById.get(produitId) : undefined;
+      const membre =
+        stored?.membreEquipeId != null
+          ? equipeById.get(stored.membreEquipeId)
+          : undefined;
       return {
         missionId: m.id,
         titre: (m.Nom_de_la_mission ?? "").trim() || `Mission #${m.id}`,
@@ -159,7 +300,12 @@ export function buildWeeklyCards(input: {
         departements: missionDepartementTokens(m),
         produitLabel: produit ? produitDisplayName(produit) : "",
         intervenants: intervenantsByMission.get(m.id) ?? [],
-        meteo: (m.Meteo ?? "").trim(),
+        // Suivi ops = satellite Weekly uniquement (pas `Missions.Meteo`).
+        meteo: stored?.meteo ?? "",
+        noteOps: stored?.noteOps ?? "",
+        membreEquipeId: stored?.membreEquipeId ?? null,
+        membreEquipeLabel: membre?.name ?? "",
+        membreEquipeAvatar: membre?.avatar ?? "",
       } satisfies WeeklyCard;
     })
     .sort((a, b) => a.titre.localeCompare(b.titre, "fr"));

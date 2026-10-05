@@ -4,7 +4,10 @@ import type { Mission, MissionEnfant, WeeklyPhaseRow } from "../types.ts";
 import {
   buildWeeklyCards,
   groupCardsByPhase,
+  normalizeWeeklyMeteo,
   resolveWeeklyPhase,
+  weeklyMeteoIconClass,
+  weeklyMeteoTone,
 } from "./weeklyPhases.ts";
 
 describe("resolveWeeklyPhase", () => {
@@ -37,14 +40,21 @@ describe("buildWeeklyCards", () => {
     { id: 1, Mission: 10, Intervenant: 5, Libelle: "Presta A" },
   ];
   const phases: WeeklyPhaseRow[] = [
-    { id: 100, Mission: 10, Phase: "actif" },
+    {
+      id: 100,
+      Mission: 10,
+      Phase: "actif",
+      Meteo: "Au vert",
+      Note_ops: "Point budget",
+      Membre_equipe: 5,
+    },
   ];
 
   it("joint phase satellite et intervenants", () => {
     const cards = buildWeeklyCards({
       missions,
       missionEnfants: enfants,
-      intervenants: [{ id: 5, Prenom_Nom: "Alice" }],
+      intervenants: [{ id: 5, Prenom_Nom: "Alice", Avatar: "seed-alice" }],
       produits: [],
       phaseRows: phases,
     });
@@ -55,9 +65,28 @@ describe("buildWeeklyCards", () => {
     assert.equal(alpha.phase, "actif");
     assert.equal(alpha.phaseRowId, 100);
     assert.deepEqual(alpha.intervenants, ["Alice"]);
+    assert.equal(alpha.meteo, "Au vert");
+    assert.equal(alpha.noteOps, "Point budget");
+    assert.equal(alpha.membreEquipeId, 5);
+    assert.equal(alpha.membreEquipeLabel, "Alice");
+    assert.equal(alpha.membreEquipeAvatar, "seed-alice");
     assert.ok(beta);
     assert.equal(beta.phase, "autonomie");
     assert.equal(beta.phaseRowId, null);
+    assert.equal(beta.membreEquipeAvatar, "");
+  });
+
+  it("normalise anciens libellés Calme/Nuageux/Orageux", () => {
+    assert.equal(normalizeWeeklyMeteo("Calme"), "Au vert");
+    assert.equal(normalizeWeeklyMeteo("Nuageux"), "À surveiller");
+    assert.equal(normalizeWeeklyMeteo("Orageux"), "En difficulté");
+    assert.equal(normalizeWeeklyMeteo("Au vert"), "Au vert");
+    assert.equal(weeklyMeteoIconClass("Calme"), "fr-icon-sun-line");
+    assert.equal(weeklyMeteoIconClass("En difficulté"), "fr-icon-thunderstorms-line");
+    assert.equal(weeklyMeteoTone("Au vert"), "vert");
+    assert.equal(weeklyMeteoTone("À surveiller"), "surveiller");
+    assert.equal(weeklyMeteoTone("En difficulté"), "difficulte");
+    assert.equal(weeklyMeteoTone(""), null);
   });
 
   it("groupe par phase", () => {

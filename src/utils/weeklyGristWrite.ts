@@ -9,13 +9,18 @@ import {
   assertWritableTableId,
   assertWritableUpdateTableId,
 } from "../security/writeTableAllowlist.ts";
-import type { WeeklyPhaseKey } from "./weeklyPhases.ts";
+import {
+  WEEKLY_PHASE_OPS_COLUMNS_READY,
+  type WeeklyPhaseKey,
+} from "./weeklyPhases.ts";
 
 /**
  * Colonne Grist `Weekly_agenda.Detail` (TEXT) — confirmée MCP doc `nei9DeARs5Eo`
  * (id `Detail`, type TEXT). Lecture + écriture actives.
  */
 export const WEEKLY_AGENDA_DETAIL_COLUMN_READY = true;
+
+export { WEEKLY_PHASE_OPS_COLUMNS_READY };
 
 function parseCreateId(result: GristTableCreateResult): number {
   const first = Array.isArray(result) ? result[0] : result;
@@ -55,6 +60,59 @@ export async function upsertWeeklyPhase(input: {
     fields: {
       Mission: input.missionId,
       Phase: input.phase,
+    },
+  });
+  return parseCreateId(result);
+}
+
+/**
+ * Upsert phase + champs ops satellite
+ * (`Meteo` / `Note_ops` / `Membre_equipe` Ref → Equipe).
+ * Refuse d’écrire les champs ops si `WEEKLY_PHASE_OPS_COLUMNS_READY` est faux
+ * (évite une écriture inventée vers `Missions` ou des colonnes absentes).
+ */
+export async function upsertWeeklyPhaseSuivi(input: {
+  phaseRowId: number | null;
+  missionId: number;
+  phase: WeeklyPhaseKey;
+  meteo: string;
+  noteOps: string;
+  /** Id `Equipe` ; null détache. */
+  membreEquipeId: number | null;
+}): Promise<number> {
+  assertWritableTableId(WEEKLY_PHASE_TABLE_ID);
+  assertWritableUpdateTableId(WEEKLY_PHASE_TABLE_ID);
+
+  if (!WEEKLY_PHASE_OPS_COLUMNS_READY) {
+    return upsertWeeklyPhase({
+      phaseRowId: input.phaseRowId,
+      missionId: input.missionId,
+      phase: input.phase,
+    });
+  }
+
+  const fields: Record<string, unknown> = {
+    Phase: input.phase,
+    Meteo: input.meteo.trim(),
+    Note_ops: input.noteOps.trim(),
+    Membre_equipe:
+      input.membreEquipeId != null && input.membreEquipeId > 0
+        ? input.membreEquipeId
+        : null,
+  };
+
+  if (input.phaseRowId != null && input.phaseRowId > 0) {
+    await getWritableTable(WEEKLY_PHASE_TABLE_ID).update({
+      id: input.phaseRowId,
+      fields,
+    });
+    return input.phaseRowId;
+  }
+
+  const result = await getWritableTable(WEEKLY_PHASE_TABLE_ID).create({
+    fields: {
+      Mission: input.missionId,
+      ...fields,
     },
   });
   return parseCreateId(result);

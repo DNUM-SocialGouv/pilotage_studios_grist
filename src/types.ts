@@ -102,6 +102,15 @@ export interface WeeklyPhaseRow {
   id: number;
   Mission?: unknown;
   Phase?: string;
+  /**
+   * Météo ops Weekly (`Weekly_phase.Meteo` — confirmée MCP).
+   * Pas `Missions.Meteo`.
+   */
+  Meteo?: string;
+  /** Note de suivi ops (`Weekly_phase.Note_ops`). */
+  Note_ops?: string;
+  /** Membre équipe ops — Ref → `Equipe` (`Weekly_phase.Membre_equipe`). */
+  Membre_equipe?: unknown;
 }
 
 /** Sujet agenda Weekly (table satellite `Weekly_agenda`). */
@@ -142,6 +151,8 @@ export interface Intervenant {
   Equipe?: string;
   /** Porteur / ESN (`Equipe.Portage`) — MALT, OCTO… */
   Portage?: string;
+  /** Seed DiceBear Glyphs (colonne Grist `Avatar`) — Weekly carte membre. */
+  Avatar?: string;
   /** Tarif journalier — si Access Rules le livrent (Admin). */
   TJM?: number;
 }
