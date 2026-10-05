@@ -72,7 +72,7 @@ describe("groupe Outils", () => {
 });
 
 describe("flattenNavLinks", () => {
-  it("aplatit Accueil, Weekly, sous-menu Budget, liens directs et Outils (sans carnet / Documentation)", () => {
+  it("aplatit Accueil, Weekly Ops, sous-menu Budget, liens directs et Outils (sans carnet / Documentation)", () => {
     const hrefs = flattenNavLinks(WIDGET_NAV_ITEMS).map((link) => link.href);
     assert.deepEqual(hrefs, [
       "/",
@@ -97,7 +97,7 @@ describe("WIDGET_MODULE_LINKS", () => {
     assert.deepEqual(
       WIDGET_MODULE_LINKS.map(({ text, href, status }) => ({ text, href, status })),
       [
-        { text: "Weekly", href: "/weekly", status: "in_progress" },
+        { text: "Weekly Ops", href: "/weekly", status: "in_progress" },
         { text: "Bons de commande", href: "/bdc", status: "in_progress" },
         { text: "Plans d’activité", href: "/pa", status: "in_progress" },
         { text: "Prestation / CRA", href: "/cra", status: "in_progress" },

@@ -11,6 +11,12 @@ import {
 } from "../security/writeTableAllowlist.ts";
 import type { WeeklyPhaseKey } from "./weeklyPhases.ts";
 
+/**
+ * Colonne Grist `Weekly_agenda.Detail` (TEXT) — confirmée MCP doc `nei9DeARs5Eo`
+ * (id `Detail`, type TEXT). Lecture + écriture actives.
+ */
+export const WEEKLY_AGENDA_DETAIL_COLUMN_READY = true;
+
 function parseCreateId(result: GristTableCreateResult): number {
   const first = Array.isArray(result) ? result[0] : result;
   const id = first && typeof first === "object" && "id" in first ? Number(first.id) : NaN;
@@ -55,7 +61,10 @@ export async function upsertWeeklyPhase(input: {
 }
 
 export async function createWeeklyAgendaRecord(input: {
+  /** Titre (`Weekly_agenda.Texte`). */
   texte: string;
+  /** Détail optionnel (`Weekly_agenda.Detail`). */
+  detail?: string;
   auteur: string;
   email: string;
   missionId: number | null;
@@ -63,7 +72,7 @@ export async function createWeeklyAgendaRecord(input: {
   assertWritableTableId(WEEKLY_AGENDA_TABLE_ID);
   const texte = input.texte.trim();
   if (!texte) {
-    throw new Error("Le sujet ne peut pas être vide.");
+    throw new Error("Le titre du sujet ne peut pas être vide.");
   }
   const fields: Record<string, unknown> = {
     Texte: texte,
@@ -71,9 +80,11 @@ export async function createWeeklyAgendaRecord(input: {
     Email: input.email.trim(),
     Traite: false,
     Cree_le: new Date().toISOString(),
+    Mission:
+      input.missionId != null && input.missionId > 0 ? input.missionId : null,
   };
-  if (input.missionId != null && input.missionId > 0) {
-    fields.Mission = input.missionId;
+  if (WEEKLY_AGENDA_DETAIL_COLUMN_READY) {
+    fields.Detail = (input.detail ?? "").trim();
   }
   const result = await getWritableTable(WEEKLY_AGENDA_TABLE_ID).create({ fields });
   return parseCreateId(result);
@@ -91,4 +102,35 @@ export async function updateWeeklyAgendaTraite(
     id,
     fields: { Traite: traite },
   });
+}
+
+/**
+ * Met à jour titre (`Texte`), détail (`Detail`) et mission liée (`Mission`).
+ * `missionId` null → détache la mission.
+ */
+export async function updateWeeklyAgendaSujet(
+  id: number,
+  input: {
+    texte: string;
+    detail: string;
+    missionId: number | null;
+  },
+): Promise<void> {
+  assertWritableUpdateTableId(WEEKLY_AGENDA_TABLE_ID);
+  if (!Number.isFinite(id) || id <= 0) {
+    throw new Error("Identifiant sujet invalide.");
+  }
+  const texte = input.texte.trim();
+  if (!texte) {
+    throw new Error("Le titre du sujet ne peut pas être vide.");
+  }
+  const fields: Record<string, unknown> = {
+    Texte: texte,
+    Mission:
+      input.missionId != null && input.missionId > 0 ? input.missionId : null,
+  };
+  if (WEEKLY_AGENDA_DETAIL_COLUMN_READY) {
+    fields.Detail = input.detail.trim();
+  }
+  await getWritableTable(WEEKLY_AGENDA_TABLE_ID).update({ id, fields });
 }

@@ -1,4 +1,4 @@
-# Weekly coachs
+# Weekly Ops
 
 ## En clair
 
@@ -13,13 +13,19 @@ plus tard.
 | | |
 |--|--|
 | Route | `/weekly` |
-| Nav | **Weekly** (niveau 1) |
+| Nav | **Weekly Ops** (niveau 1) |
 | Accès | Hors `Page_*` : **uniquement** les personnes dont l’e-mail est dans **`Weekly_coachs`** (Admin, Resp. ou Freelance hors liste → pas d’accès) |
 | Autres | Masqué |
 
 Les e-mails **ne sont pas** dans le dépôt git : uniquement dans Grist
 (`Weekly_coachs.E_mail`). Owner / Admin (rôle) maintiennent la liste dans l’UI Grist
-— cela n’ouvre **pas** l’écran Weekly s’ils ne sont pas eux-mêmes dans la table.
+— cela n’ouvre **pas** l’écran Weekly Ops s’ils ne sont pas eux-mêmes dans la table.
+
+## Affichage (clair / sombre)
+
+Fonds de colonnes et cartes : tokens DSFR (`background-contrast-*`,
+`background-default-grey`, `text-label-*`, `text-mention-grey`, `fr-hint-text`).
+Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 
 ## Données
 
@@ -30,8 +36,28 @@ Les e-mails **ne sont pas** dans le dépôt git : uniquement dans Grist
 | `Equipe` | Lecture — noms intervenants |
 | Produits SDPC | Lecture — libellé produit |
 | **`Weekly_phase`** | Create + update — 1 ligne / mission : `Mission` (Ref) · `Phase` (`prochainement` \| `cadrage` \| `actif` \| `autonomie`) |
-| **`Weekly_agenda`** | Create + update `Traite` — sujets : `Texte` · `Auteur` · `Email` · `Mission` (opt.) · `Traite` · `Cree_le` |
+| **`Weekly_agenda`** | Create + update `Traite` / `Texte` (titre) / `Detail` / `Mission` — sujets : `Texte` (titre) · `Detail` (opt., drawer) · `Auteur` · `Email` · `Mission` (opt.) · `Traite` · `Cree_le` |
 | **`Weekly_coachs`** | Lecture widget (allowlist) — `E_mail` ; écriture **hors widget** (Owner / Admin UI) |
+
+### Agenda (sujets)
+
+| UI | Colonne Grist |
+|----|---------------|
+| **Titre** (liste + drawer + create) | `Texte` |
+| **Détail** (drawer lecture / édition + create optionnel — **pas** dans la liste) | `Detail` (TEXT, markdown léger) — active |
+| **Mission liée** (create + édition drawer) | `Mission` (Ref → `Missions`, optionnel) |
+| Méta liste / drawer | `Auteur` (prénom) · `Cree_le` (date relative) · `Traite` |
+
+- Section **Sujets à aborder** : liste d’abord ; CTA **« Nouveau sujet »** dans l’**en-tête** (option B) — **pas** de formulaire permanent sous la liste.
+- Liste compacte : **titre** + méta `Prénom · date relative` (+ lien mission éventuel) + **Voir** / **Modifier** — pas le détail.
+- Drawer lecture : titre, détail (`MissionProse` — markdown léger + liens internes), mission (lien fiche), méta date / auteur.
+- Drawer édition : titre, détail optionnel (textarea markdown), select mission → **Enregistrer**.
+- Drawer **create** (même tiroir) : titre, détail, mission, prénom auteur → **Ajouter** ; focus titre à l’ouverture ; focus retour au CTA après fermeture create.
+- État vide : message « Aucun sujet… » sous l’en-tête (CTA unique en en-tête).
+- Champ auteur « Votre prénom » (create) : prérempli avec le **prénom seul** —
+  1. `Equipe.Prenom_Nom` de la session (`firstNameFromDisplayName`) ;
+  2. sinon premier segment de l’e-mail de session (avant `.` / `_` / `-`, pas `prenom.nom`).
+- Flag code `WEEKLY_AGENDA_DETAIL_COLUMN_READY = true` (colonne `Detail` confirmée MCP doc `nei9DeARs5Eo`).
 
 ### Règles kanban
 
@@ -59,7 +85,7 @@ Access Rules → **User Attributes** :
 
 | # | Condition | Droits | Mémo |
 |---|-----------|--------|------|
-| 1 | `user.Access == OWNER or user.Equipe.Role_ACL == "Admin"` | `+CRUD` | Owner / Admin : **gérer la liste** (pas l’écran Weekly). |
+| 1 | `user.Access == OWNER or user.Equipe.Role_ACL == "Admin"` | `+CRUD` | Owner / Admin : **gérer la liste** (pas l’écran Weekly Ops). |
 | 2 | `user.Email == rec.E_mail` | `+R` | Chacun ne lit **que sa** ligne (le widget vérifie la présence). |
 | 3 | `True` | `-CRUD` | Autres : aucun accès. |
 

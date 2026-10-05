@@ -17,7 +17,7 @@ export type WidgetNavLink = {
   craDeclarerOnly?: boolean;
   /**
    * Visible seulement si rôle Freelance, Admin ou Responsable de département
-   * (Weekly coachs). Indépendant des `Page_*`.
+   * (Weekly Ops). Indépendant des `Page_*`.
    */
   weeklyOnly?: boolean;
   /**
@@ -47,7 +47,7 @@ export function isWidgetNavGroup(item: WidgetNavItem): item is WidgetNavGroup {
 export const WIDGET_NAV_ITEMS: WidgetNavItem[] = [
   { text: "Accueil", href: "/", iconOnly: "home" },
   {
-    text: "Weekly",
+    text: "Weekly Ops",
     href: "/weekly",
     status: "in_progress",
     weeklyOnly: true,

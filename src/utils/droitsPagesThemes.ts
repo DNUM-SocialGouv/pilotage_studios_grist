@@ -138,7 +138,7 @@ export const DROITS_PAGES_ROLE_FIXED: readonly DroitsPagesRoleFixedScreen[] = [
   },
   {
     id: "weekly",
-    label: "Weekly",
+    label: "Weekly Ops",
     accessByRole: {
       Admin: false,
       "Responsable de département": false,

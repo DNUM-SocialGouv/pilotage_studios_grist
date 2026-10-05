@@ -160,7 +160,7 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
     );
   });
 
-  it("ne montre plus Mon carnet en nav (menu compte) ; Weekly oui ; sans Budget pour Freelance", () => {
+  it("ne montre plus Mon carnet en nav (menu compte) ; Weekly Ops oui ; sans Budget pour Freelance", () => {
     const filtered = filterNavItemsByPageAccess(
       WIDGET_NAV_ITEMS,
       (href) => canAccessHref(href, PAGE_ACCESS_FAIL_CLOSED),

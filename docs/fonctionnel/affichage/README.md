@@ -33,5 +33,5 @@ Chaque personne peut choisir comment le widget s’affiche : **clair**, **sombre
 
 ## Limites V1
 
-- Quelques zones encore « collées » au clair (drawers, Weekly, Feedback) peuvent paraître imparfaites en sombre — polissage éventuel en suite.
+- Quelques zones encore « collées » au clair (drawers, Feedback) peuvent paraître imparfaites en sombre — polissage éventuel en suite.
 - Pas de sync avec le thème sombre éventuel de Grist parent.
