@@ -4,10 +4,10 @@
 
 Écran de **synchro** pour la team Product Ops et les coachs : un kanban des
 **missions** (titres issus de Grist) et une liste de **sujets à aborder** partagée.
-Un clic **« Ouvrir le suivi »** ouvre un **tiroir** (phase, météo, membre
-équipe, note, échanges liés). La phase, le suivi ops et l’agenda vivent dans
-des **tables satellites Weekly** — on ne modifie **pas** les colonnes de
-`Missions` / `Missions_enfants`. Le lien CRA viendra plus tard.
+Un **clic sur la carte** ouvre un **tiroir** (météo, membre équipe, note,
+échanges liés). La phase, le suivi ops et l’agenda vivent dans des **tables
+satellites Weekly** — on ne modifie **pas** les colonnes de `Missions` /
+`Missions_enfants`. Le lien CRA viendra plus tard.
 
 ## Route & accès
 
@@ -44,9 +44,10 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 
 | UI | Source |
 |----|--------|
-| Titre (bouton) | Lecture `Missions.Nom_de_la_mission` → ouvre le drawer suivi |
+| Carte entière (clic / clavier) | Ouvre le drawer suivi — titre texte (pas de lien) |
+| Titre | Lecture `Missions.Nom_de_la_mission` |
 | Badge météo (coin) | `Weekly_phase.Meteo` — pastille tonée + icône (absent si vide) |
-| Membre + avatar | `Weekly_phase.Membre_equipe` → `Equipe` (`EquipeAvatar` / seed `Avatar`) |
+| Membre + avatar | `Weekly_phase.Membre_equipe` → `Equipe` (`EquipeAvatar`) — **absent** si non assigné (pas de placeholder) |
 | Amorce note | `Weekly_phase.Note_ops` (2 lignes max, si présente) |
 | Phase | **Colonne** kanban uniquement — **pas** de select Phase sur la carte |
 
@@ -99,7 +100,7 @@ Flag `WEEKLY_PHASE_OPS_COLUMNS_READY = true`. **Aucune** colonne / écriture sur
 - 1 carte = 1 mission.
 - Sans ligne `Weekly_phase` : colonne **Prochainement**, sauf `Statut === "Terminé"` → **Terminé** (heuristique lecture seule).
 - Changement de phase = **glisser-déposer** vers une autre colonne → upsert `Weekly_phase` uniquement (pas de select Phase carte/drawer).
-- Clic **titre** (ou lien « Ouvrir le suivi ») → drawer suivi (SM) ; lien fiche **dans** le drawer (secondaire).
+- Clic **carte** (clavier Enter/Espace) → drawer suivi (SM) ; lien fiche **dans** le drawer (secondaire).
 - Badge météo carte : `Weekly_phase.Meteo` seulement (jamais `Missions.Meteo` pour le suivi ops).
 
 ## Hors scope (ce bolt)

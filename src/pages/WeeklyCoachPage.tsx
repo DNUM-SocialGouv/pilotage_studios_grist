@@ -554,6 +554,7 @@ function WeeklyCardView({
   onDragStart: (missionId: number) => void;
   onDragEnd: () => void;
 }) {
+  const suppressClickRef = useRef(false);
   const meteoTone = card.meteo ? weeklyMeteoTone(card.meteo) : null;
   const meteoLabel = card.meteo ? weeklyMeteoLabel(card.meteo) : "";
   const noteSnip = card.noteOps.trim();
@@ -561,21 +562,49 @@ function WeeklyCardView({
     card.produitLabel,
     ...card.departements,
   ].filter(Boolean);
+  const membreId =
+    card.membreEquipeId != null && card.membreEquipeId > 0
+      ? card.membreEquipeId
+      : null;
+
+  const openSuivi = () => {
+    if (busy) return;
+    onOpenSuivi(card.missionId);
+  };
 
   return (
     <article
-      className="weekly-card"
+      className={`weekly-card${busy ? "" : " weekly-card--interactive"}`}
       draggable={!busy}
-      onDragStart={() => onDragStart(card.missionId)}
+      onDragStart={() => {
+        suppressClickRef.current = true;
+        onDragStart(card.missionId);
+      }}
       onDragEnd={onDragEnd}
-      aria-label={card.titre}
-      style={{ cursor: busy ? "default" : "grab" }}
+      onClick={() => {
+        if (suppressClickRef.current) {
+          suppressClickRef.current = false;
+          return;
+        }
+        openSuivi();
+      }}
+      onKeyDown={(e) => {
+        if (busy) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openSuivi();
+        }
+      }}
+      role="button"
+      tabIndex={busy ? -1 : 0}
+      aria-label={`${card.titre} — ouvrir le suivi`}
+      aria-disabled={busy || undefined}
     >
       {meteoTone ? (
         <span
           className={`weekly-card__meteo-badge weekly-card__meteo-badge--${meteoTone}`}
           title={`Météo : ${meteoLabel}`}
-          aria-label={`Météo : ${meteoLabel}`}
+          aria-hidden="true"
         >
           <span
             className={`${weeklyMeteoIconClass(card.meteo)} fr-icon--sm`}
@@ -584,19 +613,7 @@ function WeeklyCardView({
         </span>
       ) : null}
 
-      <h3 className="weekly-card__title">
-        <button
-          type="button"
-          className="weekly-card-title-btn"
-          disabled={busy}
-          draggable={false}
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={() => onOpenSuivi(card.missionId)}
-        >
-          {card.titre}
-          <span className="fr-sr-only"> — ouvrir le suivi</span>
-        </button>
-      </h3>
+      <h3 className="weekly-card__title">{card.titre}</h3>
 
       {metaParts.length > 0 ? (
         <p className="weekly-card__meta">
@@ -613,35 +630,20 @@ function WeeklyCardView({
         </p>
       ) : null}
 
-      {card.membreEquipeId != null && card.membreEquipeId > 0 ? (
+      {membreId != null ? (
         <p className="weekly-card__member">
           <EquipeAvatar
             avatar={card.membreEquipeAvatar}
-            memberId={card.membreEquipeId}
+            memberId={membreId}
             size="sm"
           />
           <span>
-            {card.membreEquipeLabel || `Personne #${card.membreEquipeId}`}
+            {card.membreEquipeLabel || `Personne #${membreId}`}
           </span>
         </p>
-      ) : (
-        <p className="weekly-card__member weekly-card__member--empty">
-          Membre non assigné
-        </p>
-      )}
+      ) : null}
 
       {noteSnip ? <p className="weekly-card__snip">{noteSnip}</p> : null}
-
-      <button
-        type="button"
-        className="weekly-card__suivi-link"
-        disabled={busy}
-        draggable={false}
-        onMouseDown={(e) => e.stopPropagation()}
-        onClick={() => onOpenSuivi(card.missionId)}
-      >
-        Ouvrir le suivi
-      </button>
     </article>
   );
 }
