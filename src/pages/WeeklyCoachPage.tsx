@@ -579,8 +579,13 @@ function WeeklyCardView({
     onOpenSuivi(card.missionId);
   };
 
+  // aria-label remplace le contenu pour le nom accessible : y inclure
+  // météo / membre / meta visibles (sinon masqués aux lecteurs d’écran).
   const ariaLabel = [
     card.titre,
+    meteoLabel ? `Météo : ${meteoLabel}` : null,
+    membrePrenom ? `Membre : ${membrePrenom}` : null,
+    metaParts.length > 0 ? metaParts.join(", ") : null,
     hasNote ? "note de suivi" : null,
     "ouvrir le suivi",
   ]
