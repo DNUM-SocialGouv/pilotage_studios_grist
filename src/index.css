@@ -2141,6 +2141,65 @@ button.fr-link:disabled {
   line-height: 1;
 }
 
+/* Weekly drawer suivi — lecture / édition (pattern note studio). */
+.weekly-suivi-meta__header,
+.weekly-suivi-note__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.weekly-suivi-meta__read {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.weekly-suivi-meta__read > div {
+  margin: 0;
+}
+
+.weekly-suivi-meta__read dt {
+  margin: 0 0 0.15rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-mention-grey);
+}
+
+.weekly-suivi-meta__read dd {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.weekly-suivi-meteo-read {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+}
+
+.weekly-suivi-meteo-read--vert {
+  color: var(--text-default-success);
+}
+
+.weekly-suivi-meteo-read--surveiller {
+  color: var(--text-default-warning);
+}
+
+.weekly-suivi-meteo-read--difficulte {
+  color: var(--text-default-error);
+}
+
+.weekly-suivi-note__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
 /* Weekly drawer — choix météo (3 boutons horizontaux, tokens DSFR). */
 .weekly-meteo-group {
   display: grid;

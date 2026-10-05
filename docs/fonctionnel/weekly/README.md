@@ -57,9 +57,9 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 |----|--------|
 | Titre | Lecture `Missions.Nom_de_la_mission` |
 | Phase | Badge lecture = colonne kanban (`Weekly_phase.Phase`) — **pas** de select |
-| Météo | `Weekly_phase.Meteo` — 3 boutons : **Au vert** · **À surveiller** · **En difficulté** (icônes soleil / nuage / orage) |
-| Membre équipe | `Weekly_phase.Membre_equipe` (Ref → `Equipe`, select annuaire) |
-| Note ops | `Weekly_phase.Note_ops` (markdown léger) |
+| Ouverture | **Lecture** par défaut |
+| Météo + Membre | Lecture ; bouton **Modifier** → édition (3 boutons météo · select membre) puis Enregistrer / Annuler |
+| Note ops | Lecture `MissionProse` ; **Modifier** / **Ajouter** → textarea Markdown (pattern contexte mission / note studio) ; icônes Enregistrer / Annuler — **pas** de fermeture auto du drawer |
 | Derniers échanges | `Weekly_agenda` filtrés par mission + Voir / Nouveau sujet |
 | Lien fiche | Navigation `/missions/:id` (secondaire) — **pas** de sync note/météo |
 

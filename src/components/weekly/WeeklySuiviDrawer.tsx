@@ -1,15 +1,17 @@
 /**
  * Drawer « Suivi mission » Weekly Ops V1 — satellite `Weekly_phase` + échanges
  * `Weekly_agenda`. Aucune écriture `Missions`.
- * Phase = colonne kanban (badge lecture) — pas de select Phase redondant.
+ * Ouverture en lecture ; note = édition sur place (pattern contexte mission) ;
+ * météo / membre = bouton « Modifier ».
  */
 
-import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { Link } from "react-router-dom";
 import { DsfrSelectRichMulti } from "../dsfr/DsfrSelectRichMulti";
+import { MissionProse } from "../missions/MissionProse";
 import type { WeeklyAgendaRow } from "../../types";
 import {
   formatWeeklyAgendaCreatedAt,
@@ -21,9 +23,15 @@ import {
   WEEKLY_PHASES,
   WEEKLY_PHASE_OPS_COLUMNS_READY,
   normalizeWeeklyMeteo,
+  weeklyMeteoIconClass,
+  weeklyMeteoLabel,
+  weeklyMeteoTone,
   type WeeklyCard,
   type WeeklyPhaseKey,
 } from "../../utils/weeklyPhases";
+
+const MARKDOWN_HINT =
+  "Markdown Grist : titres (#), listes (- ou *), liens [libellé](url), gras **texte**, code `…` ou ```";
 
 export type WeeklyEquipeOption = { id: number; label: string };
 
@@ -47,6 +55,11 @@ export type WeeklySuiviDrawerProps = {
   onNouveauSujet: (missionId: number) => void;
 };
 
+function parseMembreId(raw: string): number | null {
+  const mid = raw ? Number(raw) : null;
+  return mid != null && Number.isFinite(mid) && mid > 0 ? mid : null;
+}
+
 export function WeeklySuiviDrawer({
   open,
   card,
@@ -62,14 +75,22 @@ export function WeeklySuiviDrawer({
   const titleId = useId();
   const meteoFieldId = useId();
   const noteFieldId = useId();
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
 
+  const [editingMeta, setEditingMeta] = useState(false);
+  const [editingNote, setEditingNote] = useState(false);
   const [draftMeteo, setDraftMeteo] = useState("");
   const [draftMembreId, setDraftMembreId] = useState("");
   const [draftNote, setDraftNote] = useState("");
   const [writeError, setWriteError] = useState<string | null>(null);
+  const [savingMeta, setSavingMeta] = useState(false);
+  const [savingNote, setSavingNote] = useState(false);
 
+  /** Reset modes lecture à chaque ouverture / changement de mission. */
   useEffect(() => {
     if (!open || card == null) return;
+    setEditingMeta(false);
+    setEditingNote(false);
     setDraftMeteo(normalizeWeeklyMeteo(card.meteo));
     setDraftMembreId(
       card.membreEquipeId != null && card.membreEquipeId > 0
@@ -78,14 +99,32 @@ export function WeeklySuiviDrawer({
     );
     setDraftNote(card.noteOps);
     setWriteError(null);
+    setSavingMeta(false);
+    setSavingNote(false);
+  }, [open, card?.missionId]);
+
+  /** Sync drafts depuis la carte quand on n’édite pas (après reload). */
+  useEffect(() => {
+    if (!open || card == null) return;
+    if (!editingMeta) {
+      setDraftMeteo(normalizeWeeklyMeteo(card.meteo));
+      setDraftMembreId(
+        card.membreEquipeId != null && card.membreEquipeId > 0
+          ? String(card.membreEquipeId)
+          : "",
+      );
+    }
+    if (!editingNote) {
+      setDraftNote(card.noteOps);
+    }
   }, [
     open,
     card,
-    card?.missionId,
-    card?.phase,
     card?.meteo,
     card?.membreEquipeId,
     card?.noteOps,
+    editingMeta,
+    editingNote,
   ]);
 
   useEffect(() => {
@@ -94,10 +133,7 @@ export function WeeklySuiviDrawer({
     if (open) {
       if (!dialog.open) dialog.showModal();
       requestAnimationFrame(() => {
-        const firstMeteo = dialog.querySelector<HTMLButtonElement>(
-          ".weekly-meteo-btn:not(:disabled)",
-        );
-        firstMeteo?.focus();
+        closeBtnRef.current?.focus();
       });
     } else if (dialog.open) {
       dialog.close();
@@ -105,6 +141,7 @@ export function WeeklySuiviDrawer({
   }, [open]);
 
   const close = () => {
+    if (busy || savingMeta || savingNote) return;
     dialogRef.current?.close();
   };
 
@@ -112,32 +149,8 @@ export function WeeklySuiviDrawer({
     ? WEEKLY_PHASES.find((p) => p.key === card.phase)
     : undefined;
 
-  const submit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (card == null) return;
-    setWriteError(null);
-    const mid = draftMembreId ? Number(draftMembreId) : null;
-    try {
-      await onSaveSuivi({
-        missionId: card.missionId,
-        phaseRowId: card.phaseRowId,
-        // Phase = colonne kanban ; pas de select drawer.
-        phase: card.phase,
-        meteo: draftMeteo,
-        noteOps: draftNote,
-        membreEquipeId:
-          mid != null && Number.isFinite(mid) && mid > 0 ? mid : null,
-      });
-    } catch (err) {
-      setWriteError(
-        err instanceof Error ? err.message : "Impossible d’enregistrer le suivi.",
-      );
-    }
-  };
-
   const opsReady = WEEKLY_PHASE_OPS_COLUMNS_READY;
 
-  /** Options select searchable : liste + valeur courante absente (id orphelin). */
   const membreSelectOptions = useMemo(() => {
     const list = [...equipeOptions];
     if (
@@ -158,6 +171,104 @@ export function WeeklySuiviDrawer({
       .map((p) => ({ value: String(p.id), label: p.label }));
   }, [equipeOptions, card?.membreEquipeId, card?.membreEquipeLabel]);
 
+  const membreReadLabel =
+    card?.membreEquipeLabel?.trim() ||
+    (card?.membreEquipeId != null && card.membreEquipeId > 0
+      ? `Personne #${card.membreEquipeId}`
+      : "");
+
+  const meteoNormalized = card ? normalizeWeeklyMeteo(card.meteo) : "";
+  const meteoTone = meteoNormalized ? weeklyMeteoTone(meteoNormalized) : null;
+  const hasNote = Boolean(card?.noteOps.trim());
+
+  const startEditMeta = () => {
+    if (!card || !opsReady || busy) return;
+    setDraftMeteo(normalizeWeeklyMeteo(card.meteo));
+    setDraftMembreId(
+      card.membreEquipeId != null && card.membreEquipeId > 0
+        ? String(card.membreEquipeId)
+        : "",
+    );
+    setWriteError(null);
+    setEditingMeta(true);
+  };
+
+  const cancelEditMeta = () => {
+    if (savingMeta) return;
+    if (card) {
+      setDraftMeteo(normalizeWeeklyMeteo(card.meteo));
+      setDraftMembreId(
+        card.membreEquipeId != null && card.membreEquipeId > 0
+          ? String(card.membreEquipeId)
+          : "",
+      );
+    }
+    setWriteError(null);
+    setEditingMeta(false);
+  };
+
+  const saveMeta = async () => {
+    if (card == null || savingMeta) return;
+    setSavingMeta(true);
+    setWriteError(null);
+    try {
+      await onSaveSuivi({
+        missionId: card.missionId,
+        phaseRowId: card.phaseRowId,
+        phase: card.phase,
+        meteo: draftMeteo,
+        noteOps: card.noteOps,
+        membreEquipeId: parseMembreId(draftMembreId),
+      });
+      setEditingMeta(false);
+    } catch (err) {
+      setWriteError(
+        err instanceof Error ? err.message : "Impossible d’enregistrer le suivi.",
+      );
+    } finally {
+      setSavingMeta(false);
+    }
+  };
+
+  const startEditNote = () => {
+    if (!card || !opsReady || busy) return;
+    setDraftNote(card.noteOps);
+    setWriteError(null);
+    setEditingNote(true);
+  };
+
+  const cancelEditNote = () => {
+    if (savingNote) return;
+    setDraftNote(card?.noteOps ?? "");
+    setWriteError(null);
+    setEditingNote(false);
+  };
+
+  const saveNote = async () => {
+    if (card == null || savingNote) return;
+    setSavingNote(true);
+    setWriteError(null);
+    try {
+      await onSaveSuivi({
+        missionId: card.missionId,
+        phaseRowId: card.phaseRowId,
+        phase: card.phase,
+        meteo: normalizeWeeklyMeteo(card.meteo),
+        noteOps: draftNote,
+        membreEquipeId: card.membreEquipeId,
+      });
+      setEditingNote(false);
+    } catch (err) {
+      setWriteError(
+        err instanceof Error ? err.message : "Impossible d’enregistrer la note.",
+      );
+    } finally {
+      setSavingNote(false);
+    }
+  };
+
+  const locked = busy || savingMeta || savingNote;
+
   return (
     <dialog
       ref={dialogRef}
@@ -170,7 +281,7 @@ export function WeeklySuiviDrawer({
           className="pilotage-drawer-dialog__scrim"
           aria-hidden="true"
           onClick={() => {
-            if (!busy) close();
+            if (!locked) close();
           }}
         />
         <div className="pilotage-drawer-dialog__panel">
@@ -184,11 +295,12 @@ export function WeeklySuiviDrawer({
                 </div>
                 <div className="fr-col-auto">
                   <button
+                    ref={closeBtnRef}
                     type="button"
                     className="fr-btn--close fr-btn"
                     title="Fermer"
                     onClick={close}
-                    disabled={busy}
+                    disabled={locked}
                   >
                     Fermer
                   </button>
@@ -198,7 +310,7 @@ export function WeeklySuiviDrawer({
 
             <div className="pilotage-drawer-dialog__body fr-px-3w fr-pb-3w fr-pt-0">
               {card == null ? null : (
-                <form onSubmit={(e) => void submit(e)}>
+                <>
                   {phaseMeta ? (
                     <p className="fr-badge fr-badge--info fr-badge--no-icon fr-mb-2w">
                       {phaseMeta.label}
@@ -209,105 +321,231 @@ export function WeeklySuiviDrawer({
                     </p>
                   ) : null}
 
-                  <div>
-                    <p
-                      id={meteoFieldId}
-                      className="fr-label"
-                      style={{ marginBottom: "0.5rem" }}
-                    >
-                      Météo
-                    </p>
-                    <div
-                      className="weekly-meteo-group"
-                      role="radiogroup"
-                      aria-labelledby={meteoFieldId}
-                    >
-                      {WEEKLY_METEO_OPTIONS.map((opt) => {
-                        const checked = draftMeteo === opt.value;
-                        return (
-                          <button
-                            key={opt.value}
-                            type="button"
-                            role="radio"
-                            aria-checked={checked}
-                            className={`weekly-meteo-btn weekly-meteo-btn--${opt.tone}`}
-                            disabled={busy || !opsReady}
-                            onClick={() =>
-                              setDraftMeteo(checked ? "" : opt.value)
-                            }
-                          >
-                            <span
-                              className={`${opt.iconClass} weekly-meteo-btn__icon`}
-                              aria-hidden="true"
-                            />
-                            <span>{opt.label}</span>
-                          </button>
-                        );
-                      })}
+                  {/* ——— Météo + Membre (lecture / édition) ——— */}
+                  <section
+                    className="weekly-suivi-meta"
+                    aria-labelledby={`${titleId}-meta`}
+                  >
+                    <div className="weekly-suivi-meta__header">
+                      <h3 id={`${titleId}-meta`} className="fr-h6 fr-mb-0">
+                        Suivi ops
+                      </h3>
+                      {!editingMeta ? (
+                        <button
+                          type="button"
+                          className="fr-btn fr-btn--tertiary fr-btn--sm fr-icon-edit-line fr-btn--icon-left"
+                          onClick={startEditMeta}
+                          disabled={locked || !opsReady || editingNote}
+                        >
+                          Modifier
+                        </button>
+                      ) : null}
                     </div>
-                  </div>
 
-                  <div className="fr-mt-2w">
-                    <DsfrSelectRichMulti
-                      label="Membre équipe"
-                      placeholderWhenEmpty="Rechercher une personne…"
-                      options={membreSelectOptions}
-                      selectedValues={draftMembreId ? [draftMembreId] : []}
-                      onSelectedValuesChange={(values) =>
-                        setDraftMembreId(values[0] ?? "")
-                      }
-                      searchable
-                      searchLabel="Rechercher"
-                      searchPlaceholder="Nom…"
-                      showBulkActions={false}
-                      maxSelections={1}
-                      pluralEntityLabel="personnes"
-                      disabled={busy || !opsReady}
-                    />
-                  </div>
+                    {editingMeta ? (
+                      <div className="fr-mt-2w">
+                        <p
+                          id={meteoFieldId}
+                          className="fr-label"
+                          style={{ marginBottom: "0.5rem" }}
+                        >
+                          Météo
+                        </p>
+                        <div
+                          className="weekly-meteo-group"
+                          role="radiogroup"
+                          aria-labelledby={meteoFieldId}
+                        >
+                          {WEEKLY_METEO_OPTIONS.map((opt) => {
+                            const checked = draftMeteo === opt.value;
+                            return (
+                              <button
+                                key={opt.value}
+                                type="button"
+                                role="radio"
+                                aria-checked={checked}
+                                className={`weekly-meteo-btn weekly-meteo-btn--${opt.tone}`}
+                                disabled={locked || !opsReady}
+                                onClick={() =>
+                                  setDraftMeteo(checked ? "" : opt.value)
+                                }
+                              >
+                                <span
+                                  className={`${opt.iconClass} weekly-meteo-btn__icon`}
+                                  aria-hidden="true"
+                                />
+                                <span>{opt.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
 
-                  <Input
-                    className="fr-mt-2w"
-                    label="Note de suivi (ops)"
-                    hintText="Markdown"
-                    textArea
-                    nativeTextAreaProps={{
-                      id: noteFieldId,
-                      value: draftNote,
-                      disabled: busy || !opsReady,
-                      onChange: (e) => setDraftNote(e.target.value),
-                      rows: 5,
-                    }}
-                  />
+                        <div className="fr-mt-2w">
+                          <DsfrSelectRichMulti
+                            label="Membre équipe"
+                            placeholderWhenEmpty="Rechercher une personne…"
+                            options={membreSelectOptions}
+                            selectedValues={draftMembreId ? [draftMembreId] : []}
+                            onSelectedValuesChange={(values) =>
+                              setDraftMembreId(values[0] ?? "")
+                            }
+                            searchable
+                            searchLabel="Rechercher"
+                            searchPlaceholder="Nom…"
+                            showBulkActions={false}
+                            maxSelections={1}
+                            pluralEntityLabel="personnes"
+                            disabled={locked || !opsReady}
+                          />
+                        </div>
 
-                  {writeError ? (
-                    <Alert
-                      className="fr-mt-2w"
-                      severity="error"
-                      small
-                      title="Enregistrement impossible"
-                      description={writeError}
-                    />
-                  ) : null}
+                        {writeError && editingMeta ? (
+                          <Alert
+                            className="fr-mt-2w"
+                            severity="error"
+                            small
+                            title="Enregistrement impossible"
+                            description={writeError}
+                          />
+                        ) : null}
 
-                  <ul className="fr-btns-group fr-btns-group--right fr-btns-group--inline-reverse fr-btns-group--inline-lg fr-mt-3w">
-                    <li>
-                      <Button type="submit" disabled={busy}>
-                        Enregistrer
-                      </Button>
-                    </li>
-                    <li>
-                      <Button
-                        type="button"
-                        priority="secondary"
-                        onClick={close}
-                        disabled={busy}
-                      >
-                        Fermer
-                      </Button>
-                    </li>
-                  </ul>
-                </form>
+                        <ul className="fr-btns-group fr-btns-group--right fr-btns-group--inline-reverse fr-btns-group--inline-lg fr-mt-2w">
+                          <li>
+                            <Button
+                              type="button"
+                              disabled={locked}
+                              onClick={() => void saveMeta()}
+                            >
+                              Enregistrer
+                            </Button>
+                          </li>
+                          <li>
+                            <Button
+                              type="button"
+                              priority="secondary"
+                              disabled={locked}
+                              onClick={cancelEditMeta}
+                            >
+                              Annuler
+                            </Button>
+                          </li>
+                        </ul>
+                      </div>
+                    ) : (
+                      <dl className="weekly-suivi-meta__read fr-mt-2w">
+                        <div>
+                          <dt>Météo</dt>
+                          <dd>
+                            {meteoNormalized && meteoTone ? (
+                              <span
+                                className={`weekly-suivi-meteo-read weekly-suivi-meteo-read--${meteoTone}`}
+                              >
+                                <span
+                                  className={`${weeklyMeteoIconClass(meteoNormalized)} fr-icon--sm`}
+                                  aria-hidden="true"
+                                />
+                                {weeklyMeteoLabel(meteoNormalized)}
+                              </span>
+                            ) : (
+                              <span className="fr-text-mention--grey">
+                                Non renseignée
+                              </span>
+                            )}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt>Membre équipe</dt>
+                          <dd>
+                            {membreReadLabel ? (
+                              membreReadLabel
+                            ) : (
+                              <span className="fr-text-mention--grey">
+                                Non assigné
+                              </span>
+                            )}
+                          </dd>
+                        </div>
+                      </dl>
+                    )}
+                  </section>
+
+                  {/* ——— Note (pattern contexte / note studio) ——— */}
+                  <section
+                    className="weekly-suivi-note fr-mt-4w"
+                    aria-labelledby={`${titleId}-note`}
+                  >
+                    <div className="weekly-suivi-note__header">
+                      <h3 id={`${titleId}-note`} className="fr-h6 fr-mb-0">
+                        Note de suivi (ops)
+                      </h3>
+                      {!editingNote ? (
+                        <button
+                          type="button"
+                          className="fr-btn fr-btn--tertiary fr-btn--sm fr-icon-edit-line fr-btn--icon-left"
+                          onClick={startEditNote}
+                          disabled={locked || !opsReady || editingMeta}
+                        >
+                          {hasNote ? "Modifier" : "Ajouter"}
+                        </button>
+                      ) : null}
+                    </div>
+
+                    {editingNote ? (
+                      <div className="weekly-suivi-note__edit fr-mt-2w">
+                        <Input
+                          label="Note de suivi (ops)"
+                          hintText={MARKDOWN_HINT}
+                          textArea
+                          nativeTextAreaProps={{
+                            id: noteFieldId,
+                            value: draftNote,
+                            rows: 8,
+                            disabled: locked || !opsReady,
+                            onChange: (e) => setDraftNote(e.target.value),
+                          }}
+                        />
+                        {writeError && editingNote ? (
+                          <Alert
+                            className="fr-mb-2w"
+                            severity="error"
+                            small
+                            title="Enregistrement impossible"
+                            description={writeError}
+                          />
+                        ) : null}
+                        <div className="weekly-suivi-note__actions">
+                          <button
+                            type="button"
+                            className="fr-btn fr-btn--sm fr-icon-check-line"
+                            onClick={() => void saveNote()}
+                            disabled={locked}
+                            title={savingNote ? "Enregistrement…" : "Enregistrer"}
+                            aria-label={
+                              savingNote ? "Enregistrement…" : "Enregistrer"
+                            }
+                          />
+                          <button
+                            type="button"
+                            className="fr-btn fr-btn--secondary fr-btn--sm fr-icon-close-line"
+                            onClick={cancelEditNote}
+                            disabled={locked}
+                            title="Annuler"
+                            aria-label="Annuler"
+                          />
+                        </div>
+                      </div>
+                    ) : hasNote ? (
+                      <div className="fr-mt-2w">
+                        <MissionProse value={card.noteOps} />
+                      </div>
+                    ) : (
+                      <p className="fr-text--sm fr-text-mention--grey fr-mb-0 fr-mt-2w">
+                        Aucune note — utilisez « Ajouter » pour renseigner ce
+                        champ.
+                      </p>
+                    )}
+                  </section>
+                </>
               )}
 
               <section className="fr-mt-4w" aria-labelledby={`${titleId}-echanges`}>
@@ -330,7 +568,7 @@ export function WeeklySuiviDrawer({
                       priority="tertiary no outline"
                       size="small"
                       iconId="fr-icon-add-line"
-                      disabled={busy}
+                      disabled={locked}
                       onClick={() => onNouveauSujet(card.missionId)}
                     >
                       Nouveau sujet
@@ -409,7 +647,7 @@ export function WeeklySuiviDrawer({
                             priority="tertiary no outline"
                             size="small"
                             iconId="fr-icon-eye-line"
-                            disabled={busy}
+                            disabled={locked}
                             onClick={() => onViewSujet(sujet)}
                           >
                             Voir

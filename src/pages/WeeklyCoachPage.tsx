@@ -800,8 +800,8 @@ export function WeeklyCoachPage() {
         noteOps: input.noteOps,
         membreEquipeId: input.membreEquipeId,
       });
+      // Rester dans le drawer (lecture) — comme le contexte mission.
       await data.reload();
-      closeSuivi();
     } catch (e) {
       throw e instanceof Error
         ? e
