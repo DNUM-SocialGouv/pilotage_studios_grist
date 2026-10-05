@@ -74,7 +74,6 @@ Grille définition (labels au-dessus des valeurs, 4 colonnes ≥ lg / 2 ≥ sm) 
 | Chorus | `BdC_Chorus` |
 | Plan d’activité | `PA` → lien `/pa/:id` |
 | Plateforme | `Plateforme` |
-| Engagement | `Engagement` |
 | Équipe | `Equipe2` (badges couleur) |
 | Reste à consommer du PA | calculé si PA lié (écart volontaire vs app sœur) |
 | Sofiane | `SOFIANE` — lien externe « Ouvrir dans Sofiane » si URL HTTP(S), sinon texte |

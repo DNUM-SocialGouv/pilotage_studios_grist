@@ -89,7 +89,6 @@ export function toBdc(record: GristRecord): BDC {
     Financeur: asGristChoice(record.Financeur),
     BdC_Chorus: asString(record.BdC_Chorus) ?? asGristChoice(record.BdC_Chorus),
     Plateforme: asGristChoice(record.Plateforme),
-    Engagement: asGristChoice(record.Engagement) ?? asString(record.Engagement),
     SOFIANE: asString(record.SOFIANE),
     Devis: record.Devis,
     Solde_TTC_CRA: asNumber(record.Solde_TTC_CRA),
