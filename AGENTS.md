@@ -170,7 +170,7 @@ Workspace Cursor : ouvrir **uniquement** ce dépôt pour le widget — ne pas d�
 | [`SECURITY.md`](SECURITY.md) | Menace iframe, secrets, allowlist |
 | [`.cursor/skills/pilotage-grist-issue/`](.cursor/skills/pilotage-grist-issue/) | Traiter / créer une issue (+ [`DOC-FONCTIONNEL.md`](.cursor/skills/pilotage-grist-issue/DOC-FONCTIONNEL.md)) |
 | [`.cursor/skills/pilotage-grist-pr/`](.cursor/skills/pilotage-grist-pr/) | Ouvrir / merger une PR (+ [`CHECKLIST.md`](.cursor/skills/pilotage-grist-pr/CHECKLIST.md)) |
-| [`.cursor/skills/pilotage-grist-code-review/`](.cursor/skills/pilotage-grist-code-review/) | Revue avant merge |
+| [`.cursor/skills/pilotage-grist-code-review/`](.cursor/skills/pilotage-grist-code-review/) | Revue avant merge — **uniquement** ce skill repo ; **interdit** le skill user générique `~/.cursor/skills/code-review` |
 | [`.cursor/skills/pilotage-grist-kanban/`](.cursor/skills/pilotage-grist-kanban/) | Sync feuille de route kanban Grist (HITL avant écriture) |
 | [`.cursor/skills/grist-custom-widgets/`](.cursor/skills/grist-custom-widgets/) | API Custom Widget (ready / onRecords / fetchTable) |
 | [`.cursor/rules/dsfr-tableaux.mdc`](.cursor/rules/dsfr-tableaux.mdc) | Tableaux DSFR |
@@ -193,7 +193,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 2. Feuille de route : skill [`pilotage-grist-kanban`](.cursor/skills/pilotage-grist-kanban/SKILL.md) (rule [`kanban-feuille-route`](.cursor/rules/kanban-feuille-route.mdc)) — proposer create / déplacement ; **HITL** avant écriture Grist.
 3. Issue GitHub : skill [`pilotage-grist-issue`](.cursor/skills/pilotage-grist-issue/SKILL.md) (+ protocole doc) ; si issue **publique / roadmap** → [`docs/issues-publiques.md`](docs/issues-publiques.md).
 4. PR : skill [`pilotage-grist-pr`](.cursor/skills/pilotage-grist-pr/SKILL.md) — case **Portage app solo**.
-5. Avant merge : skill [`pilotage-grist-code-review`](.cursor/skills/pilotage-grist-code-review/SKILL.md). Après merge produit : proposer passage **Livré** via skill kanban.
+5. Avant merge : skill [`pilotage-grist-code-review`](.cursor/skills/pilotage-grist-code-review/SKILL.md) uniquement (**jamais** `~/.cursor/skills/code-review`). Après merge produit : proposer passage **Livré** via skill kanban.
 
 ### Portage vers l’app web (`pilotage_studios`)
 
