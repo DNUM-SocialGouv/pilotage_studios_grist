@@ -160,10 +160,6 @@ export const BdcFormDrawer = forwardRef<BdcFormDrawerHandle, BdcFormDrawerProps>
                     <h2 id={titleId} className="fr-h5 fr-mb-0">
                       Modifier le bon de commande
                     </h2>
-                    <p className="fr-text--sm fr-text-mention--grey fr-mb-0 fr-mt-1w">
-                      Corrige le cadre du BDC (nom, statut, montant, rattachements). Les
-                      dépenses / CRA et le devis ne se modifient pas ici.
-                    </p>
                   </div>
                   <div className="fr-col-auto">
                     <button
