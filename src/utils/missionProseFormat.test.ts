@@ -91,6 +91,52 @@ describe("parseMissionProseInlines", () => {
       ],
     );
   });
+
+  it("extrait le code inline `…`", () => {
+    assert.deepEqual(parseMissionProseInlines("voir `Plan_activite` ici"), [
+      { type: "text", value: "voir " },
+      { type: "code", value: "Plan_activite" },
+      { type: "text", value: " ici" },
+    ]);
+  });
+
+  it("ne parse pas gras ni lien à l’intérieur du code inline", () => {
+    assert.deepEqual(
+      parseMissionProseInlines("avant `**x** [y](https://a.test)` après"),
+      [
+        { type: "text", value: "avant " },
+        { type: "code", value: "**x** [y](https://a.test)" },
+        { type: "text", value: " après" },
+      ],
+    );
+  });
+
+  it("combine code inline, gras et lien", () => {
+    assert.deepEqual(
+      parseMissionProseInlines("**Note** : table `Equipe` et [doc](/outils/regles-metier)."),
+      [
+        { type: "bold", value: "Note" },
+        { type: "text", value: " : table " },
+        { type: "code", value: "Equipe" },
+        { type: "text", value: " et " },
+        {
+          type: "link",
+          href: "/outils/regles-metier",
+          label: "doc",
+          kind: "internal",
+        },
+        { type: "text", value: "." },
+      ],
+    );
+  });
+
+  it("laisse tel quel du HTML dans le code (pas d’interprétation)", () => {
+    assert.deepEqual(parseMissionProseInlines("danger `<script>x</script>` ok"), [
+      { type: "text", value: "danger " },
+      { type: "code", value: "<script>x</script>" },
+      { type: "text", value: " ok" },
+    ]);
+  });
 });
 
 describe("parseMissionProse", () => {
@@ -184,6 +230,56 @@ describe("parseMissionProse", () => {
       assert.deepEqual(blocks[0].rows[0]![2], [{ type: "text", value: "" }]);
       assert.equal(blocks[0].rows[1]!.length, 3);
       assert.deepEqual(blocks[0].rows[1]![2], [{ type: "text", value: "z" }]);
+    }
+  });
+
+  it("parse un bloc code fence avec langage", () => {
+    const blocks = parseMissionProse(
+      "Avant.\n\n```ts\nconst x = 1;\n**pas gras**\n```\n\nAprès.",
+    );
+    assert.equal(blocks.length, 3);
+    assert.equal(blocks[0]!.type, "paragraph");
+    assert.deepEqual(blocks[1], {
+      type: "code",
+      language: "ts",
+      value: "const x = 1;\n**pas gras**",
+    });
+    assert.equal(blocks[2]!.type, "paragraph");
+  });
+
+  it("parse un bloc code fence sans langage", () => {
+    const blocks = parseMissionProse("```\nligne 1\nligne 2\n```");
+    assert.deepEqual(blocks, [
+      { type: "code", language: null, value: "ligne 1\nligne 2" },
+    ]);
+  });
+
+  it("conserve le HTML brut du fence comme texte (pas d’exécution)", () => {
+    const blocks = parseMissionProse("```html\n<script>alert(1)</script>\n```");
+    assert.deepEqual(blocks, [
+      {
+        type: "code",
+        language: "html",
+        value: "<script>alert(1)</script>",
+      },
+    ]);
+  });
+
+  it("ferme le fence à la fin du texte s’il manque la clôture", () => {
+    const blocks = parseMissionProse("```\nsans fin");
+    assert.deepEqual(blocks, [
+      { type: "code", language: null, value: "sans fin" },
+    ]);
+  });
+
+  it("reconnaît le code inline dans une liste", () => {
+    const blocks = parseMissionProse("* utiliser `fetchTable`");
+    assert.equal(blocks[0]!.type, "list");
+    if (blocks[0]!.type === "list") {
+      assert.deepEqual(blocks[0].items[0], [
+        { type: "text", value: "utiliser " },
+        { type: "code", value: "fetchTable" },
+      ]);
     }
   });
 });

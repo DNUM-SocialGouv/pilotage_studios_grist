@@ -341,7 +341,7 @@ export function TicketDrawer({
                     />
                     <Input
                       label="Détail"
-                      hintText="Optionnel. Markdown léger (titres, listes, liens http(s) ou page interne). Ex. [Documentation](/outils/regles-metier)."
+                      hintText="Optionnel. Markdown léger (titres, listes, liens http(s) ou page interne, code `…` ou ```). Ex. [Documentation](/outils/regles-metier)."
                       textArea
                       nativeTextAreaProps={{
                         id: detailFieldId,

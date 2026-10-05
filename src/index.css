@@ -1064,8 +1064,39 @@ a.equipe-list-name-cell:focus-visible {
 .mission-fiche-prose > p:last-child,
 .mission-fiche-prose > .mission-fiche-prose__heading:last-child,
 .mission-fiche-prose > .mission-fiche-prose__list:last-child,
-.mission-fiche-prose > .mission-fiche-prose__table:last-child {
+.mission-fiche-prose > .mission-fiche-prose__table:last-child,
+.mission-fiche-prose > .mission-fiche-prose__pre:last-child {
   margin-bottom: 0;
+}
+
+/* Code Markdown : tokens DSFR (clair / sombre via --background-contrast-grey). */
+.mission-fiche-prose__code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  font-size: 0.875em;
+  padding: 0.1em 0.35em;
+  border-radius: 0.25rem;
+  background-color: var(--background-contrast-grey);
+  color: var(--text-default-grey);
+  word-break: break-word;
+}
+
+.mission-fiche-prose__pre {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.25rem;
+  background-color: var(--background-contrast-grey);
+  color: var(--text-default-grey);
+  overflow-x: auto;
+}
+
+.mission-fiche-prose__pre code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  font-size: 0.875rem;
+  color: inherit;
+  white-space: pre;
+  word-break: normal;
 }
 
 .mission-fiche-prose__heading {
