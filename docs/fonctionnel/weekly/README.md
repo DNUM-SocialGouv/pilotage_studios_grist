@@ -4,9 +4,10 @@
 
 Écran de **synchro** pour la team Product Ops et les coachs : un kanban des
 **missions** (titres issus de Grist) et une liste de **sujets à aborder** partagée.
-La phase du kanban et l’agenda vivent dans des **tables satellites** — on ne
-modifie pas les colonnes de `Missions` / `Missions_enfants`. Le lien CRA viendra
-plus tard.
+Un clic **« Ouvrir le suivi »** ouvre un **tiroir** (phase, météo, note, coach,
+échanges liés). La phase, le suivi ops et l’agenda vivent dans des **tables
+satellites Weekly** — on ne modifie **pas** les colonnes de `Missions` /
+`Missions_enfants`. Le lien CRA viendra plus tard.
 
 ## Route & accès
 
@@ -31,13 +32,37 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 
 | Table | Rôle |
 |-------|------|
-| `Missions` | Lecture — titre carte (`Nom_de_la_mission`), statut, département, produit, `Meteo` |
+| `Missions` | Lecture seule — titre carte (`Nom_de_la_mission`), statut, département, produit (**pas** d’écriture suivi ops) |
 | `Missions_enfants` | Lecture — intervenants sur la carte |
 | `Equipe` | Lecture — noms intervenants |
 | Produits SDPC | Lecture — libellé produit |
-| **`Weekly_phase`** | Create + update — 1 ligne / mission : `Mission` (Ref) · `Phase` (`prochainement` \| `cadrage` \| `actif` \| `autonomie`) |
+| **`Weekly_phase`** | Create + update — 1 ligne / mission : `Mission` (Ref) · `Phase` (`prochainement` \| `cadrage` \| `actif` \| `autonomie`) · **proposé HITL Owner** : `Meteo` · `Note_ops` · `Coach` |
 | **`Weekly_agenda`** | Create + update `Traite` / `Texte` (titre) / `Detail` / `Mission` — sujets : `Texte` (titre) · `Detail` (opt., drawer) · `Auteur` · `Email` · `Mission` (opt.) · `Traite` · `Cree_le` |
 | **`Weekly_coachs`** | Lecture widget (allowlist) — `E_mail` ; écriture **hors widget** (Owner / Admin UI) |
+
+### Drawer suivi mission (V1)
+
+| UI | Source |
+|----|--------|
+| Titre | Lecture `Missions.Nom_de_la_mission` |
+| Phase | `Weekly_phase.Phase` (même donnée que le kanban) |
+| Météo / Coach / Note ops | `Weekly_phase.Meteo` · `Coach` · `Note_ops` — **si colonnes posées** (`WEEKLY_PHASE_OPS_COLUMNS_READY`) ; sinon stub UI + consignes Owner |
+| Derniers échanges | `Weekly_agenda` filtrés par mission + Voir / Nouveau sujet |
+| Lien fiche | Navigation `/missions/:id` (secondaire) — **pas** de sync note/météo |
+
+**Hors V1** : point bloquant · actions structurées · timer · clôture.
+
+**HITL Owner — colonnes à créer** (UI Grist uniquement, **pas** d’API schéma / ACL) :
+
+| Colonne | Table | Type proposé | Choix |
+|---------|-------|--------------|-------|
+| `Meteo` | `Weekly_phase` | Choice / Text | `Calme` · `Nuageux` · `Orageux` |
+| `Note_ops` | `Weekly_phase` | Text | Markdown léger |
+| `Coach` | `Weekly_phase` | Text | Prénom·nom libre V1 |
+
+**Ne pas** créer ces colonnes sur `Missions`. Alternative si Owner refuse d’étendre `Weekly_phase` : table `Weekly_suivi` (à proposer, pas créée).
+
+Après pose : passer `WEEKLY_PHASE_OPS_COLUMNS_READY = true` dans `src/utils/weeklyPhases.ts`.
 
 ### Agenda (sujets)
 
@@ -64,12 +89,13 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 - 1 carte = 1 mission.
 - Sans ligne `Weekly_phase` : colonne **Prochainement**, sauf `Statut === "Terminé"` → **Terminé** (heuristique lecture seule).
 - Changement de phase (menu accessible ou glisser-déposer) → upsert `Weekly_phase` uniquement.
-- Lien « Ouvrir la fiche mission » → `/missions/:id` (navigue, ne modifie pas la fiche).
+- CTA **« Ouvrir le suivi »** → drawer suivi (SM) ; lien fiche **dans** le drawer (secondaire).
+- Icône météo carte : `Weekly_phase.Meteo` seulement (jamais `Missions.Meteo` pour le suivi ops).
 
 ## Hors scope (ce bolt)
 
-Timer weekly, clôture / historique, suivi perso, fiche Weekly dédiée, écriture
-`Meteo` / bloquant sur `Missions`, CRA. Colonne Équipe dédiée (modèle plus global plus tard).
+Timer weekly, clôture / historique, point bloquant, actions structurées, écriture
+`Meteo` / note / coach sur `Missions`, CRA. Colonne Équipe dédiée (modèle plus global plus tard).
 
 ## ACL (HITL Owner — UI Grist uniquement)
 

@@ -55,6 +55,10 @@ describe("buildWeeklyCards", () => {
     assert.equal(alpha.phase, "actif");
     assert.equal(alpha.phaseRowId, 100);
     assert.deepEqual(alpha.intervenants, ["Alice"]);
+    // Colonnes ops absentes (flag false) → pas de météo Missions.
+    assert.equal(alpha.meteo, "");
+    assert.equal(alpha.noteOps, "");
+    assert.equal(alpha.coach, "");
     assert.ok(beta);
     assert.equal(beta.phase, "autonomie");
     assert.equal(beta.phaseRowId, null);

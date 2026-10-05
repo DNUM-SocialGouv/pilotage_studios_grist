@@ -108,6 +108,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-10-05 | Weekly Ops drawer suivi mission : update satellite `Weekly_phase` (`Phase` ; météo / note / coach **après** colonnes Owner + flag) ; échanges = `Weekly_agenda` liés ; **aucune** écriture / nouvelle colonne `Missions` ; **N/A `Page_*`** (action dans écran déjà listé) ; accès `Weekly_coachs` inchangé | 5, 6 (doc HITL) | kanban `weekly-suivi-missions-drawer` |
 | 2026-10-05 | Accueil `/` : bloc **Vos retours** (Feedback auteur = e-mail session, 5 max, badges réponse / colonne, lu = localStorage) ; composition **Option 3** (recherche + split raccourcis \| retours) ; **N/A `Page_*`** (variante sur `Page_accueil`) ; Invité inclus si e-mail OK | 5 | kanban `vos-retours-accueil` |
 | 2026-10-05 | Édition cadre BDC (fiche `/bdc/:id`) : bouton Modifier + drawer Admin/Owner ; update allowlisté `Nom_BdC` · `Statut` · `Montant_TTC` · `Financeur` · `BdC_Chorus` · `PA` · `Equipe2` · `Plateforme` · `SOFIANE` ; pas create/delete ni Dépenses/`Devis` ; **N/A `Page_*`** (action dans écran déjà listé) | 5, 6 (doc) | [#108](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/108) / kanban `editer-bdc` |
 | 2026-10-05 | Weekly Ops : colonne `Detail` confirmée (MCP) → flag `WEEKLY_AGENDA_DETAIL_COLUMN_READY=true` ; lecture/écriture + rendu markdown drawer ; **N/A `Page_*`** | 5, 6 (doc) | #105 suite |

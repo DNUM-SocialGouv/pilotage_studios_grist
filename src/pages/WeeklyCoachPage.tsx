@@ -13,6 +13,7 @@ import { Input } from "@codegouvfr/react-dsfr/Input";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { Link } from "react-router-dom";
 import { MissionProse } from "../components/missions/MissionProse";
+import { WeeklySuiviDrawer } from "../components/weekly/WeeklySuiviDrawer";
 import { useAclProfil } from "../AclProfilContext";
 import { useGristPa } from "../GristPaContext";
 import { useWeeklyCoachData } from "../hooks/useWeeklyCoachData";
@@ -29,6 +30,7 @@ import {
   updateWeeklyAgendaSujet,
   updateWeeklyAgendaTraite,
   upsertWeeklyPhase,
+  upsertWeeklyPhaseSuivi,
 } from "../utils/weeklyGristWrite";
 import {
   WEEKLY_PHASES,
@@ -183,6 +185,8 @@ function AgendaSujetDialog({
   missionId,
   missionOptions,
   defaultAuteur,
+  /** Préremplissage mission en mode create (ex. depuis drawer suivi). */
+  defaultCreateMissionId = null,
   busy,
   onClose,
   onSave,
@@ -196,6 +200,7 @@ function AgendaSujetDialog({
   missionId: number | null;
   missionOptions: { id: number; label: string }[];
   defaultAuteur: string;
+  defaultCreateMissionId?: number | null;
   busy: boolean;
   onClose: () => void;
   onSave: (input: {
@@ -233,7 +238,11 @@ function AgendaSujetDialog({
     if (mode === "create") {
       setDraftTitre("");
       setDraftDetail("");
-      setDraftMissionId("");
+      setDraftMissionId(
+        defaultCreateMissionId != null && defaultCreateMissionId > 0
+          ? String(defaultCreateMissionId)
+          : "",
+      );
       setDraftAuteur(defaultAuteur);
     } else {
       setDraftTitre((sujet?.Texte ?? "").trim());
@@ -252,6 +261,7 @@ function AgendaSujetDialog({
     sujet?.Detail,
     sujet?.Mission,
     defaultAuteur,
+    defaultCreateMissionId,
   ]);
 
   useEffect(() => {
@@ -556,12 +566,14 @@ function WeeklyCardView({
   card,
   busy,
   onPhaseChange,
+  onOpenSuivi,
   onDragStart,
   onDragEnd,
 }: {
   card: WeeklyCard;
   busy: boolean;
   onPhaseChange: (missionId: number, phase: WeeklyPhaseKey) => void;
+  onOpenSuivi: (missionId: number) => void;
   onDragStart: (missionId: number) => void;
   onDragEnd: () => void;
 }) {
@@ -695,12 +707,15 @@ function WeeklyCardView({
         </select>
       </div>
 
-      <Link
-        className="fr-link fr-link--sm"
-        to={`/missions/${card.missionId}`}
+      <Button
+        type="button"
+        priority="secondary"
+        size="small"
+        disabled={busy}
+        onClick={() => onOpenSuivi(card.missionId)}
       >
-        Ouvrir la fiche mission
-      </Link>
+        Ouvrir le suivi
+      </Button>
     </article>
   );
 }
@@ -720,6 +735,13 @@ export function WeeklyCoachPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogSujet, setDialogSujet] = useState<WeeklyAgendaRow | null>(null);
   const [dialogMode, setDialogMode] = useState<AgendaDialogMode>("view");
+  const [suiviOpen, setSuiviOpen] = useState(false);
+  const [suiviMissionId, setSuiviMissionId] = useState<number | null>(null);
+  const [suiviBusy, setSuiviBusy] = useState(false);
+  /** Mission préremplie pour create agenda (depuis drawer suivi). */
+  const [createAgendaMissionId, setCreateAgendaMissionId] = useState<
+    number | null
+  >(null);
   const nouveauSujetCtaId = "weekly-nouveau-sujet-cta";
 
   const defaultAuteur = defaultWeeklyAuteurPrenom(displayName, sessionEmail);
@@ -766,9 +788,76 @@ export function WeeklyCoachPage() {
     [cards],
   );
 
+  const suiviCard = useMemo(
+    () =>
+      suiviMissionId != null
+        ? (cards.find((c) => c.missionId === suiviMissionId) ?? null)
+        : null,
+    [cards, suiviMissionId],
+  );
+
+  const agendaLiesSuivi = useMemo(() => {
+    if (suiviMissionId == null) return [];
+    return agendaSorted.filter(
+      (s) => extractGristReferenceId(s.Mission) === suiviMissionId,
+    );
+  }, [agendaSorted, suiviMissionId]);
+
   if (pa.untrustedEmbed || pa.outsideGrist) {
     return <NothingHerePage />;
   }
+
+  const openSuivi = (missionId: number) => {
+    setSuiviMissionId(missionId);
+    setSuiviOpen(true);
+  };
+
+  const closeSuivi = () => {
+    setSuiviOpen(false);
+    setSuiviMissionId(null);
+  };
+
+  const onSaveSuivi = async (input: {
+    missionId: number;
+    phaseRowId: number | null;
+    phase: WeeklyPhaseKey;
+    meteo: string;
+    noteOps: string;
+    coach: string;
+  }) => {
+    const existingPhaseId =
+      input.phaseRowId ??
+      phaseRowsToMap(data.phases).get(input.missionId)?.phaseId ??
+      null;
+    setPhaseError(null);
+    setSuiviBusy(true);
+    try {
+      await upsertWeeklyPhaseSuivi({
+        phaseRowId: existingPhaseId,
+        missionId: input.missionId,
+        phase: input.phase,
+        meteo: input.meteo,
+        noteOps: input.noteOps,
+        coach: input.coach,
+      });
+      await data.reload();
+      closeSuivi();
+    } catch (e) {
+      throw e instanceof Error
+        ? e
+        : new Error("Impossible d’enregistrer le suivi.");
+    } finally {
+      setSuiviBusy(false);
+    }
+  };
+
+  const openCreateAgendaForMission = (missionId: number) => {
+    closeSuivi();
+    setCreateAgendaMissionId(missionId);
+    setDialogMode("create");
+    setDialogSujet(null);
+    setDialogOpen(true);
+  };
 
   const changePhase = async (missionId: number, phase: WeeklyPhaseKey) => {
     const card = cards.find((c) => c.missionId === missionId);
@@ -807,6 +896,7 @@ export function WeeklyCoachPage() {
     const restoreCta = dialogMode === "create";
     setDialogOpen(false);
     setDialogSujet(null);
+    setCreateAgendaMissionId(null);
     if (restoreCta) {
       // Focus retour au CTA après create (succès / Annuler / Échap / scrim).
       requestAnimationFrame(() => {
@@ -836,7 +926,8 @@ export function WeeklyCoachPage() {
     setDialogOpen(true);
   };
 
-  const openCreateAgendaDialog = () => {
+  const openCreateAgendaDialog = (missionId: number | null = null) => {
+    setCreateAgendaMissionId(missionId);
     setDialogMode("create");
     setDialogSujet(null);
     setDialogOpen(true);
@@ -1051,6 +1142,7 @@ export function WeeklyCoachPage() {
               }
               missionOptions={missionOptions}
               defaultAuteur={defaultAuteur}
+              defaultCreateMissionId={createAgendaMissionId}
               busy={agendaBusy || data.isReloading}
               onClose={closeAgendaDialog}
               onSave={onSaveAgendaSujet}
@@ -1058,6 +1150,20 @@ export function WeeklyCoachPage() {
               onSwitchToEdit={() => setDialogMode("edit")}
             />
           </section>
+
+          <WeeklySuiviDrawer
+            open={suiviOpen}
+            card={suiviCard}
+            agendaLies={agendaLiesSuivi}
+            busy={suiviBusy || data.isReloading}
+            onClose={closeSuivi}
+            onSaveSuivi={onSaveSuivi}
+            onViewSujet={(sujet) => {
+              closeSuivi();
+              openAgendaDialog(sujet, "view");
+            }}
+            onNouveauSujet={openCreateAgendaForMission}
+          />
 
           <section aria-label="Kanban des missions">
             <div
@@ -1139,6 +1245,7 @@ export function WeeklyCoachPage() {
                       card={card}
                       busy={busyMissionId === card.missionId || data.isReloading}
                       onPhaseChange={(id, phase) => void changePhase(id, phase)}
+                      onOpenSuivi={openSuivi}
                       onDragStart={setDragMissionId}
                       onDragEnd={() => setDragMissionId(null)}
                     />
