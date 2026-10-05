@@ -8,13 +8,14 @@
 
 ## Objet métier
 
-Consultation **lecture seule** des bons de commande Grist dans l’iframe : récap financier (KPI + barre % consommé), onglets Dépenses / Informations / PV (stub), rattachement PA.
+Consultation des bons de commande Grist dans l’iframe : récap financier (KPI + barre % consommé), onglets Dépenses / Informations / PV (stub), rattachement PA.  
+**Édition du cadre** (Admin / Owner) : bouton **Modifier** sur la fiche → tiroir (`Nom_BdC`, `Statut`, `Montant_TTC`, `Financeur`, `BdC_Chorus`, `PA`, `Equipe2`, `Plateforme`, `SOFIANE`) — pas de create/delete BDC, pas d’édition Dépenses / devis.
 
 | Outil | Rôle |
 |-------|------|
 | **Grist** (`BDC`, refs `PA`, `Equipe2`…) | Référentiel |
-| **Ce widget** | Liste / fiche BDC |
-| **App sœur** | Création / édition, devis, suivi CRA drawers — [doc BDC app](https://github.com/DNUM-SocialGouv/pilotage_studios/blob/main/docs/fonctionnel/bdc/README.md) |
+| **Ce widget** | Liste / fiche BDC + édition cadre (Admin) |
+| **App sœur** | Création BDC, devis, suivi CRA drawers — [doc BDC app](https://github.com/DNUM-SocialGouv/pilotage_studios/blob/main/docs/fonctionnel/bdc/README.md) |
 
 ## Données Grist
 
@@ -45,9 +46,18 @@ Consultation **lecture seule** des bons de commande Grist dans l’iframe : réc
 | Liste | [liste.md](liste.md) | `/bdc` |
 | Fiche | [fiche.md](fiche.md) | `/bdc/:id` |
 
+## Écriture Grist (V1)
+
+| Action | Qui | Canal |
+|--------|-----|--------|
+| Update cadre `BDC` | Admin (UX) + Owner/Admin ACL | `getTable('BDC').update` — allowlist colonnes ; pas create/delete |
+| Lecture `BDC` | selon Access Rules | REST `getAccessToken({ readOnly: true })` |
+
+Issue : [#108](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/108) · kanban `editer-bdc`.
+
 ## Écarts vs l’app
 
-- Pas d’écriture Grist, pas de drawer création / devis / suivi mensuel
+- Pas de **création** BDC ni upload devis / suivi mensuel drawers dans le widget
 - Onglet PV stub (écran `/pv` pas encore livré)
 - Pas de mini-donut conso/budget ; page `/cra` transversale = lecture [#32](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/32)
 - Select Data reste `Plan_activite` (ancre) — pas de reconfig pour BDC

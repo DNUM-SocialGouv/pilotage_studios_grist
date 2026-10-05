@@ -46,7 +46,6 @@ export function BdcInformationsPanel({
         )}
       </BdcInfoField>
       <BdcInfoField label="Plateforme">{bdc.Plateforme?.trim() || "—"}</BdcInfoField>
-      <BdcInfoField label="Engagement">{bdc.Engagement?.trim() || "—"}</BdcInfoField>
       <BdcInfoField label="Équipe">
         <EquipeBadges value={bdc.Equipe2} />
       </BdcInfoField>

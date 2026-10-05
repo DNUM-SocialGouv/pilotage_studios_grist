@@ -24,7 +24,6 @@ export interface BDC {
   Financeur?: string;
   BdC_Chorus?: string;
   Plateforme?: string;
-  Engagement?: string;
   /** URL ou libellé Sofiane. */
   SOFIANE?: string;
   /** Pièce(s) jointe(s) devis — colonne Grist Attachments. */

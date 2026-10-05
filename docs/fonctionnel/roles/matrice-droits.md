@@ -77,8 +77,8 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | `Equipe.TJM`, `Total_TTC` | RU | RU | R soi | R soi | **Appliqué** | `-RU` sauf Owner / Admin / soi (`user.Email == rec.E_mail`) — [#60](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/60) ; TJM saisissable à la **création / édition** Admin (droit table C/U) |
 | `Equipe.E_mail` | RU | — | — | — | **Appliqué** | `-RU` si non-(Owner\|Admin) ; saisie création / édition Admin (pas d’affichage liste/fiche) |
 | `Plan_activite` | CRUD | R ? | R / — | R / — | Non (rôle) | Ancre widget |
-| `BDC` métadonnées | CRUD | R ? | R limité | R / — | Non (rôle) | |
-| `BDC` montants / Devis / Sofiane… | RU | — | — | — | **Appliqué (Owner ou Admin)** | `== OWNER or Role_ACL == Admin` → `+RU` ; hors → `-RU` (`OWNER` **sans** guillemets — corr. 2026-09-25) |
+| `BDC` métadonnées | CRUD | R ? | R limité | R / — | **Partiel (widget)** | Widget : **update cadre** Admin UX (#108) — create/delete hors scope ; ACL métadonnées encore « Non (rôle) » côté couche 6 |
+| `BDC` montants / Devis / Sofiane… | RU | — | — | — | **Appliqué (Owner ou Admin)** | `== OWNER or Role_ACL == Admin` → `+RU` ; hors → `-RU` ; widget écrit `Montant_TTC` / `Plateforme` / `SOFIANE` (pas `Devis`) via drawer Admin (#108) |
 | `Constatations` | CRUD | — | — | — | **Appliqué (Owner)** | encore `== "OWNER"` (Const) — **à corriger** en `== OWNER` |
 | `Commandes_Sofiane` | CRUD | R | — | — | Non (rôle) | |
 | `Realise` (CRA) hors montants | CRUD | R/U département | **R/U + C** ses lignes | — | **Appliqué** (ACL) + widget | Déclaration `#33` ; revue `#70` ; mur `#47` HITL 2026-09-21 ; fiche mission Modifier/Dupliquer Admin (`cra-fiche-mission`) |
@@ -108,6 +108,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-10-05 | Édition cadre BDC (fiche `/bdc/:id`) : bouton Modifier + drawer Admin/Owner ; update allowlisté `Nom_BdC` · `Statut` · `Montant_TTC` · `Financeur` · `BdC_Chorus` · `PA` · `Equipe2` · `Plateforme` · `SOFIANE` ; pas create/delete ni Dépenses/`Devis` ; **N/A `Page_*`** (action dans écran déjà listé) | 5, 6 (doc) | [#108](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/108) / kanban `editer-bdc` |
 | 2026-10-05 | Weekly Ops : colonne `Detail` confirmée (MCP) → flag `WEEKLY_AGENDA_DETAIL_COLUMN_READY=true` ; lecture/écriture + rendu markdown drawer ; **N/A `Page_*`** | 5, 6 (doc) | #105 suite |
 | 2026-10-05 | Weekly Ops sujets : `Texte` = titre ; update `Mission` en édition ; UI détail → colonne `Detail` (**HITL Owner** création colonne) ; allowlist create/update `Texte` / `Detail` / `Mission` / `Traite` ; **N/A `Page_*`** | 5, 6 (doc) | #105 |
 | 2026-10-04 | Weekly Ops agenda : update `Weekly_agenda.Texte` (modale Voir/Modifier) en plus de `Traite` ; prénom auteur ; date `Cree_le` ; **N/A `Page_*`** (écran déjà hors Page_*) ; ACL couche 6 inchangée (CRUD coachs) | 5, 6 (doc) | #105 · kanban `update-page-weekly` |

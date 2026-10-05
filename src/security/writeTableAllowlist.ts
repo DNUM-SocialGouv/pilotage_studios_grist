@@ -13,6 +13,7 @@
  * - `Weekly_phase` : create + update (phase kanban Weekly — pas de delete).
  * - `Weekly_agenda` : create + update `Traite` / `Texte` (titre) / `Detail` / `Mission`
  *   (sujets à aborder — pas de delete).
+ * - `BDC` : update only (drawer cadre fiche — pas de create/delete).
  */
 
 export const KANBAN_TABLE_ID = "Kanban";
@@ -27,6 +28,8 @@ export const WEEKLY_PHASE_TABLE_ID = "Weekly_phase";
 export const WEEKLY_AGENDA_TABLE_ID = "Weekly_agenda";
 /** Allowlist e-mails coachs Weekly — lecture seule widget (pas d’écriture). */
 export const WEEKLY_COACHS_TABLE_ID = "Weekly_coachs";
+/** Bons de commande — update cadre fiche uniquement (pas create/delete). */
+export const BDC_TABLE_ID = "BDC";
 
 export const WRITE_TABLE_ALLOWLIST = [
   KANBAN_TABLE_ID,
@@ -52,6 +55,7 @@ export const WRITE_TABLE_UPDATE_ALLOWLIST = [
   EQUIPE_TABLE_ID,
   WEEKLY_PHASE_TABLE_ID,
   WEEKLY_AGENDA_TABLE_ID,
+  BDC_TABLE_ID,
 ] as const;
 
 export type WritableUpdateTableId = (typeof WRITE_TABLE_UPDATE_ALLOWLIST)[number];

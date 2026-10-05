@@ -4,7 +4,8 @@
 
 ## Objet
 
-Détail d’un BDC : récap financier (KPI + barre) toujours visible, puis onglets **Dépenses** / **Informations** / **PV**.
+Détail d’un BDC : récap financier (KPI + barre) toujours visible, puis onglets **Dépenses** / **Informations** / **PV**.  
+Admin / Owner : bouton **Modifier** dans l’en-tête → tiroir pour corriger le **cadre** (pas les lignes Dépenses, pas le devis).
 
 ## Parcours
 
@@ -12,6 +13,7 @@ Détail d’un BDC : récap financier (KPI + barre) toujours visible, puis ongle
 |---------|--------|
 | Route | `/bdc/:id` |
 | Page | `src/pages/BdcDetailView.tsx` |
+| Drawer édition | `src/components/bdc/BdcFormDrawer.tsx` (Admin / Owner) |
 | Retour | Fil d’Ariane : Accueil › Bons de commande › nom du BDC |
 
 ## États
@@ -72,7 +74,6 @@ Grille définition (labels au-dessus des valeurs, 4 colonnes ≥ lg / 2 ≥ sm) 
 | Chorus | `BdC_Chorus` |
 | Plan d’activité | `PA` → lien `/pa/:id` |
 | Plateforme | `Plateforme` |
-| Engagement | `Engagement` |
 | Équipe | `Equipe2` (badges couleur) |
 | Reste à consommer du PA | calculé si PA lié (écart volontaire vs app sœur) |
 | Sofiane | `SOFIANE` — lien externe « Ouvrir dans Sofiane » si URL HTTP(S), sinon texte |
@@ -88,8 +89,19 @@ Stub : « Les procès-verbaux seront affichés ici une fois l’écran PV livré
 
 Vers [`/pa/:id`](../pa/fiche.md) quand `BDC.PA` est renseigné.
 
+## Édition cadre (Admin / Owner)
+
+| Élément | Détail |
+|---------|--------|
+| Qui | Bouton visible si `isAdminRole` (ou mode standalone) ; ACL Grist Owner\|Admin = barrière réelle |
+| UX | Tiroir SM depuis l’en-tête (pas d’édition inline Informations) |
+| Colonnes écrites | `Nom_BdC`, `Statut`, `Montant_TTC`, `Financeur`, `BdC_Chorus`, `PA`, `Equipe2`, `Plateforme`, `SOFIANE` |
+| Non écrits | `Devis`, totaux calculés (`Total_TTC_CRA`, `Solde_*`, …), `Intervenants`, lignes `Realise` |
+| Après save | Re-fetch BDC (token read-only) + alerte succès |
+
 ## Hors scope (cette fiche)
 
+- Création / suppression d’une ligne `BDC`
 - Drawer création / édition / duplication de lignes `Realise`
 - Contenu réel de l’onglet PV
-- Upload devis
+- Upload / remplacement devis

@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
+import { useAclProfil } from "../AclProfilContext";
+import { BdcFormDrawer, type BdcFormDrawerHandle } from "../components/bdc/BdcFormDrawer";
 import { BdcDepensesPanel } from "../components/BdcDepensesPanel";
 import { BdcFinanceRecap } from "../components/BdcFinanceRecap";
 import { BdcInformationsPanel } from "../components/BdcInformationsPanel";
@@ -9,6 +11,7 @@ import { WidgetBreadcrumb } from "../components/WidgetBreadcrumb";
 import { useGristPa } from "../GristPaContext";
 import { useBdcDepensesData } from "../hooks/useBdcDepensesData";
 import { NothingHerePage } from "../security/NothingHerePage";
+import { isAdminRole } from "../utils/droitsPagesThemes";
 import { bdcPaRefId, financeForPlanActivite, financePaOnly } from "../utils/paFinance";
 
 type BdcTabId = "depenses" | "informations" | "pv";
@@ -18,6 +21,10 @@ const BDC_CRUMB = [{ label: "Bons de commande", to: "/bdc" }] as const;
 export function BdcDetailView() {
   const { id } = useParams();
   const data = useGristPa();
+  const { status: aclStatus, role: sessionRole } = useAclProfil();
+  const canEdit = aclStatus === "standalone" || isAdminRole(sessionRole);
+  const bdcFormDrawerRef = useRef<BdcFormDrawerHandle>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const bdcId = id ? Number.parseInt(id, 10) : NaN;
   const bdc = data.bdcList.find((b) => b.id === bdcId);
   const useFullFinance = data.relatedStatus === "ok";
@@ -123,8 +130,39 @@ export function BdcDetailView() {
         segments={[...BDC_CRUMB]}
         currentPageLabel={titre}
       />
-      <p className="fr-text--sm fr-mb-1v">{bdc.Statut?.trim() || "Sans statut"}</p>
-      <h1 className="fr-h3">{titre}</h1>
+
+      <div className="equipe-fiche-title-row fr-mb-2w">
+        <div className="equipe-fiche-title-row__identity">
+          <div className="equipe-fiche-title-row__text">
+            <p className="fr-text--sm fr-mb-1v">{bdc.Statut?.trim() || "Sans statut"}</p>
+            <h1 className="fr-mb-0 fr-h3 equipe-fiche-title-row__title">{titre}</h1>
+          </div>
+        </div>
+        {canEdit ? (
+          <button
+            type="button"
+            className="fr-btn fr-btn--primary fr-icon-edit-line fr-btn--icon-left"
+            onClick={() => {
+              setSaveSuccess(false);
+              bdcFormDrawerRef.current?.openEdit(bdc);
+            }}
+          >
+            Modifier
+          </button>
+        ) : null}
+      </div>
+
+      {saveSuccess ? (
+        <Alert
+          severity="success"
+          small
+          title="Bon de commande enregistré"
+          description="Le cadre du BDC a été mis à jour dans Grist."
+          className="fr-mb-2w"
+          closable
+          onClose={() => setSaveSuccess(false)}
+        />
+      ) : null}
 
       <BdcFinanceRecap
         budgetTtc={bdc.Montant_TTC}
@@ -180,6 +218,16 @@ export function BdcDetailView() {
           />
         )}
       </Tabs>
+
+      {canEdit ? (
+        <BdcFormDrawer
+          ref={bdcFormDrawerRef}
+          plans={data.plans}
+          bdcList={data.bdcList}
+          onRecordsChanged={data.reloadRelated}
+          onSaved={() => setSaveSuccess(true)}
+        />
+      ) : null}
     </div>
   );
 }

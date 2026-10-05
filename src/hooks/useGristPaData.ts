@@ -1,4 +1,11 @@
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import type { BDC, CommandeSofiane, Constatation, PlanActivite } from "../types";
 import type { GristRecord } from "../gristTypes";
 import {
@@ -30,7 +37,11 @@ export type GristPaData = {
   commandes: CommandeSofiane[];
   relatedStatus: RelatedTablesStatus;
   relatedError: string | null;
+  /** Recharge BDC + Constatations + Commandes_Sofiane (après édition cadre BDC). */
+  reloadRelated: () => Promise<void>;
 };
+
+const noopReloadRelated = async () => {};
 
 const EMPTY: GristPaData = {
   connected: false,
@@ -45,6 +56,7 @@ const EMPTY: GristPaData = {
   commandes: [],
   relatedStatus: "idle",
   relatedError: null,
+  reloadRelated: noopReloadRelated,
 };
 
 /**
@@ -106,6 +118,11 @@ function applyPlans(
  */
 export function useGristPaData(): GristPaData {
   const [state, setState] = useState<GristPaData>(EMPTY);
+  const loadRelatedRef = useRef<() => Promise<void>>(noopReloadRelated);
+
+  const reloadRelated = useCallback(async () => {
+    await loadRelatedRef.current();
+  }, []);
 
   useEffect(() => {
     const trust = getEmbedTrust();
@@ -193,6 +210,8 @@ export function useGristPaData(): GristPaData {
         }
       };
 
+      loadRelatedRef.current = loadRelated;
+
       // 1) S’abonner AVANT ready
       grist.onRecords((records) => {
         if (cancelled) {
@@ -252,8 +271,9 @@ export function useGristPaData(): GristPaData {
 
     return () => {
       cancelled = true;
+      loadRelatedRef.current = noopReloadRelated;
     };
   }, []);
 
-  return state;
+  return { ...state, reloadRelated };
 }
