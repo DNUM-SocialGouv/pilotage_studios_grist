@@ -1081,7 +1081,7 @@ export function WeeklyCoachPage() {
                 size="small"
                 iconId="fr-icon-add-line"
                 disabled={agendaBusy || data.isReloading}
-                onClick={openCreateAgendaDialog}
+                onClick={() => openCreateAgendaDialog()}
                 nativeButtonProps={{ id: nouveauSujetCtaId }}
               >
                 Nouveau sujet
