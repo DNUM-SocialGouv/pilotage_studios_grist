@@ -11,6 +11,8 @@ export type KanbanCommentaireItem = {
   dateLabel: string;
   dateSort: number;
   auteur: string;
+  /** E-mail auteur commentaire (signal « Nouvelle réponse » vs auteur ticket). */
+  email: string;
   message: string;
 };
 
@@ -67,6 +69,7 @@ export function kanbanCommentaireFromRecord(
     dateLabel: formatKanbanDate(record.Date),
     dateSort: commentaireDateSortKey(record.Date),
     auteur: asString(record.Auteur) || "Anonyme",
+    email: asString(record.Email),
     message: asString(record.Message),
   };
 }

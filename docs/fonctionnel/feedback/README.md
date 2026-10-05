@@ -50,8 +50,9 @@ Table `Kanban_commentaires` : `Cible_id` (= id `Kanban`), `Date`, `Auteur`, `Ema
 
 **Décision produit** : la colonne Feedback est un **kanban partagé interne** — tout utilisateur qui peut lire `Kanban` via les Access Rules voit les messages des autres (prénom + extrait). Acceptable tant que le document reste un cercle restreint Pilotage.
 
-**Pas** de filtre front « mes retours seulement » (contournable). Si l’audience s’élargit : durcir en Access Rules — HITL Grist, pas de masquage JS.
+**Confort UX** : le bloc **« Vos retours »** sur l’accueil (`/`) filtre côté widget les cartes Feedback dont `Email` = e-mail de session (liste courte + badges nouveauté). Ce filtre **n’est pas** un contrôle d’accès (couche 5) — la feuille de route reste partagée. Si l’audience s’élargit : durcir en Access Rules — HITL Grist, pas de masquage JS seul.
 
+Voir aussi [`accueil/README.md`](../accueil/README.md) (composition Option 3).
 ## Access Rules (HITL — à appliquer dans Grist)
 
 Recommandation :

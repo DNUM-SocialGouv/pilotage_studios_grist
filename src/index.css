@@ -1484,18 +1484,55 @@ button.fr-link:disabled {
   padding: 0;
 }
 
+/* Option 3 : retours (DOM 1er = mobile) | raccourcis ; desktop = raccourcis | retours. */
+.welcome-role-home__main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.welcome-role-home__main--split {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 48em) {
+  .welcome-role-home__main--split {
+    align-items: start;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    grid-template-areas: "shortcuts retours";
+  }
+
+  .welcome-role-home__main--split .welcome-role-home__shortcuts {
+    grid-area: shortcuts;
+  }
+
+  .welcome-role-home__main--split .welcome-vos-retours {
+    grid-area: retours;
+  }
+}
+
 .welcome-role-home__ctas {
   display: grid;
-  gap: 1rem;
+  gap: 0.75rem;
   grid-template-columns: 1fr;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
+.welcome-role-home__main--split .welcome-role-home__ctas {
+  grid-template-columns: 1fr;
+}
+
 @media (min-width: 48em) {
   .welcome-role-home__ctas {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .welcome-role-home__main--split .welcome-role-home__ctas {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1503,11 +1540,103 @@ button.fr-link:disabled {
   .welcome-role-home__ctas {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+
+  .welcome-role-home__main--split .welcome-role-home__ctas {
+    grid-template-columns: 1fr;
+  }
 }
 
 .welcome-role-home__cta {
   border: 1px solid var(--border-default-grey);
-  padding: 1rem;
+  padding: 0.75rem 1rem;
+}
+
+.welcome-vos-retours {
+  background: var(--background-alt-grey);
+  border: 1px solid var(--border-default-grey);
+  border-left: 0.25rem solid var(--border-action-high-blue-france);
+  box-sizing: border-box;
+  padding: 1.25rem 1.25rem 1rem;
+}
+
+.welcome-vos-retours__head {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.welcome-vos-retours__title {
+  margin-bottom: 0;
+}
+
+.welcome-vos-retours__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.welcome-vos-retours__item + .welcome-vos-retours__item {
+  border-top: 1px solid var(--border-default-grey);
+}
+
+.welcome-vos-retours__item-btn {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  font: inherit;
+  gap: 0.25rem;
+  padding: 0.75rem 0.25rem;
+  text-align: left;
+  width: 100%;
+}
+
+.welcome-vos-retours__item-btn:focus-visible {
+  outline: 2px solid var(--border-action-high-blue-france);
+  outline-offset: 2px;
+}
+
+.welcome-vos-retours__item-title {
+  color: var(--text-action-high-blue-france);
+  font-weight: 700;
+}
+
+.welcome-vos-retours__item-meta {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0;
+  margin: 0;
+}
+
+.welcome-vos-retours__novelty {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.welcome-vos-retours__novelty--reply {
+  color: var(--text-default-info);
+}
+
+.welcome-vos-retours__novelty--updated {
+  color: var(--text-mention-grey);
+}
+
+.welcome-vos-retours__empty {
+  padding: 0.25rem 0 0.5rem;
+}
+
+.welcome-vos-retours__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .welcome-kanban__column-head {

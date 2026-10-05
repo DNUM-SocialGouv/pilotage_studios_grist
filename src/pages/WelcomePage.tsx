@@ -1,5 +1,10 @@
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAclProfil } from "../AclProfilContext";
+import { TicketDrawer } from "../components/welcome/TicketDrawer";
 import { WelcomeRoleHome } from "../components/welcome/WelcomeRoleHome";
+import { useVosRetours } from "../hooks/useVosRetours";
+import { subscribeKanbanReload } from "../utils/feedbackOpen";
+import type { KanbanTicket } from "../utils/kanbanTickets";
 import {
   buildWelcomeHome,
   welcomeAccessFromSession,
@@ -12,6 +17,7 @@ export function WelcomePage() {
     flags,
     equipeLabel,
     displayName,
+    email,
   } = useAclProfil();
 
   const homeLoading = aclStatus === "loading";
@@ -30,6 +36,40 @@ export function WelcomePage() {
           includeFeuilleDeRoute: true,
         }),
       });
+
+  const profilKind = homeContent?.kind ?? "unknown";
+  const vosRetours = useVosRetours({
+    sessionEmail: email,
+    profilKind,
+  });
+
+  const { markSeen, reload, visible, status, items, error } = vosRetours;
+
+  const [ticket, setTicket] = useState<KanbanTicket | null>(null);
+  const [focusReturnId, setFocusReturnId] = useState<number | null>(null);
+  const itemButtonRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
+
+  useEffect(() => subscribeKanbanReload(reload), [reload]);
+
+  const openTicket = useCallback(
+    (next: KanbanTicket) => {
+      markSeen(next);
+      setFocusReturnId(next.id);
+      setTicket(next);
+    },
+    [markSeen],
+  );
+
+  const closeTicket = useCallback(() => {
+    setTicket(null);
+  }, []);
+
+  useEffect(() => {
+    if (ticket != null || focusReturnId == null) return;
+    const btn = itemButtonRefs.current.get(focusReturnId);
+    btn?.focus();
+    setFocusReturnId(null);
+  }, [ticket, focusReturnId]);
 
   return (
     <div className="welcome-page">
@@ -54,9 +94,37 @@ export function WelcomePage() {
               missions: flags.Page_missions,
               equipe: flags.Page_equipe,
             }}
+            vosRetours={
+              visible
+                ? {
+                    visible: true,
+                    status,
+                    items,
+                    error,
+                    onOpenTicket: openTicket,
+                    itemButtonRefs,
+                  }
+                : undefined
+            }
           />
         )}
       </div>
+
+      <TicketDrawer
+        ticket={ticket}
+        onClose={closeTicket}
+        onColumnChanged={() => {
+          reload();
+        }}
+        onBodyChanged={(ticketId, body) => {
+          setTicket((prev) =>
+            prev && prev.id === ticketId
+              ? { ...prev, resume: body.resume, message: body.message }
+              : prev,
+          );
+          reload();
+        }}
+      />
     </div>
   );
 }

@@ -64,12 +64,18 @@ export type KanbanTicket = {
   ordre: number;
   /** Feedback */
   dateLabel: string;
+  /** Epoch ms (tri / dates relatives) — 0 si absente. */
+  dateSort: number;
   auteur: string;
+  /** E-mail auteur Feedback (filtre « mes retours »). */
+  email: string;
   type: string;
   page: string;
   message: string;
   niveauGene: string;
   statutFeedback: string;
+  /** Réponse métier Grist (signal « Nouvelle réponse » si non vide). */
+  reponse: string;
 };
 
 export type KanbanProductGroup = {
@@ -144,23 +150,31 @@ export function parseGuideSteps(value: unknown): string[] {
     .filter(Boolean);
 }
 
-/** Grist DATETIME : secondes Unix ou ISO. */
-export function formatKanbanDate(value: unknown): string {
-  if (value == null || value === "") return "";
-  let date: Date | null = null;
+/** Timestamp ms pour tri (Grist DATETIME = secondes Unix ou ISO). */
+export function kanbanDateSortKey(value: unknown): number {
+  if (value == null || value === "") {
+    return 0;
+  }
   if (typeof value === "number" && Number.isFinite(value)) {
-    const ms = value > 1e12 ? value : value * 1000;
-    date = new Date(ms);
-  } else if (typeof value === "string" && value.trim() !== "") {
+    return value > 1e12 ? value : value * 1000;
+  }
+  if (typeof value === "string" && value.trim() !== "") {
     const asNum = Number(value);
     if (Number.isFinite(asNum) && value.trim() !== "") {
-      const ms = asNum > 1e12 ? asNum : asNum * 1000;
-      date = new Date(ms);
-    } else {
-      date = new Date(value);
+      return asNum > 1e12 ? asNum : asNum * 1000;
     }
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
   }
-  if (!date || Number.isNaN(date.getTime())) return "";
+  return 0;
+}
+
+/** Grist DATETIME : secondes Unix ou ISO. */
+export function formatKanbanDate(value: unknown): string {
+  const ms = kanbanDateSortKey(value);
+  if (ms <= 0) return "";
+  const date = new Date(ms);
+  if (Number.isNaN(date.getTime())) return "";
   return new Intl.DateTimeFormat("fr-FR", {
     day: "2-digit",
     month: "short",
@@ -191,12 +205,15 @@ export function kanbanTicketFromRecord(
     cle: asString(record.Cle),
     ordre: asNumber(record.Ordre),
     dateLabel: formatKanbanDate(record.Date),
+    dateSort: kanbanDateSortKey(record.Date),
     auteur: asString(record.Auteur) || "Anonyme",
+    email: asString(record.Email),
     type: type || "Retour",
     page: asString(record.Page),
     message: asString(record.Message),
     niveauGene: asString(record.Niveau_gene),
     statutFeedback: asString(record.Statut),
+    reponse: asString(record.Reponse),
   };
 }
 

@@ -1,7 +1,10 @@
-import type { MouseEvent } from "react";
+import type { MouseEvent, RefObject } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { CallOut } from "@codegouvfr/react-dsfr/CallOut";
+import type { VosRetoursStatus } from "../../hooks/useVosRetours";
+import type { KanbanTicket } from "../../utils/kanbanTickets";
+import type { VosRetourItem } from "../../utils/vosRetours";
 import type { WelcomeHomeContent } from "../../utils/welcomeHomeByRole";
 import {
   hasWelcomeSearchTargets,
@@ -9,6 +12,7 @@ import {
   type WelcomeSearchTargetFlags,
 } from "../../utils/welcomeSearch";
 import { WelcomeSearchBar } from "./WelcomeSearchBar";
+import { VosRetoursSection } from "./VosRetoursSection";
 
 type WelcomeRoleHomeProps = {
   content: WelcomeHomeContent;
@@ -19,20 +23,26 @@ type WelcomeRoleHomeProps = {
    * Absentes ou toutes fermées → pas de barre.
    */
   searchTargets?: WelcomeSearchTargetFlags;
+  /** Bloc « Vos retours » (Option 3) — masqué si `visible` false. */
+  vosRetours?: {
+    visible: boolean;
+    status: VosRetoursStatus;
+    items: VosRetourItem[];
+    error: string | null;
+    onOpenTicket: (ticket: KanbanTicket) => void;
+    itemButtonRefs: RefObject<Map<number, HTMLButtonElement>>;
+  };
 };
 
 /**
- * Tableau de bord léger d’accueil (PR-A) : salutation, rôle, CTA filtrés.
- * Pas de KPI ni de liste exhaustive de la nav.
- * Accueil Freelance / Admin / Responsable : pas de libellé produit / rôle / lead
- * (titre « Bonjour [Prénom] »). Admin / Responsable : pas de bloc « À savoir » (`hint` null).
- * Recherche V1 — option A : « Bonjour » + barre dans un bandeau pleine largeur ;
- * CTA hors bandeau en dessous (Admin / Resp. / Freelance ; pas Invité).
+ * Accueil Option 3 : bandeau recherche ; puis raccourcis | Vos retours (≥ md) ;
+ * mobile = empilement retours puis raccourcis (esprit Option 1).
  */
 export function WelcomeRoleHome({
   content,
   loading,
   searchTargets,
+  vosRetours,
 }: WelcomeRoleHomeProps) {
   const navigate = useNavigate();
   const showProductLabel = content.showProductLabel !== false;
@@ -41,6 +51,7 @@ export function WelcomeRoleHome({
     searchTargets != null &&
     shouldShowWelcomeSearch(content.kind) &&
     hasWelcomeSearchTargets(searchTargets);
+  const showVosRetours = Boolean(vosRetours?.visible);
 
   const onCtaClick = (href: string) => (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -87,6 +98,46 @@ export function WelcomeRoleHome({
     </>
   );
 
+  const shortcutsNav =
+    content.ctas.length > 0 ? (
+      <nav
+        aria-label="Raccourcis selon votre rôle"
+        className="welcome-role-home__shortcuts"
+      >
+        <ul className="welcome-role-home__ctas fr-mb-0">
+          {content.ctas.map((cta) => (
+            <li key={cta.id} className="welcome-role-home__cta">
+              <Button
+                priority={cta.id === content.ctas[0]?.id ? "primary" : "secondary"}
+                linkProps={{
+                  href: cta.href,
+                  onClick: onCtaClick(cta.href),
+                }}
+              >
+                {cta.label}
+              </Button>
+              <p className="fr-text--sm fr-hint-text fr-mb-0 fr-mt-1w">
+                {cta.description}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    ) : null;
+
+  const vosRetoursBlock =
+    showVosRetours && vosRetours ? (
+      <VosRetoursSection
+        status={vosRetours.status}
+        items={vosRetours.items}
+        error={vosRetours.error}
+        onOpenTicket={vosRetours.onOpenTicket}
+        itemButtonRefs={vosRetours.itemButtonRefs}
+      />
+    ) : null;
+
+  const mainTwoCol = showVosRetours || shortcutsNav;
+
   return (
     <section
       className="welcome-role-home fr-mb-3w"
@@ -101,32 +152,18 @@ export function WelcomeRoleHome({
         greetingBlock
       )}
 
-      {content.ctas.length > 0 ? (
-        <nav
-          aria-label="Raccourcis selon votre rôle"
+      {mainTwoCol ? (
+        <div
           className={
-            showSearch || content.lead?.trim() ? undefined : "fr-mt-3w"
+            showVosRetours && shortcutsNav
+              ? "welcome-role-home__main welcome-role-home__main--split"
+              : "welcome-role-home__main"
           }
         >
-          <ul className="welcome-role-home__ctas fr-mb-0">
-            {content.ctas.map((cta) => (
-              <li key={cta.id} className="welcome-role-home__cta">
-                <Button
-                  priority={cta.id === content.ctas[0]?.id ? "primary" : "secondary"}
-                  linkProps={{
-                    href: cta.href,
-                    onClick: onCtaClick(cta.href),
-                  }}
-                >
-                  {cta.label}
-                </Button>
-                <p className="fr-text--sm fr-hint-text fr-mb-0 fr-mt-1w">
-                  {cta.description}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </nav>
+          {/* DOM : retours puis raccourcis (mobile Option 1) ; desktop grid place raccourcis à gauche. */}
+          {vosRetoursBlock}
+          {shortcutsNav}
+        </div>
       ) : null}
 
       {content.hint ? (
