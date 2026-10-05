@@ -2031,6 +2031,83 @@ button.fr-link:disabled {
   width: min(48rem, 94vw);
 }
 
+/* Weekly drawer — choix météo (3 boutons horizontaux, tokens DSFR). */
+.weekly-meteo-group {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.weekly-meteo-btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 4.5rem;
+  padding: 0.5rem 0.35rem;
+  margin: 0;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.25;
+  text-align: center;
+  color: var(--text-default-grey);
+  background: var(--background-default-grey);
+  border: 1px solid var(--border-default-grey);
+  cursor: pointer;
+}
+
+.weekly-meteo-btn:hover:not(:disabled) {
+  background: var(--background-alt-grey);
+}
+
+.weekly-meteo-btn:focus-visible {
+  outline: 2px solid var(--border-plain-blue-france);
+  outline-offset: 2px;
+}
+
+.weekly-meteo-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.weekly-meteo-btn__icon {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.weekly-meteo-btn--vert[aria-checked="true"] {
+  color: var(--text-default-success);
+  background: var(--background-contrast-success);
+  border-color: var(--border-plain-success);
+  font-weight: 700;
+}
+
+.weekly-meteo-btn--surveiller[aria-checked="true"] {
+  color: var(--text-default-warning);
+  background: var(--background-contrast-warning);
+  border-color: var(--border-plain-warning);
+  font-weight: 700;
+}
+
+.weekly-meteo-btn--difficulte[aria-checked="true"] {
+  color: var(--text-default-error);
+  background: var(--background-contrast-error);
+  border-color: var(--border-plain-error);
+  font-weight: 700;
+}
+
+@media (max-width: 28rem) {
+  .weekly-meteo-group {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Matrice Admin Droits des pages : un tableau par thème, toggles alignés. */
 .droits-pages-matrix .fr-table__content > table {
   table-layout: fixed;

@@ -38,6 +38,8 @@ import {
   groupCardsByPhase,
   isWeeklyPhaseKey,
   phaseRowsToMap,
+  weeklyMeteoIconClass,
+  weeklyMeteoLabel,
   type WeeklyCard,
   type WeeklyPhaseKey,
 } from "../utils/weeklyPhases";
@@ -538,30 +540,6 @@ function AgendaSujetDialog({
   );
 }
 
-function meteoIconClass(meteo: string): string {
-  const t = meteo.toLowerCase();
-  if (
-    t.includes("orage") ||
-    t.includes("difficul") ||
-    t.includes("rouge") ||
-    t.includes("bloq")
-  ) {
-    return "fr-icon-thunderstorms-line";
-  }
-  if (
-    t.includes("nuage") ||
-    t.includes("surveill") ||
-    t.includes("orange") ||
-    t.includes("attention")
-  ) {
-    return "fr-icon-cloudy-2-line";
-  }
-  if (t.includes("vert") || t.includes("beau") || t.includes("soleil") || t.includes("ok")) {
-    return "fr-icon-sun-line";
-  }
-  return "fr-icon-cloudy-2-line";
-}
-
 function WeeklyCardView({
   card,
   busy,
@@ -639,9 +617,9 @@ function WeeklyCardView({
         )}
         {hasMeteo ? (
           <span
-            className={`${meteoIconClass(card.meteo)} fr-icon--sm`}
-            title={`Météo : ${card.meteo}`}
-            aria-label={`Météo : ${card.meteo}`}
+            className={`${weeklyMeteoIconClass(card.meteo)} fr-icon--sm`}
+            title={`Météo : ${weeklyMeteoLabel(card.meteo)}`}
+            aria-label={`Météo : ${weeklyMeteoLabel(card.meteo)}`}
             style={{ color: "var(--text-default-grey)" }}
           />
         ) : null}

@@ -16,10 +16,11 @@ import {
   weeklyAgendaAuteurPrenom,
 } from "../../utils/weeklyAgenda";
 import {
-  WEEKLY_METEO_CHOICES,
+  WEEKLY_METEO_OPTIONS,
   WEEKLY_PHASES,
   WEEKLY_PHASE_OPS_COLUMNS_READY,
   isWeeklyPhaseKey,
+  normalizeWeeklyMeteo,
   type WeeklyCard,
   type WeeklyPhaseKey,
 } from "../../utils/weeklyPhases";
@@ -73,7 +74,7 @@ export function WeeklySuiviDrawer({
   useEffect(() => {
     if (!open || card == null) return;
     setDraftPhase(card.phase);
-    setDraftMeteo(card.meteo);
+    setDraftMeteo(normalizeWeeklyMeteo(card.meteo));
     setDraftMembreId(
       card.membreEquipeId != null && card.membreEquipeId > 0
         ? String(card.membreEquipeId)
@@ -222,24 +223,46 @@ export function WeeklySuiviDrawer({
                     ))}
                   </Select>
 
-                  <Select
-                    className="fr-mt-2w"
-                    label="Météo"
-                    hint="Suivi ops Weekly (pas la météo fiche mission)."
-                    nativeSelectProps={{
-                      id: meteoFieldId,
-                      value: draftMeteo,
-                      disabled: busy || !opsReady,
-                      onChange: (e) => setDraftMeteo(e.target.value),
-                    }}
-                  >
-                    <option value="">—</option>
-                    {WEEKLY_METEO_CHOICES.map((m) => (
-                      <option key={m} value={m}>
-                        {m}
-                      </option>
-                    ))}
-                  </Select>
+                  <div className="fr-mt-2w">
+                    <p
+                      id={meteoFieldId}
+                      className="fr-label"
+                      style={{ marginBottom: "0.5rem" }}
+                    >
+                      Météo
+                      <span className="fr-hint-text">
+                        Suivi ops Weekly (pas la météo fiche mission).
+                      </span>
+                    </p>
+                    <div
+                      className="weekly-meteo-group"
+                      role="radiogroup"
+                      aria-labelledby={meteoFieldId}
+                    >
+                      {WEEKLY_METEO_OPTIONS.map((opt) => {
+                        const checked = draftMeteo === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            role="radio"
+                            aria-checked={checked}
+                            className={`weekly-meteo-btn weekly-meteo-btn--${opt.tone}`}
+                            disabled={busy || !opsReady}
+                            onClick={() =>
+                              setDraftMeteo(checked ? "" : opt.value)
+                            }
+                          >
+                            <span
+                              className={`${opt.iconClass} weekly-meteo-btn__icon`}
+                              aria-hidden="true"
+                            />
+                            <span>{opt.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
 
                   <Select
                     className="fr-mt-2w"

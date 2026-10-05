@@ -29,9 +29,85 @@ export type WeeklyPhaseKey = (typeof WEEKLY_PHASE_KEYS)[number];
  */
 export const WEEKLY_PHASE_OPS_COLUMNS_READY = true;
 
-/** Choix météo ops V1 (satellite `Weekly_phase.Meteo` — pas `Missions.Meteo`). */
-export const WEEKLY_METEO_CHOICES = ["Calme", "Nuageux", "Orageux"] as const;
-export type WeeklyMeteoChoice = (typeof WEEKLY_METEO_CHOICES)[number];
+/**
+ * Choix météo ops V1 — libellés métier stockés dans `Weekly_phase.Meteo` (TEXT).
+ * Pas `Missions.Meteo`. UI = 3 boutons (soleil / nuage / orage).
+ */
+export const WEEKLY_METEO_OPTIONS = [
+  {
+    value: "Au vert",
+    label: "Au vert",
+    iconClass: "fr-icon-sun-line",
+    tone: "vert",
+  },
+  {
+    value: "À surveiller",
+    label: "À surveiller",
+    iconClass: "fr-icon-cloudy-2-line",
+    tone: "surveiller",
+  },
+  {
+    value: "En difficulté",
+    label: "En difficulté",
+    iconClass: "fr-icon-thunderstorms-line",
+    tone: "difficulte",
+  },
+] as const;
+
+export type WeeklyMeteoChoice = (typeof WEEKLY_METEO_OPTIONS)[number]["value"];
+
+/** Valeurs stockées (libellés métier). */
+export const WEEKLY_METEO_CHOICES: readonly WeeklyMeteoChoice[] =
+  WEEKLY_METEO_OPTIONS.map((o) => o.value);
+
+/**
+ * Normalise une valeur lue (libellés métier ou anciens Calme/Nuageux/Orageux).
+ * Chaîne vide / inconnue → "".
+ */
+export function normalizeWeeklyMeteo(raw: string | null | undefined): string {
+  const t = (raw ?? "").trim();
+  if (!t) return "";
+  for (const opt of WEEKLY_METEO_OPTIONS) {
+    if (opt.value === t) return opt.value;
+  }
+  const lower = t.toLowerCase();
+  if (
+    lower === "calme" ||
+    lower.includes("vert") ||
+    lower.includes("soleil") ||
+    lower.includes("beau")
+  ) {
+    return "Au vert";
+  }
+  if (
+    lower === "nuageux" ||
+    lower.includes("surveill") ||
+    lower.includes("nuage") ||
+    lower.includes("attention")
+  ) {
+    return "À surveiller";
+  }
+  if (
+    lower === "orageux" ||
+    lower.includes("difficul") ||
+    lower.includes("orage") ||
+    lower.includes("bloq")
+  ) {
+    return "En difficulté";
+  }
+  return t;
+}
+
+export function weeklyMeteoIconClass(meteo: string): string {
+  const n = normalizeWeeklyMeteo(meteo);
+  const opt = WEEKLY_METEO_OPTIONS.find((o) => o.value === n);
+  return opt?.iconClass ?? "fr-icon-cloudy-2-line";
+}
+
+export function weeklyMeteoLabel(meteo: string): string {
+  const n = normalizeWeeklyMeteo(meteo);
+  return n || meteo.trim();
+}
 
 export type WeeklyPhaseMeta = {
   key: WeeklyPhaseKey;
@@ -124,7 +200,9 @@ export function phaseRowsToMap(
     map.set(missionId, {
       phaseId: row.id,
       phase: key,
-      meteo: WEEKLY_PHASE_OPS_COLUMNS_READY ? (row.Meteo ?? "").trim() : "",
+      meteo: WEEKLY_PHASE_OPS_COLUMNS_READY
+        ? normalizeWeeklyMeteo(row.Meteo)
+        : "",
       noteOps: WEEKLY_PHASE_OPS_COLUMNS_READY ? (row.Note_ops ?? "").trim() : "",
       membreEquipeId,
     });

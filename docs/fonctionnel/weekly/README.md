@@ -46,7 +46,7 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 |----|--------|
 | Titre | Lecture `Missions.Nom_de_la_mission` |
 | Phase | `Weekly_phase.Phase` (même donnée que le kanban) |
-| Météo | `Weekly_phase.Meteo` (éditable — Calme / Nuageux / Orageux) |
+| Météo | `Weekly_phase.Meteo` — 3 boutons : **Au vert** · **À surveiller** · **En difficulté** (icônes soleil / nuage / orage) |
 | Membre équipe | `Weekly_phase.Membre_equipe` (Ref → `Equipe`, select annuaire) |
 | Note ops | `Weekly_phase.Note_ops` (markdown léger) |
 | Derniers échanges | `Weekly_agenda` filtrés par mission + Voir / Nouveau sujet |
@@ -58,7 +58,7 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 
 | Colonne (`colId`) | Table | Type | Usage |
 |-------------------|-------|------|-------|
-| `Meteo` | `Weekly_phase` | TEXT | Météo ops |
+| `Meteo` | `Weekly_phase` | TEXT | Libellés métier : `Au vert` · `À surveiller` · `En difficulté` (anciens Calme/Nuageux/Orageux normalisés à la lecture) |
 | `Note_ops` | `Weekly_phase` | TEXT | Note markdown |
 | `Membre_equipe` | `Weekly_phase` | INTEGER (Ref → `Equipe`) | Membre équipe (libellé UI « Membre équipe ») |
 
