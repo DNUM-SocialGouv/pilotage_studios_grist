@@ -48,10 +48,13 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 | **Mission liée** (create + édition drawer) | `Mission` (Ref → `Missions`, optionnel) |
 | Méta liste / drawer | `Auteur` (prénom) · `Cree_le` (date relative) · `Traite` |
 
+- Section **Sujets à aborder** : liste d’abord ; CTA **« Nouveau sujet »** dans l’**en-tête** (option B) — **pas** de formulaire permanent sous la liste.
 - Liste compacte : **titre** + méta `Prénom · date relative` (+ lien mission éventuel) + **Voir** / **Modifier** — pas le détail.
 - Drawer lecture : titre, détail (`MissionProse` — markdown léger + liens internes), mission (lien fiche), méta date / auteur.
-- Drawer édition / create : titre, détail optionnel (textarea markdown), select mission, enregistrement.
-- Champ auteur « Votre prénom » : prérempli avec le **prénom seul** —
+- Drawer édition : titre, détail optionnel (textarea markdown), select mission → **Enregistrer**.
+- Drawer **create** (même tiroir) : titre, détail, mission, prénom auteur → **Ajouter** ; focus titre à l’ouverture ; focus retour au CTA après fermeture create.
+- État vide : message « Aucun sujet… » sous l’en-tête (CTA unique en en-tête).
+- Champ auteur « Votre prénom » (create) : prérempli avec le **prénom seul** —
   1. `Equipe.Prenom_Nom` de la session (`firstNameFromDisplayName`) ;
   2. sinon premier segment de l’e-mail de session (avant `.` / `_` / `-`, pas `prenom.nom`).
 - Flag code `WEEKLY_AGENDA_DETAIL_COLUMN_READY = true` (colonne `Detail` confirmée MCP doc `nei9DeARs5Eo`).

@@ -41,7 +41,7 @@ import {
 } from "../utils/weeklyPhases";
 import type { WeeklyAgendaRow } from "../types";
 
-type AgendaDialogMode = "view" | "edit";
+type AgendaDialogMode = "view" | "edit" | "create";
 
 function AgendaSujetRow({
   sujet,
@@ -176,21 +176,26 @@ function AgendaSujetRow({
 }
 
 function AgendaSujetDialog({
+  open,
   sujet,
   mode,
   missionLabel,
   missionId,
   missionOptions,
+  defaultAuteur,
   busy,
   onClose,
   onSave,
+  onCreate,
   onSwitchToEdit,
 }: {
+  open: boolean;
   sujet: WeeklyAgendaRow | null;
   mode: AgendaDialogMode;
   missionLabel?: string;
   missionId: number | null;
   missionOptions: { id: number; label: string }[];
+  defaultAuteur: string;
   busy: boolean;
   onClose: () => void;
   onSave: (input: {
@@ -198,6 +203,12 @@ function AgendaSujetDialog({
     texte: string;
     detail: string;
     missionId: number | null;
+  }) => Promise<void>;
+  onCreate: (input: {
+    texte: string;
+    detail: string;
+    missionId: number | null;
+    auteur: string;
   }) => Promise<void>;
   onSwitchToEdit: () => void;
 }) {
@@ -207,28 +218,53 @@ function AgendaSujetDialog({
   const titreFieldId = useId();
   const detailFieldId = useId();
   const missionFieldId = useId();
+  const auteurFieldId = useId();
   const [draftTitre, setDraftTitre] = useState("");
   const [draftDetail, setDraftDetail] = useState("");
   const [draftMissionId, setDraftMissionId] = useState("");
+  const [draftAuteur, setDraftAuteur] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
-    setDraftTitre((sujet?.Texte ?? "").trim());
-    setDraftDetail((sujet?.Detail ?? "").trim());
-    const mid = extractGristReferenceId(sujet?.Mission);
-    setDraftMissionId(mid != null && mid > 0 ? String(mid) : "");
+    if (!open) return;
+    if (mode === "create") {
+      setDraftTitre("");
+      setDraftDetail("");
+      setDraftMissionId("");
+      setDraftAuteur(defaultAuteur);
+    } else {
+      setDraftTitre((sujet?.Texte ?? "").trim());
+      setDraftDetail((sujet?.Detail ?? "").trim());
+      const mid = extractGristReferenceId(sujet?.Mission);
+      setDraftMissionId(mid != null && mid > 0 ? String(mid) : "");
+      setDraftAuteur("");
+    }
     setLocalError(null);
-  }, [sujet?.id, sujet?.Texte, sujet?.Detail, sujet?.Mission, mode]);
+  }, [
+    open,
+    mode,
+    sujet?.id,
+    sujet?.Texte,
+    sujet?.Detail,
+    sujet?.Mission,
+    defaultAuteur,
+  ]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    if (sujet != null) {
+    if (open) {
       if (!dialog.open) dialog.showModal();
+      if (mode === "create" || mode === "edit") {
+        // Focus titre après ouverture (trap focus natif du dialog).
+        requestAnimationFrame(() => {
+          document.getElementById(titreFieldId)?.focus();
+        });
+      }
     } else if (dialog.open) {
       dialog.close();
     }
-  }, [sujet]);
+  }, [open, mode, titreFieldId]);
 
   const createdAt = parseWeeklyAgendaCreatedAt(sujet?.Cree_le);
   const createdLabel = formatWeeklyAgendaCreatedAt(sujet?.Cree_le);
@@ -240,23 +276,44 @@ function AgendaSujetDialog({
     dialogRef.current?.close();
   };
 
-  const submitEdit = async (e: FormEvent) => {
+  const parsedMissionId = (): number | null => {
+    const mid = draftMissionId ? Number(draftMissionId) : null;
+    return mid != null && Number.isFinite(mid) && mid > 0 ? mid : null;
+  };
+
+  const submitForm = async (e: FormEvent) => {
     e.preventDefault();
-    if (sujet == null) return;
     const nextTitre = draftTitre.trim();
     if (!nextTitre) {
       setLocalError("Saisissez un titre.");
+      document.getElementById(titreFieldId)?.focus();
       return;
     }
     setLocalError(null);
-    const mid = draftMissionId ? Number(draftMissionId) : null;
+    if (mode === "create") {
+      await onCreate({
+        texte: nextTitre,
+        detail: draftDetail,
+        missionId: parsedMissionId(),
+        auteur: draftAuteur.trim() || defaultAuteur || "Anonyme",
+      });
+      return;
+    }
+    if (sujet == null) return;
     await onSave({
       id: sujet.id,
       texte: nextTitre,
       detail: draftDetail,
-      missionId: mid != null && Number.isFinite(mid) && mid > 0 ? mid : null,
+      missionId: parsedMissionId(),
     });
   };
+
+  const dialogTitle =
+    mode === "create"
+      ? "Nouveau sujet"
+      : mode === "edit"
+        ? "Modifier le sujet"
+        : "Sujet à aborder";
 
   // Drawer pilotage (pas fr-modal) : showModal() + classes DSFR sans JS disclose
   // laisse un scrim natif invisible / piégé.
@@ -281,7 +338,7 @@ function AgendaSujetDialog({
               <div className="fr-grid-row fr-grid-row--gutters fr-grid-row--middle">
                 <div className="fr-col">
                   <h2 id={titleId} className="fr-h5 fr-mb-0">
-                    {mode === "edit" ? "Modifier le sujet" : "Sujet à aborder"}
+                    {dialogTitle}
                   </h2>
                 </div>
                 <div className="fr-col-auto">
@@ -299,7 +356,7 @@ function AgendaSujetDialog({
             </header>
 
             <div className="pilotage-drawer-dialog__body fr-px-3w fr-pb-3w fr-pt-0">
-              {sujet == null ? null : mode === "view" ? (
+              {mode === "view" && sujet != null ? (
                 <>
                   <h3 className="fr-h6 fr-mb-1w" style={{ marginTop: 0 }}>
                     {titre || "—"}
@@ -341,8 +398,8 @@ function AgendaSujetDialog({
                     ) : null}
                   </p>
                 </>
-              ) : (
-                <form ref={formRef} onSubmit={(e) => void submitEdit(e)}>
+              ) : mode === "edit" || mode === "create" ? (
+                <form ref={formRef} onSubmit={(e) => void submitForm(e)}>
                   <Input
                     label="Titre"
                     hintText="Affiché dans la liste compacte."
@@ -387,8 +444,23 @@ function AgendaSujetDialog({
                       </option>
                     ))}
                   </Select>
+                  {mode === "create" ? (
+                    <Input
+                      className="fr-mt-2w"
+                      label="Votre prénom (auteur)"
+                      hintText="Signe le sujet. Prérempli avec votre prénom (fiche Équipe), sinon le début de votre e-mail de session."
+                      nativeInputProps={{
+                        id: auteurFieldId,
+                        value: draftAuteur,
+                        onChange: (e) => setDraftAuteur(e.target.value),
+                        disabled: busy,
+                        placeholder: defaultAuteur || undefined,
+                        autoComplete: "given-name",
+                      }}
+                    />
+                  ) : null}
                 </form>
-              )}
+              ) : null}
 
               <ul className="fr-btns-group fr-btns-group--right fr-btns-group--inline-reverse fr-btns-group--inline-lg fr-mt-3w">
                 {mode === "view" ? (
@@ -412,7 +484,7 @@ function AgendaSujetDialog({
                         disabled={busy}
                         onClick={() => formRef.current?.requestSubmit()}
                       >
-                        Enregistrer
+                        {mode === "create" ? "Ajouter" : "Enregistrer"}
                       </Button>
                     </li>
                     <li>
@@ -620,17 +692,12 @@ export function WeeklyCoachPage() {
   const [phaseError, setPhaseError] = useState<string | null>(null);
   const [agendaError, setAgendaError] = useState<string | null>(null);
   const [agendaBusy, setAgendaBusy] = useState(false);
-  const [newTitre, setNewTitre] = useState("");
-  const [newDetail, setNewDetail] = useState("");
-  const [newMissionId, setNewMissionId] = useState("");
-  const [auteur, setAuteur] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogSujet, setDialogSujet] = useState<WeeklyAgendaRow | null>(null);
   const [dialogMode, setDialogMode] = useState<AgendaDialogMode>("view");
+  const nouveauSujetCtaId = "weekly-nouveau-sujet-cta";
 
-  useEffect(() => {
-    const next = defaultWeeklyAuteurPrenom(displayName, sessionEmail);
-    setAuteur((prev) => prev.trim() || next);
-  }, [displayName, sessionEmail]);
+  const defaultAuteur = defaultWeeklyAuteurPrenom(displayName, sessionEmail);
 
   const cards = useMemo(
     () =>
@@ -711,38 +778,15 @@ export function WeeklyCoachPage() {
     void changePhase(missionId, phase);
   };
 
-  const onAddSujet = async (e: FormEvent) => {
-    e.preventDefault();
-    setAgendaError(null);
-    const titre = newTitre.trim();
-    if (!titre) {
-      setAgendaError("Saisissez un titre.");
-      return;
-    }
-    const name =
-      auteur.trim() ||
-      defaultWeeklyAuteurPrenom(displayName, sessionEmail) ||
-      "Anonyme";
-    setAgendaBusy(true);
-    try {
-      const mid = newMissionId ? Number(newMissionId) : null;
-      await createWeeklyAgendaRecord({
-        texte: titre,
-        detail: newDetail,
-        auteur: name,
-        email: sessionEmail ?? "",
-        missionId: mid != null && Number.isFinite(mid) ? mid : null,
+  const closeAgendaDialog = () => {
+    const restoreCta = dialogMode === "create";
+    setDialogOpen(false);
+    setDialogSujet(null);
+    if (restoreCta) {
+      // Focus retour au CTA après create (succès / Annuler / Échap / scrim).
+      requestAnimationFrame(() => {
+        document.getElementById(nouveauSujetCtaId)?.focus();
       });
-      setNewTitre("");
-      setNewDetail("");
-      setNewMissionId("");
-      await data.reload();
-    } catch (err) {
-      setAgendaError(
-        err instanceof Error ? err.message : "Impossible d’ajouter le sujet.",
-      );
-    } finally {
-      setAgendaBusy(false);
     }
   };
 
@@ -764,6 +808,13 @@ export function WeeklyCoachPage() {
   const openAgendaDialog = (sujet: WeeklyAgendaRow, mode: AgendaDialogMode) => {
     setDialogMode(mode);
     setDialogSujet(sujet);
+    setDialogOpen(true);
+  };
+
+  const openCreateAgendaDialog = () => {
+    setDialogMode("create");
+    setDialogSujet(null);
+    setDialogOpen(true);
   };
 
   const onSaveAgendaSujet = async (input: {
@@ -780,11 +831,38 @@ export function WeeklyCoachPage() {
         detail: input.detail,
         missionId: input.missionId,
       });
-      setDialogSujet(null);
+      closeAgendaDialog();
       await data.reload();
     } catch (err) {
       setAgendaError(
         err instanceof Error ? err.message : "Impossible d’enregistrer le sujet.",
+      );
+    } finally {
+      setAgendaBusy(false);
+    }
+  };
+
+  const onCreateAgendaSujet = async (input: {
+    texte: string;
+    detail: string;
+    missionId: number | null;
+    auteur: string;
+  }) => {
+    setAgendaError(null);
+    setAgendaBusy(true);
+    try {
+      await createWeeklyAgendaRecord({
+        texte: input.texte,
+        detail: input.detail,
+        auteur: input.auteur,
+        email: sessionEmail ?? "",
+        missionId: input.missionId,
+      });
+      closeAgendaDialog();
+      await data.reload();
+    } catch (err) {
+      setAgendaError(
+        err instanceof Error ? err.message : "Impossible d’ajouter le sujet.",
       );
     } finally {
       setAgendaBusy(false);
@@ -860,24 +938,45 @@ export function WeeklyCoachPage() {
                 display: "flex",
                 flexWrap: "wrap",
                 gap: "0.5rem 0.75rem",
-                alignItems: "baseline",
+                alignItems: "center",
+                justifyContent: "space-between",
               }}
             >
-              <h2 className="fr-h5" style={{ margin: 0 }}>
-                Sujets à aborder
-              </h2>
-              <span className="fr-hint-text" style={{ margin: 0 }}>
-                {traiteCount}/{agendaSorted.length} traités
-              </span>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "0.5rem 0.75rem",
+                  alignItems: "baseline",
+                }}
+              >
+                <h2 className="fr-h5" style={{ margin: 0 }}>
+                  Sujets à aborder
+                </h2>
+                <span className="fr-hint-text" style={{ margin: 0 }}>
+                  {traiteCount}/{agendaSorted.length} traités
+                </span>
+              </div>
+              <Button
+                type="button"
+                priority="secondary"
+                size="small"
+                iconId="fr-icon-add-line"
+                disabled={agendaBusy || data.isReloading}
+                onClick={openCreateAgendaDialog}
+                nativeButtonProps={{ id: nouveauSujetCtaId }}
+              >
+                Nouveau sujet
+              </Button>
             </div>
 
             {agendaSorted.length === 0 ? (
-              <p className="fr-text--sm fr-mb-2w" style={{ color: "var(--text-mention-grey)" }}>
+              <p className="fr-text--sm fr-mb-0" style={{ color: "var(--text-mention-grey)" }}>
                 Aucun sujet proposé pour l’instant.
               </p>
             ) : (
               <ul
-                className="fr-raw-list fr-mb-2w"
+                className="fr-raw-list fr-mb-0"
                 style={{
                   display: "flex",
                   flexDirection: "column",
@@ -907,76 +1006,8 @@ export function WeeklyCoachPage() {
               </ul>
             )}
 
-            <form onSubmit={(e) => void onAddSujet(e)}>
-              <div className="fr-grid-row fr-grid-row--gutters fr-grid-row--bottom">
-                <div className="fr-col-12 fr-col-md-6">
-                  <Input
-                    label="Titre"
-                    hintText="Court — visible dans la liste."
-                    nativeInputProps={{
-                      value: newTitre,
-                      onChange: (e) => setNewTitre(e.target.value),
-                      disabled: agendaBusy,
-                      "aria-required": true,
-                      placeholder: "Titre du sujet",
-                    }}
-                  />
-                </div>
-                <div className="fr-col-12 fr-col-md-4">
-                  <Select
-                    label="Mission liée"
-                    nativeSelectProps={{
-                      value: newMissionId,
-                      onChange: (e) => setNewMissionId(e.target.value),
-                      disabled: agendaBusy,
-                    }}
-                  >
-                    <option value="">Sans mission liée</option>
-                    {missionOptions.map((m) => (
-                      <option key={m.id} value={String(m.id)}>
-                        {m.label}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
-                <div className="fr-col-12 fr-col-md-2">
-                  <Button
-                    type="submit"
-                    disabled={agendaBusy || data.isReloading}
-                    iconId="fr-icon-add-line"
-                  >
-                    Ajouter
-                  </Button>
-                </div>
-              </div>
-              <Input
-                className="fr-mt-2w"
-                label="Détail"
-                hintText="Optionnel — Markdown léger (titres, listes, liens). Visible seulement dans Voir / Modifier, pas dans la liste."
-                textArea
-                nativeTextAreaProps={{
-                  value: newDetail,
-                  onChange: (e) => setNewDetail(e.target.value),
-                  disabled: agendaBusy,
-                  rows: 3,
-                  placeholder: "Contexte, question, lien…",
-                }}
-              />
-              <Input
-                className="fr-mt-2w"
-                label="Votre prénom (auteur)"
-                hintText="Signe le sujet. Prérempli avec votre prénom (fiche Équipe), sinon le début de votre e-mail de session."
-                nativeInputProps={{
-                  value: auteur,
-                  onChange: (e) => setAuteur(e.target.value),
-                  disabled: agendaBusy,
-                  placeholder: defaultWeeklyAuteurPrenom(displayName, sessionEmail) || undefined,
-                  autoComplete: "given-name",
-                }}
-              />
-            </form>
-
             <AgendaSujetDialog
+              open={dialogOpen}
               sujet={dialogSujet}
               mode={dialogMode}
               missionId={
@@ -992,9 +1023,11 @@ export function WeeklyCoachPage() {
                   : undefined
               }
               missionOptions={missionOptions}
+              defaultAuteur={defaultAuteur}
               busy={agendaBusy || data.isReloading}
-              onClose={() => setDialogSujet(null)}
+              onClose={closeAgendaDialog}
               onSave={onSaveAgendaSujet}
+              onCreate={onCreateAgendaSujet}
               onSwitchToEdit={() => setDialogMode("edit")}
             />
           </section>
