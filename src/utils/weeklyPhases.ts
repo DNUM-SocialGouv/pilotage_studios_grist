@@ -31,30 +31,31 @@ export type WeeklyPhaseMeta = {
   colBg: string;
 };
 
+/** Tokens DSFR (clair / sombre) — pas de hex figés qui cassent le thème sombre. */
 export const WEEKLY_PHASES: readonly WeeklyPhaseMeta[] = [
   {
     key: "prochainement",
     label: "Prochainement",
-    dot: "#e4794a",
-    colBg: "#fef4f2",
+    dot: "var(--text-label-orange-terre-battue)",
+    colBg: "var(--background-contrast-orange-terre-battue)",
   },
   {
     key: "cadrage",
     label: "Cadrage",
-    dot: "#e1000f",
-    colBg: "#fef4f4",
+    dot: "var(--text-label-red-marianne)",
+    colBg: "var(--background-contrast-red-marianne)",
   },
   {
     key: "actif",
     label: "Accompagnement actif",
-    dot: "#c3992a",
-    colBg: "#fef9ec",
+    dot: "var(--text-label-yellow-tournesol)",
+    colBg: "var(--background-contrast-yellow-tournesol)",
   },
   {
     key: "autonomie",
     label: "Terminé",
-    dot: "#18753c",
-    colBg: "#f1faf3",
+    dot: "var(--text-label-green-emeraude)",
+    colBg: "var(--background-contrast-green-emeraude)",
   },
 ] as const;
 

@@ -204,6 +204,7 @@ export function toWeeklyAgenda(record: GristRecord): WeeklyAgendaRow {
   return {
     id: record.id,
     Texte: asString(record.Texte) ?? asMultilineText(record.Texte),
+    Detail: asMultilineText(record.Detail) ?? asString(record.Detail),
     Auteur: asString(record.Auteur),
     Email: asString(record.Email),
     Mission: record.Mission,

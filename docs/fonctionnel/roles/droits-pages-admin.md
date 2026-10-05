@@ -9,7 +9,7 @@
 
 Les **Admin** peuvent ouvrir **Outils → Droits des pages** pour activer ou désactiver, rôle par rôle (interrupteurs), quels écrans apparaissent dans le menu du widget (Budget, Missions, Équipe…). Chaque interrupteur s’enregistre **immédiatement** dans Grist. C’est du **confort de menu** : ça ne verrouille pas les données.
 
-Une section **Fixés par rôle** rappelle en lecture seule les écrans dont l’accès ne se règle pas ici (Feuille de route, Mon carnet, Weekly, Revue CRA équipe, cette page elle-même).
+Une section **Fixés par rôle** rappelle en lecture seule les écrans dont l’accès ne se règle pas ici (Feuille de route, Mon carnet, Weekly Ops, Revue CRA équipe, cette page elle-même).
 
 ## Qui y accède
 
@@ -41,7 +41,7 @@ Budget · Outils · Missions · Équipe · Produits · Accueil — **un tableau 
 | Budget | BDC, PA, Prestation/CRA, PV (`Page_*`) |
 | Outils | Documentation (`Page_regles_metier`, entrée menu compte) · Récap porteurs (`Page_recap_porteurs`) |
 | Missions / Équipe / Produits / Accueil | `Page_missions`, `Page_equipe`, `Page_produits`, `Page_accueil` |
-| Fixés par rôle | Feuille de route · Mon carnet (menu compte) · Revue CRA équipe · Weekly · Droits des pages (hors `Page_*`) |
+| Fixés par rôle | Feuille de route · Mon carnet (menu compte) · Revue CRA équipe · Weekly Ops · Droits des pages (hors `Page_*`) |
 
 ### Nouvelle colonne `Page_regles_metier`
 
