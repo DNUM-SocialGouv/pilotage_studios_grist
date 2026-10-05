@@ -11,7 +11,7 @@
  * - `Acl_profil` : create only (fiche session auto si absente — pas d’update/delete).
  * - `Equipe` : create + update (drawer Admin nouvelle / modifier personne — pas de delete).
  * - `Weekly_phase` : create + update (phase kanban + suivi ops drawer —
- *   `Phase` ; si `WEEKLY_PHASE_OPS_COLUMNS_READY` : `Meteo` / `Note_ops` / `Coach`
+ *   `Phase` · `Meteo` · `Note_ops` · `Membre_equipe` Ref→Equipe
  *   — jamais `Missions` — pas de delete).
  * - `Weekly_agenda` : create + update `Traite` / `Texte` (titre) / `Detail` / `Mission`
  *   (sujets à aborder — pas de delete).

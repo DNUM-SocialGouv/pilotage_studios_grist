@@ -37,7 +37,14 @@ describe("buildWeeklyCards", () => {
     { id: 1, Mission: 10, Intervenant: 5, Libelle: "Presta A" },
   ];
   const phases: WeeklyPhaseRow[] = [
-    { id: 100, Mission: 10, Phase: "actif" },
+    {
+      id: 100,
+      Mission: 10,
+      Phase: "actif",
+      Meteo: "Calme",
+      Note_ops: "Point budget",
+      Membre_equipe: 5,
+    },
   ];
 
   it("joint phase satellite et intervenants", () => {
@@ -55,10 +62,10 @@ describe("buildWeeklyCards", () => {
     assert.equal(alpha.phase, "actif");
     assert.equal(alpha.phaseRowId, 100);
     assert.deepEqual(alpha.intervenants, ["Alice"]);
-    // Colonnes ops absentes (flag false) → pas de météo Missions.
-    assert.equal(alpha.meteo, "");
-    assert.equal(alpha.noteOps, "");
-    assert.equal(alpha.coach, "");
+    assert.equal(alpha.meteo, "Calme");
+    assert.equal(alpha.noteOps, "Point budget");
+    assert.equal(alpha.membreEquipeId, 5);
+    assert.equal(alpha.membreEquipeLabel, "Alice");
     assert.ok(beta);
     assert.equal(beta.phase, "autonomie");
     assert.equal(beta.phaseRowId, null);

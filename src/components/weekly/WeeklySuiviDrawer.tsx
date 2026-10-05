@@ -24,10 +24,14 @@ import {
   type WeeklyPhaseKey,
 } from "../../utils/weeklyPhases";
 
+export type WeeklyEquipeOption = { id: number; label: string };
+
 export type WeeklySuiviDrawerProps = {
   open: boolean;
   card: WeeklyCard | null;
   agendaLies: readonly WeeklyAgendaRow[];
+  /** Personnes `Equipe` pour le select Membre_equipe. */
+  equipeOptions: readonly WeeklyEquipeOption[];
   busy: boolean;
   onClose: () => void;
   onSaveSuivi: (input: {
@@ -36,19 +40,17 @@ export type WeeklySuiviDrawerProps = {
     phase: WeeklyPhaseKey;
     meteo: string;
     noteOps: string;
-    coach: string;
+    membreEquipeId: number | null;
   }) => Promise<void>;
   onViewSujet: (sujet: WeeklyAgendaRow) => void;
   onNouveauSujet: (missionId: number) => void;
 };
 
-const OWNER_COLUMNS_HINT =
-  "Sur la table Weekly_phase (UI Grist, Owner) : créer Meteo (liste Calme / Nuageux / Orageux), Note_ops (texte) et Coach (texte). Ne pas créer ces colonnes sur Missions. Ensuite, passer le flag WEEKLY_PHASE_OPS_COLUMNS_READY à true dans le widget.";
-
 export function WeeklySuiviDrawer({
   open,
   card,
   agendaLies,
+  equipeOptions,
   busy,
   onClose,
   onSaveSuivi,
@@ -59,12 +61,12 @@ export function WeeklySuiviDrawer({
   const titleId = useId();
   const phaseFieldId = useId();
   const meteoFieldId = useId();
-  const coachFieldId = useId();
+  const membreFieldId = useId();
   const noteFieldId = useId();
 
   const [draftPhase, setDraftPhase] = useState<WeeklyPhaseKey>("prochainement");
   const [draftMeteo, setDraftMeteo] = useState("");
-  const [draftCoach, setDraftCoach] = useState("");
+  const [draftMembreId, setDraftMembreId] = useState("");
   const [draftNote, setDraftNote] = useState("");
   const [writeError, setWriteError] = useState<string | null>(null);
 
@@ -72,7 +74,11 @@ export function WeeklySuiviDrawer({
     if (!open || card == null) return;
     setDraftPhase(card.phase);
     setDraftMeteo(card.meteo);
-    setDraftCoach(card.coach);
+    setDraftMembreId(
+      card.membreEquipeId != null && card.membreEquipeId > 0
+        ? String(card.membreEquipeId)
+        : "",
+    );
     setDraftNote(card.noteOps);
     setWriteError(null);
   }, [
@@ -81,7 +87,7 @@ export function WeeklySuiviDrawer({
     card?.missionId,
     card?.phase,
     card?.meteo,
-    card?.coach,
+    card?.membreEquipeId,
     card?.noteOps,
   ]);
 
@@ -108,6 +114,7 @@ export function WeeklySuiviDrawer({
     e.preventDefault();
     if (card == null) return;
     setWriteError(null);
+    const mid = draftMembreId ? Number(draftMembreId) : null;
     try {
       await onSaveSuivi({
         missionId: card.missionId,
@@ -115,7 +122,8 @@ export function WeeklySuiviDrawer({
         phase: draftPhase,
         meteo: draftMeteo,
         noteOps: draftNote,
-        coach: draftCoach,
+        membreEquipeId:
+          mid != null && Number.isFinite(mid) && mid > 0 ? mid : null,
       });
     } catch (err) {
       setWriteError(
@@ -125,6 +133,24 @@ export function WeeklySuiviDrawer({
   };
 
   const opsReady = WEEKLY_PHASE_OPS_COLUMNS_READY;
+
+  /** Options select : liste + valeur courante absente (id orphelin). */
+  const membreSelectOptions = (() => {
+    const list = [...equipeOptions];
+    if (
+      card?.membreEquipeId != null &&
+      card.membreEquipeId > 0 &&
+      !list.some((o) => o.id === card.membreEquipeId)
+    ) {
+      list.unshift({
+        id: card.membreEquipeId,
+        label:
+          card.membreEquipeLabel ||
+          `Personne #${card.membreEquipeId}`,
+      });
+    }
+    return list.sort((a, b) => a.label.localeCompare(b.label, "fr"));
+  })();
 
   return (
     <dialog
@@ -196,24 +222,10 @@ export function WeeklySuiviDrawer({
                     ))}
                   </Select>
 
-                  {!opsReady ? (
-                    <Alert
-                      className="fr-mt-2w"
-                      severity="info"
-                      small
-                      title="Colonnes Owner à poser"
-                      description={OWNER_COLUMNS_HINT}
-                    />
-                  ) : null}
-
                   <Select
                     className="fr-mt-2w"
                     label="Météo"
-                    hint={
-                      opsReady
-                        ? "Suivi ops Weekly (pas la météo fiche mission)."
-                        : "Lecture seule — colonne Weekly_phase.Meteo absente."
-                    }
+                    hint="Suivi ops Weekly (pas la météo fiche mission)."
                     nativeSelectProps={{
                       id: meteoFieldId,
                       value: draftMeteo,
@@ -228,31 +240,30 @@ export function WeeklySuiviDrawer({
                       </option>
                     ))}
                   </Select>
-                  <Input
+
+                  <Select
                     className="fr-mt-2w"
-                    label="Coach"
-                    hintText={
-                      opsReady
-                        ? "Prénom·nom libre (ops Weekly)."
-                        : "Lecture seule — colonne Weekly_phase.Coach absente."
-                    }
-                    nativeInputProps={{
-                      id: coachFieldId,
-                      value: draftCoach,
+                    label="Membre équipe"
+                    hint="Personne de l’annuaire Equipe (colonne Weekly_phase.Membre_equipe)."
+                    nativeSelectProps={{
+                      id: membreFieldId,
+                      value: draftMembreId,
                       disabled: busy || !opsReady,
-                      onChange: (e) => setDraftCoach(e.target.value),
-                      autoComplete: "name",
+                      onChange: (e) => setDraftMembreId(e.target.value),
                     }}
-                  />
+                  >
+                    <option value="">—</option>
+                    {membreSelectOptions.map((p) => (
+                      <option key={p.id} value={String(p.id)}>
+                        {p.label}
+                      </option>
+                    ))}
+                  </Select>
 
                   <Input
                     className="fr-mt-2w"
                     label="Note de suivi (ops)"
-                    hintText={
-                      opsReady
-                        ? "Markdown léger — reste sur Weekly, pas sur la fiche mission."
-                        : "Lecture seule — colonne Weekly_phase.Note_ops absente."
-                    }
+                    hintText="Markdown léger — reste sur Weekly, pas sur la fiche mission."
                     textArea
                     nativeTextAreaProps={{
                       id: noteFieldId,
@@ -276,7 +287,7 @@ export function WeeklySuiviDrawer({
                   <ul className="fr-btns-group fr-btns-group--right fr-btns-group--inline-reverse fr-btns-group--inline-lg fr-mt-3w">
                     <li>
                       <Button type="submit" disabled={busy}>
-                        {opsReady ? "Enregistrer" : "Enregistrer la phase"}
+                        Enregistrer
                       </Button>
                     </li>
                     <li>

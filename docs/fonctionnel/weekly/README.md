@@ -4,10 +4,10 @@
 
 Écran de **synchro** pour la team Product Ops et les coachs : un kanban des
 **missions** (titres issus de Grist) et une liste de **sujets à aborder** partagée.
-Un clic **« Ouvrir le suivi »** ouvre un **tiroir** (phase, météo, note, coach,
-échanges liés). La phase, le suivi ops et l’agenda vivent dans des **tables
-satellites Weekly** — on ne modifie **pas** les colonnes de `Missions` /
-`Missions_enfants`. Le lien CRA viendra plus tard.
+Un clic **« Ouvrir le suivi »** ouvre un **tiroir** (phase, météo, membre
+équipe, note, échanges liés). La phase, le suivi ops et l’agenda vivent dans
+des **tables satellites Weekly** — on ne modifie **pas** les colonnes de
+`Missions` / `Missions_enfants`. Le lien CRA viendra plus tard.
 
 ## Route & accès
 
@@ -36,7 +36,7 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 | `Missions_enfants` | Lecture — intervenants sur la carte |
 | `Equipe` | Lecture — noms intervenants |
 | Produits SDPC | Lecture — libellé produit |
-| **`Weekly_phase`** | Create + update — 1 ligne / mission : `Mission` (Ref) · `Phase` (`prochainement` \| `cadrage` \| `actif` \| `autonomie`) · **proposé HITL Owner** : `Meteo` · `Note_ops` · `Coach` |
+| **`Weekly_phase`** | Create + update — 1 ligne / mission : `Mission` (Ref) · `Phase` (`prochainement` \| `cadrage` \| `actif` \| `autonomie`) · `Meteo` · `Note_ops` · `Membre_equipe` (Ref → `Equipe`) |
 | **`Weekly_agenda`** | Create + update `Traite` / `Texte` (titre) / `Detail` / `Mission` — sujets : `Texte` (titre) · `Detail` (opt., drawer) · `Auteur` · `Email` · `Mission` (opt.) · `Traite` · `Cree_le` |
 | **`Weekly_coachs`** | Lecture widget (allowlist) — `E_mail` ; écriture **hors widget** (Owner / Admin UI) |
 
@@ -46,23 +46,23 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 |----|--------|
 | Titre | Lecture `Missions.Nom_de_la_mission` |
 | Phase | `Weekly_phase.Phase` (même donnée que le kanban) |
-| Météo / Coach / Note ops | `Weekly_phase.Meteo` · `Coach` · `Note_ops` — **si colonnes posées** (`WEEKLY_PHASE_OPS_COLUMNS_READY`) ; sinon stub UI + consignes Owner |
+| Météo | `Weekly_phase.Meteo` (éditable — Calme / Nuageux / Orageux) |
+| Membre équipe | `Weekly_phase.Membre_equipe` (Ref → `Equipe`, select annuaire) |
+| Note ops | `Weekly_phase.Note_ops` (markdown léger) |
 | Derniers échanges | `Weekly_agenda` filtrés par mission + Voir / Nouveau sujet |
 | Lien fiche | Navigation `/missions/:id` (secondaire) — **pas** de sync note/météo |
 
 **Hors V1** : point bloquant · actions structurées · timer · clôture.
 
-**HITL Owner — colonnes à créer** (UI Grist uniquement, **pas** d’API schéma / ACL) :
+**Colonnes ops** (confirmées MCP 2026-10-05, doc `nei9DeARs5Eo`) :
 
-| Colonne | Table | Type proposé | Choix |
-|---------|-------|--------------|-------|
-| `Meteo` | `Weekly_phase` | Choice / Text | `Calme` · `Nuageux` · `Orageux` |
-| `Note_ops` | `Weekly_phase` | Text | Markdown léger |
-| `Coach` | `Weekly_phase` | Text | Prénom·nom libre V1 |
+| Colonne (`colId`) | Table | Type | Usage |
+|-------------------|-------|------|-------|
+| `Meteo` | `Weekly_phase` | TEXT | Météo ops |
+| `Note_ops` | `Weekly_phase` | TEXT | Note markdown |
+| `Membre_equipe` | `Weekly_phase` | INTEGER (Ref → `Equipe`) | Membre équipe (libellé UI « Membre équipe ») |
 
-**Ne pas** créer ces colonnes sur `Missions`. Alternative si Owner refuse d’étendre `Weekly_phase` : table `Weekly_suivi` (à proposer, pas créée).
-
-Après pose : passer `WEEKLY_PHASE_OPS_COLUMNS_READY = true` dans `src/utils/weeklyPhases.ts`.
+Flag `WEEKLY_PHASE_OPS_COLUMNS_READY = true`. **Aucune** colonne / écriture sur `Missions`. Coach texte libre **annulé** (remplacé par `Membre_equipe`).
 
 ### Agenda (sujets)
 

@@ -23,12 +23,11 @@ export const WEEKLY_PHASE_KEYS = [
 export type WeeklyPhaseKey = (typeof WEEKLY_PHASE_KEYS)[number];
 
 /**
- * Colonnes ops `Weekly_phase.Meteo` · `Note_ops` · `Coach` — **absentes** au
- * 2026-10-05 (schéma MCP : uniquement `Mission` + `Phase`).
- * Owner UI Grist uniquement (pas d’API schéma / ACL). Passer à `true` après pose.
- * Tant que `false` : drawer en stub (pas d’écriture vers `Missions`).
+ * Colonnes ops `Weekly_phase.Meteo` · `Note_ops` · `Membre_equipe` — confirmées
+ * MCP 2026-10-05 (doc `nei9DeARs5Eo`). Écriture drawer active.
+ * Pas d’écriture vers `Missions`.
  */
-export const WEEKLY_PHASE_OPS_COLUMNS_READY = false;
+export const WEEKLY_PHASE_OPS_COLUMNS_READY = true;
 
 /** Choix météo ops V1 (satellite `Weekly_phase.Meteo` — pas `Missions.Meteo`). */
 export const WEEKLY_METEO_CHOICES = ["Calme", "Nuageux", "Orageux"] as const;
@@ -100,7 +99,8 @@ export type WeeklyPhaseStored = {
   phase: WeeklyPhaseKey;
   meteo: string;
   noteOps: string;
-  coach: string;
+  /** Id `Equipe` via `Weekly_phase.Membre_equipe` (0 / vide → null). */
+  membreEquipeId: number | null;
 };
 
 export function phaseRowsToMap(
@@ -114,12 +114,19 @@ export function phaseRowsToMap(
     if (!isWeeklyPhaseKey(key)) continue;
     const existing = map.get(missionId);
     if (existing != null && existing.phaseId <= row.id) continue;
+    const membreRaw = extractGristReferenceId(row.Membre_equipe);
+    const membreEquipeId =
+      WEEKLY_PHASE_OPS_COLUMNS_READY &&
+      membreRaw != null &&
+      membreRaw > 0
+        ? membreRaw
+        : null;
     map.set(missionId, {
       phaseId: row.id,
       phase: key,
       meteo: WEEKLY_PHASE_OPS_COLUMNS_READY ? (row.Meteo ?? "").trim() : "",
       noteOps: WEEKLY_PHASE_OPS_COLUMNS_READY ? (row.Note_ops ?? "").trim() : "",
-      coach: WEEKLY_PHASE_OPS_COLUMNS_READY ? (row.Coach ?? "").trim() : "",
+      membreEquipeId,
     });
   }
   return map;
@@ -135,10 +142,13 @@ export type WeeklyCard = {
   departements: string[];
   produitLabel: string;
   intervenants: string[];
-  /** Météo ops satellite (`Weekly_phase.Meteo`) — vide si colonnes non posées. */
+  /** Météo ops satellite (`Weekly_phase.Meteo`). */
   meteo: string;
   noteOps: string;
-  coach: string;
+  /** Ref `Equipe` (`Weekly_phase.Membre_equipe`). */
+  membreEquipeId: number | null;
+  /** Libellé affiché (Prenom_Nom) si résolu. */
+  membreEquipeLabel: string;
 };
 
 export function buildWeeklyCards(input: {
@@ -191,7 +201,11 @@ export function buildWeeklyCards(input: {
         // Suivi ops = satellite Weekly uniquement (pas `Missions.Meteo`).
         meteo: stored?.meteo ?? "",
         noteOps: stored?.noteOps ?? "",
-        coach: stored?.coach ?? "",
+        membreEquipeId: stored?.membreEquipeId ?? null,
+        membreEquipeLabel:
+          stored?.membreEquipeId != null
+            ? (equipeById.get(stored.membreEquipeId) ?? "")
+            : "",
       } satisfies WeeklyCard;
     })
     .sort((a, b) => a.titre.localeCompare(b.titre, "fr"));

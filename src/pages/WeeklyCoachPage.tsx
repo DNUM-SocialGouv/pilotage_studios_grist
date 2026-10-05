@@ -788,6 +788,18 @@ export function WeeklyCoachPage() {
     [cards],
   );
 
+  const equipeOptions = useMemo(
+    () =>
+      data.intervenants
+        .map((p) => ({
+          id: p.id,
+          label: (p.Prenom_Nom ?? "").trim() || `Personne #${p.id}`,
+        }))
+        .filter((p) => p.label.length > 0)
+        .sort((a, b) => a.label.localeCompare(b.label, "fr")),
+    [data.intervenants],
+  );
+
   const suiviCard = useMemo(
     () =>
       suiviMissionId != null
@@ -823,7 +835,7 @@ export function WeeklyCoachPage() {
     phase: WeeklyPhaseKey;
     meteo: string;
     noteOps: string;
-    coach: string;
+    membreEquipeId: number | null;
   }) => {
     const existingPhaseId =
       input.phaseRowId ??
@@ -838,7 +850,7 @@ export function WeeklyCoachPage() {
         phase: input.phase,
         meteo: input.meteo,
         noteOps: input.noteOps,
-        coach: input.coach,
+        membreEquipeId: input.membreEquipeId,
       });
       await data.reload();
       closeSuivi();
@@ -1155,6 +1167,7 @@ export function WeeklyCoachPage() {
             open={suiviOpen}
             card={suiviCard}
             agendaLies={agendaLiesSuivi}
+            equipeOptions={equipeOptions}
             busy={suiviBusy || data.isReloading}
             onClose={closeSuivi}
             onSaveSuivi={onSaveSuivi}

@@ -66,7 +66,8 @@ export async function upsertWeeklyPhase(input: {
 }
 
 /**
- * Upsert phase + champs ops satellite (`Meteo` / `Note_ops` / `Coach`).
+ * Upsert phase + champs ops satellite
+ * (`Meteo` / `Note_ops` / `Membre_equipe` Ref → Equipe).
  * Refuse d’écrire les champs ops si `WEEKLY_PHASE_OPS_COLUMNS_READY` est faux
  * (évite une écriture inventée vers `Missions` ou des colonnes absentes).
  */
@@ -76,7 +77,8 @@ export async function upsertWeeklyPhaseSuivi(input: {
   phase: WeeklyPhaseKey;
   meteo: string;
   noteOps: string;
-  coach: string;
+  /** Id `Equipe` ; null détache. */
+  membreEquipeId: number | null;
 }): Promise<number> {
   assertWritableTableId(WEEKLY_PHASE_TABLE_ID);
   assertWritableUpdateTableId(WEEKLY_PHASE_TABLE_ID);
@@ -93,7 +95,10 @@ export async function upsertWeeklyPhaseSuivi(input: {
     Phase: input.phase,
     Meteo: input.meteo.trim(),
     Note_ops: input.noteOps.trim(),
-    Coach: input.coach.trim(),
+    Membre_equipe:
+      input.membreEquipeId != null && input.membreEquipeId > 0
+        ? input.membreEquipeId
+        : null,
   };
 
   if (input.phaseRowId != null && input.phaseRowId > 0) {

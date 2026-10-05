@@ -103,14 +103,14 @@ export interface WeeklyPhaseRow {
   Mission?: unknown;
   Phase?: string;
   /**
-   * Météo ops Weekly (colonne proposée `Weekly_phase.Meteo` — HITL Owner).
+   * Météo ops Weekly (`Weekly_phase.Meteo` — confirmée MCP).
    * Pas `Missions.Meteo`.
    */
   Meteo?: string;
-  /** Note de suivi ops (colonne proposée `Weekly_phase.Note_ops`). */
+  /** Note de suivi ops (`Weekly_phase.Note_ops`). */
   Note_ops?: string;
-  /** Coach ops texte libre V1 (colonne proposée `Weekly_phase.Coach`). */
-  Coach?: string;
+  /** Membre équipe ops — Ref → `Equipe` (`Weekly_phase.Membre_equipe`). */
+  Membre_equipe?: unknown;
 }
 
 /** Sujet agenda Weekly (table satellite `Weekly_agenda`). */
