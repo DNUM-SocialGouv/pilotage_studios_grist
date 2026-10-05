@@ -44,6 +44,7 @@ import {
   type WeeklyCard,
   type WeeklyPhaseKey,
 } from "../utils/weeklyPhases";
+import { firstNameFromDisplayName } from "../utils/welcomeHomeByRole";
 import type { WeeklyAgendaRow } from "../types";
 
 type AgendaDialogMode = "view" | "edit" | "create";
@@ -557,7 +558,7 @@ function WeeklyCardView({
   const suppressClickRef = useRef(false);
   const meteoTone = card.meteo ? weeklyMeteoTone(card.meteo) : null;
   const meteoLabel = card.meteo ? weeklyMeteoLabel(card.meteo) : "";
-  const noteSnip = card.noteOps.trim();
+  const hasNote = Boolean(card.noteOps.trim());
   const metaParts = [
     card.produitLabel,
     ...card.departements,
@@ -566,11 +567,25 @@ function WeeklyCardView({
     card.membreEquipeId != null && card.membreEquipeId > 0
       ? card.membreEquipeId
       : null;
+  const membrePrenom =
+    membreId != null
+      ? firstNameFromDisplayName(card.membreEquipeLabel) ||
+        card.membreEquipeLabel ||
+        `Personne #${membreId}`
+      : null;
 
   const openSuivi = () => {
     if (busy) return;
     onOpenSuivi(card.missionId);
   };
+
+  const ariaLabel = [
+    card.titre,
+    hasNote ? "note de suivi" : null,
+    "ouvrir le suivi",
+  ]
+    .filter(Boolean)
+    .join(" — ");
 
   return (
     <article
@@ -597,7 +612,7 @@ function WeeklyCardView({
       }}
       role="button"
       tabIndex={busy ? -1 : 0}
-      aria-label={`${card.titre} — ouvrir le suivi`}
+      aria-label={ariaLabel}
       aria-disabled={busy || undefined}
     >
       {meteoTone ? (
@@ -630,20 +645,25 @@ function WeeklyCardView({
         </p>
       ) : null}
 
-      {membreId != null ? (
+      {membreId != null && membrePrenom != null ? (
         <p className="weekly-card__member">
           <EquipeAvatar
             avatar={card.membreEquipeAvatar}
             memberId={membreId}
             size="sm"
           />
-          <span>
-            {card.membreEquipeLabel || `Personne #${membreId}`}
-          </span>
+          <span>{membrePrenom}</span>
         </p>
       ) : null}
 
-      {noteSnip ? <p className="weekly-card__snip">{noteSnip}</p> : null}
+      {hasNote ? (
+        <p className="weekly-card__badges" aria-hidden="true">
+          <span
+            className="fr-icon-align-left fr-icon--sm weekly-card__note-icon"
+            title="Note de suivi"
+          />
+        </p>
+      ) : null}
     </article>
   );
 }

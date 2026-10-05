@@ -2126,18 +2126,19 @@ button.fr-link:disabled {
   color: var(--text-default-grey);
 }
 
-.weekly-card__member .equipe-avatar {
-  border-radius: 50%;
+/* Avatar carré = même rendu que le menu compte (`EquipeAvatar` / 0.25rem). */
+
+.weekly-card__badges {
+  margin: 0.15rem 0 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-mention-grey);
 }
 
-.weekly-card__snip {
-  margin: 0.1rem 0 0;
-  font-size: 0.8rem;
-  color: var(--text-mention-grey);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.weekly-card__note-icon {
+  display: inline-flex;
+  line-height: 1;
 }
 
 /* Weekly drawer — choix météo (3 boutons horizontaux, tokens DSFR). */

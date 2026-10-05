@@ -47,8 +47,8 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 | Carte entière (clic / clavier) | Ouvre le drawer suivi — titre texte (pas de lien) |
 | Titre | Lecture `Missions.Nom_de_la_mission` |
 | Badge météo (coin) | `Weekly_phase.Meteo` — pastille tonée + icône (absent si vide) |
-| Membre + avatar | `Weekly_phase.Membre_equipe` → `Equipe` (`EquipeAvatar`) — **absent** si non assigné (pas de placeholder) |
-| Amorce note | `Weekly_phase.Note_ops` (2 lignes max, si présente) |
+| Membre + avatar | `Weekly_phase.Membre_equipe` → avatar carré (`EquipeAvatar`) + **prénom seul** — **absent** si non assigné |
+| Indicateur note | Icône (style Trello) si `Weekly_phase.Note_ops` non vide — **pas** le texte sur la carte |
 | Phase | **Colonne** kanban uniquement — **pas** de select Phase sur la carte |
 
 ### Drawer suivi mission (V1)
