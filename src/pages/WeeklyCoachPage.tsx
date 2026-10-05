@@ -223,7 +223,10 @@ function AgendaSujetDialog({
   const [draftDetail, setDraftDetail] = useState("");
   const [draftMissionId, setDraftMissionId] = useState("");
   const [draftAuteur, setDraftAuteur] = useState("");
+  /** Erreur de validation champ (titre vide). */
   const [localError, setLocalError] = useState<string | null>(null);
+  /** Erreur d’écriture Grist — Alert dans le tiroir (pas derrière). */
+  const [writeError, setWriteError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -240,6 +243,7 @@ function AgendaSujetDialog({
       setDraftAuteur("");
     }
     setLocalError(null);
+    setWriteError(null);
   }, [
     open,
     mode,
@@ -286,26 +290,38 @@ function AgendaSujetDialog({
     const nextTitre = draftTitre.trim();
     if (!nextTitre) {
       setLocalError("Saisissez un titre.");
+      setWriteError(null);
       document.getElementById(titreFieldId)?.focus();
       return;
     }
     setLocalError(null);
-    if (mode === "create") {
-      await onCreate({
+    setWriteError(null);
+    try {
+      if (mode === "create") {
+        await onCreate({
+          texte: nextTitre,
+          detail: draftDetail,
+          missionId: parsedMissionId(),
+          auteur: draftAuteur.trim() || defaultAuteur || "Anonyme",
+        });
+        return;
+      }
+      if (sujet == null) return;
+      await onSave({
+        id: sujet.id,
         texte: nextTitre,
         detail: draftDetail,
         missionId: parsedMissionId(),
-        auteur: draftAuteur.trim() || defaultAuteur || "Anonyme",
       });
-      return;
+    } catch (err) {
+      setWriteError(
+        err instanceof Error
+          ? err.message
+          : mode === "create"
+            ? "Impossible d’ajouter le sujet."
+            : "Impossible d’enregistrer le sujet.",
+      );
     }
-    if (sujet == null) return;
-    await onSave({
-      id: sujet.id,
-      texte: nextTitre,
-      detail: draftDetail,
-      missionId: parsedMissionId(),
-    });
   };
 
   const dialogTitle =
@@ -457,6 +473,15 @@ function AgendaSujetDialog({
                         placeholder: defaultAuteur || undefined,
                         autoComplete: "given-name",
                       }}
+                    />
+                  ) : null}
+                  {writeError ? (
+                    <Alert
+                      className="fr-mt-2w"
+                      severity="error"
+                      small
+                      title="Enregistrement impossible"
+                      description={writeError}
                     />
                   ) : null}
                 </form>
@@ -834,9 +859,10 @@ export function WeeklyCoachPage() {
       closeAgendaDialog();
       await data.reload();
     } catch (err) {
-      setAgendaError(
-        err instanceof Error ? err.message : "Impossible d’enregistrer le sujet.",
-      );
+      // Remonter au drawer (Alert visible) — pas d’Alert page derrière le tiroir.
+      throw err instanceof Error
+        ? err
+        : new Error("Impossible d’enregistrer le sujet.");
     } finally {
       setAgendaBusy(false);
     }
@@ -861,9 +887,10 @@ export function WeeklyCoachPage() {
       closeAgendaDialog();
       await data.reload();
     } catch (err) {
-      setAgendaError(
-        err instanceof Error ? err.message : "Impossible d’ajouter le sujet.",
-      );
+      // Remonter au drawer (Alert visible) — pas d’Alert page derrière le tiroir.
+      throw err instanceof Error
+        ? err
+        : new Error("Impossible d’ajouter le sujet.");
     } finally {
       setAgendaBusy(false);
     }
