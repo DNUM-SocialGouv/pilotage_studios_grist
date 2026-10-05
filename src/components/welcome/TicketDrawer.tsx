@@ -8,6 +8,8 @@ import { useAclProfil } from "../../AclProfilContext";
 import { isAdminRole } from "../../utils/droitsPagesThemes";
 import {
   badgeClassForFeedbackType,
+  badgeClassForKanbanColumn,
+  badgeClassForKanbanNature,
   isKanbanColumnId,
   KANBAN_ALL_COLUMNS,
   KANBAN_COLUMN_LABEL,
@@ -221,18 +223,18 @@ export function TicketDrawer({
                       <Badge
                         small
                         as="span"
-                        className={
-                          ticket.nature === "Feedback"
-                            ? "fr-badge--purple-glycine"
-                            : "fr-badge--blue-cumulus"
-                        }
+                        className={badgeClassForKanbanNature(ticket.nature)}
                       >
                         {ticket.nature}
                       </Badge>
                       {/* Évite Feedback + Feedback quand colonne = nature. */}
                       {!isAdmin &&
                       !(ticket.nature === "Feedback" && displayColumn === "feedback") ? (
-                        <Badge small as="span">
+                        <Badge
+                          small
+                          as="span"
+                          className={badgeClassForKanbanColumn(displayColumn)}
+                        >
                           {KANBAN_COLUMN_LABEL[displayColumn]}
                         </Badge>
                       ) : null}

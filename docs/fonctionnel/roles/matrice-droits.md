@@ -44,7 +44,7 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 
 | Écran / parcours | Route | Admin | Resp. | Freelance | Invité | Statut | Notes |
 |------------------|-------|-------|-------|-----------|--------|--------|-------|
-| Accueil | `/` | oui | oui | oui | oui | **Appliqué** (widget + `Droits_pages`) | `Page_accueil` inchangé ; **CTA par rôle** (N/A `Page_*` — variante sur `Role` + mêmes gardes que la nav) ; kanban **déplacé** vers `/feuille-de-route` ; **recherche** Admin/Resp./Freelance (N/A `Page_*`) — pas Invité |
+| Accueil | `/` | oui | oui | oui | oui | **Appliqué** (widget + `Droits_pages`) | `Page_accueil` inchangé ; **CTA par rôle** (N/A `Page_*`) ; **recherche** Admin/Resp./Freelance (N/A `Page_*`) — pas Invité ; **Vos retours** tous rôles y compris Invité si e-mail session (N/A `Page_*` — variante sur `/`) ; kanban complet sur `/feuille-de-route` |
 | Recherche d’accueil (suggestions) | `/` (inline) | **oui*** | **oui*** | **oui*** | **non** | **Appliqué** UX | *Si au moins une cible `Page_produits` / `Page_missions` / `Page_equipe` ouverte ; navigation fiches existantes ; **pas** de route `/recherche` ni nouvelle `Page_*` |
 | **Feuille de route** | `/feuille-de-route` | oui | oui | oui | oui | **Appliqué** UX (hors `Page_*`) | **Fixé ouvert** — menu compte + CTA Admin accueil ; rappel lecture seule Admin « Fixés par rôle » ; pas de nouvelle colonne `Page_*` |
 | Plans d’activité | `/pa` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Couche 5 ; données encore ouvertes (couche 6 plus tard) |
@@ -108,6 +108,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-10-05 | Accueil `/` : bloc **Vos retours** (Feedback auteur = e-mail session, 5 max, badges réponse / colonne, lu = localStorage) ; composition **Option 3** (recherche + split raccourcis \| retours) ; **N/A `Page_*`** (variante sur `Page_accueil`) ; Invité inclus si e-mail OK | 5 | kanban `vos-retours-accueil` |
 | 2026-10-05 | Édition cadre BDC (fiche `/bdc/:id`) : bouton Modifier + drawer Admin/Owner ; update allowlisté `Nom_BdC` · `Statut` · `Montant_TTC` · `Financeur` · `BdC_Chorus` · `PA` · `Equipe2` · `Plateforme` · `SOFIANE` ; pas create/delete ni Dépenses/`Devis` ; **N/A `Page_*`** (action dans écran déjà listé) | 5, 6 (doc) | [#108](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/108) / kanban `editer-bdc` |
 | 2026-10-05 | Weekly Ops : colonne `Detail` confirmée (MCP) → flag `WEEKLY_AGENDA_DETAIL_COLUMN_READY=true` ; lecture/écriture + rendu markdown drawer ; **N/A `Page_*`** | 5, 6 (doc) | #105 suite |
 | 2026-10-05 | Weekly Ops sujets : `Texte` = titre ; update `Mission` en édition ; UI détail → colonne `Detail` (**HITL Owner** création colonne) ; allowlist create/update `Texte` / `Detail` / `Mission` / `Traite` ; **N/A `Page_*`** | 5, 6 (doc) | #105 |
