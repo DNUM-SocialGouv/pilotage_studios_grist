@@ -5,6 +5,8 @@ description: Revue de code avant merge pour DNUM-SocialGouv/pilotage_studios_gri
 
 # Revue — pilotage_studios_grist
 
+**Seul skill de revue autorisé** pour ce dépôt — ne pas utiliser le skill user générique `~/.cursor/skills/code-review`.
+
 Checklist : [../pilotage-grist-pr/CHECKLIST.md](../pilotage-grist-pr/CHECKLIST.md).
 
 Points critiques :
