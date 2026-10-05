@@ -3,12 +3,13 @@
  * `Weekly_agenda`. Aucune écriture `Missions`.
  */
 
-import { useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { Link } from "react-router-dom";
+import { DsfrSelectRichMulti } from "../dsfr/DsfrSelectRichMulti";
 import type { WeeklyAgendaRow } from "../../types";
 import {
   formatWeeklyAgendaCreatedAt,
@@ -62,7 +63,6 @@ export function WeeklySuiviDrawer({
   const titleId = useId();
   const phaseFieldId = useId();
   const meteoFieldId = useId();
-  const membreFieldId = useId();
   const noteFieldId = useId();
 
   const [draftPhase, setDraftPhase] = useState<WeeklyPhaseKey>("prochainement");
@@ -135,8 +135,8 @@ export function WeeklySuiviDrawer({
 
   const opsReady = WEEKLY_PHASE_OPS_COLUMNS_READY;
 
-  /** Options select : liste + valeur courante absente (id orphelin). */
-  const membreSelectOptions = (() => {
+  /** Options select searchable : liste + valeur courante absente (id orphelin). */
+  const membreSelectOptions = useMemo(() => {
     const list = [...equipeOptions];
     if (
       card?.membreEquipeId != null &&
@@ -150,8 +150,11 @@ export function WeeklySuiviDrawer({
           `Personne #${card.membreEquipeId}`,
       });
     }
-    return list.sort((a, b) => a.label.localeCompare(b.label, "fr"));
-  })();
+    return list
+      .slice()
+      .sort((a, b) => a.label.localeCompare(b.label, "fr"))
+      .map((p) => ({ value: String(p.id), label: p.label }));
+  }, [equipeOptions, card?.membreEquipeId, card?.membreEquipeLabel]);
 
   return (
     <dialog
@@ -176,9 +179,6 @@ export function WeeklySuiviDrawer({
                   <h2 id={titleId} className="fr-h5 fr-mb-0">
                     Suivi · {card?.titre ?? "Mission"}
                   </h2>
-                  <p className="fr-hint-text fr-mb-0 fr-mt-1v">
-                    Données éditables = tables Weekly (pas la fiche mission)
-                  </p>
                 </div>
                 <div className="fr-col-auto">
                   <button
@@ -205,7 +205,6 @@ export function WeeklySuiviDrawer({
 
                   <Select
                     label="Phase"
-                    hint="Même donnée que le kanban (Weekly_phase)."
                     nativeSelectProps={{
                       id: phaseFieldId,
                       value: draftPhase,
@@ -230,9 +229,6 @@ export function WeeklySuiviDrawer({
                       style={{ marginBottom: "0.5rem" }}
                     >
                       Météo
-                      <span className="fr-hint-text">
-                        Suivi ops Weekly (pas la météo fiche mission).
-                      </span>
                     </p>
                     <div
                       className="weekly-meteo-group"
@@ -264,29 +260,29 @@ export function WeeklySuiviDrawer({
                     </div>
                   </div>
 
-                  <Select
-                    className="fr-mt-2w"
-                    label="Membre équipe"
-                    hint="Personne de l’annuaire Equipe (colonne Weekly_phase.Membre_equipe)."
-                    nativeSelectProps={{
-                      id: membreFieldId,
-                      value: draftMembreId,
-                      disabled: busy || !opsReady,
-                      onChange: (e) => setDraftMembreId(e.target.value),
-                    }}
-                  >
-                    <option value="">—</option>
-                    {membreSelectOptions.map((p) => (
-                      <option key={p.id} value={String(p.id)}>
-                        {p.label}
-                      </option>
-                    ))}
-                  </Select>
+                  <div className="fr-mt-2w">
+                    <DsfrSelectRichMulti
+                      label="Membre équipe"
+                      placeholderWhenEmpty="Rechercher une personne…"
+                      options={membreSelectOptions}
+                      selectedValues={draftMembreId ? [draftMembreId] : []}
+                      onSelectedValuesChange={(values) =>
+                        setDraftMembreId(values[0] ?? "")
+                      }
+                      searchable
+                      searchLabel="Rechercher"
+                      searchPlaceholder="Nom…"
+                      showBulkActions={false}
+                      maxSelections={1}
+                      pluralEntityLabel="personnes"
+                      disabled={busy || !opsReady}
+                    />
+                  </div>
 
                   <Input
                     className="fr-mt-2w"
                     label="Note de suivi (ops)"
-                    hintText="Markdown léger — reste sur Weekly, pas sur la fiche mission."
+                    hintText="Markdown"
                     textArea
                     nativeTextAreaProps={{
                       id: noteFieldId,
@@ -355,7 +351,7 @@ export function WeeklySuiviDrawer({
                   ) : null}
                 </div>
                 <p className="fr-hint-text fr-mb-2w">
-                  Sujets Weekly liés à cette mission (table agenda).
+                  Sujets Weekly liés à cette mission.
                 </p>
                 {agendaLies.length === 0 ? (
                   <p
