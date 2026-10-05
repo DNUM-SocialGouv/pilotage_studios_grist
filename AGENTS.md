@@ -97,7 +97,7 @@ Visibilité users : accueil par rôle sur `/` ; feuille de route via menu compte
 | Missions | `MissionsListView`, `MissionsDetailView`, `useMissionsData`, `MissionFormDrawer`, `MissionEnfantDrawer`, `MissionContexteNarrativeEditor`, `craByMission.ts` |
 | Équipe | `EquipeListView`, `EquipeDetailView`, `EquipeLayout`, `useEquipeData`, `useEquipeMemberMissionsData`, `EquipeFicheMissionsSection`, `EquipeFormDrawer`, `equipeList.ts`, `equipeMemberPrestations.ts`, `equipeFormFields.ts`, `equipeGristWrite.ts` |
 | CRA | `CraListView`, `CraDeclarerPage`, `CraRevueEquipePage`, `CraRecapPorteursPage`, `craList.ts`, `craDeclarer.ts`, `craRevueEquipe.ts`, `craExport.ts`, `realiseGristWrite.ts` |
-| Feedback | `FeedbackWidget`, `createKanbanFeedback`, `feedbackEquipe`, `writeTableAllowlist` |
+| Feedback | `FeedbackWidget`, `createKanbanFeedback`, `feedbackPages` (auto Theme/Page), `writeTableAllowlist` ; conversation : `feedbackEquipe` |
 
 ---
 

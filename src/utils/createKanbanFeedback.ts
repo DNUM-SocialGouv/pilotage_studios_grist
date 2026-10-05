@@ -1,6 +1,6 @@
 /**
  * Création d’une ligne feedback dans `Kanban` via plugin API (`getTable().create`).
- * Champs alignés sur la carte kanban : Titre · Type · Resume · (Message détail) · Theme←Page.
+ * Champs alignés sur la carte kanban : Titre (= Resume) · Message · Theme←Page (auto).
  */
 
 import {
@@ -14,11 +14,9 @@ export type CreateKanbanFeedbackInput = {
   userName: string;
   userEmail: string;
   type: FeedbackType;
-  /** Titre carte (court). */
+  /** Titre carte — écrit aussi dans Resume (même texte). */
   titre: string;
-  /** Phrase valeur / why — corps de carte + drawer. */
-  resume: string;
-  /** Détail optionnel (drawer) ; si vide = même contenu que Resume. */
+  /** Détail optionnel (drawer) ; si vide = copie du titre. */
   message?: string;
   page: string;
   niveau: string;
@@ -47,19 +45,18 @@ export type KanbanFeedbackFields = {
   Statut: "Nouveau";
 };
 
-const TITRE_MAX = 80;
-const RESUME_MAX = 200;
+/** Plafond unique Titre / Resume (intention claire sans champ « phrase » séparé). */
+export const FEEDBACK_TITRE_MAX = 140;
 
 export function clampTitre(titre: string): string {
   const t = titre.trim().replace(/\s+/g, " ");
-  if (t.length <= TITRE_MAX) return t;
-  return `${t.slice(0, TITRE_MAX - 1).trimEnd()}…`;
+  if (t.length <= FEEDBACK_TITRE_MAX) return t;
+  return `${t.slice(0, FEEDBACK_TITRE_MAX - 1).trimEnd()}…`;
 }
 
+/** @deprecated Alias de `clampTitre` — Resume = Titre. */
 export function clampResume(resume: string): string {
-  const t = resume.trim().replace(/\s+/g, " ");
-  if (t.length <= RESUME_MAX) return t;
-  return `${t.slice(0, RESUME_MAX - 1).trimEnd()}…`;
+  return clampTitre(resume);
 }
 
 /** Construit le payload champs (pur — testable hors Grist). */
@@ -70,9 +67,9 @@ export function buildKanbanFeedbackFields(
   if (!titre) {
     throw new Error("Titre obligatoire");
   }
-  const resume = clampResume(input.resume);
-  if (!resume) {
-    throw new Error("Résumé obligatoire");
+  const userEmail = input.userEmail.trim();
+  if (!userEmail) {
+    throw new Error("E-mail de session obligatoire");
   }
   const userName = input.userName.trim();
   if (!userName) {
@@ -80,7 +77,7 @@ export function buildKanbanFeedbackFields(
   }
 
   const detail = (input.message ?? "").trim();
-  const message = detail || resume;
+  const message = detail || titre;
 
   const href = input.href ?? "";
   const userAgent = input.userAgent ?? "";
@@ -96,11 +93,11 @@ export function buildKanbanFeedbackFields(
     Nature: "Feedback",
     Colonne_kanban: "feedback",
     Titre: titre,
-    Resume: resume,
+    Resume: titre,
     Theme: page,
     Date: (input.now ?? new Date()).toISOString(),
     Auteur: userName,
-    Email: input.userEmail.trim(),
+    Email: userEmail,
     Type: input.type,
     Page: page,
     Message: message,

@@ -53,8 +53,7 @@
   z-index: 1001;
   width: min(400px, calc(100vw - 32px));
   max-height: calc(100vh - 132px);
-  /* visible : la liste du select riche (absolute) ne doit pas être clipée */
-  overflow: visible;
+  overflow: auto;
   background: var(--background-default-grey);
   border: 1px solid var(--border-default-grey);
   border-radius: 8px;
