@@ -2031,7 +2031,26 @@ button.fr-link:disabled {
   width: min(48rem, 94vw);
 }
 
-/* Weekly kanban — titre carte = ouverture drawer suivi. */
+/* Weekly kanban — carte mission variante A (badge météo coin + avatar). */
+.weekly-card {
+  position: relative;
+  background: var(--background-default-grey);
+  box-shadow: inset 0 0 0 1px var(--border-default-grey);
+  padding: 0.625rem 0.75rem;
+  margin-bottom: 0.625rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.weekly-card__title {
+  margin: 0 1.75rem 0 0;
+  font-size: 0.9375rem;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
 .weekly-card-title-btn {
   display: inline;
   margin: 0;
@@ -2057,6 +2076,110 @@ button.fr-link:disabled {
 }
 
 .weekly-card-title-btn:disabled {
+  color: var(--text-disabled-grey);
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.weekly-card__meteo-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--border-default-grey);
+  background: var(--background-alt-grey);
+  line-height: 1;
+}
+
+.weekly-card__meteo-badge--vert {
+  background: var(--background-contrast-success);
+  border-color: var(--border-plain-success);
+  color: var(--text-default-success);
+}
+
+.weekly-card__meteo-badge--surveiller {
+  background: var(--background-contrast-warning);
+  border-color: var(--border-plain-warning);
+  color: var(--text-default-warning);
+}
+
+.weekly-card__meteo-badge--difficulte {
+  background: var(--background-contrast-error);
+  border-color: var(--border-plain-error);
+  color: var(--text-default-error);
+}
+
+.weekly-card__meta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-mention-grey);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.35rem;
+  align-items: center;
+}
+
+.weekly-card__meta-sep {
+  margin: 0 0.15rem;
+}
+
+.weekly-card__member {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--text-default-grey);
+}
+
+.weekly-card__member--empty {
+  color: var(--text-mention-grey);
+}
+
+.weekly-card__member .equipe-avatar {
+  border-radius: 50%;
+}
+
+.weekly-card__snip {
+  margin: 0.1rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-mention-grey);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.weekly-card__suivi-link {
+  display: inline-block;
+  margin-top: 0.15rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--text-action-high-blue-france);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+  text-align: left;
+}
+
+.weekly-card__suivi-link:hover:not(:disabled) {
+  color: var(--text-active-blue-france);
+}
+
+.weekly-card__suivi-link:focus-visible {
+  outline: 2px solid var(--border-plain-blue-france);
+  outline-offset: 2px;
+}
+
+.weekly-card__suivi-link:disabled {
   color: var(--text-disabled-grey);
   cursor: not-allowed;
   text-decoration: none;

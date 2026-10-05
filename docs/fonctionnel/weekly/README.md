@@ -40,12 +40,22 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 | **`Weekly_agenda`** | Create + update `Traite` / `Texte` (titre) / `Detail` / `Mission` — sujets : `Texte` (titre) · `Detail` (opt., drawer) · `Auteur` · `Email` · `Mission` (opt.) · `Traite` · `Cree_le` |
 | **`Weekly_coachs`** | Lecture widget (allowlist) — `E_mail` ; écriture **hors widget** (Owner / Admin UI) |
 
+### Cartes kanban (variante A)
+
+| UI | Source |
+|----|--------|
+| Titre (bouton) | Lecture `Missions.Nom_de_la_mission` → ouvre le drawer suivi |
+| Badge météo (coin) | `Weekly_phase.Meteo` — pastille tonée + icône (absent si vide) |
+| Membre + avatar | `Weekly_phase.Membre_equipe` → `Equipe` (`EquipeAvatar` / seed `Avatar`) |
+| Amorce note | `Weekly_phase.Note_ops` (2 lignes max, si présente) |
+| Phase | **Colonne** kanban uniquement — **pas** de select Phase sur la carte |
+
 ### Drawer suivi mission (V1)
 
 | UI | Source |
 |----|--------|
 | Titre | Lecture `Missions.Nom_de_la_mission` |
-| Phase | `Weekly_phase.Phase` (même donnée que le kanban) |
+| Phase | Badge lecture = colonne kanban (`Weekly_phase.Phase`) — **pas** de select |
 | Météo | `Weekly_phase.Meteo` — 3 boutons : **Au vert** · **À surveiller** · **En difficulté** (icônes soleil / nuage / orage) |
 | Membre équipe | `Weekly_phase.Membre_equipe` (Ref → `Equipe`, select annuaire) |
 | Note ops | `Weekly_phase.Note_ops` (markdown léger) |
@@ -88,9 +98,9 @@ Flag `WEEKLY_PHASE_OPS_COLUMNS_READY = true`. **Aucune** colonne / écriture sur
 
 - 1 carte = 1 mission.
 - Sans ligne `Weekly_phase` : colonne **Prochainement**, sauf `Statut === "Terminé"` → **Terminé** (heuristique lecture seule).
-- Changement de phase (menu accessible ou glisser-déposer) → upsert `Weekly_phase` uniquement.
-- CTA **« Ouvrir le suivi »** → drawer suivi (SM) ; lien fiche **dans** le drawer (secondaire).
-- Icône météo carte : `Weekly_phase.Meteo` seulement (jamais `Missions.Meteo` pour le suivi ops).
+- Changement de phase = **glisser-déposer** vers une autre colonne → upsert `Weekly_phase` uniquement (pas de select Phase carte/drawer).
+- Clic **titre** (ou lien « Ouvrir le suivi ») → drawer suivi (SM) ; lien fiche **dans** le drawer (secondaire).
+- Badge météo carte : `Weekly_phase.Meteo` seulement (jamais `Missions.Meteo` pour le suivi ops).
 
 ## Hors scope (ce bolt)
 

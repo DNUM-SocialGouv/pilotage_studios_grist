@@ -151,6 +151,8 @@ export interface Intervenant {
   Equipe?: string;
   /** Porteur / ESN (`Equipe.Portage`) — MALT, OCTO… */
   Portage?: string;
+  /** Seed DiceBear Glyphs (colonne Grist `Avatar`) — Weekly carte membre. */
+  Avatar?: string;
   /** Tarif journalier — si Access Rules le livrent (Admin). */
   TJM?: number;
 }

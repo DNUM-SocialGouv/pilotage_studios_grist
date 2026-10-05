@@ -1,13 +1,13 @@
 /**
  * Drawer « Suivi mission » Weekly Ops V1 — satellite `Weekly_phase` + échanges
  * `Weekly_agenda`. Aucune écriture `Missions`.
+ * Phase = colonne kanban (badge lecture) — pas de select Phase redondant.
  */
 
 import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from "react";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { Input } from "@codegouvfr/react-dsfr/Input";
-import { Select } from "@codegouvfr/react-dsfr/Select";
 import { Link } from "react-router-dom";
 import { DsfrSelectRichMulti } from "../dsfr/DsfrSelectRichMulti";
 import type { WeeklyAgendaRow } from "../../types";
@@ -20,7 +20,6 @@ import {
   WEEKLY_METEO_OPTIONS,
   WEEKLY_PHASES,
   WEEKLY_PHASE_OPS_COLUMNS_READY,
-  isWeeklyPhaseKey,
   normalizeWeeklyMeteo,
   type WeeklyCard,
   type WeeklyPhaseKey,
@@ -61,11 +60,9 @@ export function WeeklySuiviDrawer({
 }: WeeklySuiviDrawerProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
-  const phaseFieldId = useId();
   const meteoFieldId = useId();
   const noteFieldId = useId();
 
-  const [draftPhase, setDraftPhase] = useState<WeeklyPhaseKey>("prochainement");
   const [draftMeteo, setDraftMeteo] = useState("");
   const [draftMembreId, setDraftMembreId] = useState("");
   const [draftNote, setDraftNote] = useState("");
@@ -73,7 +70,6 @@ export function WeeklySuiviDrawer({
 
   useEffect(() => {
     if (!open || card == null) return;
-    setDraftPhase(card.phase);
     setDraftMeteo(normalizeWeeklyMeteo(card.meteo));
     setDraftMembreId(
       card.membreEquipeId != null && card.membreEquipeId > 0
@@ -98,18 +94,23 @@ export function WeeklySuiviDrawer({
     if (open) {
       if (!dialog.open) dialog.showModal();
       requestAnimationFrame(() => {
-        document.getElementById(phaseFieldId)?.focus();
+        const firstMeteo = dialog.querySelector<HTMLButtonElement>(
+          ".weekly-meteo-btn:not(:disabled)",
+        );
+        firstMeteo?.focus();
       });
     } else if (dialog.open) {
       dialog.close();
     }
-  }, [open, phaseFieldId]);
+  }, [open]);
 
   const close = () => {
     dialogRef.current?.close();
   };
 
-  const phaseMeta = WEEKLY_PHASES.find((p) => p.key === draftPhase);
+  const phaseMeta = card
+    ? WEEKLY_PHASES.find((p) => p.key === card.phase)
+    : undefined;
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -120,7 +121,8 @@ export function WeeklySuiviDrawer({
       await onSaveSuivi({
         missionId: card.missionId,
         phaseRowId: card.phaseRowId,
-        phase: draftPhase,
+        // Phase = colonne kanban ; pas de select drawer.
+        phase: card.phase,
         meteo: draftMeteo,
         noteOps: draftNote,
         membreEquipeId:
@@ -200,29 +202,14 @@ export function WeeklySuiviDrawer({
                   {phaseMeta ? (
                     <p className="fr-badge fr-badge--info fr-badge--no-icon fr-mb-2w">
                       {phaseMeta.label}
+                      <span className="fr-sr-only">
+                        {" "}
+                        (phase = colonne kanban)
+                      </span>
                     </p>
                   ) : null}
 
-                  <Select
-                    label="Phase"
-                    nativeSelectProps={{
-                      id: phaseFieldId,
-                      value: draftPhase,
-                      disabled: busy,
-                      onChange: (e) => {
-                        const next = e.target.value;
-                        if (isWeeklyPhaseKey(next)) setDraftPhase(next);
-                      },
-                    }}
-                  >
-                    {WEEKLY_PHASES.map((p) => (
-                      <option key={p.key} value={p.key}>
-                        {p.label}
-                      </option>
-                    ))}
-                  </Select>
-
-                  <div className="fr-mt-2w">
+                  <div>
                     <p
                       id={meteoFieldId}
                       className="fr-label"

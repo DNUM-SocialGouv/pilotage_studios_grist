@@ -12,6 +12,7 @@ import { Button } from "@codegouvfr/react-dsfr/Button";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { Link } from "react-router-dom";
+import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
 import { MissionProse } from "../components/missions/MissionProse";
 import { WeeklySuiviDrawer } from "../components/weekly/WeeklySuiviDrawer";
 import { useAclProfil } from "../AclProfilContext";
@@ -36,10 +37,10 @@ import {
   WEEKLY_PHASES,
   buildWeeklyCards,
   groupCardsByPhase,
-  isWeeklyPhaseKey,
   phaseRowsToMap,
   weeklyMeteoIconClass,
   weeklyMeteoLabel,
+  weeklyMeteoTone,
   type WeeklyCard,
   type WeeklyPhaseKey,
 } from "../utils/weeklyPhases";
@@ -543,49 +544,47 @@ function AgendaSujetDialog({
 function WeeklyCardView({
   card,
   busy,
-  onPhaseChange,
   onOpenSuivi,
   onDragStart,
   onDragEnd,
 }: {
   card: WeeklyCard;
   busy: boolean;
-  onPhaseChange: (missionId: number, phase: WeeklyPhaseKey) => void;
   onOpenSuivi: (missionId: number) => void;
   onDragStart: (missionId: number) => void;
   onDragEnd: () => void;
 }) {
-  const phaseId = `phase-${card.missionId}`;
-  const hasMeteo = Boolean(card.meteo);
-  const assignee =
-    card.intervenants.length > 0 ? card.intervenants.join(", ") : "À assigner";
+  const meteoTone = card.meteo ? weeklyMeteoTone(card.meteo) : null;
+  const meteoLabel = card.meteo ? weeklyMeteoLabel(card.meteo) : "";
+  const noteSnip = card.noteOps.trim();
+  const metaParts = [
+    card.produitLabel,
+    ...card.departements,
+  ].filter(Boolean);
 
   return (
     <article
+      className="weekly-card"
       draggable={!busy}
       onDragStart={() => onDragStart(card.missionId)}
       onDragEnd={onDragEnd}
       aria-label={card.titre}
-      style={{
-        background: "var(--background-default-grey)",
-        boxShadow: "inset 0 0 0 1px var(--border-default-grey)",
-        padding: "0.75rem",
-        marginBottom: "0.625rem",
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.5rem",
-        cursor: busy ? "default" : "grab",
-      }}
+      style={{ cursor: busy ? "default" : "grab" }}
     >
-      <h3
-        className="fr-text--md"
-        style={{
-          margin: 0,
-          fontSize: "0.9375rem",
-          lineHeight: "1.375rem",
-          fontWeight: 700,
-        }}
-      >
+      {meteoTone ? (
+        <span
+          className={`weekly-card__meteo-badge weekly-card__meteo-badge--${meteoTone}`}
+          title={`Météo : ${meteoLabel}`}
+          aria-label={`Météo : ${meteoLabel}`}
+        >
+          <span
+            className={`${weeklyMeteoIconClass(card.meteo)} fr-icon--sm`}
+            aria-hidden="true"
+          />
+        </span>
+      ) : null}
+
+      <h3 className="weekly-card__title">
         <button
           type="button"
           className="weekly-card-title-btn"
@@ -599,111 +598,50 @@ function WeeklyCardView({
         </button>
       </h3>
 
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "0.375rem 0.75rem",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        {card.produitLabel ? (
-          <p
-            className="fr-text--xs"
-            style={{
-              margin: 0,
-              color: "var(--text-mention-grey)",
-              display: "inline-flex",
-              gap: "0.25rem",
-              alignItems: "center",
-            }}
-          >
-            <span className="fr-icon-dashboard-3-line fr-icon--sm" aria-hidden="true" />
-            {card.produitLabel}
-          </p>
-        ) : (
-          <span />
-        )}
-        {hasMeteo ? (
-          <span
-            className={`${weeklyMeteoIconClass(card.meteo)} fr-icon--sm`}
-            title={`Météo : ${weeklyMeteoLabel(card.meteo)}`}
-            aria-label={`Météo : ${weeklyMeteoLabel(card.meteo)}`}
-            style={{ color: "var(--text-default-grey)" }}
-          />
-        ) : null}
-      </div>
-
-      <ul
-        className="fr-tags-group fr-tags-group--sm"
-        style={{ margin: 0 }}
-      >
-        {card.departements.map((dep) => (
-          <li key={dep}>
-            <p className="fr-tag fr-tag--sm">{dep}</p>
-          </li>
-        ))}
-        <li>
-          <p
-            className="fr-tag fr-tag--sm fr-icon-user-line fr-tag--icon-left"
-            style={
-              card.intervenants.length === 0
-                ? { color: "var(--text-default-warning)" }
-                : undefined
-            }
-          >
-            {assignee}
-          </p>
-        </li>
-      </ul>
-
-      {card.statut ? (
-        <p
-          className="fr-text--xs"
-          style={{
-            margin: 0,
-            paddingTop: "0.375rem",
-            borderTop: "1px solid var(--border-default-grey)",
-            color: "var(--text-mention-grey)",
-          }}
-        >
-          Statut Grist : {card.statut}
+      {metaParts.length > 0 ? (
+        <p className="weekly-card__meta">
+          {metaParts.map((part, i) => (
+            <span key={`${part}-${i}`}>
+              {i > 0 ? (
+                <span aria-hidden="true" className="weekly-card__meta-sep">
+                  ·
+                </span>
+              ) : null}
+              {part}
+            </span>
+          ))}
         </p>
       ) : null}
 
-      <div className="fr-select-group" style={{ marginBottom: 0 }}>
-        <label className="fr-label fr-sr-only" htmlFor={phaseId}>
-          Phase de {card.titre}
-        </label>
-        <select
-          className="fr-select"
-          id={phaseId}
-          disabled={busy}
-          value={card.phase}
-          onChange={(e) => {
-            const next = e.target.value;
-            if (!isWeeklyPhaseKey(next)) return;
-            onPhaseChange(card.missionId, next);
-          }}
-        >
-          {WEEKLY_PHASES.map((p) => (
-            <option key={p.key} value={p.key}>
-              {p.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      {card.membreEquipeId != null && card.membreEquipeId > 0 ? (
+        <p className="weekly-card__member">
+          <EquipeAvatar
+            avatar={card.membreEquipeAvatar}
+            memberId={card.membreEquipeId}
+            size="sm"
+          />
+          <span>
+            {card.membreEquipeLabel || `Personne #${card.membreEquipeId}`}
+          </span>
+        </p>
+      ) : (
+        <p className="weekly-card__member weekly-card__member--empty">
+          Membre non assigné
+        </p>
+      )}
 
-      <Button
+      {noteSnip ? <p className="weekly-card__snip">{noteSnip}</p> : null}
+
+      <button
         type="button"
-        priority="tertiary no outline"
-        size="small"
+        className="weekly-card__suivi-link"
         disabled={busy}
+        draggable={false}
+        onMouseDown={(e) => e.stopPropagation()}
         onClick={() => onOpenSuivi(card.missionId)}
       >
         Ouvrir le suivi
-      </Button>
+      </button>
     </article>
   );
 }
@@ -1245,7 +1183,6 @@ export function WeeklyCoachPage() {
                       key={card.missionId}
                       card={card}
                       busy={busyMissionId === card.missionId || data.isReloading}
-                      onPhaseChange={(id, phase) => void changePhase(id, phase)}
                       onOpenSuivi={openSuivi}
                       onDragStart={setDragMissionId}
                       onDragEnd={() => setDragMissionId(null)}

@@ -109,6 +109,15 @@ export function weeklyMeteoLabel(meteo: string): string {
   return n || meteo.trim();
 }
 
+/** Tone CSS pour badge météo carte (variante A). */
+export function weeklyMeteoTone(
+  meteo: string,
+): "vert" | "surveiller" | "difficulte" | null {
+  const n = normalizeWeeklyMeteo(meteo);
+  const opt = WEEKLY_METEO_OPTIONS.find((o) => o.value === n);
+  return opt?.tone ?? null;
+}
+
 export type WeeklyPhaseMeta = {
   key: WeeklyPhaseKey;
   label: string;
@@ -227,6 +236,8 @@ export type WeeklyCard = {
   membreEquipeId: number | null;
   /** Libellé affiché (Prenom_Nom) si résolu. */
   membreEquipeLabel: string;
+  /** Seed `Equipe.Avatar` pour EquipeAvatar. */
+  membreEquipeAvatar: string;
 };
 
 export function buildWeeklyCards(input: {
@@ -243,7 +254,16 @@ export function buildWeeklyCards(input: {
   }
 
   const equipeById = new Map(
-    input.intervenants.map((p) => [p.id, (p.Prenom_Nom ?? "").trim()] as const),
+    input.intervenants.map(
+      (p) =>
+        [
+          p.id,
+          {
+            name: (p.Prenom_Nom ?? "").trim(),
+            avatar: (p.Avatar ?? "").trim(),
+          },
+        ] as const,
+    ),
   );
   const produitById = new Map(input.produits.map((p) => [p.id, p] as const));
 
@@ -253,7 +273,7 @@ export function buildWeeklyCards(input: {
     if (parentId == null) continue;
     const intervenantId = extractGristReferenceId(enfant.Intervenant);
     const name =
-      intervenantId != null ? equipeById.get(intervenantId) : undefined;
+      intervenantId != null ? equipeById.get(intervenantId)?.name : undefined;
     if (!name) continue;
     const list = intervenantsByMission.get(parentId) ?? [];
     if (!list.includes(name)) {
@@ -267,6 +287,10 @@ export function buildWeeklyCards(input: {
       const stored = phaseMap.get(m.id);
       const produitId = extractGristReferenceId(m.Produit_SDPC);
       const produit = produitId != null ? produitById.get(produitId) : undefined;
+      const membre =
+        stored?.membreEquipeId != null
+          ? equipeById.get(stored.membreEquipeId)
+          : undefined;
       return {
         missionId: m.id,
         titre: (m.Nom_de_la_mission ?? "").trim() || `Mission #${m.id}`,
@@ -280,10 +304,8 @@ export function buildWeeklyCards(input: {
         meteo: stored?.meteo ?? "",
         noteOps: stored?.noteOps ?? "",
         membreEquipeId: stored?.membreEquipeId ?? null,
-        membreEquipeLabel:
-          stored?.membreEquipeId != null
-            ? (equipeById.get(stored.membreEquipeId) ?? "")
-            : "",
+        membreEquipeLabel: membre?.name ?? "",
+        membreEquipeAvatar: membre?.avatar ?? "",
       } satisfies WeeklyCard;
     })
     .sort((a, b) => a.titre.localeCompare(b.titre, "fr"));
