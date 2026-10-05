@@ -92,11 +92,17 @@ Avant create :
 - **Create** → `grist_add_records` avec au minimum :
 
   `Nature=Produit`, `Colonne_kanban`, `Titre`, `Resume`, `Theme`,
-  `Statut_produit`, `Cle`, `Ordre` ; optionnel : `Lien_github`,
-  `Page_path`, `Page_lien_libelle`, `Guide_lead`, `Guide_intro`, `Guide_etapes`.
+  `Statut_produit`, `Cle`, `Ordre` ; optionnel : `Message` (corps métier),
+  `Lien_github`, `Page_path`, `Page_lien_libelle`, `Guide_lead`,
+  `Guide_intro`, `Guide_etapes`.
+
+  Rédiger `Titre` / `Resume` / `Message` selon
+  [`pilotage-grist-kanban-contenu`](../pilotage-grist-kanban-contenu/SKILL.md)
+  **avant** l’appel MCP.
 
 - **Move / edit** → `grist_update_records` : toujours sync
-  `Colonne_kanban` **et** `Statut_produit`.
+  `Colonne_kanban` **et** `Statut_produit`. Si le corps change : même
+  skill contenu.
 
 ### 5. Fin de sujet / merge PR
 
@@ -119,8 +125,18 @@ Si un écran est livré : compléter `Guide_*`, `Page_path`, `Page_lien_libelle`
 - Delete d’une carte
 - Contourner les Access Rules (MCP Owner/API : droits du token MCP seulement)
 
+## Contenu des cartes (langage métier)
+
+À chaque create / update de `Titre`, `Resume` ou `Message` : appliquer
+[`pilotage-grist-kanban-contenu`](../pilotage-grist-kanban-contenu/SKILL.md).
+
+En bref : texte **métier** (bénéfice + état), **pas** de liens PR/issues
+dans le corps sauf demande explicite, **pas** une ligne sèche tech
+(SHA, « MERGED », jargon dépôt).
+
 ## Liens
 
+- Contenu cartes : [`pilotage-grist-kanban-contenu`](../pilotage-grist-kanban-contenu/SKILL.md)
 - Rule always-on : [`kanban-feuille-route.mdc`](../../rules/kanban-feuille-route.mdc)
 - Issue : [`pilotage-grist-issue`](../pilotage-grist-issue/SKILL.md)
 - PR : [`pilotage-grist-pr`](../pilotage-grist-pr/SKILL.md)

@@ -172,6 +172,7 @@ Workspace Cursor : ouvrir **uniquement** ce dépôt pour le widget — ne pas d�
 | [`.cursor/skills/pilotage-grist-pr/`](.cursor/skills/pilotage-grist-pr/) | Ouvrir / merger une PR (+ [`CHECKLIST.md`](.cursor/skills/pilotage-grist-pr/CHECKLIST.md)) |
 | [`.cursor/skills/pilotage-grist-code-review/`](.cursor/skills/pilotage-grist-code-review/) | Revue avant merge — **uniquement** ce skill repo ; **interdit** le skill user générique `~/.cursor/skills/code-review` |
 | [`.cursor/skills/pilotage-grist-kanban/`](.cursor/skills/pilotage-grist-kanban/) | Sync feuille de route kanban Grist (HITL avant écriture) |
+| [`.cursor/skills/pilotage-grist-kanban-contenu/`](.cursor/skills/pilotage-grist-kanban-contenu/) | Texte cartes Produit : langage métier, pas de dump PR/SHA dans `Message` / `Resume` |
 | [`.cursor/skills/grist-custom-widgets/`](.cursor/skills/grist-custom-widgets/) | API Custom Widget (ready / onRecords / fetchTable) |
 | [`.cursor/rules/dsfr-tableaux.mdc`](.cursor/rules/dsfr-tableaux.mdc) | Tableaux DSFR |
 | [`.cursor/rules/widget-iframe.mdc`](.cursor/rules/widget-iframe.mdc) | Contraintes iframe (always-on) |
