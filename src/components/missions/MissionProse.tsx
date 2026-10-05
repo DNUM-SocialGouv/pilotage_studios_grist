@@ -47,6 +47,13 @@ function MissionProseInlines({
         if (part.type === "bold") {
           return <strong key={i}>{part.value}</strong>;
         }
+        if (part.type === "code") {
+          return (
+            <code key={i} className="mission-fiche-prose__code">
+              {part.value}
+            </code>
+          );
+        }
         return <span key={i}>{part.value}</span>;
       })}
     </>
@@ -125,13 +132,13 @@ export type MissionProseProps = {
    */
   onInternalLinkClick?: (path: string) => void;
   /**
-   * Résumé / une ligne : liens + gras seulement, sans blocs (titres, listes…).
+   * Résumé / une ligne : liens + gras + code inline, sans blocs (titres, listes…).
    */
   inline?: boolean;
   className?: string;
 };
 
-/** Texte narratif : titres, paragraphes, listes, tableaux, gras, liens Markdown. */
+/** Texte narratif : titres, paragraphes, listes, tableaux, code, gras, liens Markdown. */
 export function MissionProse({
   value,
   onInternalLinkClick,
@@ -198,6 +205,13 @@ export function MissionProse({
               rows={block.rows}
               onInternalLinkClick={onInternalLinkClick}
             />
+          );
+        }
+        if (block.type === "code") {
+          return (
+            <pre key={i} className="mission-fiche-prose__pre">
+              <code>{block.value}</code>
+            </pre>
           );
         }
         return (

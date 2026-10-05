@@ -1,8 +1,9 @@
 /**
  * Formatage léger des textes narratifs (missions, détail tickets kanban) :
  * titres `#`–`######`, paragraphes, listes `* / - / •` ou `1.`, gras `**…**`,
- * liens Markdown `[label](https://…)` ou `[label](/chemin/interne)`, tableaux GFM `| … |`.
- * Pas de HTML brut ni de Markdown complet.
+ * code inline `` `…` ``, blocs fence ` ``` `, liens Markdown
+ * `[label](https://…)` ou `[label](/chemin/interne)`, tableaux GFM `| … |`.
+ * Pas de HTML brut ni de Markdown complet (le rendu React échappe le texte).
  */
 
 export type MissionProseLinkKind = "external" | "internal";
@@ -10,6 +11,7 @@ export type MissionProseLinkKind = "external" | "internal";
 export type MissionProseInline =
   | { type: "text"; value: string }
   | { type: "bold"; value: string }
+  | { type: "code"; value: string }
   | { type: "link"; href: string; label: string; kind: MissionProseLinkKind };
 
 export type MissionProseHeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
@@ -18,6 +20,7 @@ export type MissionProseBlock =
   | { type: "paragraph"; inlines: MissionProseInline[] }
   | { type: "list"; ordered: boolean; items: MissionProseInline[][] }
   | { type: "heading"; level: MissionProseHeadingLevel; inlines: MissionProseInline[] }
+  | { type: "code"; language: string | null; value: string }
   | {
       type: "table";
       headers: MissionProseInline[][];
@@ -31,10 +34,15 @@ export type MissionProseBlock =
 const MD_LINK_RE =
   /\[([^\]]+)\]\((https?:\/\/[^)\s]+|\/(?!\/)[^)\s]*)\)/g;
 const MD_BOLD_RE = /\*\*([^*]+)\*\*/g;
+/** Code inline : une paire de backticks, contenu sans backtick ni saut de ligne. */
+const MD_INLINE_CODE_RE = /`([^`\n]+)`/g;
 const LIST_ITEM_RE = /^\s*[*•\-]\s+(.*)$/;
 const ORDERED_LIST_ITEM_RE = /^\s*\d+\.\s+(.*)$/;
 const HEADING_RE = /^(#{1,6})\s+(.+)$/;
 const TABLE_SEP_CELL_RE = /^:?-+:?$/;
+/** Fence ouvrant : ``` optionnellement suivi d’un identifiant de langage sûr. */
+const FENCE_OPEN_RE = /^\s{0,3}```([A-Za-z0-9_+-]*)\s*$/;
+const FENCE_CLOSE_RE = /^\s{0,3}```\s*$/;
 
 export function isSafeHttpUrl(href: string): boolean {
   try {
@@ -97,8 +105,8 @@ function parseBoldInlines(text: string): MissionProseInline[] {
   return out.length > 0 ? out : [{ type: "text", value: text }];
 }
 
-/** Découpe le texte inline : liens Markdown safe, puis gras `**…**`. */
-export function parseMissionProseInlines(text: string): MissionProseInline[] {
+/** Liens Markdown safe, puis gras `**…**` (segments hors code inline). */
+function parseLinksAndBold(text: string): MissionProseInline[] {
   const out: MissionProseInline[] = [];
   let last = 0;
   MD_LINK_RE.lastIndex = 0;
@@ -120,6 +128,31 @@ export function parseMissionProseInlines(text: string): MissionProseInline[] {
   }
   if (last < text.length) {
     out.push(...parseBoldInlines(text.slice(last)));
+  }
+  return out.length > 0 ? out : [{ type: "text", value: text }];
+}
+
+/**
+ * Découpe le texte inline : code `` `…` `` d’abord (pas de parse Markdown
+ * à l’intérieur), puis liens safe et gras.
+ */
+export function parseMissionProseInlines(text: string): MissionProseInline[] {
+  if (!text) {
+    return [{ type: "text", value: text }];
+  }
+  const out: MissionProseInline[] = [];
+  let last = 0;
+  MD_INLINE_CODE_RE.lastIndex = 0;
+  let m: RegExpExecArray | null;
+  while ((m = MD_INLINE_CODE_RE.exec(text)) != null) {
+    if (m.index > last) {
+      out.push(...parseLinksAndBold(text.slice(last, m.index)));
+    }
+    out.push({ type: "code", value: m[1]! });
+    last = m.index + m[0]!.length;
+  }
+  if (last < text.length) {
+    out.push(...parseLinksAndBold(text.slice(last)));
   }
   return out.length > 0 ? out : [{ type: "text", value: text }];
 }
@@ -208,8 +241,9 @@ type ListBuffer = {
 };
 
 /**
- * Parse ligne à ligne : titres, listes, tableaux GFM, paragraphes (soft-wrap
- * entre lignes ordinaires consécutives). Une ligne vide coupe le paragraphe.
+ * Parse ligne à ligne : titres, listes, tableaux GFM, blocs code fence,
+ * paragraphes (soft-wrap entre lignes ordinaires consécutives). Une ligne
+ * vide coupe le paragraphe. Le contenu des fences n’est pas re-parsé.
  */
 export function parseMissionProse(raw: string): MissionProseBlock[] {
   const normalized = raw.replace(/\r\n/g, "\n").trim();
@@ -239,6 +273,32 @@ export function parseMissionProse(raw: string): MissionProseBlock[] {
       flushParagraph(paragraphLines, blocks);
       flushOpenList();
       i += 1;
+      continue;
+    }
+
+    const fenceOpen = FENCE_OPEN_RE.exec(trimmed);
+    if (fenceOpen) {
+      flushParagraph(paragraphLines, blocks);
+      flushOpenList();
+      const languageRaw = fenceOpen[1] ?? "";
+      const language = languageRaw.length > 0 ? languageRaw : null;
+      i += 1;
+      const body: string[] = [];
+      while (i < lines.length) {
+        const bodyLine = lines[i]!.trimEnd();
+        if (FENCE_CLOSE_RE.test(bodyLine.trim())) {
+          i += 1;
+          break;
+        }
+        body.push(bodyLine);
+        i += 1;
+      }
+      // Fence non fermé : corps jusqu’à la fin du texte (échappé au rendu React).
+      blocks.push({
+        type: "code",
+        language,
+        value: body.join("\n"),
+      });
       continue;
     }
 

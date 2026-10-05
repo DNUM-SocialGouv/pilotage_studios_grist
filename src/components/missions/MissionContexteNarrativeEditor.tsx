@@ -16,7 +16,7 @@ import { updateMissionRecord } from "../../utils/missionGristWrite.ts";
 import { MissionProse } from "./MissionProse";
 
 const MARKDOWN_HINT =
-  "Markdown Grist : titres (#), listes (- ou *), liens [libellé](url), gras **texte**";
+  "Markdown Grist : titres (#), listes (- ou *), liens [libellé](url), gras **texte**, code `…` ou ```";
 
 type MissionContexteNarrativeEditorProps = {
   mission: Mission;
