@@ -4,6 +4,7 @@ import {
   buildKanbanFeedbackFields,
   clampResume,
   clampTitre,
+  FEEDBACK_TITRE_MAX,
 } from "./createKanbanFeedback.ts";
 import { feedbackAuteurOptionsFromEquipeTable } from "./feedbackEquipe.ts";
 import { pageOptionFromPathname } from "./feedbackPages.ts";
@@ -59,7 +60,7 @@ describe("feedbackAuteurOptionsFromEquipeTable", () => {
 });
 
 describe("buildKanbanFeedbackFields", () => {
-  it("exige titre et résumé", () => {
+  it("exige titre, e-mail et auteur", () => {
     assert.throws(
       () =>
         buildKanbanFeedbackFields({
@@ -67,7 +68,6 @@ describe("buildKanbanFeedbackFields", () => {
           userEmail: "a@b.c",
           type: "Suggestion",
           titre: "  ",
-          resume: "ok",
           page: "Accueil",
           niveau: "",
           joinContext: false,
@@ -78,19 +78,15 @@ describe("buildKanbanFeedbackFields", () => {
       () =>
         buildKanbanFeedbackFields({
           userName: "A",
-          userEmail: "a@b.c",
+          userEmail: "  ",
           type: "Suggestion",
           titre: "Titre",
-          resume: "  ",
           page: "Accueil",
           niveau: "",
           joinContext: false,
         }),
-      /Résumé obligatoire/,
+      /E-mail de session obligatoire/,
     );
-  });
-
-  it("exige un auteur non vide", () => {
     assert.throws(
       () =>
         buildKanbanFeedbackFields({
@@ -98,7 +94,6 @@ describe("buildKanbanFeedbackFields", () => {
           userEmail: "a@b.c",
           type: "Suggestion",
           titre: "Titre",
-          resume: "ok",
           page: "Accueil",
           niveau: "",
           joinContext: false,
@@ -107,13 +102,12 @@ describe("buildKanbanFeedbackFields", () => {
     );
   });
 
-  it("aligne Titre / Resume / Theme←Page ; Message = détail ou résumé", () => {
+  it("écrit Titre = Resume ; Message = détail ou titre ; Theme←Page", () => {
     const fields = buildKanbanFeedbackFields({
       userName: "Camille",
       userEmail: "c@example.com",
       type: "Anomalie",
-      titre: "Bouton Enregistrer grisé",
-      resume: "Je ne peux pas valider mon CRA.",
+      titre: "Je ne peux pas valider mon CRA du mois — bouton Enregistrer grisé",
       message: "Étapes : ouvrir Mon carnet…",
       page: "Missions",
       niveau: "Bloquant — je ne peux pas continuer",
@@ -126,8 +120,11 @@ describe("buildKanbanFeedbackFields", () => {
     });
     assert.equal(fields.Nature, "Feedback");
     assert.equal(fields.Colonne_kanban, "feedback");
-    assert.equal(fields.Titre, "Bouton Enregistrer grisé");
-    assert.equal(fields.Resume, "Je ne peux pas valider mon CRA.");
+    assert.equal(
+      fields.Titre,
+      "Je ne peux pas valider mon CRA du mois — bouton Enregistrer grisé",
+    );
+    assert.equal(fields.Resume, fields.Titre);
     assert.equal(fields.Theme, "Missions");
     assert.equal(fields.Page, "Missions");
     assert.equal(fields.Message, "Étapes : ouvrir Mon carnet…");
@@ -136,13 +133,12 @@ describe("buildKanbanFeedbackFields", () => {
     assert.match(fields.Contexte_technique, /TestUA/);
   });
 
-  it("sans détail : Message = Resume ; vide Niveau hors Anomalie", () => {
+  it("sans détail : Message = Titre ; vide Niveau hors Anomalie", () => {
     const fields = buildKanbanFeedbackFields({
       userName: "Camille",
-      userEmail: "",
+      userEmail: "c@example.com",
       type: "Question",
-      titre: "Où est le BDC ?",
-      resume: "Comment rattacher un BDC ?",
+      titre: "Comment rattacher un BDC ?",
       page: "Accueil",
       niveau: "Mineur — cosmétique / confort",
       joinContext: false,
@@ -152,14 +148,20 @@ describe("buildKanbanFeedbackFields", () => {
     assert.equal(fields.Contexte_technique, "");
     assert.equal(fields.Type, "Question");
     assert.equal(fields.Message, "Comment rattacher un BDC ?");
+    assert.equal(fields.Resume, "Comment rattacher un BDC ?");
     assert.equal(fields.Theme, "Accueil");
   });
 });
 
 describe("clampTitre / clampResume", () => {
-  it("tronque proprement", () => {
+  it(`tronque à ${FEEDBACK_TITRE_MAX} caractères`, () => {
     assert.equal(clampTitre("  A  B  "), "A B");
-    assert.ok(clampResume("x".repeat(250)).endsWith("…"));
+    assert.equal(FEEDBACK_TITRE_MAX, 140);
+    const long = "x".repeat(FEEDBACK_TITRE_MAX + 20);
+    const clamped = clampTitre(long);
+    assert.ok(clamped.endsWith("…"));
+    assert.ok(clamped.length <= FEEDBACK_TITRE_MAX);
+    assert.equal(clampResume(long), clamped);
   });
 });
 

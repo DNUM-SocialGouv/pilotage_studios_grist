@@ -10,28 +10,33 @@ Référence design : [`design/feedback_widget/`](../../../design/feedback_widget
 |---------|--------|
 | Montage | [`WidgetLayout`](../../../src/layout/WidgetLayout.tsx) — pas une route dédiée |
 | Types | Anomalie / Suggestion / Question (segmentés) → badge carte |
-| Titre | Obligatoire — titre de la carte kanban |
-| En une phrase (`Resume`) | Obligatoire — corps de carte + « Résumé » du drawer |
-| Détail (`Message`) | Optionnel ; si vide = même contenu que le résumé ; rendu Markdown léger (`MissionProse`) — liens `http(s)`, pages internes `[libelle](/chemin)`, code inline / blocs fence |
-| Page concernée | Select prérempli ; écrit aussi dans `Theme` (ligne thème carte) |
+| Titre | Obligatoire (max 140) — écrit dans `Titre` **et** `Resume` (même texte) |
+| Détail (`Message`) | Optionnel ; si vide = copie du titre ; rendu Markdown léger (`MissionProse`) — liens `http(s)`, pages internes `[libelle](/chemin)`, code inline / blocs fence |
+| Page / thème | **Automatiques** depuis l’URL (pathname) — pas de select UI ; remplissent `Theme` et `Page` |
 | Niveau de gêne | Visible seulement si type = Anomalie |
-| Identité | Select searchable sur `Equipe` — obligatoire |
+| Identité | **Signature silencieuse** : prénom (fiche Équipe session ou parse e-mail) + e-mail de session — pas de select |
 | Contexte technique | Case cochée par défaut (URL widget · UA · résolution) |
-| Après envoi | Confirmation ; *Fermer* / *Un autre retour* |
+| Après envoi | Confirmation ; *Fermer* / *Un autre retour* ; rappel « Vos retours » sur l’accueil |
+| Sans e-mail session | Envoi **bloqué** + message actionnable |
 | Erreur | Message + possibilité de réessayer (panneau reste ouvert) |
 
 ## Identité
 
-Pas d’auto-détection Grist (le jeton widget ne fournit pas un profil fiable). L’utilisateur choisit sa ligne dans `Equipe` (chargée via `fetchAllowlistedTable('Equipe')` à l’ouverture du panneau). `Auteur` / `Email` sont écrits depuis ce choix.
+Signature **silencieuse** depuis la session (`useAclProfil`) :
 
-**Limite V1** : choix **déclaratif** (pas de lien session Grist ↔ ligne Equipe) — un utilisateur peut sélectionner un autre nom. Acceptable pour un canal de feedback interne ; durcissement possible plus tard (ACL / matching email).
+- `Email` ← e-mail de session (requis pour envoyer)
+- `Auteur` ← prénom via `defaultWeeklyAuteurPrenom` (fiche Équipe si connue, sinon début d’e-mail)
+
+Hint lecture seule : « Signé avec votre compte Grist · *prénom* ». Pas de champ éditable, pas de choix dans la liste Équipe.
+
+**Bénéfice** : le filtre « Vos retours » sur l’accueil (`Email` = session) devient fiable — plus de retour « au nom d’autrui ».
 
 ## Table Grist `Kanban` (Feedback)
 
 | Colonne | Remplie à l’envoi |
 |---------|-------------------|
 | `Nature` (= Feedback), `Colonne_kanban` (= feedback) | Oui |
-| `Titre`, `Resume`, `Theme` (= Page), `Type`, `Page`, `Message` | Oui |
+| `Titre`, `Resume` (= même texte que Titre), `Theme` / `Page` (auto pathname), `Type`, `Message` | Oui |
 | `Date`, `Auteur`, `Email`, `Niveau_gene`, `Contexte_technique`, `Statut` (= Nouveau) | Oui |
 | Guides, `Lien_github`, champs produit | Non (suivi / enrichissement dans Grist ou Admin) |
 
@@ -45,6 +50,8 @@ Lecture widget : `fetchAllowlistedTable('Kanban')` — colonne Feedback = `Natur
 ### Conversation (commentaires)
 
 Table `Kanban_commentaires` : `Cible_id` (= id `Kanban`), `Date`, `Auteur`, `Email`, `Message` (`Cible_type` figé à `Kanban` pour compat colonne existante). Create allowlisté pour tout utilisateur du widget. Pas d’update/delete widget en V1.
+
+Le select auteur des commentaires (conversation) reste distinct du formulaire « Un retour » — voir `TicketConversation`.
 
 ### Confidentialité lecture (décision V1)
 

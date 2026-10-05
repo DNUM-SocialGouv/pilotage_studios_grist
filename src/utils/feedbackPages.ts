@@ -1,4 +1,4 @@
-/** Options « Page concernée » alignées sur la nav / stubs du widget. */
+/** Libellés page / thème Feedback (auto pathname → Theme + Page Kanban). */
 
 export const FEEDBACK_PAGE_OPTIONS = [
   "Accueil",
@@ -22,7 +22,7 @@ export const FEEDBACK_PAGE_OPTIONS = [
 
 export type FeedbackPageOption = (typeof FEEDBACK_PAGE_OPTIONS)[number];
 
-/** Mappe un pathname MemoryRouter vers une option du select. */
+/** Mappe un pathname MemoryRouter vers le libellé Theme/Page Feedback. */
 export function pageOptionFromPathname(pathname: string): FeedbackPageOption {
   if (pathname === "/" || pathname === "") {
     return "Accueil";

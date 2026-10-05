@@ -1,21 +1,14 @@
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { DsfrSelectRichMulti } from "../dsfr/DsfrSelectRichMulti";
-import { fetchAllowlistedTable } from "../../security/fetchTableAllowlist";
+import { useAclProfil } from "../../AclProfilContext";
 import {
   createKanbanFeedbackRecord,
+  FEEDBACK_TITRE_MAX,
   type FeedbackType,
 } from "../../utils/createKanbanFeedback";
-import {
-  feedbackAuteurOptionsFromEquipeTable,
-  type FeedbackAuteurOption,
-} from "../../utils/feedbackEquipe";
-import {
-  FEEDBACK_PAGE_OPTIONS,
-  pageOptionFromPathname,
-  type FeedbackPageOption,
-} from "../../utils/feedbackPages";
+import { pageOptionFromPathname } from "../../utils/feedbackPages";
 import { requestKanbanReload, subscribeOpenFeedback } from "../../utils/feedbackOpen";
+import { defaultWeeklyAuteurPrenom } from "../../utils/weeklyAgenda";
 import styles from "./FeedbackWidget.module.css";
 
 const TYPES: FeedbackType[] = ["Anomalie", "Suggestion", "Question"];
@@ -23,7 +16,7 @@ const TYPES: FeedbackType[] = ["Anomalie", "Suggestion", "Question"];
 const HINTS: Record<FeedbackType, string> = {
   Anomalie: "Ce qui s’est passé, ce que vous attendiez, comment le reproduire.",
   Suggestion: "L’amélioration proposée et le besoin auquel elle répond.",
-  Question: "Précisions utiles pour répondre (écran, donnée, contexte).",
+  Question: "Votre question sur l’outil ou une donnée.",
 };
 
 const NIVEAUX = [
@@ -31,6 +24,9 @@ const NIVEAUX = [
   "Gênant — contournement possible",
   "Mineur — cosmétique / confort",
 ] as const;
+
+const NO_EMAIL_MESSAGE =
+  "Impossible d’identifier votre compte Grist (pas d’e-mail de session). Réessayez depuis le document Pilotage, ou contactez un Admin si le problème continue.";
 
 function ChatIcon() {
   return (
@@ -86,44 +82,49 @@ function CheckIcon() {
   );
 }
 
+function PersonIcon() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden
+    >
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+    </svg>
+  );
+}
+
 /**
  * Bouton flottant + panneau de feedback → écriture table Grist `Kanban` (Nature=Feedback).
+ * Signature silencieuse (session) ; Theme/Page auto via pathname.
  */
 export function FeedbackWidget() {
   const location = useLocation();
+  const { email: sessionEmail, displayName } = useAclProfil();
   const baseId = useId();
-  const pageSelectId = `${baseId}-page`;
   const titreId = `${baseId}-titre`;
-  const resumeId = `${baseId}-resume`;
   const msgId = `${baseId}-msg`;
   const niveauId = `${baseId}-niveau`;
   const ctxId = `${baseId}-ctx`;
-  const auteurSelectId = `${baseId}-auteur`;
 
   const [open, setOpen] = useState(false);
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [type, setType] = useState<FeedbackType>("Anomalie");
-  const [page, setPage] = useState<FeedbackPageOption>(() =>
-    pageOptionFromPathname(location.pathname),
-  );
   const [titre, setTitre] = useState("");
-  const [resume, setResume] = useState("");
   const [message, setMessage] = useState("");
   const [niveau, setNiveau] = useState<string>(NIVEAUX[0]);
   const [joinContext, setJoinContext] = useState(true);
-  const [auteurId, setAuteurId] = useState("");
-  const [auteurOptions, setAuteurOptions] = useState<FeedbackAuteurOption[]>([]);
-  const [auteursLoading, setAuteursLoading] = useState(false);
-  const [auteursError, setAuteursError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!open || sent) {
-      return;
-    }
-    setPage(pageOptionFromPathname(location.pathname));
-  }, [location.pathname, open, sent]);
+  const sessionEmailTrimmed = (sessionEmail ?? "").trim();
+  const hasSessionEmail = sessionEmailTrimmed.length > 0;
+  const auteurPrenom = defaultWeeklyAuteurPrenom(displayName, sessionEmail);
 
   useEffect(() => {
     return subscribeOpenFeedback(() => {
@@ -132,41 +133,6 @@ export function FeedbackWidget() {
       setError(null);
     });
   }, []);
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-    let cancelled = false;
-    setAuteursLoading(true);
-    setAuteursError(null);
-    void fetchAllowlistedTable("Equipe")
-      .then((table) => {
-        if (cancelled) {
-          return;
-        }
-        setAuteurOptions(feedbackAuteurOptionsFromEquipeTable(table));
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setAuteurOptions([]);
-          setAuteursError("Impossible de charger la liste Equipe.");
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setAuteursLoading(false);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [open]);
-
-  const selectedAuteur = useMemo(
-    () => auteurOptions.find((o) => o.value === auteurId) ?? null,
-    [auteurOptions, auteurId],
-  );
 
   function close() {
     setOpen(false);
@@ -177,28 +143,25 @@ export function FeedbackWidget() {
     setSending(false);
     setError(null);
     setTitre("");
-    setResume("");
     setMessage("");
     setType("Anomalie");
     setNiveau(NIVEAUX[0]);
     setJoinContext(true);
-    setAuteurId("");
-    setPage(pageOptionFromPathname(location.pathname));
   }
 
   async function submit() {
-    if (titre.trim().length === 0 || resume.trim().length === 0 || !selectedAuteur || sending) {
+    if (titre.trim().length === 0 || !hasSessionEmail || !auteurPrenom || sending) {
       return;
     }
     setSending(true);
     setError(null);
     try {
+      const page = pageOptionFromPathname(location.pathname);
       await createKanbanFeedbackRecord({
-        userName: selectedAuteur.name,
-        userEmail: selectedAuteur.email,
+        userName: auteurPrenom,
+        userEmail: sessionEmailTrimmed,
         type,
         titre,
-        resume,
         message,
         page,
         niveau,
@@ -223,10 +186,9 @@ export function FeedbackWidget() {
 
   const canSubmit =
     titre.trim().length > 0 &&
-    resume.trim().length > 0 &&
-    selectedAuteur != null &&
-    !sending &&
-    !auteursLoading;
+    hasSessionEmail &&
+    auteurPrenom.length > 0 &&
+    !sending;
 
   return (
     <>
@@ -261,8 +223,8 @@ export function FeedbackWidget() {
               </div>
               <h2 className={`${styles.title} fr-mb-1w`}>Merci, c&apos;est enregistré&nbsp;!</h2>
               <p className="fr-text--sm" style={{ color: "var(--text-mention-grey)" }}>
-                Votre retour arrive dans le suivi de l&apos;équipe studio. Vous serez
-                informé·e si une suite y est donnée.
+                Votre retour arrive dans le suivi de l&apos;équipe studio. Vous pourrez le
+                retrouver dans «&nbsp;Vos retours&nbsp;» sur l&apos;accueil.
               </p>
               <div className={styles.confirmActions}>
                 <button
@@ -279,6 +241,12 @@ export function FeedbackWidget() {
             </div>
           ) : (
             <div className={styles.body}>
+              {!hasSessionEmail ? (
+                <p className={`fr-text--sm ${styles.error}`} role="alert">
+                  {NO_EMAIL_MESSAGE}
+                </p>
+              ) : null}
+
               <fieldset className={styles.fieldset}>
                 <legend className={`fr-label fr-mb-1w ${styles.legend}`}>Type de retour</legend>
                 <div className={styles.typeGrid}>
@@ -299,57 +267,12 @@ export function FeedbackWidget() {
                 </div>
               </fieldset>
 
-              <div className="fr-mb-2w">
-                <DsfrSelectRichMulti
-                  id={auteurSelectId}
-                  label="Votre identité"
-                  hintText={
-                    auteursLoading
-                      ? "Chargement de la table Equipe…"
-                      : "Choisissez votre nom dans la table Equipe (déclaratif)."
-                  }
-                  placeholderWhenEmpty="Rechercher une personne…"
-                  options={auteurOptions}
-                  selectedValues={auteurId ? [auteurId] : []}
-                  onSelectedValuesChange={(values) => setAuteurId(values[0] ?? "")}
-                  searchable
-                  searchLabel="Rechercher"
-                  searchPlaceholder="Nom ou e-mail…"
-                  showBulkActions={false}
-                  maxSelections={1}
-                  pluralEntityLabel="personnes"
-                  disabled={auteursLoading || auteurOptions.length === 0}
-                />
-                {auteursError ? (
-                  <p className={`fr-text--xs ${styles.error}`} role="alert">
-                    {auteursError}
-                  </p>
-                ) : null}
-              </div>
-
-              <div className="fr-select-group fr-mb-2w">
-                <label className="fr-label" htmlFor={pageSelectId}>
-                  Page concernée
-                  <span className="fr-hint-text">Affichée comme thème sur la carte.</span>
-                </label>
-                <select
-                  className="fr-select"
-                  id={pageSelectId}
-                  value={page}
-                  onChange={(e) => setPage(e.target.value as FeedbackPageOption)}
-                >
-                  {FEEDBACK_PAGE_OPTIONS.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               <div className="fr-input-group fr-mb-2w">
                 <label className="fr-label" htmlFor={titreId}>
                   Titre <span className={styles.required}>*</span>
-                  <span className="fr-hint-text">Court — titre de la carte kanban.</span>
+                  <span className="fr-hint-text">
+                    Ce qui compte — titre et résumé de la carte kanban (max&nbsp;{FEEDBACK_TITRE_MAX}).
+                  </span>
                 </label>
                 <input
                   className="fr-input"
@@ -357,27 +280,8 @@ export function FeedbackWidget() {
                   type="text"
                   value={titre}
                   onChange={(e) => setTitre(e.target.value)}
-                  placeholder="Ex. Bouton Enregistrer grisé"
-                  maxLength={80}
-                  required
-                />
-              </div>
-
-              <div className="fr-input-group fr-mb-2w">
-                <label className="fr-label" htmlFor={resumeId}>
-                  En une phrase <span className={styles.required}>*</span>
-                  <span className="fr-hint-text">
-                    Ce qui compte — affiché sur la carte et en tête du tiroir.
-                  </span>
-                </label>
-                <input
-                  className="fr-input"
-                  id={resumeId}
-                  type="text"
-                  value={resume}
-                  onChange={(e) => setResume(e.target.value)}
-                  placeholder="Ex. Je ne peux pas valider mon CRA du mois."
-                  maxLength={200}
+                  placeholder="Ex. Je ne peux pas valider mon CRA du mois — bouton Enregistrer grisé"
+                  maxLength={FEEDBACK_TITRE_MAX}
                   required
                 />
               </div>
@@ -418,7 +322,7 @@ export function FeedbackWidget() {
                 </div>
               ) : null}
 
-              <div className="fr-checkbox-group fr-mb-3w">
+              <div className="fr-checkbox-group fr-mb-2w">
                 <input
                   type="checkbox"
                   id={ctxId}
@@ -432,6 +336,16 @@ export function FeedbackWidget() {
                   </span>
                 </label>
               </div>
+
+              {hasSessionEmail && auteurPrenom ? (
+                <p className={styles.identity} aria-live="polite">
+                  <PersonIcon />
+                  <span>
+                    Signé avec votre compte Grist ·{" "}
+                    <strong className={styles.identityName}>{auteurPrenom}</strong>
+                  </span>
+                </p>
+              ) : null}
 
               {error ? (
                 <p className={`fr-text--sm ${styles.error}`} role="alert">
