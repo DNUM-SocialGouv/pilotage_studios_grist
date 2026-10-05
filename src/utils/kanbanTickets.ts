@@ -46,6 +46,24 @@ export const KANBAN_COLUMN_LABEL: Record<KanbanColumnId, string> = {
   livre: "Livré",
 };
 
+/**
+ * Classe badge DSFR pour une colonne kanban.
+ * Réutilise `KANBAN_STATUS_BADGE_CLASS` via `statutProduitForColumn` ;
+ * Feedback = `purple-glycine` (même accent que Nature Feedback dans le drawer —
+ * sinon conflité avec En cours → `current` / `new`).
+ */
+export function badgeClassForKanbanColumn(column: KanbanColumnId): string {
+  if (column === "feedback") {
+    return "fr-badge--purple-glycine";
+  }
+  return KANBAN_STATUS_BADGE_CLASS[statutProduitForColumn(column)];
+}
+
+/** Nature ticket — accents déjà utilisés dans `TicketDrawer`. */
+export function badgeClassForKanbanNature(nature: KanbanNature): string {
+  return nature === "Feedback" ? "fr-badge--purple-glycine" : "fr-badge--blue-cumulus";
+}
+
 export type KanbanTicket = {
   id: number;
   nature: KanbanNature;

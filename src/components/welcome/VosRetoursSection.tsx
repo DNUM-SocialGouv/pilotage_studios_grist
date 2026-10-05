@@ -5,7 +5,7 @@ import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import type { VosRetoursStatus } from "../../hooks/useVosRetours";
 import { requestOpenFeedback } from "../../utils/feedbackOpen";
-import type { KanbanTicket } from "../../utils/kanbanTickets";
+import { badgeClassForKanbanColumn, type KanbanTicket } from "../../utils/kanbanTickets";
 import type { VosRetourItem } from "../../utils/vosRetours";
 
 export type VosRetoursSectionProps = {
@@ -138,7 +138,11 @@ export function VosRetoursSection({
                   {truncateTitle(item.ticket.title)}
                 </span>
                 <span className="welcome-vos-retours__item-meta fr-text--sm fr-hint-text">
-                  <Badge small as="span">
+                  <Badge
+                    small
+                    as="span"
+                    className={badgeClassForKanbanColumn(item.ticket.column)}
+                  >
                     {item.columnLabel}
                   </Badge>
                   {item.relativeDate ? (

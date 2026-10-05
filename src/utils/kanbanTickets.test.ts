@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   assertKanbanColumnId,
+  badgeClassForKanbanColumn,
+  badgeClassForKanbanNature,
   filterFeedbackColumn,
   formatKanbanDate,
   groupProductByKanban,
@@ -22,6 +24,17 @@ describe("parseKanbanColumn / isKanbanColumnId", () => {
     assert.equal(isKanbanColumnId("feedback"), true);
     assert.equal(isKanbanColumnId("nope"), false);
     assert.throws(() => assertKanbanColumnId("nope"), /invalide/);
+  });
+});
+
+describe("badgeClassForKanbanColumn / Nature", () => {
+  it("mappe colonnes via statut DSFR + Feedback purple", () => {
+    assert.equal(badgeClassForKanbanColumn("feedback"), "fr-badge--purple-glycine");
+    assert.equal(badgeClassForKanbanColumn("en_cours"), "fr-badge--new");
+    assert.equal(badgeClassForKanbanColumn("livre"), "fr-badge--success");
+    assert.equal(badgeClassForKanbanColumn("backlog"), "");
+    assert.equal(badgeClassForKanbanNature("Feedback"), "fr-badge--purple-glycine");
+    assert.equal(badgeClassForKanbanNature("Produit"), "fr-badge--blue-cumulus");
   });
 });
 
