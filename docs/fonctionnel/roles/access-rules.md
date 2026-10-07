@@ -5,7 +5,7 @@ Anonymisé — pas de noms ni d’emails.
 
 ## En clair
 
-La table **Équipe** a des règles par **rôle** : lecture seule pour la plupart, écriture Owner/Admin, e-mail protégé, et les **Freelances** ne voient que Prénom-Nom · département · Spécialité sur l’annuaire. **TJM** et **Total TTC** : Owner / Admin sur toutes les fiches, et **soi-même** sur sa fiche (#60 — appliqué 2026-09-19).
+La table **Équipe** a des règles par **rôle** : lecture seule pour la plupart, écriture Owner/Admin, e-mail protégé, et les **Freelances** ne voient que Prénom-Nom · département · Spécialité sur l’annuaire. **TJM** (legacy fiche) et **Total TTC** : Owner / Admin sur toutes les fiches, et **soi-même** sur sa fiche (#60 — appliqué 2026-09-19). La grille **`Equipe_TJM`** (tarifs multi-périodes) a ses propres règles (#86) : Owner/Admin tout ; chacun lit ses lignes ; refus défaut.
 
 La table **Realise** (CRA) a un **mur par rôle** (#47 / suite #70) : Owner/Admin tout ; Responsable son département ; Freelance ses lignes (+ create) ; `Calcul_TTC` lecture seule hors Owner.
 
@@ -29,7 +29,8 @@ Les **montants BDC** (Budget / consommé / solde, Devis, Sofiane…) : Owner **o
 | User Attributes | **OK** — Name `Equipe`, `user.Email` → `Equipe.E_mail` |
 | Montants BDC (`Devis`, `Montant_TTC`, `Total_TTC_CRA`, `Solde_TTC_*`, …) | **Appliqué** — Owner **ou** Admin `+RU` ; hors Owner/Admin `-RU` (`OWNER` sans guillemets) |
 | Summaries / Previsionnel TTC / Malt… | **À revoir** — encore `"OWNER"` (Const) sur plusieurs règles |
-| `Equipe.TJM`, `Total_TTC` | **Appliqué** — refus sauf Owner, Admin, ou soi (`user.Email == rec.E_mail`) — formule encore avec `"OWNER"` (mitigé Admin/soi) |
+| `Equipe.TJM`, `Total_TTC` | **Appliqué** — refus sauf Owner, Admin, ou soi (`user.Email == rec.E_mail`) — formule encore avec `"OWNER"` (mitigé Admin/soi) ; widget V1 n’écrit plus `Equipe.TJM` |
+| `Equipe_TJM` | **Appliqué** — Owner/Admin `+CRUD` ; soi `+R` (`user.Equipe.id == rec.Personne`) ; `True` → `-CRUD` (resource 46) |
 | `Equipe` table (`*`) | Owner **ou** `Role_ACL == Admin` → `+CRUD` ; `True` → `+R -CUD` |
 | `Equipe.E_mail` | **HITL #33** : deny hors soi (comme TJM) — voir détail |
 | `Equipe` colonnes « hors carte » | `Role_ACL == Freelance` → `-RU` (voir liste) |
@@ -59,7 +60,17 @@ Les **montants BDC** (Budget / consommé / solde, Devis, Sofiane…) : Owner **o
 
 **Point d’attention** : l’e-mail du compte Grist doit être **identique** à `Equipe.E_mail` (sinon « soi » ne matche pas — voir [prep-equipe.md](prep-equipe.md)).
 
-Le widget ([#61](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/61)) n’affiche TJM / Total TTC que si Grist les livre (nombre lisible).
+Le widget ([#61](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/61)) n’affiche Total TTC que si Grist le livre. Les **tarifs** s’affichent depuis `Equipe_TJM` (voir ci-dessous).
+
+### Table `Equipe_TJM` (#86 — appliqué 2026-10-07)
+
+| Condition | Droits | Mémo |
+|-----------|--------|------|
+| `user.Access == OWNER or user.Equipe.Role_ACL == "Admin"` | `+CRUD` | Owner / Admin : toutes les lignes grille |
+| `user.Equipe.id == rec.Personne` | `+R` | Soi : lecture seule de ses tarifs |
+| `True` | `-CRUD` | Refus défaut |
+
+**User Attribute** : réutilise `Equipe` (`user.Email` → `Equipe.E_mail`) — pas de nouvelle UA. Widget : create + update allowlistés ; pas de delete.
 
 Colonnes du bloc Freelance (`-RU`) :  
 `Portage`, `Statut`, `Nb_Jours`, `Ordinateur2`, `Nom_BdC`, `BdC_Chorus`, `Droits_d_acces_aux_tables_budgets`, `Mode_recrutement`, `Missions_en_cours`, `Missions_en_cours2`, `Portage_en_cours`, `Role_ACL`.

@@ -73,8 +73,9 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Table / ressource | Admin | Resp. | Freelance | Invité | Appliqué ? | Notes |
 |-------------------|-------|-------|-----------|--------|------------|-------|
-| `Equipe` (hors TJM/TTC) | CRUD | R | R (3 cols) | R | **Appliqué** | Table `+R-CUD` ; Freelance : seulement `Prenom_Nom` / `Equipe` / `Specialite` ([#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55)) ; widget **create + update** Admin (drawer) |
-| `Equipe.TJM`, `Total_TTC` | RU | RU | R soi | R soi | **Appliqué** | `-RU` sauf Owner / Admin / soi (`user.Email == rec.E_mail`) — [#60](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/60) ; TJM saisissable à la **création / édition** Admin (droit table C/U) |
+| `Equipe` (hors TJM/TTC) | CRUD | R | R (3 cols) | R | **Appliqué** | Table `+R-CUD` ; Freelance : seulement `Prenom_Nom` / `Equipe` / `Specialite` ([#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55)) ; widget **create + update** Admin (drawer) — **sans** écrire `Equipe.TJM` (source = grille) |
+| `Equipe.TJM`, `Total_TTC` | RU | RU | R soi | R soi | **Appliqué** | `-RU` sauf Owner / Admin / soi — [#60](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/60) ; **legacy** : widget n’écrit plus `Equipe.TJM` (V1 grille) ; Total TTC encore affiché fiche si lisible |
+| `Equipe_TJM` | CRUD | — | R soi | — | **Appliqué** (ACL) + widget | Resource 46 : Owner/Admin `+CRUD` ; `user.Equipe.id == rec.Personne` → `+R` ; `True` → `-CRUD` ; widget create+update grille Admin ([#86](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/86)) ; pas de delete |
 | `Equipe.E_mail` | RU | — | — | — | **Appliqué** | `-RU` si non-(Owner\|Admin) ; saisie création / édition Admin (pas d’affichage liste/fiche) |
 | `Plan_activite` | CRUD | R ? | R / — | R / — | Non (rôle) | Ancre widget |
 | `BDC` métadonnées | CRUD | R ? | R limité | R / — | **Partiel (widget)** | Widget : **update cadre** Admin UX (#108) — create/delete hors scope ; ACL métadonnées encore « Non (rôle) » côté couche 6 |
@@ -108,6 +109,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-10-07 | Grille `Equipe_TJM` V1 : allowlists lecture/écriture ; drawer Admin (clôture manuelle) ; fiche historique ; plus d’édition `Equipe.TJM` ; ACL resource 46 | 5, 6 | [#86](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/86) / kanban `tjm-historique-multi-spe` |
 | 2026-10-07 | Accueil « Vos retours » : onglets **Actifs / Archivés** (Option C) ; Archivés = Livré lus sans badge (`localStorage` #112) ; **pas** de colonne Grist ; **N/A `Page_*`** (variante confort sur `/`) | 5 | kanban `vos-retours-actifs-archives` id=56 |
 | 2026-10-05 | Weekly Ops drawer suivi : écriture `Weekly_phase` (`Phase` · `Meteo` · `Note_ops` · `Membre_equipe` Ref→`Equipe`) ; échanges `Weekly_agenda` ; **pas** coach texte ; **aucune** écriture / colonne `Missions` ; **N/A `Page_*`** ; accès `Weekly_coachs` inchangé | 5, 6 (doc) | [#114](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/pull/114) · kanban `weekly-suivi-missions-drawer` |
 | 2026-10-05 | Accueil `/` : bloc **Vos retours** (Feedback auteur = e-mail session, 5 max, badges réponse / colonne, lu = localStorage) ; composition **Option 3** (recherche + split raccourcis \| retours) ; **N/A `Page_*`** (variante sur `Page_accueil`) ; Invité inclus si e-mail OK | 5 | kanban `vos-retours-accueil` |

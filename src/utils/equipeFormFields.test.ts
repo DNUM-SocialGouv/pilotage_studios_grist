@@ -17,7 +17,6 @@ describe("emptyEquipeCreateForm", () => {
     assert.equal(f.Statut, DEFAULT_EQUIPE_STATUT);
     assert.equal(f.Prenom_Nom, "");
     assert.equal(f.E_mail, "");
-    assert.equal(f.TJM, "");
   });
 });
 
@@ -36,7 +35,7 @@ describe("parseOptionalTjm", () => {
 });
 
 describe("buildEquipeCreateFields", () => {
-  it("impose Prenom_Nom et E_mail trimés ; omet les vides", () => {
+  it("impose Prenom_Nom et E_mail trimés ; omet les vides ; pas de TJM", () => {
     const fields = buildEquipeCreateFields({
       ...emptyEquipeCreateForm(),
       Prenom_Nom: "  Alice Dupont  ",
@@ -45,7 +44,6 @@ describe("buildEquipeCreateFields", () => {
       Specialite: "",
       Portage: "Malt",
       Role_ACL: "Freelance",
-      TJM: "600",
     });
     assert.deepEqual(fields, {
       Prenom_Nom: "Alice Dupont",
@@ -54,31 +52,13 @@ describe("buildEquipeCreateFields", () => {
       Statut: DEFAULT_EQUIPE_STATUT,
       Portage: "Malt",
       Role_ACL: "Freelance",
-      TJM: 600,
     });
-  });
-
-  it("n’envoie pas TJM invalide ou vide", () => {
-    const emptyTjm = buildEquipeCreateFields({
-      ...emptyEquipeCreateForm(),
-      Prenom_Nom: "Bob",
-      E_mail: "bob@example.org",
-      TJM: "",
-    });
-    assert.equal("TJM" in emptyTjm, false);
-
-    const bad = buildEquipeCreateFields({
-      ...emptyEquipeCreateForm(),
-      Prenom_Nom: "Bob",
-      E_mail: "bob@example.org",
-      TJM: "nope",
-    });
-    assert.equal("TJM" in bad, false);
+    assert.equal("TJM" in fields, false);
   });
 });
 
 describe("memberToEquipeFormValues", () => {
-  it("préremplit depuis une fiche Admin", () => {
+  it("préremplit depuis une fiche Admin (sans TJM formulaire)", () => {
     const member: EquipeMember = {
       id: 7,
       Prenom_Nom: " Alice Dupont ",
@@ -102,20 +82,18 @@ describe("memberToEquipeFormValues", () => {
       Ordinateur2: "Oui",
       Mode_recrutement: "AO",
       Role_ACL: "Freelance",
-      TJM: "600",
     });
   });
 
-  it("défaut statut Actif et TJM vide si absents", () => {
+  it("défaut statut Actif si absent", () => {
     const v = memberToEquipeFormValues({ id: 1, Prenom_Nom: "Bob" });
     assert.equal(v.Statut, DEFAULT_EQUIPE_STATUT);
     assert.equal(v.E_mail, "");
-    assert.equal(v.TJM, "");
   });
 });
 
 describe("buildEquipeUpdateFields", () => {
-  it("envoie les chaînes (y compris vides) et le TJM si renseigné", () => {
+  it("envoie les chaînes (y compris vides) sans TJM", () => {
     const fields = buildEquipeUpdateFields({
       ...emptyEquipeCreateForm(),
       Prenom_Nom: "  Alice  ",
@@ -124,7 +102,6 @@ describe("buildEquipeUpdateFields", () => {
       Specialite: "",
       Portage: "",
       Role_ACL: "Admin",
-      TJM: "450,5",
     });
     assert.deepEqual(fields, {
       Prenom_Nom: "Alice",
@@ -136,19 +113,17 @@ describe("buildEquipeUpdateFields", () => {
       Ordinateur2: "",
       Mode_recrutement: "",
       Role_ACL: "Admin",
-      TJM: 450.5,
     });
+    assert.equal("TJM" in fields, false);
   });
 
-  it("omet TJM et Role_ACL si vides (ne pas effacer)", () => {
+  it("omet Role_ACL si vide (ne pas effacer)", () => {
     const fields = buildEquipeUpdateFields({
       ...emptyEquipeCreateForm(),
       Prenom_Nom: "Alice",
       E_mail: "a@b.fr",
       Role_ACL: "",
-      TJM: "",
     });
-    assert.equal("TJM" in fields, false);
     assert.equal("Role_ACL" in fields, false);
   });
 });
