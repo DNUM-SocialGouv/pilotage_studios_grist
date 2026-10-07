@@ -496,8 +496,7 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
                             </div>
                             <div className="fr-col-12 fr-col-md-6">
                               <Input
-                                label="TJM *"
-                                hintText="Montant journalier HT (€)."
+                                label="TJM HT (€) *"
                                 nativeInputProps={{
                                   inputMode: "decimal",
                                   value: line.TJM,
@@ -533,8 +532,7 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
                             </div>
                             <div className="fr-col-12 fr-col-md-6">
                               <Input
-                                label="Fin"
-                                hintText="Vide = toujours en vigueur."
+                                label="Fin (vide = en vigueur)"
                                 nativeInputProps={{
                                   type: "date",
                                   value: line.Date_fin,
