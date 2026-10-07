@@ -43,11 +43,21 @@ export function WelcomePage() {
     profilKind,
   });
 
-  const { markSeen, reload, visible, status, items, error } = vosRetours;
+  const {
+    markSeen,
+    reload,
+    visible,
+    status,
+    actifs,
+    archives,
+    mineCount,
+    error,
+  } = vosRetours;
 
   const [ticket, setTicket] = useState<KanbanTicket | null>(null);
   const [focusReturnId, setFocusReturnId] = useState<number | null>(null);
   const itemButtonRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
+  const vosRetoursTitleRef = useRef<HTMLHeadingElement | null>(null);
 
   useEffect(() => subscribeKanbanReload(reload), [reload]);
 
@@ -67,7 +77,12 @@ export function WelcomePage() {
   useEffect(() => {
     if (ticket != null || focusReturnId == null) return;
     const btn = itemButtonRefs.current.get(focusReturnId);
-    btn?.focus();
+    if (btn) {
+      btn.focus();
+    } else {
+      /* Carte passée en Archivés après lecture → focus titre de section. */
+      vosRetoursTitleRef.current?.focus();
+    }
     setFocusReturnId(null);
   }, [ticket, focusReturnId]);
 
@@ -99,10 +114,13 @@ export function WelcomePage() {
                 ? {
                     visible: true,
                     status,
-                    items,
+                    actifs,
+                    archives,
+                    mineCount,
                     error,
                     onOpenTicket: openTicket,
                     itemButtonRefs,
+                    sectionTitleRef: vosRetoursTitleRef,
                   }
                 : undefined
             }

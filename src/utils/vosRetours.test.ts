@@ -3,10 +3,12 @@ import { describe, it } from "node:test";
 import type { KanbanCommentaireItem } from "./kanbanCommentaires.ts";
 import type { KanbanTicket } from "./kanbanTickets.ts";
 import {
+  buildVosRetoursBuckets,
   buildVosRetoursItems,
   computeVosRetourNovelty,
   filterMesRetoursFeedback,
   hasOtherReplySignal,
+  isVosRetourArchived,
   shouldShowVosRetoursBlock,
 } from "./vosRetours.ts";
 import {
@@ -122,7 +124,7 @@ describe("computeVosRetourNovelty", () => {
 });
 
 describe("buildVosRetoursItems", () => {
-  it("limite à 5 et trie par activité", () => {
+  it("limite à 5 et trie par activité (onglet Actifs)", () => {
     const tickets = [1, 2, 3, 4, 5, 6].map((id) =>
       ticket({ id, dateSort: id * 1000, email: "a@b.fr" }),
     );
@@ -138,6 +140,73 @@ describe("buildVosRetoursItems", () => {
       items.map((i) => i.ticket.id),
       [6, 5, 4, 3, 2],
     );
+  });
+});
+
+describe("Option C — Actifs / Archivés", () => {
+  it("archive un Livré sans badge (lu)", () => {
+    const t = ticket({ id: 10, column: "livre", email: "a@b.fr" });
+    const lastSeen = { "10": { seenAt: 5_000, column: "livre" as const } };
+    const buckets = buildVosRetoursBuckets({
+      tickets: [t],
+      comments: [],
+      sessionEmail: "a@b.fr",
+      lastSeen,
+    });
+    assert.equal(buckets.mineCount, 1);
+    assert.equal(buckets.actifs.length, 0);
+    assert.equal(buckets.archives.length, 1);
+    assert.equal(buckets.archives[0]?.ticket.id, 10);
+    assert.equal(isVosRetourArchived(buckets.archives[0]!), true);
+  });
+
+  it("garde un Livré non lu (badge) dans Actifs", () => {
+    const t = ticket({ id: 11, column: "livre", email: "a@b.fr" });
+    const buckets = buildVosRetoursBuckets({
+      tickets: [t],
+      comments: [],
+      sessionEmail: "a@b.fr",
+      lastSeen: {},
+    });
+    assert.equal(buckets.actifs.length, 1);
+    assert.equal(buckets.archives.length, 0);
+    assert.equal(buckets.actifs[0]?.novelty, "mis_a_jour");
+  });
+
+  it("réapparaît en Actifs si nouvelle réponse après lecture", () => {
+    const t = ticket({ id: 12, column: "livre", email: "a@b.fr" });
+    const comments = [
+      comment({ id: 20, cibleId: 12, dateSort: 9_000, email: "ops@example.com" }),
+    ];
+    const lastSeen = { "12": { seenAt: 1_000, column: "livre" as const } };
+    const buckets = buildVosRetoursBuckets({
+      tickets: [t],
+      comments,
+      sessionEmail: "a@b.fr",
+      lastSeen,
+    });
+    assert.equal(buckets.actifs.length, 1);
+    assert.equal(buckets.archives.length, 0);
+    assert.equal(buckets.actifs[0]?.novelty, "nouvelle_reponse");
+  });
+
+  it("garde Feedback / En cours lus dans Actifs", () => {
+    const tickets = [
+      ticket({ id: 13, column: "feedback", email: "a@b.fr", dateSort: 100 }),
+      ticket({ id: 14, column: "en_cours", email: "a@b.fr", dateSort: 200 }),
+    ];
+    const lastSeen = {
+      "13": { seenAt: 50, column: "feedback" as const },
+      "14": { seenAt: 50, column: "en_cours" as const },
+    };
+    const buckets = buildVosRetoursBuckets({
+      tickets,
+      comments: [],
+      sessionEmail: "a@b.fr",
+      lastSeen,
+    });
+    assert.equal(buckets.actifs.length, 2);
+    assert.equal(buckets.archives.length, 0);
   });
 });
 

@@ -27,10 +27,13 @@ type WelcomeRoleHomeProps = {
   vosRetours?: {
     visible: boolean;
     status: VosRetoursStatus;
-    items: VosRetourItem[];
+    actifs: VosRetourItem[];
+    archives: VosRetourItem[];
+    mineCount: number;
     error: string | null;
     onOpenTicket: (ticket: KanbanTicket) => void;
     itemButtonRefs: RefObject<Map<number, HTMLButtonElement>>;
+    sectionTitleRef?: RefObject<HTMLHeadingElement | null>;
   };
 };
 
@@ -129,10 +132,13 @@ export function WelcomeRoleHome({
     showVosRetours && vosRetours ? (
       <VosRetoursSection
         status={vosRetours.status}
-        items={vosRetours.items}
+        actifs={vosRetours.actifs}
+        archives={vosRetours.archives}
+        mineCount={vosRetours.mineCount}
         error={vosRetours.error}
         onOpenTicket={vosRetours.onOpenTicket}
         itemButtonRefs={vosRetours.itemButtonRefs}
+        sectionTitleRef={vosRetours.sectionTitleRef}
       />
     ) : null;
 

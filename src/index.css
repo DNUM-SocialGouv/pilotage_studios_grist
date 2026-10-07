@@ -1570,6 +1570,19 @@ button.fr-link:disabled {
   margin-bottom: 0;
 }
 
+.welcome-vos-retours__title:focus {
+  outline: none;
+}
+
+.welcome-vos-retours__title:focus-visible {
+  outline: 2px solid var(--border-action-high-blue-france);
+  outline-offset: 2px;
+}
+
+.welcome-vos-retours__tabs {
+  margin-top: 0.25rem;
+}
+
 .welcome-vos-retours__list {
   display: flex;
   flex-direction: column;
