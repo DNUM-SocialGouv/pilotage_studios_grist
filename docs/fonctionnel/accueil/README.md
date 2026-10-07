@@ -24,7 +24,7 @@ Première page affichée à l’ouverture du Custom Widget dans Grist : un **acc
 | Invité | « Pilotage studios » + « Bonjour » + libellé rôle ; CTA : Missions · Produits · Documentation (si `Page_regles_metier`) ; **pas** de bandeau ni de barre de recherche ; **oui** bloc « Vos retours » si e-mail session résolu ; pas de carnet / revue / droits |
 | Profil vide / erreur | Message explicite + CTA limités (Documentation / Missions si ouverts en fail-closed) — **pas** de 5ᵉ rôle inventé ; **pas** de barre de recherche ; **pas** de bloc « Vos retours » |
 | Recherche d’accueil | **Option A** : « Bonjour [Prénom] » **dans** un bandeau **pleine largeur** du contenu (fond DSFR `background-alt-grey` + filet bleu), puis la barre ; suggestions inline (≥ 2 lettres) → fiche `/produits/:id`, `/missions/:id` ou `/equipe/:id` ; résultats **Mission** : badge statut (`StatutBadge`) ; pas de page `/recherche` ; cibles masquées si `Page_produits` / `Page_missions` / `Page_equipe` fermés ; lazy fetch au premier focus ; pas de hero marketing (pas d’image, pas de slogan) |
-| **Vos retours** | Section sur `/` : cartes `Nature=Feedback` dont `Email` = e-mail de session ; **5** max ; badges « Nouvelle réponse » / « Mis à jour » (priorité réponse) via commentaires d’autrui / champ `Reponse` + changement de colonne ; « lu » = `localStorage` à l’ouverture du drawer (**pas** de colonne Grist) ; empty = placeholder + CTA « Un retour ? » ; lien feuille de route ; clic → `TicketDrawer` |
+| **Vos retours** | Section sur `/` : cartes `Nature=Feedback` dont `Email` = e-mail de session ; filtre **Actifs / Archivés** (Option C) ; **Actifs** = Feedback · Backlog · En cours + Livré encore « nouveau » (badge) ; **Archivés** = Livré déjà lus (sans badge) ; **5** max par onglet ; badges « Nouvelle réponse » / « Mis à jour » (priorité réponse) via commentaires d’autrui / champ `Reponse` + changement de colonne ; « lu » = `localStorage` à l’ouverture du drawer (**pas** de colonne Grist) ; empty E1 = aucun retour + CTA « Un retour ? » ; empty E2 = tous Livré lus → message + onglet Archivés ; lien feuille de route ; clic → `TicketDrawer` |
 | Kanban complet | **Absent** de `/` — voir [`feuille-de-route.md`](feuille-de-route.md) |
 | Nav | `WidgetNav` : chrome **Page précédente** · Accueil · modules · **menu compte** (Mon carnet · Feuille de route · Documentation) |
 | Layout | Panneau large (`welcome-page__panel--wide`) ; composition **Option 3** (split desktop) |
@@ -55,7 +55,7 @@ Première page affichée à l’ouverture du Custom Widget dans Grist : un **acc
 - Tuiles recopiant **toute** la nav
 - Tableaux de bord chiffrés (reste BDC, jours CRA, alertes)
 - Mini-kanban Admin en plus de la page dédiée
-- Colonne Grist lu/non-lu ; route `/mes-retours`
+- Colonne Grist lu/non-lu ; route `/mes-retours` ; sync multi-appareils du marqueur « lu »
 - Redirection auto Freelance → `/cra/declarer`
 - Personnalisation éditable dans Grist (CMS d’accueil)
 - Drag-and-drop des cartes ; édition commentaires (corps Résumé/Détail Admin = feuille de route)

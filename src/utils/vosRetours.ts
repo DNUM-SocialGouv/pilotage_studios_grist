@@ -134,6 +134,8 @@ export function activityAtForRetour(
   return Math.max(ticket.dateSort, latestOtherReplyAt(ticket, comments), ticket.id);
 }
 
+export type VosRetoursTabId = "actifs" | "archives";
+
 export type BuildVosRetoursOptions = {
   tickets: readonly KanbanTicket[];
   comments: readonly KanbanCommentaireItem[];
@@ -143,15 +145,35 @@ export type BuildVosRetoursOptions = {
   limit?: number;
 };
 
-/** Liste compacte (défaut 5), tri activité récente décroissante. */
-export function buildVosRetoursItems(options: BuildVosRetoursOptions): VosRetourItem[] {
+export type VosRetoursBuckets = {
+  /** Feedback / Backlog / En cours + Livré encore « nouveau » (badge). */
+  actifs: VosRetourItem[];
+  /** Livré déjà lus (sans badge) — historique consultable. */
+  archives: VosRetourItem[];
+  /** Nombre de Feedback auteur (avant slice) — distingue empty E1 / E2. */
+  mineCount: number;
+};
+
+/**
+ * Option C : Livré sans badge = archivé (lu localement via lastSeen).
+ * Pas de colonne Grist — réutilise `computeVosRetourNovelty`.
+ */
+export function isVosRetourArchived(
+  item: Pick<VosRetourItem, "ticket" | "novelty">,
+): boolean {
+  return item.ticket.column === "livre" && item.novelty === null;
+}
+
+function mapMineToItems(options: BuildVosRetoursOptions): {
+  items: VosRetourItem[];
+  mineCount: number;
+} {
   const {
     tickets,
     comments,
     sessionEmail,
     lastSeen,
     now = new Date(),
-    limit = VOS_RETOURS_LIST_LIMIT,
   } = options;
   const mine = filterMesRetoursFeedback(tickets, sessionEmail);
   const items: VosRetourItem[] = mine.map((ticket) => {
@@ -171,7 +193,36 @@ export function buildVosRetoursItems(options: BuildVosRetoursOptions): VosRetour
     };
   });
   items.sort((a, b) => b.activityAt - a.activityAt || b.ticket.id - a.ticket.id);
-  return items.slice(0, Math.max(0, limit));
+  return { items, mineCount: mine.length };
+}
+
+/**
+ * Buckets Actifs / Archivés (Option C), limite par onglet (défaut 5).
+ */
+export function buildVosRetoursBuckets(
+  options: BuildVosRetoursOptions,
+): VosRetoursBuckets {
+  const limit = Math.max(0, options.limit ?? VOS_RETOURS_LIST_LIMIT);
+  const { items, mineCount } = mapMineToItems(options);
+  const actifs: VosRetourItem[] = [];
+  const archives: VosRetourItem[] = [];
+  for (const item of items) {
+    if (isVosRetourArchived(item)) archives.push(item);
+    else actifs.push(item);
+  }
+  return {
+    actifs: actifs.slice(0, limit),
+    archives: archives.slice(0, limit),
+    mineCount,
+  };
+}
+
+/**
+ * Liste compacte Actifs uniquement (défaut 5) — tri activité récente.
+ * Préférer `buildVosRetoursBuckets` pour l’UI à onglets.
+ */
+export function buildVosRetoursItems(options: BuildVosRetoursOptions): VosRetourItem[] {
+  return buildVosRetoursBuckets(options).actifs;
 }
 
 /** Masquer le bloc si pas d’e-mail session fiable. */

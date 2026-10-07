@@ -17,7 +17,7 @@ import {
 } from "../utils/kanbanCommentaires";
 import { kanbanTicketFromRecord, type KanbanTicket } from "../utils/kanbanTickets";
 import {
-  buildVosRetoursItems,
+  buildVosRetoursBuckets,
   shouldShowVosRetoursBlock,
   type VosRetourItem,
 } from "../utils/vosRetours";
@@ -33,7 +33,12 @@ export type VosRetoursStatus = "hidden" | "loading" | "ok" | "empty" | "error" |
 export type VosRetoursData = {
   visible: boolean;
   status: VosRetoursStatus;
+  /** Actifs (onglet par défaut) — rétrocompat liste. */
   items: VosRetourItem[];
+  actifs: VosRetourItem[];
+  archives: VosRetourItem[];
+  /** Feedback auteur avant partition / slice. */
+  mineCount: number;
   error: string | null;
   reload: () => void;
   /** Marque lu (localStorage) à l’ouverture du drawer. */
@@ -162,9 +167,11 @@ export function useVosRetours({
     reloadToken,
   ]);
 
-  const items = useMemo(() => {
-    if (!visible) return [];
-    return buildVosRetoursItems({
+  const buckets = useMemo(() => {
+    if (!visible) {
+      return { actifs: [], archives: [], mineCount: 0 };
+    }
+    return buildVosRetoursBuckets({
       tickets,
       comments,
       sessionEmail,
@@ -174,14 +181,17 @@ export function useVosRetours({
 
   const resolvedStatus: VosRetoursStatus = !visible
     ? "hidden"
-    : status === "ok" && items.length === 0
+    : status === "ok" && buckets.mineCount === 0
       ? "empty"
       : status;
 
   return {
     visible,
     status: resolvedStatus,
-    items,
+    items: buckets.actifs,
+    actifs: buckets.actifs,
+    archives: buckets.archives,
+    mineCount: buckets.mineCount,
     error,
     reload,
     markSeen,
