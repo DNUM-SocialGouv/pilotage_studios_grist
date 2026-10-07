@@ -181,9 +181,9 @@ export function VosRetoursSection({
       {showFilter && !emptyNoFeedback ? (
         <div className="welcome-vos-retours__tabs fr-mb-2w">
           <SegmentedControl
-            legend="Filtrer vos retours"
+            legend="Actifs ou Archivés"
+            hideLegend
             name={tabsName}
-            inlineLegend
             small
             segments={[
               {
