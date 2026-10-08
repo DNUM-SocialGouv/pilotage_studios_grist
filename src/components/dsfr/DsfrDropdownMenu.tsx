@@ -4,7 +4,14 @@
  *
  * @see https://www.systeme-de-design.gouv.fr/version-courante/fr/composants/menu-deroulant
  */
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
@@ -23,6 +30,11 @@ export type DsfrDropdownMenuProps = {
   label: string;
   /** Accessible name if `label` is generic (ex. « Actions »). */
   title?: string;
+  /**
+   * Bouton ⋮ sans libellé visible (cartes kanban étroites).
+   * `label` / `title` restent le nom accessible.
+   */
+  iconOnly?: boolean;
   items: DsfrDropdownMenuItem[];
   align?: "left" | "right";
 };
@@ -37,6 +49,7 @@ function menuItemsOf(panel: HTMLElement | null): HTMLElement[] {
 export function DsfrDropdownMenu({
   label,
   title,
+  iconOnly = false,
   items,
   align = "right",
 }: DsfrDropdownMenuProps) {
@@ -137,48 +150,65 @@ export function DsfrDropdownMenu({
       styles.item,
     );
 
+  const accessibleName = title ?? label;
+
+  const triggerNativeProps = {
+    ref: triggerRef,
+    "aria-expanded": open,
+    "aria-haspopup": "menu" as const,
+    "aria-controls": menuId,
+    onKeyDown: (e: ReactKeyboardEvent<HTMLButtonElement>) => {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        e.stopPropagation();
+        if (open) {
+          focusItemAt(0);
+          return;
+        }
+        focusOnOpenRef.current = "first";
+        setOpen(true);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        e.stopPropagation();
+        if (open) {
+          const list = menuItemsOf(panelRef.current);
+          focusItemAt(list.length - 1);
+          return;
+        }
+        focusOnOpenRef.current = "last";
+        setOpen(true);
+      }
+    },
+  };
+
   return (
     <div ref={rootRef} className={cx(styles.root, open && styles.rootOpen)}>
-      <Button
-        type="button"
-        priority="tertiary"
-        size="small"
-        iconId="fr-icon-arrow-down-s-line"
-        iconPosition="right"
-        title={title}
-        className={styles.trigger}
-        nativeButtonProps={{
-          ref: triggerRef,
-          "aria-expanded": open,
-          "aria-haspopup": "menu",
-          "aria-controls": menuId,
-          onKeyDown: (e) => {
-            if (e.key === "ArrowDown") {
-              e.preventDefault();
-              e.stopPropagation();
-              if (open) {
-                focusItemAt(0);
-                return;
-              }
-              focusOnOpenRef.current = "first";
-              setOpen(true);
-            } else if (e.key === "ArrowUp") {
-              e.preventDefault();
-              e.stopPropagation();
-              if (open) {
-                const list = menuItemsOf(panelRef.current);
-                focusItemAt(list.length - 1);
-                return;
-              }
-              focusOnOpenRef.current = "last";
-              setOpen(true);
-            }
-          },
-        }}
-        onClick={() => setOpen((v) => !v)}
-      >
-        {label}
-      </Button>
+      {iconOnly ? (
+        <Button
+          type="button"
+          priority="tertiary"
+          size="small"
+          iconId="fr-icon-more-line"
+          title={accessibleName}
+          className={styles.trigger}
+          nativeButtonProps={triggerNativeProps}
+          onClick={() => setOpen((v) => !v)}
+        />
+      ) : (
+        <Button
+          type="button"
+          priority="tertiary"
+          size="small"
+          iconId="fr-icon-arrow-down-s-line"
+          iconPosition="right"
+          title={title}
+          className={cx(styles.trigger, styles.triggerWithChevron)}
+          nativeButtonProps={triggerNativeProps}
+          onClick={() => setOpen((v) => !v)}
+        >
+          {label}
+        </Button>
+      )}
       {open ? (
         <div
           id={menuId}

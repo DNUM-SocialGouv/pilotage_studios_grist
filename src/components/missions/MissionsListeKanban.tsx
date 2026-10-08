@@ -294,13 +294,6 @@ export function MissionsListeKanban({
         columns={boardColumns}
         onDropColumn={(key, e) => onDropColumn(key)(e)}
         statusMessage={statusOk}
-        hint={
-          <p className="fr-hint-text fr-mb-0">
-            {canWrite
-              ? "Déplacez une carte (glisser-déposer) ou changez le statut au clavier via le menu de chaque carte. Clic = ouvrir la fiche."
-              : "Clic sur une carte = ouvrir la fiche du lot."}
-          </p>
-        }
         renderCards={(columnKey) =>
           (byColumn.get(columnKey) ?? []).map((m) => (
             <MissionKanbanCard

@@ -110,6 +110,7 @@ export function KanbanCardShell({
           <DsfrDropdownMenu
             label={menuLabel}
             title={menuTitle}
+            iconOnly
             items={allMenuItems}
           />
         </div>

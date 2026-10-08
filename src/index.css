@@ -2233,11 +2233,14 @@ button.fr-link:disabled {
 }
 
 .pilotage-kanban-card__title {
-  margin: 0 2rem 0 0;
+  /* Place pour le menu ⋮ (shell kanban, position absolute). */
+  margin: 0;
+  padding-right: 2.5rem;
   font-size: 0.9375rem;
   line-height: 1.35;
   font-weight: 700;
   color: var(--text-title-grey);
+  overflow-wrap: anywhere;
 }
 
 .pilotage-kanban-card__meta {
