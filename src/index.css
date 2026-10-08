@@ -2140,6 +2140,38 @@ button.fr-link:disabled {
   color: var(--text-default-grey);
 }
 
+.weekly-card__avatars {
+  display: inline-flex;
+  align-items: center;
+}
+
+.weekly-card__avatars .equipe-avatar {
+  box-sizing: content-box;
+  border: 1px solid var(--background-default-grey);
+  margin-inline-start: -0.4rem;
+}
+
+.weekly-card__avatars .equipe-avatar:first-child {
+  margin-inline-start: 0;
+}
+
+.weekly-card__avatar-overflow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  margin-inline-start: -0.35rem;
+  padding: 0 0.35rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--border-default-grey);
+  background: var(--background-contrast-grey);
+  color: var(--text-default-grey);
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
 /* Avatar carré = même rendu que le menu compte (`EquipeAvatar` / 0.25rem). */
 
 .weekly-card__badges {

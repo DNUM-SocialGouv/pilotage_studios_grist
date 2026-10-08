@@ -19,6 +19,7 @@ import { MissionProse } from "../components/missions/MissionProse";
 import { WeeklySuiviDrawer } from "../components/weekly/WeeklySuiviDrawer";
 import { useAclProfil } from "../AclProfilContext";
 import { useGristPa } from "../GristPaContext";
+import { useWeeklyCoachAllowlist } from "../hooks/useWeeklyCoachAllowlist";
 import { useWeeklyCoachData } from "../hooks/useWeeklyCoachData";
 import { NothingHerePage } from "../security/NothingHerePage";
 import { extractGristReferenceId } from "../utils/gristReferences";
@@ -28,6 +29,7 @@ import {
   parseWeeklyAgendaCreatedAt,
   weeklyAgendaAuteurPrenom,
 } from "../utils/weeklyAgenda";
+import { weeklyOpsMembreOptions } from "../utils/weeklyCoachAccess";
 import {
   createWeeklyAgendaRecord,
   updateWeeklyAgendaSujet,
@@ -36,6 +38,7 @@ import {
   upsertWeeklyPhaseSuivi,
 } from "../utils/weeklyGristWrite";
 import {
+  WEEKLY_CARD_MEMBRE_AVATARS_VISIBLE,
   WEEKLY_PHASES,
   buildWeeklyCards,
   groupCardsByPhase,
@@ -566,23 +569,27 @@ function WeeklyCardView({
     card.produitLabel,
     ...card.departements,
   ].filter(Boolean);
-  const membreId =
-    card.membreEquipeId != null && card.membreEquipeId > 0
-      ? card.membreEquipeId
+  const membres = card.membresEquipe;
+  const membrePrenoms = membres.map(
+    (m) =>
+      firstNameFromDisplayName(m.label) || m.label || `Personne #${m.id}`,
+  );
+  const membresAria =
+    membrePrenoms.length > 0
+      ? `Membres : ${membrePrenoms.join(", ")}`
       : null;
-  const membrePrenom =
-    membreId != null
-      ? firstNameFromDisplayName(card.membreEquipeLabel) ||
-        card.membreEquipeLabel ||
-        `Personne #${membreId}`
-      : null;
+  const visibleMembres = membres.slice(0, WEEKLY_CARD_MEMBRE_AVATARS_VISIBLE);
+  const overflowCount = Math.max(
+    0,
+    membres.length - WEEKLY_CARD_MEMBRE_AVATARS_VISIBLE,
+  );
 
   // aria-label remplace le contenu pour le nom accessible : y inclure
-  // météo / membre / meta visibles (sinon masqués aux lecteurs d’écran).
+  // météo / membres / meta visibles (sinon masqués aux lecteurs d’écran).
   const ariaLabel = [
     card.titre,
     meteoLabel ? `Météo : ${meteoLabel}` : null,
-    membrePrenom ? `Membre : ${membrePrenom}` : null,
+    membresAria,
     metaParts.length > 0 ? metaParts.join(", ") : null,
     hasNote ? "note de suivi" : null,
     "ouvrir le suivi",
@@ -645,14 +652,23 @@ function WeeklyCardView({
         </p>
       ) : null}
 
-      {membreId != null && membrePrenom != null ? (
-        <p className="weekly-card__member">
-          <EquipeAvatar
-            avatar={card.membreEquipeAvatar}
-            memberId={membreId}
-            size="sm"
-          />
-          <span>{membrePrenom}</span>
+      {membres.length > 0 ? (
+        <p className="weekly-card__member" aria-hidden="true">
+          <span className="weekly-card__avatars">
+            {visibleMembres.map((m) => (
+              <EquipeAvatar
+                key={m.id}
+                avatar={m.avatar}
+                memberId={m.id}
+                size="sm"
+              />
+            ))}
+            {overflowCount > 0 ? (
+              <span className="weekly-card__avatar-overflow">
+                +{overflowCount}
+              </span>
+            ) : null}
+          </span>
         </p>
       ) : null}
 
@@ -674,6 +690,7 @@ export function WeeklyCoachPage() {
   const enabled =
     !pa.untrustedEmbed && !pa.outsideGrist && !pa.loading && !pa.error;
   const data = useWeeklyCoachData(enabled);
+  const coachAllowlist = useWeeklyCoachAllowlist(enabled);
 
   const [dragMissionId, setDragMissionId] = useState<number | null>(null);
   const [busyMissionId, setBusyMissionId] = useState<number | null>(null);
@@ -737,15 +754,8 @@ export function WeeklyCoachPage() {
   );
 
   const equipeOptions = useMemo(
-    () =>
-      data.intervenants
-        .map((p) => ({
-          id: p.id,
-          label: (p.Prenom_Nom ?? "").trim() || `Personne #${p.id}`,
-        }))
-        .filter((p) => p.label.length > 0)
-        .sort((a, b) => a.label.localeCompare(b.label, "fr")),
-    [data.intervenants],
+    () => weeklyOpsMembreOptions(data.intervenants, coachAllowlist.emails),
+    [data.intervenants, coachAllowlist.emails],
   );
 
   const suiviCard = useMemo(
@@ -783,7 +793,7 @@ export function WeeklyCoachPage() {
     phase: WeeklyPhaseKey;
     meteo: string;
     noteOps: string;
-    membreEquipeId: number | null;
+    membreEquipeIds: number[];
   }) => {
     const existingPhaseId =
       input.phaseRowId ??
@@ -798,7 +808,7 @@ export function WeeklyCoachPage() {
         phase: input.phase,
         meteo: input.meteo,
         noteOps: input.noteOps,
-        membreEquipeId: input.membreEquipeId,
+        membreEquipeIds: input.membreEquipeIds,
       });
       // Rester dans le drawer (lecture) — comme le contexte mission.
       await data.reload();

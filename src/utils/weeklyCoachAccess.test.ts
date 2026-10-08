@@ -4,6 +4,7 @@ import {
   canAccessWeeklyCoach,
   normalizeWeeklyCoachEmail,
   weeklyCoachEmailSetFromRows,
+  weeklyOpsMembreOptions,
 } from "./weeklyCoachAccess.ts";
 
 describe("weeklyCoachAccess", () => {
@@ -58,6 +59,22 @@ describe("weeklyCoachAccess", () => {
         coachEmails,
       }),
       false,
+    );
+  });
+
+  it("filtre les options membre Ops via e-mails Weekly_coachs", () => {
+    const opts = weeklyOpsMembreOptions(
+      [
+        { id: 1, Prenom_Nom: "Alice", E_mail: "coach.one@example.com" },
+        { id: 2, Prenom_Nom: "Bob", E_mail: "hors@example.com" },
+        { id: 3, Prenom_Nom: "Carol", E_mail: "Coach.Two@example.com" },
+        { id: 4, Prenom_Nom: "Sans mail" },
+      ],
+      coachEmails,
+    );
+    assert.deepEqual(
+      opts.map((o) => o.id),
+      [1, 3],
     );
   });
 });

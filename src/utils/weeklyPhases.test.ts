@@ -46,7 +46,7 @@ describe("buildWeeklyCards", () => {
       Phase: "actif",
       Meteo: "Au vert",
       Note_ops: "Point budget",
-      Membre_equipe: 5,
+      Membre_equipe: ["L", 5, 7],
     },
   ];
 
@@ -54,7 +54,10 @@ describe("buildWeeklyCards", () => {
     const cards = buildWeeklyCards({
       missions,
       missionEnfants: enfants,
-      intervenants: [{ id: 5, Prenom_Nom: "Alice", Avatar: "seed-alice" }],
+      intervenants: [
+        { id: 5, Prenom_Nom: "Alice", Avatar: "seed-alice" },
+        { id: 7, Prenom_Nom: "Bob", Avatar: "seed-bob" },
+      ],
       produits: [],
       phaseRows: phases,
     });
@@ -67,13 +70,37 @@ describe("buildWeeklyCards", () => {
     assert.deepEqual(alpha.intervenants, ["Alice"]);
     assert.equal(alpha.meteo, "Au vert");
     assert.equal(alpha.noteOps, "Point budget");
-    assert.equal(alpha.membreEquipeId, 5);
-    assert.equal(alpha.membreEquipeLabel, "Alice");
-    assert.equal(alpha.membreEquipeAvatar, "seed-alice");
+    assert.deepEqual(alpha.membreEquipeIds, [5, 7]);
+    assert.deepEqual(
+      alpha.membresEquipe.map((m) => m.label),
+      ["Alice", "Bob"],
+    );
+    assert.equal(alpha.membresEquipe[0]?.avatar, "seed-alice");
     assert.ok(beta);
     assert.equal(beta.phase, "autonomie");
     assert.equal(beta.phaseRowId, null);
-    assert.equal(beta.membreEquipeAvatar, "");
+    assert.deepEqual(beta.membresEquipe, []);
+  });
+
+  it("lit encore un id unique (compat Ref migrée)", () => {
+    const cards = buildWeeklyCards({
+      missions,
+      missionEnfants: enfants,
+      intervenants: [{ id: 5, Prenom_Nom: "Alice", Avatar: "seed-alice" }],
+      produits: [],
+      phaseRows: [
+        {
+          id: 100,
+          Mission: 10,
+          Phase: "actif",
+          Membre_equipe: 5,
+        },
+      ],
+    });
+    const alpha = cards.find((c) => c.missionId === 10);
+    assert.ok(alpha);
+    assert.deepEqual(alpha.membreEquipeIds, [5]);
+    assert.equal(alpha.membresEquipe[0]?.label, "Alice");
   });
 
   it("normalise anciens libellés Calme/Nuageux/Orageux", () => {

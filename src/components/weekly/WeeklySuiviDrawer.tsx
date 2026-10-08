@@ -2,7 +2,7 @@
  * Drawer « Suivi mission » Weekly Ops V1 — satellite `Weekly_phase` + échanges
  * `Weekly_agenda`. Aucune écriture `Missions`.
  * Ouverture en lecture ; note = édition sur place (pattern contexte mission) ;
- * météo / membre = bouton « Modifier ».
+ * météo / membres = bouton « Modifier ».
  */
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
@@ -33,13 +33,16 @@ import {
 const MARKDOWN_HINT =
   "Markdown Grist : titres (#), listes (- ou *), liens [libellé](url), gras **texte**, code `…` ou ```";
 
+/** Plafond UX select multi porteurs (RefList Grist sans limite dure). */
+const MEMBRE_EQUIPE_MAX_SELECTIONS = 5;
+
 export type WeeklyEquipeOption = { id: number; label: string };
 
 export type WeeklySuiviDrawerProps = {
   open: boolean;
   card: WeeklyCard | null;
   agendaLies: readonly WeeklyAgendaRow[];
-  /** Personnes `Equipe` pour le select Membre_equipe. */
+  /** Personnes Ops (`Equipe` ∩ `Weekly_coachs`) pour le select Membre_equipe. */
   equipeOptions: readonly WeeklyEquipeOption[];
   busy: boolean;
   onClose: () => void;
@@ -49,15 +52,28 @@ export type WeeklySuiviDrawerProps = {
     phase: WeeklyPhaseKey;
     meteo: string;
     noteOps: string;
-    membreEquipeId: number | null;
+    membreEquipeIds: number[];
   }) => Promise<void>;
   onViewSujet: (sujet: WeeklyAgendaRow) => void;
   onNouveauSujet: (missionId: number) => void;
 };
 
-function parseMembreId(raw: string): number | null {
-  const mid = raw ? Number(raw) : null;
-  return mid != null && Number.isFinite(mid) && mid > 0 ? mid : null;
+function parseMembreIds(values: readonly string[]): number[] {
+  const out: number[] = [];
+  const seen = new Set<number>();
+  for (const raw of values) {
+    const mid = Number(raw);
+    if (!Number.isFinite(mid) || mid <= 0 || seen.has(mid)) continue;
+    seen.add(mid);
+    out.push(mid);
+  }
+  return out;
+}
+
+function draftFromCard(card: WeeklyCard): string[] {
+  return card.membreEquipeIds
+    .filter((id) => id > 0)
+    .map((id) => String(id));
 }
 
 export function WeeklySuiviDrawer({
@@ -80,7 +96,7 @@ export function WeeklySuiviDrawer({
   const [editingMeta, setEditingMeta] = useState(false);
   const [editingNote, setEditingNote] = useState(false);
   const [draftMeteo, setDraftMeteo] = useState("");
-  const [draftMembreId, setDraftMembreId] = useState("");
+  const [draftMembreIds, setDraftMembreIds] = useState<string[]>([]);
   const [draftNote, setDraftNote] = useState("");
   const [writeError, setWriteError] = useState<string | null>(null);
   const [savingMeta, setSavingMeta] = useState(false);
@@ -92,11 +108,7 @@ export function WeeklySuiviDrawer({
     setEditingMeta(false);
     setEditingNote(false);
     setDraftMeteo(normalizeWeeklyMeteo(card.meteo));
-    setDraftMembreId(
-      card.membreEquipeId != null && card.membreEquipeId > 0
-        ? String(card.membreEquipeId)
-        : "",
-    );
+    setDraftMembreIds(draftFromCard(card));
     setDraftNote(card.noteOps);
     setWriteError(null);
     setSavingMeta(false);
@@ -108,11 +120,7 @@ export function WeeklySuiviDrawer({
     if (!open || card == null) return;
     if (!editingMeta) {
       setDraftMeteo(normalizeWeeklyMeteo(card.meteo));
-      setDraftMembreId(
-        card.membreEquipeId != null && card.membreEquipeId > 0
-          ? String(card.membreEquipeId)
-          : "",
-      );
+      setDraftMembreIds(draftFromCard(card));
     }
     if (!editingNote) {
       setDraftNote(card.noteOps);
@@ -121,7 +129,7 @@ export function WeeklySuiviDrawer({
     open,
     card,
     card?.meteo,
-    card?.membreEquipeId,
+    card?.membreEquipeIds,
     card?.noteOps,
     editingMeta,
     editingNote,
@@ -153,29 +161,26 @@ export function WeeklySuiviDrawer({
 
   const membreSelectOptions = useMemo(() => {
     const list = [...equipeOptions];
-    if (
-      card?.membreEquipeId != null &&
-      card.membreEquipeId > 0 &&
-      !list.some((o) => o.id === card.membreEquipeId)
-    ) {
-      list.unshift({
-        id: card.membreEquipeId,
-        label:
-          card.membreEquipeLabel ||
-          `Personne #${card.membreEquipeId}`,
-      });
+    const assigned = card?.membresEquipe ?? [];
+    for (const m of assigned) {
+      if (m.id > 0 && !list.some((o) => o.id === m.id)) {
+        list.unshift({
+          id: m.id,
+          label: m.label || `Personne #${m.id}`,
+        });
+      }
     }
     return list
       .slice()
       .sort((a, b) => a.label.localeCompare(b.label, "fr"))
       .map((p) => ({ value: String(p.id), label: p.label }));
-  }, [equipeOptions, card?.membreEquipeId, card?.membreEquipeLabel]);
+  }, [equipeOptions, card?.membresEquipe]);
 
   const membreReadLabel =
-    card?.membreEquipeLabel?.trim() ||
-    (card?.membreEquipeId != null && card.membreEquipeId > 0
-      ? `Personne #${card.membreEquipeId}`
-      : "");
+    card?.membresEquipe
+      .map((m) => m.label.trim())
+      .filter(Boolean)
+      .join(", ") ?? "";
 
   const meteoNormalized = card ? normalizeWeeklyMeteo(card.meteo) : "";
   const meteoTone = meteoNormalized ? weeklyMeteoTone(meteoNormalized) : null;
@@ -184,11 +189,7 @@ export function WeeklySuiviDrawer({
   const startEditMeta = () => {
     if (!card || !opsReady || busy) return;
     setDraftMeteo(normalizeWeeklyMeteo(card.meteo));
-    setDraftMembreId(
-      card.membreEquipeId != null && card.membreEquipeId > 0
-        ? String(card.membreEquipeId)
-        : "",
-    );
+    setDraftMembreIds(draftFromCard(card));
     setWriteError(null);
     setEditingMeta(true);
   };
@@ -197,11 +198,7 @@ export function WeeklySuiviDrawer({
     if (savingMeta) return;
     if (card) {
       setDraftMeteo(normalizeWeeklyMeteo(card.meteo));
-      setDraftMembreId(
-        card.membreEquipeId != null && card.membreEquipeId > 0
-          ? String(card.membreEquipeId)
-          : "",
-      );
+      setDraftMembreIds(draftFromCard(card));
     }
     setWriteError(null);
     setEditingMeta(false);
@@ -218,7 +215,7 @@ export function WeeklySuiviDrawer({
         phase: card.phase,
         meteo: draftMeteo,
         noteOps: card.noteOps,
-        membreEquipeId: parseMembreId(draftMembreId),
+        membreEquipeIds: parseMembreIds(draftMembreIds),
       });
       setEditingMeta(false);
     } catch (err) {
@@ -255,7 +252,7 @@ export function WeeklySuiviDrawer({
         phase: card.phase,
         meteo: normalizeWeeklyMeteo(card.meteo),
         noteOps: draftNote,
-        membreEquipeId: card.membreEquipeId,
+        membreEquipeIds: card.membreEquipeIds,
       });
       setEditingNote(false);
     } catch (err) {
@@ -321,7 +318,7 @@ export function WeeklySuiviDrawer({
                     </p>
                   ) : null}
 
-                  {/* ——— Météo + Membre (lecture / édition) ——— */}
+                  {/* ——— Météo + Membres (lecture / édition) ——— */}
                   <section
                     className="weekly-suivi-meta"
                     aria-labelledby={`${titleId}-meta`}
@@ -382,18 +379,17 @@ export function WeeklySuiviDrawer({
 
                         <div className="fr-mt-2w">
                           <DsfrSelectRichMulti
-                            label="Membre équipe"
+                            label="Membres équipe"
+                            hintText="Un ou plusieurs porteurs Ops (coachs Weekly)."
                             placeholderWhenEmpty="Rechercher une personne…"
                             options={membreSelectOptions}
-                            selectedValues={draftMembreId ? [draftMembreId] : []}
-                            onSelectedValuesChange={(values) =>
-                              setDraftMembreId(values[0] ?? "")
-                            }
+                            selectedValues={draftMembreIds}
+                            onSelectedValuesChange={setDraftMembreIds}
                             searchable
                             searchLabel="Rechercher"
                             searchPlaceholder="Nom…"
                             showBulkActions={false}
-                            maxSelections={1}
+                            maxSelections={MEMBRE_EQUIPE_MAX_SELECTIONS}
                             pluralEntityLabel="personnes"
                             disabled={locked || !opsReady}
                           />
@@ -454,7 +450,7 @@ export function WeeklySuiviDrawer({
                           </dd>
                         </div>
                         <div>
-                          <dt>Membre équipe</dt>
+                          <dt>Membres équipe</dt>
                           <dd>
                             {membreReadLabel ? (
                               membreReadLabel
