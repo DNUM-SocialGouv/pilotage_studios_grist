@@ -127,6 +127,11 @@ export interface WeeklyAgendaRow {
   Email?: string;
   Mission?: unknown;
   Traite?: boolean;
+  /**
+   * Jour où le sujet a été coché traité (colonne Grist `Traite_le`, Date).
+   * Timestamp secondes ou ISO — écrit au toggle Traite.
+   */
+  Traite_le?: string | number | null;
   Cree_le?: string | number;
 }
 

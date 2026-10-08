@@ -15,8 +15,8 @@
  * - `Weekly_phase` : create + update (phase kanban + suivi ops drawer —
  *   `Phase` · `Meteo` · `Note_ops` · `Membre_equipe` RefList→Equipe
  *   — jamais `Missions` — pas de delete).
- * - `Weekly_agenda` : create + update `Traite` / `Texte` (titre) / `Detail` / `Mission`
- *   (sujets à aborder — pas de delete).
+ * - `Weekly_agenda` : create + update `Traite` / `Traite_le` / `Texte` (titre) /
+ *   `Detail` / `Mission` (sujets à aborder — pas de delete).
  * - `BDC` : update only (drawer cadre fiche — pas de create/delete).
  */
 

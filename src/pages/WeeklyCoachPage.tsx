@@ -10,6 +10,7 @@ import {
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { Input } from "@codegouvfr/react-dsfr/Input";
+import { SegmentedControl } from "@codegouvfr/react-dsfr/SegmentedControl";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { Link } from "react-router-dom";
 import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
@@ -26,6 +27,7 @@ import { extractGristReferenceId } from "../utils/gristReferences";
 import {
   defaultWeeklyAuteurPrenom,
   formatWeeklyAgendaCreatedAt,
+  groupWeeklyAgendaHistory,
   parseWeeklyAgendaCreatedAt,
   weeklyAgendaAuteurPrenom,
 } from "../utils/weeklyAgenda";
@@ -53,6 +55,7 @@ import { firstNameFromDisplayName } from "../utils/welcomeHomeByRole";
 import type { WeeklyAgendaRow } from "../types";
 
 type AgendaDialogMode = "view" | "edit" | "create";
+type AgendaTab = "a-faire" | "historique";
 
 function AgendaSujetRow({
   sujet,
@@ -707,7 +710,10 @@ export function WeeklyCoachPage() {
   const [createAgendaMissionId, setCreateAgendaMissionId] = useState<
     number | null
   >(null);
+  const [agendaTab, setAgendaTab] = useState<AgendaTab>("a-faire");
   const nouveauSujetCtaId = "weekly-nouveau-sujet-cta";
+  const agendaTabsName = useId();
+  const agendaPanelId = useId();
 
   const defaultAuteur = defaultWeeklyAuteurPrenom(displayName, sessionEmail);
 
@@ -732,13 +738,24 @@ export function WeeklyCoachPage() {
   const byPhase = useMemo(() => groupCardsByPhase(cards), [cards]);
 
   const agendaSorted = useMemo(() => {
-    return [...data.agenda].sort((a, b) => {
-      if (Boolean(a.Traite) !== Boolean(b.Traite)) {
-        return a.Traite ? 1 : -1;
-      }
-      return a.id - b.id;
-    });
+    return [...data.agenda].sort((a, b) => a.id - b.id);
   }, [data.agenda]);
+
+  /** Liste active : sujets non traités uniquement (HITL — traité disparaît). */
+  const agendaAFaire = useMemo(
+    () => agendaSorted.filter((s) => !s.Traite),
+    [agendaSorted],
+  );
+
+  const agendaHistoriqueMonths = useMemo(
+    () => groupWeeklyAgendaHistory(data.agenda),
+    [data.agenda],
+  );
+
+  const historiqueSujetCount = useMemo(
+    () => agendaHistoriqueMonths.reduce((n, m) => n + m.sujetCount, 0),
+    [agendaHistoriqueMonths],
+  );
 
   const missionTitleById = useMemo(() => {
     const m = new Map<number, string>();
@@ -957,8 +974,6 @@ export function WeeklyCoachPage() {
     }
   };
 
-  const traiteCount = agendaSorted.filter((s) => s.Traite).length;
-
   return (
     <div>
       <h1 className="fr-h3 fr-mb-3w">Weekly Ops</h1>
@@ -1030,69 +1045,225 @@ export function WeeklyCoachPage() {
                 justifyContent: "space-between",
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "0.5rem 0.75rem",
-                  alignItems: "baseline",
-                }}
-              >
-                <h2 className="fr-h5" style={{ margin: 0 }}>
-                  Sujets à aborder
-                </h2>
-                <span className="fr-hint-text" style={{ margin: 0 }}>
-                  {traiteCount}/{agendaSorted.length} traités
-                </span>
-              </div>
-              <Button
-                type="button"
-                priority="secondary"
-                size="small"
-                iconId="fr-icon-add-line"
-                disabled={agendaBusy || data.isReloading}
-                onClick={() => openCreateAgendaDialog()}
-                nativeButtonProps={{ id: nouveauSujetCtaId }}
-              >
-                Nouveau sujet
-              </Button>
+              <h2 className="fr-h5" style={{ margin: 0 }}>
+                Sujets à aborder
+              </h2>
+              {agendaTab === "a-faire" ? (
+                <Button
+                  type="button"
+                  priority="secondary"
+                  size="small"
+                  iconId="fr-icon-add-line"
+                  disabled={agendaBusy || data.isReloading}
+                  onClick={() => openCreateAgendaDialog()}
+                  nativeButtonProps={{ id: nouveauSujetCtaId }}
+                >
+                  Nouveau sujet
+                </Button>
+              ) : null}
             </div>
 
-            {agendaSorted.length === 0 ? (
-              <p className="fr-text--sm fr-mb-0" style={{ color: "var(--text-mention-grey)" }}>
-                Aucun sujet proposé pour l’instant.
-              </p>
-            ) : (
-              <ul
-                className="fr-raw-list fr-mb-0"
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "4px",
-                  margin: 0,
-                  padding: 0,
-                }}
-              >
-                {agendaSorted.map((s) => {
-                  const mid = extractGristReferenceId(s.Mission) ?? null;
-                  return (
-                    <li key={s.id}>
-                      <AgendaSujetRow
-                        sujet={s}
-                        missionId={mid}
-                        missionLabel={
-                          mid != null ? missionTitleById.get(mid) : undefined
-                        }
-                        busy={agendaBusy || data.isReloading}
-                        onToggle={(id, traite) => void onToggleTraite(id, traite)}
-                        onView={(row) => openAgendaDialog(row, "view")}
-                        onEdit={(row) => openAgendaDialog(row, "edit")}
-                      />
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+            <div className="fr-mb-2w">
+              <SegmentedControl
+                legend="À faire ou Historique"
+                hideLegend
+                name={agendaTabsName}
+                small
+                segments={[
+                  {
+                    label: `À faire (${agendaAFaire.length})`,
+                    nativeInputProps: {
+                      value: "a-faire",
+                      checked: agendaTab === "a-faire",
+                      onChange: () => setAgendaTab("a-faire"),
+                      "aria-controls": agendaPanelId,
+                    },
+                  },
+                  {
+                    label: `Historique (${historiqueSujetCount})`,
+                    nativeInputProps: {
+                      value: "historique",
+                      checked: agendaTab === "historique",
+                      onChange: () => setAgendaTab("historique"),
+                      "aria-controls": agendaPanelId,
+                    },
+                  },
+                ]}
+              />
+            </div>
+
+            <div id={agendaPanelId} role="tabpanel">
+              {agendaTab === "a-faire" ? (
+                agendaAFaire.length === 0 ? (
+                  <p
+                    className="fr-text--sm fr-mb-0"
+                    style={{ color: "var(--text-mention-grey)" }}
+                  >
+                    Aucun sujet à aborder pour l’instant.
+                  </p>
+                ) : (
+                  <ul
+                    className="fr-raw-list fr-mb-0"
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "4px",
+                      margin: 0,
+                      padding: 0,
+                    }}
+                  >
+                    {agendaAFaire.map((s) => {
+                      const mid = extractGristReferenceId(s.Mission) ?? null;
+                      return (
+                        <li key={s.id}>
+                          <AgendaSujetRow
+                            sujet={s}
+                            missionId={mid}
+                            missionLabel={
+                              mid != null
+                                ? missionTitleById.get(mid)
+                                : undefined
+                            }
+                            busy={agendaBusy || data.isReloading}
+                            onToggle={(id, traite) =>
+                              void onToggleTraite(id, traite)
+                            }
+                            onView={(row) => openAgendaDialog(row, "view")}
+                            onEdit={(row) => openAgendaDialog(row, "edit")}
+                          />
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )
+              ) : historiqueSujetCount === 0 ? (
+                <p
+                  className="fr-text--sm fr-mb-0"
+                  style={{ color: "var(--text-mention-grey)" }}
+                >
+                  Aucun sujet traité pour l’instant. Cochez un sujet dans « À
+                  faire » pour le ranger ici par date.
+                </p>
+              ) : (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "1.25rem",
+                  }}
+                >
+                  {agendaHistoriqueMonths.map((month) => (
+                    <section
+                      key={month.monthKey}
+                      aria-label={`${month.label} — ${month.sujetCount} sujet${month.sujetCount > 1 ? "s" : ""} abordé${month.sujetCount > 1 ? "s" : ""}`}
+                    >
+                      <h3
+                        className="fr-text--sm fr-mb-2w"
+                        style={{
+                          margin: 0,
+                          fontWeight: 700,
+                          color: "var(--text-title-grey)",
+                        }}
+                      >
+                        {month.label}
+                        <span
+                          className="fr-hint-text"
+                          style={{ marginLeft: "0.5rem", fontWeight: 400 }}
+                        >
+                          {month.sujetCount} sujet
+                          {month.sujetCount > 1 ? "s" : ""} abordé
+                          {month.sujetCount > 1 ? "s" : ""}
+                        </span>
+                      </h3>
+                      <ol
+                        className="fr-raw-list"
+                        style={{
+                          margin: 0,
+                          padding: 0,
+                          listStyle: "none",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "1rem",
+                          borderLeft:
+                            "2px solid var(--border-default-blue-france)",
+                          paddingLeft: "1rem",
+                        }}
+                      >
+                        {month.days.map((day) => (
+                          <li key={day.dayKey}>
+                            <div
+                              style={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: "0.5rem 0.75rem",
+                                alignItems: "baseline",
+                                marginBottom: "0.5rem",
+                              }}
+                            >
+                              <span
+                                className="fr-badge fr-badge--blue-france fr-badge--sm"
+                                title={day.labelLong}
+                              >
+                                {day.labelShort}
+                              </span>
+                              <h4
+                                className="fr-sr-only"
+                                id={`weekly-hist-day-${day.dayKey}`}
+                              >
+                                {day.labelLong}
+                              </h4>
+                              <span className="fr-hint-text" style={{ margin: 0 }}>
+                                {day.sujets.length} sujet
+                                {day.sujets.length > 1 ? "s" : ""}
+                              </span>
+                            </div>
+                            <ul
+                              className="fr-raw-list"
+                              aria-labelledby={`weekly-hist-day-${day.dayKey}`}
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "4px",
+                                margin: 0,
+                                padding: 0,
+                              }}
+                            >
+                              {day.sujets.map((s) => {
+                                const mid =
+                                  extractGristReferenceId(s.Mission) ?? null;
+                                return (
+                                  <li key={s.id}>
+                                    <AgendaSujetRow
+                                      sujet={s}
+                                      missionId={mid}
+                                      missionLabel={
+                                        mid != null
+                                          ? missionTitleById.get(mid)
+                                          : undefined
+                                      }
+                                      busy={agendaBusy || data.isReloading}
+                                      onToggle={(id, traite) =>
+                                        void onToggleTraite(id, traite)
+                                      }
+                                      onView={(row) =>
+                                        openAgendaDialog(row, "view")
+                                      }
+                                      onEdit={(row) =>
+                                        openAgendaDialog(row, "edit")
+                                      }
+                                    />
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </li>
+                        ))}
+                      </ol>
+                    </section>
+                  ))}
+                </div>
+              )}
+            </div>
 
             <AgendaSujetDialog
               open={dialogOpen}

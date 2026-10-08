@@ -162,9 +162,28 @@ export async function createWeeklyAgendaRecord(input: {
   return parseCreateId(result);
 }
 
+/**
+ * Timestamp Grist Date (secondes) pour le jour calendaire local de `now`.
+ * Colonne `Weekly_agenda.Traite_le` (Date) — pas DateTime.
+ */
+export function weeklyAgendaTraiteLeTimestamp(
+  now: Date = new Date(),
+): number {
+  const localMidnight = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  );
+  return Math.floor(localMidnight.getTime() / 1000);
+}
+
+/**
+ * Coche / décoche `Traite` et synchronise `Traite_le` (jour du coche, ou null).
+ */
 export async function updateWeeklyAgendaTraite(
   id: number,
   traite: boolean,
+  now: Date = new Date(),
 ): Promise<void> {
   assertWritableUpdateTableId(WEEKLY_AGENDA_TABLE_ID);
   if (!Number.isFinite(id) || id <= 0) {
@@ -172,7 +191,10 @@ export async function updateWeeklyAgendaTraite(
   }
   await getWritableTable(WEEKLY_AGENDA_TABLE_ID).update({
     id,
-    fields: { Traite: traite },
+    fields: {
+      Traite: traite,
+      Traite_le: traite ? weeklyAgendaTraiteLeTimestamp(now) : null,
+    },
   });
 }
 
