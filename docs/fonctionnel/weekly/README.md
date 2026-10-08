@@ -4,10 +4,10 @@
 
 Écran de **synchro** pour la team Product Ops et les coachs : un kanban des
 **missions** (titres issus de Grist) et une liste de **sujets à aborder** partagée.
-Un **clic sur la carte** ouvre un **tiroir** (météo, membre équipe, note,
-échanges liés). La phase, le suivi ops et l’agenda vivent dans des **tables
-satellites Weekly** — on ne modifie **pas** les colonnes de `Missions` /
-`Missions_enfants`. Le lien CRA viendra plus tard.
+Un **clic sur la carte** ouvre un **tiroir** (météo, **un ou plusieurs**
+membres équipe Ops, note, échanges liés). La phase, le suivi ops et l’agenda
+vivent dans des **tables satellites Weekly** — on ne modifie **pas** les
+colonnes de `Missions` / `Missions_enfants`. Le lien CRA viendra plus tard.
 
 ## Route & accès
 
@@ -34,9 +34,9 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 |-------|------|
 | `Missions` | Lecture seule — titre carte (`Nom_de_la_mission`), statut, département, produit (**pas** d’écriture suivi ops) |
 | `Missions_enfants` | Lecture — intervenants sur la carte |
-| `Equipe` | Lecture — noms intervenants |
+| `Equipe` | Lecture — noms / avatars ; `E_mail` pour jointure porteurs Ops ↔ `Weekly_coachs` (si Access Rules le livrent) |
 | Produits SDPC | Lecture — libellé produit |
-| **`Weekly_phase`** | Create + update — 1 ligne / mission : `Mission` (Ref) · `Phase` (`prochainement` \| `cadrage` \| `actif` \| `autonomie`) · `Meteo` · `Note_ops` · `Membre_equipe` (Ref → `Equipe`) |
+| **`Weekly_phase`** | Create + update — 1 ligne / mission : `Mission` (Ref) · `Phase` (`prochainement` \| `cadrage` \| `actif` \| `autonomie`) · `Meteo` · `Note_ops` · `Membre_equipe` (RefList → `Equipe`) |
 | **`Weekly_agenda`** | Create + update `Traite` / `Texte` (titre) / `Detail` / `Mission` — sujets : `Texte` (titre) · `Detail` (opt., drawer) · `Auteur` · `Email` · `Mission` (opt.) · `Traite` · `Cree_le` |
 | **`Weekly_coachs`** | Lecture widget (allowlist) — `E_mail` ; écriture **hors widget** (Owner / Admin UI) |
 
@@ -50,7 +50,7 @@ Shell UI commun avec la liste Missions (`KanbanBoard` / `KanbanCardShell` : colo
 | Menu Actions | Ouvrir le suivi + **Déplacer vers…** (phase) |
 | Titre | Lecture `Missions.Nom_de_la_mission` |
 | Badge météo (coin) | `Weekly_phase.Meteo` — pastille tonée + icône (absent si vide) |
-| Membre + avatar | `Weekly_phase.Membre_equipe` → avatar carré (`EquipeAvatar`) + **prénom seul** — **absent** si non assigné |
+| Membres + avatars | `Weekly_phase.Membre_equipe` (RefList) → **avatars empilés** (max 3 + « +k ») — `aria-label` = prénoms joints — **absent** si non assigné |
 | Indicateur note | Icône (style Trello) si `Weekly_phase.Note_ops` non vide — **pas** le texte sur la carte |
 | Phase | **Colonne** kanban uniquement — **pas** de select Phase sur la carte |
 
@@ -61,7 +61,7 @@ Shell UI commun avec la liste Missions (`KanbanBoard` / `KanbanCardShell` : colo
 | Titre | Lecture `Missions.Nom_de_la_mission` |
 | Phase | Badge lecture = colonne kanban (`Weekly_phase.Phase`) — **pas** de select |
 | Ouverture | **Lecture** par défaut |
-| Météo + Membre | Lecture ; bouton **Modifier** → édition (3 boutons météo · select membre) puis Enregistrer / Annuler |
+| Météo + Membres | Lecture ; bouton **Modifier** → édition (3 boutons météo · select **multi** porteurs Ops = `Equipe` ∩ e-mails `Weekly_coachs`, + orphelins déjà assignés) puis Enregistrer / Annuler |
 | Note ops | Lecture `MissionProse` ; **Modifier** / **Ajouter** → textarea Markdown (pattern contexte mission / note studio) ; icônes Enregistrer / Annuler — **pas** de fermeture auto du drawer |
 | Derniers échanges | `Weekly_agenda` filtrés par mission + Voir / Nouveau sujet |
 | Lien fiche | Navigation `/missions/:id` (secondaire) — **pas** de sync note/météo |
@@ -74,7 +74,7 @@ Shell UI commun avec la liste Missions (`KanbanBoard` / `KanbanCardShell` : colo
 |-------------------|-------|------|-------|
 | `Meteo` | `Weekly_phase` | TEXT | Libellés métier : `Au vert` · `À surveiller` · `En difficulté` (anciens Calme/Nuageux/Orageux normalisés à la lecture) |
 | `Note_ops` | `Weekly_phase` | TEXT | Note markdown |
-| `Membre_equipe` | `Weekly_phase` | INTEGER (Ref → `Equipe`) | Membre équipe (libellé UI « Membre équipe ») |
+| `Membre_equipe` | `Weekly_phase` | RefList → `Equipe` | Porteurs Ops (libellé UI « Membres équipe ») — multi |
 
 Flag `WEEKLY_PHASE_OPS_COLUMNS_READY = true`. **Aucune** colonne / écriture sur `Missions`. Coach texte libre **annulé** (remplacé par `Membre_equipe`).
 

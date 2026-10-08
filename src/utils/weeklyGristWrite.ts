@@ -65,9 +65,26 @@ export async function upsertWeeklyPhase(input: {
   return parseCreateId(result);
 }
 
+/** Payload RefList Grist `["L", id…]` ; `null` si vide. */
+export function buildMembreEquipeRefList(
+  ids: readonly number[],
+): ["L", ...number[]] | null {
+  const seen = new Set<number>();
+  const unique: number[] = [];
+  for (const raw of ids) {
+    if (!Number.isFinite(raw)) continue;
+    const id = Math.trunc(raw);
+    if (id <= 0 || seen.has(id)) continue;
+    seen.add(id);
+    unique.push(id);
+  }
+  if (unique.length === 0) return null;
+  return ["L", ...unique];
+}
+
 /**
  * Upsert phase + champs ops satellite
- * (`Meteo` / `Note_ops` / `Membre_equipe` Ref → Equipe).
+ * (`Meteo` / `Note_ops` / `Membre_equipe` RefList → Equipe).
  * Refuse d’écrire les champs ops si `WEEKLY_PHASE_OPS_COLUMNS_READY` est faux
  * (évite une écriture inventée vers `Missions` ou des colonnes absentes).
  */
@@ -77,8 +94,8 @@ export async function upsertWeeklyPhaseSuivi(input: {
   phase: WeeklyPhaseKey;
   meteo: string;
   noteOps: string;
-  /** Id `Equipe` ; null détache. */
-  membreEquipeId: number | null;
+  /** Ids `Equipe` ; tableau vide détache. */
+  membreEquipeIds: readonly number[];
 }): Promise<number> {
   assertWritableTableId(WEEKLY_PHASE_TABLE_ID);
   assertWritableUpdateTableId(WEEKLY_PHASE_TABLE_ID);
@@ -95,10 +112,7 @@ export async function upsertWeeklyPhaseSuivi(input: {
     Phase: input.phase,
     Meteo: input.meteo.trim(),
     Note_ops: input.noteOps.trim(),
-    Membre_equipe:
-      input.membreEquipeId != null && input.membreEquipeId > 0
-        ? input.membreEquipeId
-        : null,
+    Membre_equipe: buildMembreEquipeRefList(input.membreEquipeIds),
   };
 
   if (input.phaseRowId != null && input.phaseRowId > 0) {

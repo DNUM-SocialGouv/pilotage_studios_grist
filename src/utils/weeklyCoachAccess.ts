@@ -33,3 +33,29 @@ export function canAccessWeeklyCoach(input: {
   const n = normalizeWeeklyCoachEmail(input.email);
   return n.length > 0 && input.coachEmails.has(n);
 }
+
+/**
+ * Options « Membre équipe » du drawer Weekly : personnes `Equipe` dont l’e-mail
+ * normalisé ∈ `Weekly_coachs` (même pool que l’accès écran).
+ * Les orphelins déjà assignés hors liste sont ajoutés côté drawer.
+ */
+export function weeklyOpsMembreOptions(
+  intervenants: readonly {
+    id: number;
+    Prenom_Nom?: string | null;
+    E_mail?: string | null;
+  }[],
+  coachEmails: ReadonlySet<string>,
+): { id: number; label: string }[] {
+  return intervenants
+    .filter((p) => {
+      const email = normalizeWeeklyCoachEmail(p.E_mail);
+      return email.length > 0 && coachEmails.has(email);
+    })
+    .map((p) => ({
+      id: p.id,
+      label: (p.Prenom_Nom ?? "").trim() || `Personne #${p.id}`,
+    }))
+    .filter((p) => p.label.length > 0)
+    .sort((a, b) => a.label.localeCompare(b.label, "fr"));
+}

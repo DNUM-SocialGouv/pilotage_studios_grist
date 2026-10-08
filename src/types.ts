@@ -109,7 +109,7 @@ export interface WeeklyPhaseRow {
   Meteo?: string;
   /** Note de suivi ops (`Weekly_phase.Note_ops`). */
   Note_ops?: string;
-  /** Membre équipe ops — Ref → `Equipe` (`Weekly_phase.Membre_equipe`). */
+  /** Porteurs Ops — RefList → `Equipe` (`Weekly_phase.Membre_equipe`). */
   Membre_equipe?: unknown;
 }
 
@@ -151,6 +151,11 @@ export interface Intervenant {
   Equipe?: string;
   /** Porteur / ESN (`Equipe.Portage`) — MALT, OCTO… */
   Portage?: string;
+  /**
+   * E-mail (`Equipe.E_mail`) — jointure Weekly Ops ↔ `Weekly_coachs`
+   * (filtre select porteurs). Présent seulement si Access Rules le livrent.
+   */
+  E_mail?: string;
   /** Seed DiceBear Glyphs (colonne Grist `Avatar`) — Weekly carte membre. */
   Avatar?: string;
   /** Tarif journalier — si Access Rules le livrent (Admin). */
