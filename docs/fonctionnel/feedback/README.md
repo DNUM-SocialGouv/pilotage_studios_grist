@@ -51,6 +51,11 @@ Lecture widget : `fetchAllowlistedTable('Kanban')` — colonne Feedback = `Natur
 
 Table `Kanban_commentaires` : `Cible_id` (= id `Kanban`), `Date`, `Auteur`, `Email`, `Message` (`Cible_type` figé à `Kanban` pour compat colonne existante). Create allowlisté pour tout utilisateur du widget. Pas d’update/delete widget en V1.
 
+| Mode | Comportement |
+|------|----------------|
+| **Lecture** | `Message` rendu en Markdown léger (`MissionProse` — titres, listes, gras, liens http(s) / pages internes, code inline / blocs fence) ; pas de HTML brut (échappé côté React) |
+| **Saisie** | Textarea Markdown inchangé (hint DSFR) |
+
 Le select auteur des commentaires (conversation) reste distinct du formulaire « Un retour » — voir `TicketConversation`.
 
 ### Confidentialité lecture (décision V1)

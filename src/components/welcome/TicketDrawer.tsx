@@ -497,7 +497,10 @@ export function TicketDrawer({
                   </p>
                 ) : null}
 
-                <TicketConversation cibleId={ticket.id} />
+                <TicketConversation
+                  cibleId={ticket.id}
+                  onInternalLinkClick={close}
+                />
               </div>
             ) : null}
           </div>

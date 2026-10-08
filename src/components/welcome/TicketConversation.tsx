@@ -15,15 +15,25 @@ import {
   type KanbanCommentaireItem,
 } from "../../utils/kanbanCommentaires";
 import { prenomFromAuteur } from "../../utils/kanbanTickets";
+import { MissionProse } from "../missions/MissionProse";
 
 type TicketConversationProps = {
   cibleId: number;
+  /**
+   * Lien interne Markdown (path `/…`) — ex. fermer le drawer ticket
+   * avant navigation MemoryRouter.
+   */
+  onInternalLinkClick?: (path: string) => void;
 };
 
 /**
  * Fil de commentaires d’un ticket kanban + formulaire d’envoi (tout utilisateur).
+ * Lecture : Markdown léger rendu (`MissionProse`). Saisie : textarea Markdown inchangé.
  */
-export function TicketConversation({ cibleId }: TicketConversationProps) {
+export function TicketConversation({
+  cibleId,
+  onInternalLinkClick,
+}: TicketConversationProps) {
   const auteurSelectId = useId();
   const msgId = useId();
   const [comments, setComments] = useState<KanbanCommentaireItem[]>([]);
@@ -164,9 +174,12 @@ export function TicketConversation({ cibleId }: TicketConversationProps) {
                 <strong className="fr-text--bold">{prenomFromAuteur(c.auteur)}</strong>
                 {c.dateLabel ? ` · ${c.dateLabel}` : ""}
               </p>
-              <p className="fr-text--sm fr-mb-0" style={{ whiteSpace: "pre-wrap" }}>
-                {c.message}
-              </p>
+              <div className="ticket-conversation__body">
+                <MissionProse
+                  value={c.message}
+                  onInternalLinkClick={onInternalLinkClick}
+                />
+              </div>
             </li>
           ))}
         </ul>
@@ -203,6 +216,11 @@ export function TicketConversation({ cibleId }: TicketConversationProps) {
         <div className="fr-input-group fr-mb-2w">
           <label className="fr-label" htmlFor={msgId}>
             Votre commentaire
+            <span className="fr-hint-text">
+              {
+                "Markdown léger (titres, listes, liens http(s) ou page interne, code `…` ou ```). Ex. [Documentation](/outils/regles-metier)."
+              }
+            </span>
           </label>
           <textarea
             className="fr-input"

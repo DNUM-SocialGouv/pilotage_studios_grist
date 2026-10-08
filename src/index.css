@@ -1922,6 +1922,25 @@ button.fr-link:disabled {
   padding: 0.65rem 0.75rem;
 }
 
+/* Commentaires : même rendu Markdown que le détail ticket, taille compacte. */
+.ticket-conversation__body .mission-fiche-prose {
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+}
+
+.ticket-conversation__body .mission-fiche-prose > p:last-child {
+  margin-bottom: 0;
+}
+
+.ticket-conversation__body .mission-fiche-prose__heading--1,
+.ticket-conversation__body .mission-fiche-prose__heading--2 {
+  font-size: 1rem;
+}
+
+.ticket-conversation__body .mission-fiche-prose__heading--3 {
+  font-size: 0.875rem;
+}
+
 .ticket-conversation__submit {
   display: flex;
   justify-content: flex-end;
