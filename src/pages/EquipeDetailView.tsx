@@ -6,6 +6,7 @@ import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
 import { useEquipeFormDrawerRef } from "../components/equipe/EquipeFormDrawerContext";
 import { EquipeFicheMissionsSection } from "../components/equipe/EquipeFicheMissionsSection";
+import { EquipeTjmHistorySection } from "../components/equipe/EquipeTjmHistorySection";
 import { StatutBadge } from "../components/StatutBadge";
 import { tdEquipeTag } from "../components/EquipeTags";
 import { WidgetBreadcrumb } from "../components/WidgetBreadcrumb";
@@ -116,7 +117,7 @@ export function EquipeDetailView() {
   const portage = readable(member.Portage);
   const specialite = readable(member.Specialite);
   const departement = readable(member.Equipe);
-  const showTjm = equipeMontantLisible(member.TJM);
+  // TJM fiche legacy : plus affiché — source = grille Equipe_TJM (section ci-dessous).
   const showTotalTtc = equipeMontantLisible(member.Total_TTC);
 
   const metaCells: { label: string; value: ReactNode }[] = [
@@ -128,10 +129,7 @@ export function EquipeDetailView() {
   if (specialite) {
     metaCells.push({ label: "Spécialité", value: specialite });
   }
-  // Visibles seulement si Access Rules les livrent (Admin / Owner / soi).
-  if (showTjm) {
-    metaCells.push({ label: "TJM", value: formatMontantEur(member.TJM) });
-  }
+  // Total TTC : encore sur la fiche Equipe (ACL #60) ; tarifs = grille.
   if (showTotalTtc) {
     metaCells.push({
       label: "Total TTC",
@@ -207,6 +205,11 @@ export function EquipeDetailView() {
           </div>
         ))}
       </div>
+
+      <EquipeTjmHistorySection
+        memberId={member.id}
+        enabled={data.status === "ok"}
+      />
 
       <EquipeFicheMissionsSection
         memberId={member.id}

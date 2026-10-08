@@ -9,7 +9,9 @@
  * - `Realise` : create + update (déclaration CRA freelance + revue équipe manager — pas de delete).
  * - `Droits_pages` : update only (page Admin droits des écrans — pas de create/delete).
  * - `Acl_profil` : create only (fiche session auto si absente — pas d’update/delete).
- * - `Equipe` : create + update (drawer Admin nouvelle / modifier personne — pas de delete).
+ * - `Equipe` : create + update (drawer Admin nouvelle / modifier personne — pas de delete ;
+ *   plus d’écriture `TJM` fiche — source = `Equipe_TJM`).
+ * - `Equipe_TJM` : create + update (grille tarifs Admin — pas de delete).
  * - `Weekly_phase` : create + update (phase kanban + suivi ops drawer —
  *   `Phase` · `Meteo` · `Note_ops` · `Membre_equipe` Ref→Equipe
  *   — jamais `Missions` — pas de delete).
@@ -26,6 +28,8 @@ export const REALISE_TABLE_ID = "Realise";
 export const DROITS_PAGES_TABLE_ID = "Droits_pages";
 export const ACL_PROFIL_TABLE_ID = "Acl_profil";
 export const EQUIPE_TABLE_ID = "Equipe";
+/** Grille tarifs journaliers (personne × spécialité × période). */
+export const EQUIPE_TJM_TABLE_ID = "Equipe_TJM";
 export const WEEKLY_PHASE_TABLE_ID = "Weekly_phase";
 export const WEEKLY_AGENDA_TABLE_ID = "Weekly_agenda";
 /** Allowlist e-mails coachs Weekly — lecture seule widget (pas d’écriture). */
@@ -41,6 +45,7 @@ export const WRITE_TABLE_ALLOWLIST = [
   REALISE_TABLE_ID,
   ACL_PROFIL_TABLE_ID,
   EQUIPE_TABLE_ID,
+  EQUIPE_TJM_TABLE_ID,
   WEEKLY_PHASE_TABLE_ID,
   WEEKLY_AGENDA_TABLE_ID,
 ] as const;
@@ -55,6 +60,7 @@ export const WRITE_TABLE_UPDATE_ALLOWLIST = [
   REALISE_TABLE_ID,
   DROITS_PAGES_TABLE_ID,
   EQUIPE_TABLE_ID,
+  EQUIPE_TJM_TABLE_ID,
   WEEKLY_PHASE_TABLE_ID,
   WEEKLY_AGENDA_TABLE_ID,
   BDC_TABLE_ID,

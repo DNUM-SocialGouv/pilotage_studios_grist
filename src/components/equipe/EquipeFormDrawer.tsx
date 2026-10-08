@@ -22,37 +22,33 @@ import {
   buildEquipeUpdateFields,
   emptyEquipeCreateForm,
   memberToEquipeFormValues,
-  parseOptionalTjm,
   type EquipeCreateFormValues,
 } from "../../utils/equipeFormFields.ts";
 import { createEquipeRecord, updateEquipeRecord } from "../../utils/equipeGristWrite.ts";
+import { loadEquipeTjmForPersonne } from "../../hooks/useEquipeTjmData.ts";
+import {
+  emptyEquipeTjmDraftLine,
+  rowToEquipeTjmDraft,
+  validateEquipeTjmDrafts,
+  type EquipeTjmDraftLine,
+} from "../../utils/equipeTjm.ts";
+import { persistEquipeTjmWrites } from "../../utils/equipeTjmGristWrite.ts";
 
-const formSchema = z
-  .object({
-    Prenom_Nom: z.string().trim().min(1, "Le prénom et le nom sont obligatoires"),
-    E_mail: z
-      .string()
-      .trim()
-      .min(1, "L’e-mail est obligatoire")
-      .email("Indiquez un e-mail valide"),
-    Equipe: z.string(),
-    Specialite: z.string(),
-    Statut: z.string(),
-    Portage: z.string(),
-    Ordinateur2: z.string(),
-    Mode_recrutement: z.string(),
-    Role_ACL: z.string(),
-    TJM: z.string(),
-  })
-  .superRefine((values, ctx) => {
-    if (parseOptionalTjm(values.TJM) === "invalid") {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["TJM"],
-        message: "Indiquez un montant positif ou laissez vide",
-      });
-    }
-  });
+const formSchema = z.object({
+  Prenom_Nom: z.string().trim().min(1, "Le prénom et le nom sont obligatoires"),
+  E_mail: z
+    .string()
+    .trim()
+    .min(1, "L’e-mail est obligatoire")
+    .email("Indiquez un e-mail valide"),
+  Equipe: z.string(),
+  Specialite: z.string(),
+  Statut: z.string(),
+  Portage: z.string(),
+  Ordinateur2: z.string(),
+  Mode_recrutement: z.string(),
+  Role_ACL: z.string(),
+});
 
 export type EquipeFormDrawerHandle = {
   openCreate: () => void;
@@ -81,6 +77,14 @@ function mergeChoiceOptions(base: string[], extras: string[]): string[] {
   return Array.from(set).sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
 }
 
+function updateDraftLine(
+  lines: EquipeTjmDraftLine[],
+  key: string,
+  patch: Partial<EquipeTjmDraftLine>,
+): EquipeTjmDraftLine[] {
+  return lines.map((line) => (line.key === key ? { ...line, ...patch } : line));
+}
+
 export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDrawerProps>(
   function EquipeFormDrawer(
     {
@@ -96,12 +100,15 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
   ) {
     const dialogRef = useRef<HTMLDialogElement>(null);
     const titleId = useId();
+    const tarifsHeadingId = useId();
     const navigate = useNavigate();
 
     const [mode, setMode] = useState<"create" | "edit">("create");
     const [editingId, setEditingId] = useState<number | null>(null);
     const [submitError, setSubmitError] = useState<string>();
     const [savePending, setSavePending] = useState(false);
+    const [tjmLoading, setTjmLoading] = useState(false);
+    const [tjmLines, setTjmLines] = useState<EquipeTjmDraftLine[]>([]);
 
     const { register, handleSubmit, reset, watch, formState } = useForm<EquipeCreateFormValues>({
       resolver: zodResolver(formSchema),
@@ -143,6 +150,8 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
       setMode("create");
       setEditingId(null);
       setSubmitError(undefined);
+      setTjmLines([]);
+      setTjmLoading(false);
       reset(emptyEquipeCreateForm());
       dialogRef.current?.showModal();
     }, [reset]);
@@ -152,8 +161,24 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
         setMode("edit");
         setEditingId(member.id);
         setSubmitError(undefined);
+        setTjmLines([]);
         reset(memberToEquipeFormValues(member));
         dialogRef.current?.showModal();
+        setTjmLoading(true);
+        void loadEquipeTjmForPersonne(member.id)
+          .then((rows) => {
+            setTjmLines(rows.map(rowToEquipeTjmDraft));
+          })
+          .catch((e) => {
+            setSubmitError(
+              e instanceof Error
+                ? e.message
+                : "Impossible de charger les tarifs journaliers.",
+            );
+          })
+          .finally(() => {
+            setTjmLoading(false);
+          });
       },
       [reset],
     );
@@ -166,6 +191,8 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
       setSubmitError(undefined);
       setMode("create");
       setEditingId(null);
+      setTjmLines([]);
+      setTjmLoading(false);
     };
 
     useImperativeHandle(ref, () => ({ openCreate, openEdit, close }), [
@@ -182,13 +209,20 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
       }
     };
 
+    const addTjmLine = () => {
+      setTjmLines((prev) => [...prev, emptyEquipeTjmDraftLine()]);
+    };
+
+    const removeDraftOnlyLine = (key: string) => {
+      setTjmLines((prev) => prev.filter((l) => !(l.key === key && l.id == null)));
+    };
+
     const submitForm = async (values: EquipeCreateFormValues) => {
       setSubmitError(undefined);
       setSavePending(true);
 
       try {
         if (mode === "edit") {
-          // Jamais de create depuis l’UI « Modifier » (évite doublon e-mail).
           if (editingId == null) {
             setSubmitError("Édition incohérente : fermez le panneau et réessayez.");
             return;
@@ -197,14 +231,37 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
             setSubmitError("Le rôle est obligatoire pour enregistrer la fiche.");
             return;
           }
+          const tjmCheck = validateEquipeTjmDrafts(editingId, tjmLines);
+          if (!tjmCheck.ok) {
+            setSubmitError(tjmCheck.message);
+            return;
+          }
           await updateEquipeRecord(editingId, buildEquipeUpdateFields(values));
+          await persistEquipeTjmWrites(tjmCheck.writes);
           await refreshAfterWrite();
           close();
           return;
         }
 
+        // Création : d’abord la personne, puis la grille (Personne = nouvel id).
         const fields = buildEquipeCreateFields(values);
+        // Validation tarifs avec un id provisoire : on re-valide après create.
+        const previewCheck = validateEquipeTjmDrafts(1, tjmLines);
+        if (!previewCheck.ok) {
+          setSubmitError(previewCheck.message);
+          return;
+        }
         const id = await createEquipeRecord(fields);
+        const tjmCheck = validateEquipeTjmDrafts(id, tjmLines);
+        if (!tjmCheck.ok) {
+          setSubmitError(
+            `Personne créée, mais tarifs non enregistrés : ${tjmCheck.message}`,
+          );
+          await refreshAfterWrite();
+          void navigate(`/equipe/${id}`);
+          return;
+        }
+        await persistEquipeTjmWrites(tjmCheck.writes);
         await refreshAfterWrite();
         close();
         void navigate(`/equipe/${id}`);
@@ -218,8 +275,8 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
     const isEdit = mode === "edit";
     const title = isEdit ? "Modifier la personne" : "Nouvelle personne";
     const description = isEdit
-      ? "Corrige la fiche dans l’annuaire Équipe. L’e-mail doit correspondre au compte Grist pour les droits. Laisser le TJM vide conserve la valeur actuelle."
-      : "Ajoute une fiche dans l’annuaire Équipe. Ne pas oublier d’inviter l’utilisateur sur le document Grist si nécessaire. L’e-mail doit correspondre au compte Grist pour les droits.";
+      ? "Corrige la fiche et les tarifs journaliers. L’e-mail doit correspondre au compte Grist pour les droits. Indiquez vous-même la fin d’un ancien tarif — rien n’est clôturé automatiquement."
+      : "Ajoute une fiche dans l’annuaire Équipe. Les tarifs se saisissent dans la grille ci-dessous (pas sur un champ unique). Ne pas oublier d’inviter l’utilisateur sur le document Grist si nécessaire.";
     const primaryLabel = isEdit
       ? savePending
         ? "Enregistrement…"
@@ -227,9 +284,7 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
       : savePending
         ? "Enregistrement…"
         : "Créer la personne";
-    const tjmHint = isEdit
-      ? "Optionnel. Laisser vide pour ne pas modifier le TJM actuel."
-      : "Optionnel. Tarif journalier en euros.";
+    const formBusy = savePending || tjmLoading;
 
     return (
       <dialog
@@ -281,7 +336,7 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
                     void handleSubmit(submitForm)(event);
                   }}
                 >
-                  <fieldset className="fr-fieldset" disabled={savePending}>
+                  <fieldset className="fr-fieldset" disabled={formBusy}>
                     <div className="fr-grid-row fr-grid-row--gutters">
                       <div className="fr-col-12">
                         <Input
@@ -379,20 +434,161 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
                           ))}
                         </Select>
                       </div>
-                      <div className="fr-col-12 fr-col-md-6">
-                        <Input
-                          label="TJM"
-                          hintText={tjmHint}
-                          nativeInputProps={{
-                            inputMode: "decimal",
-                            ...register("TJM"),
-                          }}
-                          state={formState.errors.TJM ? "error" : "default"}
-                          stateRelatedMessage={formState.errors.TJM?.message}
-                        />
-                      </div>
                     </div>
                   </fieldset>
+
+                  <section
+                    className="fr-mt-3w"
+                    aria-labelledby={tarifsHeadingId}
+                  >
+                    <h3 id={tarifsHeadingId} className="fr-h6 fr-mb-1w">
+                      Tarifs journaliers
+                    </h3>
+                    <p className="fr-text--sm fr-mb-2w">
+                      Indiquez la fin de l’ancien tarif vous-même ; rien n’est clôturé
+                      automatiquement. Une ligne = une spécialité × une période.
+                    </p>
+                    {tjmLoading ? (
+                      <p className="fr-text--sm fr-text-mention--grey" role="status">
+                        Chargement des tarifs…
+                      </p>
+                    ) : null}
+                    {tjmLines.length === 0 && !tjmLoading ? (
+                      <p className="fr-text--sm fr-text-mention--grey fr-mb-2w">
+                        Aucun tarif pour l’instant.
+                      </p>
+                    ) : null}
+                    <ul className="fr-mb-2w" style={{ listStyle: "none", padding: 0 }}>
+                      {tjmLines.map((line, index) => (
+                        <li
+                          key={line.key}
+                          className="fr-mb-2w fr-p-2w"
+                          style={{ border: "1px solid var(--border-default-grey)" }}
+                        >
+                          <p className="fr-text--sm fr-text--bold fr-mb-1w">
+                            Tarif {index + 1}
+                            {line.id == null ? " (nouveau)" : ""}
+                          </p>
+                          <div className="fr-grid-row fr-grid-row--gutters">
+                            <div className="fr-col-12 fr-col-md-6">
+                              <Select
+                                label="Spécialité *"
+                                nativeSelectProps={{
+                                  value: line.Specialite,
+                                  disabled: formBusy,
+                                  onChange: (e) => {
+                                    setTjmLines((prev) =>
+                                      updateDraftLine(prev, line.key, {
+                                        Specialite: e.target.value,
+                                      }),
+                                    );
+                                  },
+                                  "aria-label": `Spécialité du tarif ${index + 1}`,
+                                }}
+                              >
+                                <option value="">—</option>
+                                {specialiteChoices.map((v) => (
+                                  <option key={v} value={v}>
+                                    {v}
+                                  </option>
+                                ))}
+                              </Select>
+                            </div>
+                            <div className="fr-col-12 fr-col-md-6">
+                              <Input
+                                label="TJM HT (€) *"
+                                nativeInputProps={{
+                                  inputMode: "decimal",
+                                  value: line.TJM,
+                                  disabled: formBusy,
+                                  onChange: (e) => {
+                                    setTjmLines((prev) =>
+                                      updateDraftLine(prev, line.key, {
+                                        TJM: e.target.value,
+                                      }),
+                                    );
+                                  },
+                                  "aria-label": `TJM du tarif ${index + 1}`,
+                                }}
+                              />
+                            </div>
+                            <div className="fr-col-12 fr-col-md-6">
+                              <Input
+                                label="À partir du *"
+                                nativeInputProps={{
+                                  type: "date",
+                                  value: line.Date_debut,
+                                  disabled: formBusy,
+                                  onChange: (e) => {
+                                    setTjmLines((prev) =>
+                                      updateDraftLine(prev, line.key, {
+                                        Date_debut: e.target.value,
+                                      }),
+                                    );
+                                  },
+                                  "aria-label": `Date de début du tarif ${index + 1}`,
+                                }}
+                              />
+                            </div>
+                            <div className="fr-col-12 fr-col-md-6">
+                              <Input
+                                label="Fin (vide = en vigueur)"
+                                nativeInputProps={{
+                                  type: "date",
+                                  value: line.Date_fin,
+                                  disabled: formBusy,
+                                  onChange: (e) => {
+                                    setTjmLines((prev) =>
+                                      updateDraftLine(prev, line.key, {
+                                        Date_fin: e.target.value,
+                                      }),
+                                    );
+                                  },
+                                  "aria-label": `Date de fin du tarif ${index + 1}`,
+                                }}
+                              />
+                            </div>
+                            <div className="fr-col-12">
+                              <Input
+                                label="Commentaire"
+                                hintText="Motif (baisse, avenant…)."
+                                nativeInputProps={{
+                                  value: line.Commentaire,
+                                  disabled: formBusy,
+                                  onChange: (e) => {
+                                    setTjmLines((prev) =>
+                                      updateDraftLine(prev, line.key, {
+                                        Commentaire: e.target.value,
+                                      }),
+                                    );
+                                  },
+                                  "aria-label": `Commentaire du tarif ${index + 1}`,
+                                }}
+                              />
+                            </div>
+                          </div>
+                          {line.id == null ? (
+                            <button
+                              type="button"
+                              className="fr-btn fr-btn--tertiary-no-outline fr-btn--sm fr-mt-1w"
+                              disabled={formBusy}
+                              onClick={() => removeDraftOnlyLine(line.key)}
+                            >
+                              Retirer ce tarif (non enregistré)
+                            </button>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                    <button
+                      type="button"
+                      className="fr-btn fr-btn--secondary fr-btn--sm"
+                      disabled={formBusy}
+                      onClick={addTjmLine}
+                    >
+                      Ajouter un tarif
+                    </button>
+                  </section>
 
                   <div className="fr-mt-3w fr-grid-row fr-grid-row--gutters fr-grid-row--right">
                     <div className="fr-col-auto">
@@ -400,7 +596,7 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
                         type="button"
                         className="fr-btn fr-btn--secondary"
                         onClick={close}
-                        disabled={savePending}
+                        disabled={formBusy}
                       >
                         Annuler
                       </button>
@@ -409,7 +605,7 @@ export const EquipeFormDrawer = forwardRef<EquipeFormDrawerHandle, EquipeFormDra
                       <button
                         type="submit"
                         className="fr-btn fr-btn--primary"
-                        disabled={savePending}
+                        disabled={formBusy}
                       >
                         {primaryLabel}
                       </button>

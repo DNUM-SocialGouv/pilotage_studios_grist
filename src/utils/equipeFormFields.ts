@@ -1,5 +1,6 @@
 /**
  * Formulaire création / édition fiche Équipe (Admin) — valeurs UI + mapping champs Grist.
+ * TJM fiche (`Equipe.TJM`) : plus édité ici — source = grille `Equipe_TJM`.
  */
 
 import type { EquipeMember } from "../types.ts";
@@ -26,8 +27,6 @@ export type EquipeCreateFormValues = {
   Ordinateur2: string;
   Mode_recrutement: string;
   Role_ACL: string;
-  /** Chaîne formulaire ; vide = omis à l’écriture (create) ou inchangé (update). */
-  TJM: string;
 };
 
 /** Champs envoyés à `Equipe.create`. */
@@ -41,12 +40,11 @@ export type EquipeCreateFields = {
   Ordinateur2?: string;
   Mode_recrutement?: string;
   Role_ACL?: string;
-  TJM?: number;
 };
 
 /**
  * Champs envoyés à `Equipe.update`.
- * TJM / Role_ACL omis si formulaire vide (ne pas effacer par accident).
+ * Role_ACL omis si formulaire vide (ne pas effacer par accident).
  */
 export type EquipeUpdateFields = {
   Prenom_Nom: string;
@@ -58,7 +56,6 @@ export type EquipeUpdateFields = {
   Ordinateur2: string;
   Mode_recrutement: string;
   Role_ACL?: string;
-  TJM?: number;
 };
 
 export function emptyEquipeCreateForm(): EquipeCreateFormValues {
@@ -72,7 +69,6 @@ export function emptyEquipeCreateForm(): EquipeCreateFormValues {
     Ordinateur2: "",
     Mode_recrutement: "",
     Role_ACL: "",
-    TJM: "",
   };
 }
 
@@ -88,10 +84,6 @@ export function memberToEquipeFormValues(member: EquipeMember): EquipeCreateForm
     Ordinateur2: member.Ordinateur2?.trim() ?? "",
     Mode_recrutement: member.Mode_recrutement?.trim() ?? "",
     Role_ACL: member.Role_ACL?.trim() ?? "",
-    TJM:
-      typeof member.TJM === "number" && Number.isFinite(member.TJM)
-        ? String(member.TJM)
-        : "",
   };
 }
 
@@ -130,17 +122,13 @@ export function buildEquipeCreateFields(values: EquipeCreateFormValues): EquipeC
   setIf("Mode_recrutement", values.Mode_recrutement);
   setIf("Role_ACL", values.Role_ACL);
 
-  const tjm = parseOptionalTjm(values.TJM);
-  if (tjm !== null && tjm !== "invalid") {
-    out.TJM = tjm;
-  }
-
   return out;
 }
 
 /**
  * Patch update : chaînes envoyées (vide = effacer le choix pour les champs non sensibles) ;
- * TJM et Role_ACL omis si vides (ne pas effacer un TJM / rôle existant par accident).
+ * Role_ACL omis si vide (ne pas effacer un rôle existant par accident).
+ * Pas de `TJM` — source = `Equipe_TJM`.
  */
 export function buildEquipeUpdateFields(values: EquipeCreateFormValues): EquipeUpdateFields {
   const out: EquipeUpdateFields = {
@@ -157,11 +145,6 @@ export function buildEquipeUpdateFields(values: EquipeCreateFormValues): EquipeU
   const role = values.Role_ACL.trim();
   if (role) {
     out.Role_ACL = role;
-  }
-
-  const tjm = parseOptionalTjm(values.TJM);
-  if (tjm !== null && tjm !== "invalid") {
-    out.TJM = tjm;
   }
 
   return out;

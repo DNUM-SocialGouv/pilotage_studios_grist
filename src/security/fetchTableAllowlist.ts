@@ -1,6 +1,7 @@
 import type { GristFetchTableResult } from "../gristTypes";
 import {
   DROITS_PAGES_TABLE_ID,
+  EQUIPE_TJM_TABLE_ID,
   KANBAN_COMMENTAIRES_TABLE_ID,
   KANBAN_TABLE_ID,
   ACL_PROFIL_TABLE_ID,
@@ -30,8 +31,12 @@ export const BDC_DEPENSES_TABLE_IDS = [
   "Missions",
   "Missions_enfants",
   "Equipe",
+  EQUIPE_TJM_TABLE_ID,
   "Tableau_de_pilotage_SDPC_Produits_SDPC",
 ] as const;
+
+/** Réexport lecture grille tarifs (lazy `/equipe`). */
+export { EQUIPE_TJM_TABLE_ID };
 
 /** Tables satellite Weekly (lazy) — phase, agenda, allowlist coachs. */
 export const WEEKLY_TABLE_IDS = [

@@ -18,7 +18,7 @@ Consulter les personnes du pilotage, filtrer, ouvrir une fiche. Les **Admin** pe
 
 ## Création (Admin)
 
-Panneau latéral (drawer SM) : Prénom Nom *, E-mail *, Département, Spécialité, Statut (défaut Actif), Portage, Ordinateur, Mode de recrutement, Rôle, TJM (optionnel).
+Panneau latéral (drawer SM) : Prénom Nom *, E-mail *, Département, Spécialité (fiche), Statut (défaut Actif), Portage, Ordinateur, Mode de recrutement, Rôle, plus bloc **Tarifs journaliers** (grille optionnelle à la création). Plus de champ TJM unique sur la fiche — voir [fiche.md](fiche.md).
 
 Après enregistrement : rechargement de la liste et ouverture de `/equipe/:id`.
 
