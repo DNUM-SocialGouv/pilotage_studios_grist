@@ -37,7 +37,7 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 | `Equipe` | Lecture — noms / avatars ; `E_mail` pour jointure porteurs Ops ↔ `Weekly_coachs` (si Access Rules le livrent) |
 | Produits SDPC | Lecture — libellé produit |
 | **`Weekly_phase`** | Create + update — 1 ligne / mission : `Mission` (Ref) · `Phase` (`prochainement` \| `cadrage` \| `actif` \| `autonomie`) · `Meteo` · `Note_ops` · `Membre_equipe` (RefList → `Equipe`) |
-| **`Weekly_agenda`** | Create + update `Traite` / `Texte` (titre) / `Detail` / `Mission` — sujets : `Texte` (titre) · `Detail` (opt., drawer) · `Auteur` · `Email` · `Mission` (opt.) · `Traite` · `Cree_le` |
+| **`Weekly_agenda`** | Create + update `Traite` / `Traite_le` / `Texte` (titre) / `Detail` / `Mission` — sujets : `Texte` (titre) · `Detail` (opt., drawer) · `Auteur` · `Email` · `Mission` (opt.) · `Traite` · `Traite_le` (Date, jour du coche) · `Cree_le` |
 | **`Weekly_coachs`** | Lecture widget (allowlist) — `E_mail` ; écriture **hors widget** (Owner / Admin UI) |
 
 ### Cartes kanban (variante A)
@@ -66,7 +66,7 @@ Shell UI commun avec la liste Missions (`KanbanBoard` / `KanbanCardShell` : colo
 | Derniers échanges | `Weekly_agenda` filtrés par mission + Voir / Nouveau sujet |
 | Lien fiche | Navigation `/missions/:id` (secondaire) — **pas** de sync note/météo |
 
-**Hors V1** : point bloquant · actions structurées · timer · clôture.
+**Hors V1 drawer** : point bloquant · actions structurées · timer · clôture magique.
 
 **Colonnes ops** (confirmées MCP 2026-10-05, doc `nei9DeARs5Eo`) :
 
@@ -86,13 +86,25 @@ Flag `WEEKLY_PHASE_OPS_COLUMNS_READY = true`. **Aucune** colonne / écriture sur
 | **Détail** (drawer lecture / édition + create optionnel — **pas** dans la liste) | `Detail` (TEXT, markdown léger) — active |
 | **Mission liée** (create + édition drawer) | `Mission` (Ref → `Missions`, optionnel) |
 | Méta liste / drawer | `Auteur` (prénom) · `Cree_le` (date relative) · `Traite` |
+| **Date de traitement** (historique) | `Traite_le` (Date) — écrite au coche `Traite` ; vidée si on décoche |
 
-- Section **Sujets à aborder** : liste d’abord ; CTA **« Nouveau sujet »** dans l’**en-tête** (option B) — **pas** de formulaire permanent sous la liste.
+#### Onglets À faire | Historique (V1)
+
+- Section **Sujets à aborder** : bascule **À faire** / **Historique** (SegmentedControl DSFR) — **pas** de route dédiée, **pas** de `Page_*`.
+- **À faire** : sujets `Traite = false` uniquement. CTA **« Nouveau sujet »** dans l’en-tête (option B) — **pas** de formulaire permanent sous la liste.
+- **Historique** : sujets `Traite = true`, timeline par **jour exact** de `Traite_le` (pastille), regroupés par **mois**. **Pas** de colonne Actions (V1.1).
+- Coche Traite → écrit `Traite = true` + `Traite_le` = jour calendaire local ; le sujet **disparaît** de À faire et apparaît dans Historique.
+- Décoche → `Traite = false` + `Traite_le` vidé ; le sujet revient dans À faire.
+- Sujets déjà traités **sans** `Traite_le` (avant cette colonne) : best-effort regroupement via `Cree_le`, sinon bucket « Sans date ».
+- **Owner** : créer la colonne `Weekly_agenda.Traite_le` (type **Date**) si absente — le widget lit/écrit cette colonne.
+
+#### Liste & drawer
+
 - Liste compacte : **titre** + méta `Prénom · date relative` (+ lien mission éventuel) + **Voir** / **Modifier** — pas le détail.
 - Drawer lecture : titre, détail (`MissionProse` — markdown léger + liens internes), mission (lien fiche), méta date / auteur.
 - Drawer édition : titre, détail optionnel (textarea markdown), select mission → **Enregistrer**.
 - Drawer **create** (même tiroir) : titre, détail, mission, prénom auteur → **Ajouter** ; focus titre à l’ouverture ; focus retour au CTA après fermeture create.
-- État vide : message « Aucun sujet… » sous l’en-tête (CTA unique en en-tête).
+- État vide À faire : « Aucun sujet à aborder… » ; Historique vide : message d’aide.
 - Champ auteur « Votre prénom » (create) : prérempli avec le **prénom seul** —
   1. `Equipe.Prenom_Nom` de la session (`firstNameFromDisplayName`) ;
   2. sinon premier segment de l’e-mail de session (avant `.` / `_` / `-`, pas `prenom.nom`).
@@ -108,8 +120,9 @@ Flag `WEEKLY_PHASE_OPS_COLUMNS_READY = true`. **Aucune** colonne / écriture sur
 
 ## Hors scope (ce bolt)
 
-Timer weekly, clôture / historique, point bloquant, actions structurées, écriture
-`Meteo` / note / coach sur `Missions`, CRA. Colonne Équipe dédiée (modèle plus global plus tard).
+Timer weekly, clôture magique / table `Weekly_session`, point bloquant, **actions
+structurées** (colonne Actions du prototype historique), écriture `Meteo` / note /
+coach sur `Missions`, CRA. Colonne Équipe dédiée (modèle plus global plus tard).
 
 ## ACL (HITL Owner — UI Grist uniquement)
 

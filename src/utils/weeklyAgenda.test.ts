@@ -1,11 +1,17 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import type { WeeklyAgendaRow } from "../types.ts";
 import {
   defaultWeeklyAuteurPrenom,
   formatWeeklyAgendaCreatedAt,
+  formatWeeklyAgendaDayLong,
+  formatWeeklyAgendaDayShort,
+  groupWeeklyAgendaHistory,
   prenomFromEmailLocalPart,
   weeklyAgendaAuteurPrenom,
+  weeklyAgendaDayKey,
 } from "./weeklyAgenda.ts";
+import { weeklyAgendaTraiteLeTimestamp } from "./weeklyGristWrite.ts";
 
 describe("prenomFromEmailLocalPart", () => {
   it("prend le segment avant le point (pas prenom.nom)", () => {
@@ -84,5 +90,91 @@ describe("weeklyAgendaAuteurPrenom", () => {
   it("secours tiret", () => {
     assert.equal(weeklyAgendaAuteurPrenom(""), "—");
     assert.equal(weeklyAgendaAuteurPrenom(null), "—");
+  });
+});
+
+describe("weeklyAgendaTraiteLeTimestamp", () => {
+  it("retourne minuit local en secondes", () => {
+    const now = new Date(2026, 9, 8, 17, 30, 0);
+    const ts = weeklyAgendaTraiteLeTimestamp(now);
+    const back = new Date(ts * 1000);
+    assert.equal(back.getFullYear(), 2026);
+    assert.equal(back.getMonth(), 9);
+    assert.equal(back.getDate(), 8);
+    assert.equal(back.getHours(), 0);
+  });
+});
+
+describe("groupWeeklyAgendaHistory", () => {
+  it("ignore les sujets non traités", () => {
+    const agenda: WeeklyAgendaRow[] = [
+      { id: 1, Texte: "Ouvert", Traite: false },
+      {
+        id: 2,
+        Texte: "Fait",
+        Traite: true,
+        Traite_le: weeklyAgendaTraiteLeTimestamp(new Date(2026, 8, 25)),
+      },
+    ];
+    const months = groupWeeklyAgendaHistory(agenda);
+    assert.equal(months.length, 1);
+    assert.equal(months[0]!.sujetCount, 1);
+    assert.equal(months[0]!.days[0]!.sujets[0]!.id, 2);
+  });
+
+  it("groupe par jour exact de Traite_le (pas vendredi forcé)", () => {
+    const mercredi = new Date(2026, 8, 23); // mer. 23 sept 2026
+    const vendredi = new Date(2026, 8, 25);
+    const agenda: WeeklyAgendaRow[] = [
+      {
+        id: 1,
+        Texte: "A",
+        Traite: true,
+        Traite_le: weeklyAgendaTraiteLeTimestamp(mercredi),
+      },
+      {
+        id: 2,
+        Texte: "B",
+        Traite: true,
+        Traite_le: weeklyAgendaTraiteLeTimestamp(vendredi),
+      },
+    ];
+    const months = groupWeeklyAgendaHistory(agenda);
+    assert.equal(months.length, 1);
+    assert.equal(months[0]!.days.length, 2);
+    assert.equal(months[0]!.days[0]!.dayKey, weeklyAgendaDayKey(vendredi));
+    assert.equal(months[0]!.days[1]!.dayKey, weeklyAgendaDayKey(mercredi));
+  });
+
+  it("fallback Cree_le si Traite_le absent", () => {
+    const cree = new Date(2026, 7, 14, 10, 0, 0);
+    const agenda: WeeklyAgendaRow[] = [
+      {
+        id: 3,
+        Texte: "Legacy",
+        Traite: true,
+        Traite_le: null,
+        Cree_le: cree.toISOString(),
+      },
+    ];
+    const months = groupWeeklyAgendaHistory(agenda);
+    assert.equal(months[0]!.days[0]!.dayKey, weeklyAgendaDayKey(cree));
+  });
+
+  it("bucket sans date si aucune date", () => {
+    const months = groupWeeklyAgendaHistory([
+      { id: 4, Texte: "Orphelin", Traite: true },
+    ]);
+    assert.equal(months[0]!.monthKey, "sans-date");
+    assert.equal(months[0]!.days[0]!.labelShort, "Sans date");
+  });
+});
+
+describe("formatWeeklyAgendaDay*", () => {
+  it("produit un libellé long accessible", () => {
+    const d = new Date(2026, 8, 25);
+    assert.match(formatWeeklyAgendaDayLong(d), /25/);
+    assert.match(formatWeeklyAgendaDayLong(d), /2026/);
+    assert.ok(formatWeeklyAgendaDayShort(d).length > 0);
   });
 });

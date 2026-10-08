@@ -203,6 +203,7 @@ export function toWeeklyPhase(record: GristRecord): WeeklyPhaseRow {
 
 export function toWeeklyAgenda(record: GristRecord): WeeklyAgendaRow {
   const traite = record.Traite;
+  const traiteLe = record.Traite_le;
   return {
     id: record.id,
     Texte: asString(record.Texte) ?? asMultilineText(record.Texte),
@@ -211,6 +212,12 @@ export function toWeeklyAgenda(record: GristRecord): WeeklyAgendaRow {
     Email: asString(record.Email),
     Mission: record.Mission,
     Traite: typeof traite === "boolean" ? traite : traite === true || traite === "true",
+    Traite_le:
+      traiteLe == null || traiteLe === ""
+        ? null
+        : typeof traiteLe === "number" || typeof traiteLe === "string"
+          ? traiteLe
+          : null,
     Cree_le:
       typeof record.Cree_le === "number" || typeof record.Cree_le === "string"
         ? record.Cree_le
