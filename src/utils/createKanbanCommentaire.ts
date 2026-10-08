@@ -33,6 +33,10 @@ export function buildKanbanCommentaireFields(
   if (!message) {
     throw new Error("Message obligatoire");
   }
+  const userEmail = input.userEmail.trim();
+  if (!userEmail) {
+    throw new Error("E-mail de session obligatoire");
+  }
   const userName = input.userName.trim();
   if (!userName) {
     throw new Error("Auteur obligatoire");
@@ -46,7 +50,7 @@ export function buildKanbanCommentaireFields(
     Cible_id: input.cibleId,
     Date: (input.now ?? new Date()).toISOString(),
     Auteur: userName,
-    Email: input.userEmail.trim(),
+    Email: userEmail,
     Message: message,
   };
 }

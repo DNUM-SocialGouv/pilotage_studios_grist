@@ -1726,9 +1726,17 @@ button.fr-link:disabled {
 }
 
 .ticket-drawer-header__badges {
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
+}
+
+.ticket-drawer-header__meta {
+  color: var(--text-mention-grey);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  margin-left: 0.15rem;
 }
 
 .ticket-drawer-colonne-row {
@@ -1920,6 +1928,25 @@ button.fr-link:disabled {
   background: var(--background-alt-grey);
   border-radius: 0.25rem;
   padding: 0.65rem 0.75rem;
+}
+
+/* Commentaires : même rendu Markdown que le détail ticket, taille compacte. */
+.ticket-conversation__body .mission-fiche-prose {
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+}
+
+.ticket-conversation__body .mission-fiche-prose > p:last-child {
+  margin-bottom: 0;
+}
+
+.ticket-conversation__body .mission-fiche-prose__heading--1,
+.ticket-conversation__body .mission-fiche-prose__heading--2 {
+  font-size: 1rem;
+}
+
+.ticket-conversation__body .mission-fiche-prose__heading--3 {
+  font-size: 0.875rem;
 }
 
 .ticket-conversation__submit {

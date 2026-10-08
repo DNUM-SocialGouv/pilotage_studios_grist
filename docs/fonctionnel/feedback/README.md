@@ -12,7 +12,7 @@ Référence design : [`design/feedback_widget/`](../../../design/feedback_widget
 | Types | Anomalie / Suggestion / Question (segmentés) → badge carte |
 | Titre | Obligatoire (max 140) — écrit dans `Titre` **et** `Resume` (même texte) |
 | Détail (`Message`) | Optionnel ; si vide = copie du titre ; rendu Markdown léger (`MissionProse`) — liens `http(s)`, pages internes `[libelle](/chemin)`, code inline / blocs fence |
-| Page / thème | **Automatiques** depuis l’URL (pathname) — pas de select UI ; remplissent `Theme` et `Page` |
+| Page / thème | **Automatiques** depuis l’URL (pathname) — pas de select UI ; remplissent `Theme` et `Page` (écrits silencieusement ; **non affichés** dans le drawer — Auteur · Date en badges d’en-tête) |
 | Niveau de gêne | Visible seulement si type = Anomalie |
 | Identité | **Signature silencieuse** : prénom (fiche Équipe session ou parse e-mail) + e-mail de session — pas de select |
 | Contexte technique | Case cochée par défaut (URL widget · UA · résolution) |
@@ -51,7 +51,13 @@ Lecture widget : `fetchAllowlistedTable('Kanban')` — colonne Feedback = `Natur
 
 Table `Kanban_commentaires` : `Cible_id` (= id `Kanban`), `Date`, `Auteur`, `Email`, `Message` (`Cible_type` figé à `Kanban` pour compat colonne existante). Create allowlisté pour tout utilisateur du widget. Pas d’update/delete widget en V1.
 
-Le select auteur des commentaires (conversation) reste distinct du formulaire « Un retour » — voir `TicketConversation`.
+| Mode | Comportement |
+|------|----------------|
+| **Lecture** | `Message` rendu en Markdown léger (`MissionProse` — titres, listes, gras, liens http(s) / pages internes, code inline / blocs fence) ; pas de HTML brut (échappé côté React) |
+| **Saisie** | Textarea Markdown inchangé (hint DSFR) |
+| **Signature** | E-mail de session Grist → prénom (`defaultWeeklyAuteurPrenom`, même logique que feedback / sujets Weekly) ; pas de select « Vous êtes ». Envoi bloqué sans e-mail de session. |
+
+Voir `TicketConversation`.
 
 ### Confidentialité lecture (décision V1)
 

@@ -15,6 +15,7 @@ import {
   KANBAN_COLUMN_LABEL,
   KANBAN_STATUS_BADGE_CLASS,
   KANBAN_STATUS_LABEL,
+  prenomFromAuteur,
   type KanbanColumnId,
   type KanbanTicket,
 } from "../../utils/kanbanTickets";
@@ -40,21 +41,28 @@ export type TicketDrawerProps = {
 
 type MetaChip = { label: string; value: string };
 
-/** Pastilles méta — sans Type/Statut (déjà en badges d’en-tête). */
+/**
+ * Pastilles méta restantes (ex. niveau de gêne).
+ * Thème / Page / Auteur / Date : plus en tuiles — Auteur · Date en en-tête.
+ */
 function buildMetaChips(ticket: KanbanTicket): MetaChip[] {
   const chips: MetaChip[] = [];
-  if (ticket.theme) {
-    chips.push({ label: "Thème", value: ticket.theme });
-  }
-  if (ticket.nature === "Feedback") {
-    if (ticket.page) chips.push({ label: "Page", value: ticket.page });
-    if (ticket.auteur) chips.push({ label: "Auteur", value: ticket.auteur });
-    if (ticket.niveauGene) {
-      chips.push({ label: "Niveau de gêne", value: ticket.niveauGene });
-    }
-    if (ticket.dateLabel) chips.push({ label: "Date", value: ticket.dateLabel });
+  if (ticket.nature === "Feedback" && ticket.niveauGene) {
+    chips.push({ label: "Niveau de gêne", value: ticket.niveauGene });
   }
   return chips;
+}
+
+/** Même format que les cartes kanban : « Prénom · date ». */
+function buildHeaderMeta(ticket: KanbanTicket): string {
+  return [
+    ticket.auteur && ticket.auteur !== "Anonyme"
+      ? prenomFromAuteur(ticket.auteur)
+      : "",
+    ticket.dateLabel,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 }
 
 export function TicketDrawer({
@@ -136,6 +144,7 @@ export function TicketDrawer({
     Boolean(ticket?.guideIntro) || (ticket?.guideSteps.length ?? 0) > 0;
 
   const metaChips = ticket ? buildMetaChips(ticket) : [];
+  const headerMeta = ticket ? buildHeaderMeta(ticket) : "";
   const hasActions = Boolean(ticket?.pagePath) || Boolean(githubHref);
   const hasBodyContent = Boolean(resumeText) || Boolean(detailText);
 
@@ -255,6 +264,14 @@ export function TicketDrawer({
                         >
                           {ticket.type}
                         </Badge>
+                      ) : null}
+                      {headerMeta ? (
+                        <span
+                          className="ticket-drawer-header__meta"
+                          aria-label={`Auteur et date : ${headerMeta}`}
+                        >
+                          {headerMeta}
+                        </span>
                       ) : null}
                     </p>
                   ) : null}
@@ -497,7 +514,10 @@ export function TicketDrawer({
                   </p>
                 ) : null}
 
-                <TicketConversation cibleId={ticket.id} />
+                <TicketConversation
+                  cibleId={ticket.id}
+                  onInternalLinkClick={close}
+                />
               </div>
             ) : null}
           </div>

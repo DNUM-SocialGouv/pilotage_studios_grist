@@ -18,7 +18,7 @@ Page dédiée au **kanban partagé** (Feedback · Backlog · En cours · Livré)
 |---------|--------|
 | Accès | **Ouvert à tous** les profils qui voient le widget — **hors `Page_*`** (fixé ouvert, rappel Admin « Fixés par rôle ») |
 | Colonnes | Feedback · Backlog · En cours · Livré (inchangé) |
-| Drawer | Conversation ; déplacement de colonne Admin ; édition Résumé / Détail Admin (`Resume` / `Message`) |
+| Drawer | En-tête : badges Nature / Type + méta texte **Auteur · Date** (pas de tuiles Thème / Page) ; conversation ; déplacement de colonne Admin ; édition Résumé / Détail Admin (`Resume` / `Message`) |
 | Feedback flottant | Bouton « Un retour ? » reste disponible sur cette page |
 | Nav | Pas d’entrée dans la nav principale — uniquement menu compte (+ CTA Admin accueil) |
 
