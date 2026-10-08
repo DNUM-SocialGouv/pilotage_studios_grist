@@ -1726,9 +1726,17 @@ button.fr-link:disabled {
 }
 
 .ticket-drawer-header__badges {
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
+}
+
+.ticket-drawer-header__meta {
+  color: var(--text-mention-grey);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  margin-left: 0.15rem;
 }
 
 .ticket-drawer-colonne-row {

@@ -12,7 +12,7 @@ Référence design : [`design/feedback_widget/`](../../../design/feedback_widget
 | Types | Anomalie / Suggestion / Question (segmentés) → badge carte |
 | Titre | Obligatoire (max 140) — écrit dans `Titre` **et** `Resume` (même texte) |
 | Détail (`Message`) | Optionnel ; si vide = copie du titre ; rendu Markdown léger (`MissionProse`) — liens `http(s)`, pages internes `[libelle](/chemin)`, code inline / blocs fence |
-| Page / thème | **Automatiques** depuis l’URL (pathname) — pas de select UI ; remplissent `Theme` et `Page` |
+| Page / thème | **Automatiques** depuis l’URL (pathname) — pas de select UI ; remplissent `Theme` et `Page` (écrits silencieusement ; **non affichés** dans le drawer — Auteur · Date en badges d’en-tête) |
 | Niveau de gêne | Visible seulement si type = Anomalie |
 | Identité | **Signature silencieuse** : prénom (fiche Équipe session ou parse e-mail) + e-mail de session — pas de select |
 | Contexte technique | Case cochée par défaut (URL widget · UA · résolution) |
