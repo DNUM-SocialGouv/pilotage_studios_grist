@@ -13,6 +13,8 @@ import { Input } from "@codegouvfr/react-dsfr/Input";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { Link } from "react-router-dom";
 import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
+import { KanbanBoard } from "../components/kanban/KanbanBoard";
+import { KanbanCardShell } from "../components/kanban/KanbanCardShell";
 import { MissionProse } from "../components/missions/MissionProse";
 import { WeeklySuiviDrawer } from "../components/weekly/WeeklySuiviDrawer";
 import { useAclProfil } from "../AclProfilContext";
@@ -548,14 +550,15 @@ function WeeklyCardView({
   onOpenSuivi,
   onDragStart,
   onDragEnd,
+  onMovePhase,
 }: {
   card: WeeklyCard;
   busy: boolean;
   onOpenSuivi: (missionId: number) => void;
   onDragStart: (missionId: number) => void;
   onDragEnd: () => void;
+  onMovePhase: (missionId: number, phase: WeeklyPhaseKey) => void;
 }) {
-  const suppressClickRef = useRef(false);
   const meteoTone = card.meteo ? weeklyMeteoTone(card.meteo) : null;
   const meteoLabel = card.meteo ? weeklyMeteoLabel(card.meteo) : "";
   const hasNote = Boolean(card.noteOps.trim());
@@ -574,11 +577,6 @@ function WeeklyCardView({
         `Personne #${membreId}`
       : null;
 
-  const openSuivi = () => {
-    if (busy) return;
-    onOpenSuivi(card.missionId);
-  };
-
   // aria-label remplace le contenu pour le nom accessible : y inclure
   // météo / membre / meta visibles (sinon masqués aux lecteurs d’écran).
   const ariaLabel = [
@@ -592,33 +590,30 @@ function WeeklyCardView({
     .filter(Boolean)
     .join(" — ");
 
+  const moveTargets = WEEKLY_PHASES.filter((p) => p.key !== card.phase).map(
+    (p) => ({ key: p.key, label: p.label }),
+  );
+
   return (
-    <article
-      className={`weekly-card${busy ? "" : " weekly-card--interactive"}`}
-      draggable={!busy}
-      onDragStart={() => {
-        suppressClickRef.current = true;
-        onDragStart(card.missionId);
-      }}
+    <KanbanCardShell
+      cardId={card.missionId}
+      busy={busy}
+      ariaLabel={ariaLabel}
+      className="weekly-card"
+      onActivate={() => onOpenSuivi(card.missionId)}
+      onDragStart={(id) => onDragStart(Number(id))}
       onDragEnd={onDragEnd}
-      onClick={() => {
-        if (suppressClickRef.current) {
-          suppressClickRef.current = false;
-          return;
-        }
-        openSuivi();
-      }}
-      onKeyDown={(e) => {
-        if (busy) return;
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          openSuivi();
-        }
-      }}
-      role="button"
-      tabIndex={busy ? -1 : 0}
-      aria-label={ariaLabel}
-      aria-disabled={busy || undefined}
+      moveTargets={moveTargets}
+      onMove={(key) => onMovePhase(card.missionId, key as WeeklyPhaseKey)}
+      menuTitle={`Actions Weekly — ${card.titre}`}
+      menuItems={[
+        {
+          id: "suivi",
+          label: "Ouvrir le suivi",
+          iconClassName: "fr-icon-eye-line",
+          onClick: () => onOpenSuivi(card.missionId),
+        },
+      ]}
     >
       {meteoTone ? (
         <span
@@ -633,7 +628,7 @@ function WeeklyCardView({
         </span>
       ) : null}
 
-      <h3 className="weekly-card__title">{card.titre}</h3>
+      <h3 className="weekly-card__title pilotage-kanban-card__title">{card.titre}</h3>
 
       {metaParts.length > 0 ? (
         <p className="weekly-card__meta">
@@ -669,7 +664,7 @@ function WeeklyCardView({
           />
         </p>
       ) : null}
-    </article>
+    </KanbanCardShell>
   );
 }
 
@@ -1131,94 +1126,51 @@ export function WeeklyCoachPage() {
             onNouveauSujet={openCreateAgendaForMission}
           />
 
-          <section aria-label="Kanban des missions">
-            <div
-              className="fr-mb-2w"
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "0.5rem 0.75rem",
-                alignItems: "baseline",
-              }}
-            >
-              <h2 className="fr-h5" style={{ margin: 0 }}>
-                Missions
-              </h2>
-              <span className="fr-hint-text" style={{ margin: 0 }}>
-                {cards.length} mission{cards.length > 1 ? "s" : ""}.
-              </span>
-              <span className="fr-hint-text" style={{ margin: 0 }}>
-                Déplacez une carte (glisser-déposer) ou changez la phase au clavier
-                via le menu de chaque carte.
-              </span>
-              {data.isReloading ? (
-                <span className="fr-text--xs" role="status">
-                  Mise à jour…
+          <div className="fr-mb-2w">
+            <h2 className="fr-h5" style={{ margin: 0 }}>
+              Missions
+            </h2>
+          </div>
+          <KanbanBoard
+            ariaLabel="Kanban des missions"
+            columns={WEEKLY_PHASES.map((col) => ({
+              key: col.key,
+              label: col.label,
+              count: byPhase[col.key].length,
+              dot: col.dot,
+              colBg: col.colBg,
+            }))}
+            onDropColumn={(key, e) => onDropColumn(key as WeeklyPhaseKey)(e)}
+            hint={
+              <>
+                <span className="fr-hint-text" style={{ margin: 0 }}>
+                  {cards.length} mission{cards.length > 1 ? "s" : ""}.
                 </span>
-              ) : null}
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(15.5rem, 1fr))",
-                gap: "0.75rem",
-                alignItems: "start",
-              }}
-            >
-              {WEEKLY_PHASES.map((col) => (
-                <div
-                  key={col.key}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                  }}
-                  onDrop={onDropColumn(col.key)}
-                  style={{
-                    background: col.colBg,
-                    padding: "0.75rem",
-                    minHeight: "12rem",
-                  }}
-                >
-                  <h3
-                    className="fr-text--sm"
-                    style={{
-                      margin: "0 0 0.75rem",
-                      fontWeight: 700,
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "0.375rem",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span
-                      aria-hidden="true"
-                      style={{
-                        width: "0.5rem",
-                        height: "0.5rem",
-                        borderRadius: "50%",
-                        background: col.dot,
-                        flexShrink: 0,
-                      }}
-                    />
-                    <span>{col.label}</span>
-                    <span style={{ fontWeight: 400, color: "var(--text-mention-grey)" }}>
-                      ({byPhase[col.key].length})
-                    </span>
-                  </h3>
-                  {byPhase[col.key].map((card) => (
-                    <WeeklyCardView
-                      key={card.missionId}
-                      card={card}
-                      busy={busyMissionId === card.missionId || data.isReloading}
-                      onOpenSuivi={openSuivi}
-                      onDragStart={setDragMissionId}
-                      onDragEnd={() => setDragMissionId(null)}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
-          </section>
+                <span className="fr-hint-text" style={{ margin: 0 }}>
+                  Déplacez une carte (glisser-déposer) ou changez la phase au
+                  clavier via le menu de chaque carte.
+                </span>
+                {data.isReloading ? (
+                  <span className="fr-text--xs" role="status">
+                    Mise à jour…
+                  </span>
+                ) : null}
+              </>
+            }
+            renderCards={(columnKey) =>
+              byPhase[columnKey as WeeklyPhaseKey].map((card) => (
+                <WeeklyCardView
+                  key={card.missionId}
+                  card={card}
+                  busy={busyMissionId === card.missionId || data.isReloading}
+                  onOpenSuivi={openSuivi}
+                  onDragStart={setDragMissionId}
+                  onDragEnd={() => setDragMissionId(null)}
+                  onMovePhase={(id, phase) => void changePhase(id, phase)}
+                />
+              ))
+            }
+          />
         </>
       ) : null}
     </div>

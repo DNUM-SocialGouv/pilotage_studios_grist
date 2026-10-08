@@ -42,9 +42,12 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 
 ### Cartes kanban (variante A)
 
+Shell UI commun avec la liste Missions (`KanbanBoard` / `KanbanCardShell` : colonnes, drag, menu clavier « Déplacer vers… ») — **données séparées** (`Weekly_phase` ≠ `Missions.Statut`).
+
 | UI | Source |
 |----|--------|
 | Carte entière (clic / clavier) | Ouvre le drawer suivi — titre texte (pas de lien) |
+| Menu Actions | Ouvrir le suivi + **Déplacer vers…** (phase) |
 | Titre | Lecture `Missions.Nom_de_la_mission` |
 | Badge météo (coin) | `Weekly_phase.Meteo` — pastille tonée + icône (absent si vide) |
 | Membre + avatar | `Weekly_phase.Membre_equipe` → avatar carré (`EquipeAvatar`) + **prénom seul** — **absent** si non assigné |

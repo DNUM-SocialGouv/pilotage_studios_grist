@@ -12,7 +12,7 @@
   z-index: 40;
 }
 
-.trigger[aria-expanded="true"]::after {
+.triggerWithChevron[aria-expanded="true"]::after {
   transform: rotate(-180deg);
 }
 

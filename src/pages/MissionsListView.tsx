@@ -9,7 +9,7 @@ import { Select } from "@codegouvfr/react-dsfr/Select";
 import { DsfrSelectRichMulti } from "../components/dsfr/DsfrSelectRichMulti";
 import { useExpandableRowIds } from "../components/expandable";
 import { MissionsListeDetailTable } from "../components/missions/MissionsListeDetailTable";
-import { MissionsListeParLot } from "../components/missions/MissionsListeParLot";
+import { MissionsListeKanban } from "../components/missions/MissionsListeKanban";
 import {
   aggregateCraByEnfantId,
   groupSuiviRowsByEnfantId,
@@ -39,7 +39,7 @@ const PAGE_SIZE = 10;
 const NOUVELLES_DEMANDES_STATUTS = ["A instruire", "En investigation"] as const;
 
 export function MissionsListView() {
-  const { data } = useMissionsOutlet();
+  const { data, reloadMissions } = useMissionsOutlet();
   const missionFormDrawerRef = useMissionFormDrawerRef();
   const [searchParams] = useSearchParams();
   const vueNouvellesDemandes = searchParams.get("vue") === "nouvelles-demandes";
@@ -188,12 +188,16 @@ export function MissionsListView() {
     statutFilter,
   ]);
 
+  const showPagination = listeVue === "detail";
   const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   const safePage = Math.min(page, pageCount);
   const paginated = useMemo(() => {
+    if (!showPagination) {
+      return rows;
+    }
     const start = (safePage - 1) * PAGE_SIZE;
     return rows.slice(start, start + PAGE_SIZE);
-  }, [rows, safePage]);
+  }, [rows, safePage, showPagination]);
 
   const expandResetKey = [
     listeVue,
@@ -451,7 +455,7 @@ export function MissionsListView() {
           {rows.length <= 1
             ? "mission correspond aux filtres"
             : "missions correspondent aux filtres"}
-          {pageCount > 1 ? (
+          {showPagination && pageCount > 1 ? (
             <>
               {" "}
               (affichage de {rangeFrom} à {rangeTo}, {PAGE_SIZE} par page).
@@ -480,11 +484,11 @@ export function MissionsListView() {
                   },
                 },
                 {
-                  label: "Par lot",
+                  label: "Kanban",
                   nativeInputProps: {
-                    value: "lot",
-                    checked: listeVue === "lot",
-                    onChange: () => persistListeVue("lot"),
+                    value: "kanban",
+                    checked: listeVue === "kanban",
+                    onChange: () => persistListeVue("kanban"),
                   },
                 },
               ]}
@@ -507,26 +511,22 @@ export function MissionsListView() {
               onEditMission={(m) => missionFormDrawerRef.current?.openEdit(m)}
             />
           ) : (
-            <MissionsListeParLot
+            <MissionsListeKanban
               missions={paginated}
               enfantsByMasterId={enfantsByMaster}
-              intervenantsById={intervenantsById}
               equipesByIntervenantId={equipesByIntervenantId}
               produitsById={produitsById}
               craByEnfantId={craParEnfantId}
-              suiviByEnfantId={suiviByEnfantId}
               craState={craState}
-              isMasterExpanded={isMasterExpanded}
-              toggleMaster={toggleMaster}
-              isEnfantExpanded={isEnfantExpanded}
-              toggleEnfant={toggleEnfant}
+              statutFilter={statutFilter}
               onEditMission={(m) => missionFormDrawerRef.current?.openEdit(m)}
+              onStatutUpdated={() => reloadMissions()}
             />
           )}
         </>
       ) : null}
 
-      {pageCount > 1 ? (
+      {showPagination && pageCount > 1 ? (
         <div className="fr-mt-2w fr-mb-4w">
           <Pagination
             count={pageCount}
