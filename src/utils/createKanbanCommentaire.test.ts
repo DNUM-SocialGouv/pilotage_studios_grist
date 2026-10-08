@@ -35,10 +35,23 @@ describe("buildKanbanCommentaireFields", () => {
         buildKanbanCommentaireFields({
           cibleId: 1,
           userName: "Alice",
-          userEmail: "",
+          userEmail: "a@example.com",
           message: "   ",
         }),
       /Message obligatoire/,
+    );
+  });
+
+  it("refuse e-mail de session vide", () => {
+    assert.throws(
+      () =>
+        buildKanbanCommentaireFields({
+          cibleId: 1,
+          userName: "Alice",
+          userEmail: "  ",
+          message: "Salut",
+        }),
+      /E-mail de session obligatoire/,
     );
   });
 });

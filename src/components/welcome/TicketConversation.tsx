@@ -1,20 +1,17 @@
 import { useCallback, useEffect, useId, useState, type FormEvent } from "react";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Button } from "@codegouvfr/react-dsfr/Button";
-import { DsfrSelectRichMulti } from "../dsfr/DsfrSelectRichMulti";
+import { useAclProfil } from "../../AclProfilContext";
 import { recordsFromFetchTable } from "../../gristMap";
 import { fetchAllowlistedTable } from "../../security/fetchTableAllowlist";
 import { createKanbanCommentaire } from "../../utils/createKanbanCommentaire";
-import {
-  feedbackAuteurOptionsFromEquipeTable,
-  type FeedbackAuteurOption,
-} from "../../utils/feedbackEquipe";
 import {
   filterCommentairesForTicket,
   kanbanCommentaireFromRecord,
   type KanbanCommentaireItem,
 } from "../../utils/kanbanCommentaires";
 import { prenomFromAuteur } from "../../utils/kanbanTickets";
+import { defaultWeeklyAuteurPrenom } from "../../utils/weeklyAgenda";
 import { MissionProse } from "../missions/MissionProse";
 
 type TicketConversationProps = {
@@ -26,26 +23,30 @@ type TicketConversationProps = {
   onInternalLinkClick?: (path: string) => void;
 };
 
+const NO_EMAIL_MESSAGE =
+  "Impossible d’identifier votre compte Grist (pas d’e-mail de session). Réessayez depuis le document Pilotage, ou contactez un Admin si le problème continue.";
+
 /**
  * Fil de commentaires d’un ticket kanban + formulaire d’envoi (tout utilisateur).
+ * Signature = e-mail de session (comme feedback / sujets Weekly) — pas de select « Vous êtes ».
  * Lecture : Markdown léger rendu (`MissionProse`). Saisie : textarea Markdown inchangé.
  */
 export function TicketConversation({
   cibleId,
   onInternalLinkClick,
 }: TicketConversationProps) {
-  const auteurSelectId = useId();
   const msgId = useId();
+  const { email: sessionEmail, displayName } = useAclProfil();
   const [comments, setComments] = useState<KanbanCommentaireItem[]>([]);
   const [loadStatus, setLoadStatus] = useState<"loading" | "ok" | "error">("loading");
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [auteurOptions, setAuteurOptions] = useState<FeedbackAuteurOption[]>([]);
-  const [auteursLoading, setAuteursLoading] = useState(true);
-  const [auteursError, setAuteursError] = useState<string | null>(null);
-  const [auteurId, setAuteurId] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const sessionEmailTrimmed = (sessionEmail ?? "").trim();
+  const hasSessionEmail = sessionEmailTrimmed.length > 0;
+  const auteurPrenom = defaultWeeklyAuteurPrenom(displayName, sessionEmail);
 
   const reload = useCallback(async () => {
     setLoadStatus("loading");
@@ -71,42 +72,15 @@ export function TicketConversation({
     void reload();
   }, [reload]);
 
-  useEffect(() => {
-    let cancelled = false;
-    const loadAuteurs = async () => {
-      setAuteursLoading(true);
-      setAuteursError(null);
-      try {
-        const raw = await fetchAllowlistedTable("Equipe");
-        if (cancelled) {
-          return;
-        }
-        setAuteurOptions(feedbackAuteurOptionsFromEquipeTable(raw));
-      } catch (err) {
-        if (cancelled) {
-          return;
-        }
-        setAuteursError(err instanceof Error ? err.message : String(err));
-        setAuteurOptions([]);
-      } finally {
-        if (!cancelled) {
-          setAuteursLoading(false);
-        }
-      }
-    };
-    void loadAuteurs();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const selectedAuteur = auteurOptions.find((o) => o.value === auteurId);
   const canSubmit =
-    message.trim().length > 0 && Boolean(selectedAuteur) && !submitting;
+    message.trim().length > 0 &&
+    hasSessionEmail &&
+    auteurPrenom.length > 0 &&
+    !submitting;
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!selectedAuteur || !canSubmit) {
+    if (!canSubmit) {
       return;
     }
     setSubmitting(true);
@@ -114,8 +88,8 @@ export function TicketConversation({
     try {
       await createKanbanCommentaire({
         cibleId,
-        userName: selectedAuteur.name,
-        userEmail: selectedAuteur.email,
+        userName: auteurPrenom,
+        userEmail: sessionEmailTrimmed,
         message,
       });
       setMessage("");
@@ -186,33 +160,15 @@ export function TicketConversation({
       ) : null}
 
       <form className="ticket-conversation__form" onSubmit={(e) => void onSubmit(e)}>
-        <div className="ticket-conversation__identity fr-mb-2w">
-          <DsfrSelectRichMulti
-            id={auteurSelectId}
-            label="Vous êtes"
-            hintText={
-              auteursLoading
-                ? "Chargement de la table Equipe…"
-                : "Choisissez votre nom dans la table Équipe (déclaratif)."
-            }
-            placeholderWhenEmpty="Rechercher une personne…"
-            options={auteurOptions}
-            selectedValues={auteurId ? [auteurId] : []}
-            onSelectedValuesChange={(values) => setAuteurId(values[0] ?? "")}
-            searchable
-            searchLabel="Rechercher"
-            searchPlaceholder="Nom ou e-mail…"
-            showBulkActions={false}
-            maxSelections={1}
-            pluralEntityLabel="personnes"
-            disabled={auteursLoading || auteurOptions.length === 0}
+        {!hasSessionEmail ? (
+          <Alert
+            className="fr-mb-2w"
+            severity="warning"
+            small
+            title="Signature indisponible"
+            description={NO_EMAIL_MESSAGE}
           />
-          {auteursError ? (
-            <p className="fr-text--xs fr-error-text" role="alert">
-              {auteursError}
-            </p>
-          ) : null}
-        </div>
+        ) : null}
         <div className="fr-input-group fr-mb-2w">
           <label className="fr-label" htmlFor={msgId}>
             Votre commentaire
@@ -231,8 +187,16 @@ export function TicketConversation({
             placeholder="Écrire un commentaire…"
             style={{ resize: "vertical" }}
             required
+            disabled={!hasSessionEmail}
           />
         </div>
+        {hasSessionEmail && auteurPrenom ? (
+          <p className="fr-text--xs fr-hint-text fr-mb-2w" aria-live="polite">
+            Signé en tant que{" "}
+            <strong className="fr-text--bold">{auteurPrenom}</strong>
+            {" · compte Grist"}
+          </p>
+        ) : null}
         {submitError ? (
           <Alert
             className="fr-mb-2w"

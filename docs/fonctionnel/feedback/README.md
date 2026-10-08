@@ -55,8 +55,9 @@ Table `Kanban_commentaires` : `Cible_id` (= id `Kanban`), `Date`, `Auteur`, `Ema
 |------|----------------|
 | **Lecture** | `Message` rendu en Markdown léger (`MissionProse` — titres, listes, gras, liens http(s) / pages internes, code inline / blocs fence) ; pas de HTML brut (échappé côté React) |
 | **Saisie** | Textarea Markdown inchangé (hint DSFR) |
+| **Signature** | E-mail de session Grist → prénom (`defaultWeeklyAuteurPrenom`, même logique que feedback / sujets Weekly) ; pas de select « Vous êtes ». Envoi bloqué sans e-mail de session. |
 
-Le select auteur des commentaires (conversation) reste distinct du formulaire « Un retour » — voir `TicketConversation`.
+Voir `TicketConversation`.
 
 ### Confidentialité lecture (décision V1)
 
