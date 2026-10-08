@@ -76,7 +76,7 @@ Shell commun avec Weekly Ops (`KanbanBoard` / `KanbanCardShell`) — **sans** sy
 | Autres | Colonne dédiée si présents dans le filtre ; **Autre** si statut vide |
 | Carte | Titre · produit · jours · montant · tags équipes |
 | Clic | → `/missions/:id` |
-| Drag / menu | Change `Missions.Statut` (même droit que Modifier le lot) + menu clavier « Déplacer vers… » |
+| Drag / menu | Change `Missions.Statut` (même droit que Modifier) + menu clavier « Déplacer vers… » |
 | Pagination | **Off** |
 
 ## Création et modification (drawer unique)

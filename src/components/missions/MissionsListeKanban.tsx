@@ -141,7 +141,7 @@ function MissionKanbanCard({
           ? [
               {
                 id: "edit",
-                label: "Modifier le lot",
+                label: "Modifier",
                 iconClassName: "fr-icon-edit-line",
                 onClick: () => onEditMission(mission),
               },
