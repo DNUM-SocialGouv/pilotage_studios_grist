@@ -4,7 +4,7 @@
 
 ## Objet
 
-Parcourir les missions **master** (lots), filtrer, basculer entre deux lectures de la hiérarchie lot → prestation → CRA, ouvrir une fiche.
+Parcourir les missions **master** (lots), filtrer, basculer entre **liste détaillée** et **kanban** (par statut), ouvrir une fiche.
 
 ## Parcours
 
@@ -13,7 +13,7 @@ Parcourir les missions **master** (lots), filtrer, basculer entre deux lectures 
 | Route | `/missions` |
 | Page | `src/pages/MissionsListView.tsx` |
 | Navigation | **Missions** (`WidgetNav`) |
-| Pagination | 10 lots par page |
+| Pagination | 10 lots par page **en liste détaillée uniquement** (off en kanban) |
 
 ## États
 
@@ -40,14 +40,14 @@ Réinitialiser hors accordéon **uniquement si au moins un filtre est actif**. C
 
 `/missions?vue=nouvelles-demandes` pré-sélectionne les statuts **A instruire** et **En investigation**.
 
-## Deux lectures (ISO app sœur #216 / #218 / #219)
+## Deux lectures
 
-Contrôle segmenté DSFR (`fr-segmented--sm`), préférence `localStorage` `pilotage.missions.listeVue` (`detail` \| `lot`) :
+Contrôle segmenté DSFR (`fr-segmented--sm`), préférence `localStorage` `pilotage.missions.listeVue` (`detail` \| `kanban` ; legacy `lot` lu comme `kanban`) :
 
 | Vue | Contenu |
 |-----|---------|
 | **Liste détaillée** (défaut) | Tableau 3 niveaux : lot → prestation → CRA |
-| **Par lot** | Bandeau par lot (KPI + timeline équipes) ; tableau prestations à l’ouverture |
+| **Kanban** | Colonnes selon `Missions.Statut` ; carte = lot ; clic → fiche |
 
 Jours / Montant TTC d’un **lot** = somme des CRA de ses **prestations** uniquement (`—` s’il n’y a aucune ligne CRA, pas `0`). Pas d’UI « CRA hors prestation » dans la hiérarchie (filtre Staffing seulement).
 
@@ -64,13 +64,24 @@ Jours / Montant TTC d’un **lot** = somme des CRA de ses **prestations** unique
 
 Pas de colonnes Équipe / Resp au niveau lot. Lot sans prestation : **pas de chevron**.
 
-### Par lot
+### Kanban (par statut)
 
-Bandeau 2 colonnes : chevron + titre + statut + produit ; KPI + **timeline** (`background-action-low`) + tags équipe. Expand → Titre de la prestation / Équipe / Intervenant / Statut / Jours / TTC → CRA. Menu **Actions** : **Ouvrir la fiche**, **Modifier le lot** (drawer edit). Lot sans prestation : « Aucune prestation ».
+Shell commun avec Weekly Ops (`KanbanBoard` / `KanbanCardShell`) — **sans** sync `Weekly_phase` ↔ `Missions.Statut`.
+
+| Élément | Détail |
+|---------|--------|
+| Colonnes défaut | **A instruire** · **En investigation** · **En cours** |
+| Colonne En cours | Cumule `En cours` + `Récurrent` + `Suivi et amélioration continue` ; drop → écrit `En cours` |
+| Terminé / Annulé / [Archivée] | Masqués par défaut ; toggle « Afficher terminées / annulées / archivées » **ou** filtre statut |
+| Autres | Colonne dédiée si présents dans le filtre ; **Autre** si statut vide |
+| Carte | Titre · produit · jours · montant · tags équipes |
+| Clic | → `/missions/:id` |
+| Drag / menu | Change `Missions.Statut` (même droit que Modifier le lot) + menu clavier « Déplacer vers… » |
+| Pagination | **Off** |
 
 ## Création et modification (drawer unique)
 
-Bouton **« Nouvelle mission »** sous le titre → `MissionFormDrawer` mode **create** (statut par défaut « A instruire »). **Modifier** depuis la liste détaillée ou le menu par lot → mode **edit**.
+Bouton **« Nouvelle mission »** sous le titre → `MissionFormDrawer` mode **create** (statut par défaut « A instruire »). **Modifier** depuis la liste détaillée ou le menu kanban → mode **edit**.
 
 Champs : **Nom** (obligatoire) · **Produit (SDPC)** · **Statut**. Largeur fixe **SM** (pas de sélecteur de largeur côté widget).
 
@@ -89,7 +100,12 @@ Composant : `src/components/missions/MissionFormDrawer.tsx` — écriture via `m
 
 - Pas d’ajout prestation depuis la liste (drawer enfant)
 - Pas d’export CSV ni rapport d’investissement
+- Vue « Par lot » (bandeaux) **retirée** au profit du kanban
 
 ## Récap CRA
 
 Agrégats via `aggregateCraByEnfantId` / `totauxCraDuLot` : `Realise.Mission_enfant` (ref) → prestation. Équipe prestation = `Equipe` de l’intervenant, pas `Missions.Equipe2`.
+
+## Droits / `Page_*`
+
+**N/A `Page_*`** — variante d’affichage sur l’écran Missions déjà listé (pas de nouvel écran ni garde). Drag statut = même écriture `Missions` déjà allowlistée (drawer).

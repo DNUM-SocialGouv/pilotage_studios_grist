@@ -1,5 +1,5 @@
-/** Préférence d’affichage de la liste `/missions` (HITL #218). */
-export type MissionsListeVue = "detail" | "lot";
+/** Préférence d’affichage de la liste `/missions` (HITL kanban). */
+export type MissionsListeVue = "detail" | "kanban";
 
 export const MISSIONS_LISTE_VUE_STORAGE_KEY = "pilotage.missions.listeVue";
 
@@ -9,7 +9,11 @@ export function loadMissionsListeVue(): MissionsListeVue {
   }
   try {
     const raw = window.localStorage.getItem(MISSIONS_LISTE_VUE_STORAGE_KEY);
-    return raw === "lot" ? "lot" : "detail";
+    // Legacy « Par lot » (`lot`) → Kanban.
+    if (raw === "kanban" || raw === "lot") {
+      return "kanban";
+    }
+    return "detail";
   } catch {
     return "detail";
   }

@@ -109,6 +109,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-10-08 | Liste Missions : vue **Kanban** (remplace « Par lot ») ; drag/menu → update `Missions.Statut` (allowlist existante) ; shell commun Weekly ; **N/A `Page_*`** (variante d’affichage) | 5 | kanban `missions-liste-kanban` id=58 |
 | 2026-10-07 | Grille `Equipe_TJM` V1 : allowlists lecture/écriture ; drawer Admin (clôture manuelle) ; fiche historique ; plus d’édition `Equipe.TJM` ; ACL resource 46 | 5, 6 | [#86](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/86) / kanban `tjm-historique-multi-spe` |
 | 2026-10-07 | Accueil « Vos retours » : onglets **Actifs / Archivés** (Option C) ; Archivés = Livré lus sans badge (`localStorage` #112) ; **pas** de colonne Grist ; **N/A `Page_*`** (variante confort sur `/`) | 5 | kanban `vos-retours-actifs-archives` id=56 |
 | 2026-10-05 | Weekly Ops drawer suivi : écriture `Weekly_phase` (`Phase` · `Meteo` · `Note_ops` · `Membre_equipe` Ref→`Equipe`) ; échanges `Weekly_agenda` ; **pas** coach texte ; **aucune** écriture / colonne `Missions` ; **N/A `Page_*`** ; accès `Weekly_coachs` inchangé | 5, 6 (doc) | [#114](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/pull/114) · kanban `weekly-suivi-missions-drawer` |

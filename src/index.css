@@ -2085,7 +2085,8 @@ button.fr-link:disabled {
 .weekly-card__meteo-badge {
   position: absolute;
   top: 0.5rem;
-  right: 0.5rem;
+  /* Laisse la place au menu Actions (shell kanban). */
+  right: 2.75rem;
   width: 1.75rem;
   height: 1.75rem;
   display: inline-flex;
@@ -2152,6 +2153,122 @@ button.fr-link:disabled {
 .weekly-card__note-icon {
   display: inline-flex;
   line-height: 1;
+}
+
+/* Shell kanban commun (Weekly + Missions). */
+.pilotage-kanban__hint {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: baseline;
+}
+
+.pilotage-kanban__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15.5rem, 1fr));
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.pilotage-kanban__column {
+  padding: 0.75rem;
+  min-height: 12rem;
+}
+
+.pilotage-kanban__column-title {
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  align-items: center;
+}
+
+.pilotage-kanban__column-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pilotage-kanban__column-count {
+  font-weight: 400;
+  color: var(--text-mention-grey);
+}
+
+.pilotage-kanban-card {
+  position: relative;
+  background: var(--background-default-grey);
+  box-shadow: inset 0 0 0 1px var(--border-default-grey);
+  padding: 0.625rem 0.75rem;
+  margin-bottom: 0.625rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.pilotage-kanban-card--interactive {
+  cursor: pointer;
+}
+
+.pilotage-kanban-card--interactive:hover {
+  box-shadow: inset 0 0 0 1px var(--border-action-high-blue-france);
+}
+
+.pilotage-kanban-card--interactive:focus-visible {
+  outline: 2px solid var(--border-plain-blue-france);
+  outline-offset: 2px;
+}
+
+.pilotage-kanban-card--interactive:active {
+  cursor: grabbing;
+}
+
+.pilotage-kanban-card__menu {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  z-index: 1;
+}
+
+.pilotage-kanban-card__title {
+  margin: 0 2rem 0 0;
+  font-size: 0.9375rem;
+  line-height: 1.35;
+  font-weight: 700;
+  color: var(--text-title-grey);
+}
+
+.pilotage-kanban-card__meta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-mention-grey);
+}
+
+.pilotage-kanban-card__kpi {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.5rem;
+  align-items: baseline;
+  font-size: 0.8rem;
+}
+
+.pilotage-kanban-card__teams {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.pilotage-kanban-card__teams li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 /* Weekly drawer suivi — lecture / édition (pattern note studio). */
