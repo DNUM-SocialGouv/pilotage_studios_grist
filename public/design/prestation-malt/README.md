@@ -12,15 +12,16 @@ Données fictives. Pas de connexion Grist. Pas d’écriture.
 
 ## Voir le dessin (branche PR, un clic)
 
-Liens **jsDelivr** (rendu HTML, pas le code source) — branche `spike/gabarit-prestation-malt` :
+Lien **raw.githack** (rendu HTML avec `Content-Type: text/html`) — branche
+`spike/gabarit-prestation-malt` :
 
-- [Gabarit drawer prestation Malt](https://cdn.jsdelivr.net/gh/DNUM-SocialGouv/pilotage_studios_grist@spike/gabarit-prestation-malt/design/prestation-malt/gabarit-drawer-prestation-malt.html)
+- [Gabarit drawer prestation Malt](https://raw.githack.com/DNUM-SocialGouv/pilotage_studios_grist/spike/gabarit-prestation-malt/design/prestation-malt/gabarit-drawer-prestation-malt.html)
 
-Secours [raw.githack](https://raw.githack.com/) :
+Ne pas utiliser jsDelivr pour les `.html` de ce dépôt : il sert souvent
+`text/plain`, donc le navigateur affiche le **code source** au lieu du dessin.
 
-- [Gabarit drawer](https://raw.githack.com/DNUM-SocialGouv/pilotage_studios_grist/spike/gabarit-prestation-malt/design/prestation-malt/gabarit-drawer-prestation-malt.html)
-
-Les liens blob GitHub (`…/blob/…`) montrent le **code**, pas le rendu — à éviter pour le feedback.
+Les liens blob GitHub (`…/blob/…`) montrent aussi le **code**, pas le rendu —
+à éviter pour le feedback.
 
 ## Ouvrir en local
 
