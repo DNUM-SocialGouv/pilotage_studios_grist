@@ -161,7 +161,7 @@ Détail : [`docs/fonctionnel/weekly/README.md`](../weekly/README.md).
 
 User Attribute : Name `Weekly_coach` ← `user.Email` → table `Weekly_coachs` / colonne `E_mail`.
 
-### `Weekly_phase` / `Weekly_agenda` (`*` — mêmes règles)
+### `Weekly_phase` / `Weekly_agenda` / `Weekly_action` (`*` — mêmes règles)
 
 | # | Condition | Droits | Mémo |
 |---|-----------|--------|------|
@@ -169,7 +169,10 @@ User Attribute : Name `Weekly_coach` ← `user.Email` → table `Weekly_coachs` 
 | 2 | `user.Email == user.Weekly_coach.E_mail` | `+CRUD` | Listés dans `Weekly_coachs` (lookup OK) — préférer à `!= ""`. |
 | 3 | `True` | `-CRUD` | Admin / Resp. / Freelance hors liste : refus. |
 
-**Appliqué** 2026-10-03 (User Attribute `Weekly_coach` + règles tables ; vérif MCP). View As Admin hors liste : page = après merge PR widget allowlist-only.
+**Appliqué** 2026-10-03 (`Weekly_phase` / `Weekly_agenda` + User Attribute
+`Weekly_coach`) ; **`Weekly_action`** resource + 3 règles (même patron) —
+vérif MCP 2026-10-09. View As Admin hors liste : page = après merge PR widget
+allowlist-only.
 
 ## Qui peut modifier quoi
 

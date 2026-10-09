@@ -1,14 +1,23 @@
 /**
- * Écritures satellite Weekly (`Weekly_phase`, `Weekly_agenda`) via plugin API.
+ * Écritures satellite Weekly (`Weekly_phase`, `Weekly_agenda`, `Weekly_action`)
+ * via plugin API.
  */
 
 import type { GristTableCreateResult } from "../gristTypes.ts";
 import {
+  WEEKLY_ACTION_TABLE_ID,
   WEEKLY_AGENDA_TABLE_ID,
   WEEKLY_PHASE_TABLE_ID,
   assertWritableTableId,
   assertWritableUpdateTableId,
 } from "../security/writeTableAllowlist.ts";
+import {
+  buildWeeklyActionCreateFields,
+  buildWeeklyActionFaitFields,
+  normalizeWeeklyActionStatut,
+  type WeeklyActionStatut,
+  weeklyActionDateTimestamp,
+} from "./weeklyAction.ts";
 import {
   WEEKLY_PHASE_OPS_COLUMNS_READY,
   type WeeklyPhaseKey,
@@ -227,4 +236,84 @@ export async function updateWeeklyAgendaSujet(
     fields.Detail = input.detail.trim();
   }
   await getWritableTable(WEEKLY_AGENDA_TABLE_ID).update({ id, fields });
+}
+
+/** Create une action Weekly Ops (`Weekly_action`) — pas de delete widget. */
+export async function createWeeklyActionRecord(input: {
+  titre: string;
+  porteurId: number | null;
+  missionId?: number | null;
+  dateFin?: Date | null;
+  notes?: string;
+  email?: string;
+  statut?: WeeklyActionStatut;
+  now?: Date;
+}): Promise<number> {
+  assertWritableTableId(WEEKLY_ACTION_TABLE_ID);
+  const fields = buildWeeklyActionCreateFields(input);
+  const result = await getWritableTable(WEEKLY_ACTION_TABLE_ID).create({
+    fields,
+  });
+  return parseCreateId(result);
+}
+
+/**
+ * Coche / décoche `Fait` et synchronise `Fait_le` (jour du coche, ou null).
+ */
+export async function updateWeeklyActionFait(
+  id: number,
+  fait: boolean,
+  now: Date = new Date(),
+): Promise<void> {
+  assertWritableUpdateTableId(WEEKLY_ACTION_TABLE_ID);
+  if (!Number.isFinite(id) || id <= 0) {
+    throw new Error("Identifiant action invalide.");
+  }
+  await getWritableTable(WEEKLY_ACTION_TABLE_ID).update({
+    id,
+    fields: buildWeeklyActionFaitFields(fait, now),
+  });
+}
+
+/**
+ * Met à jour les champs d’édition d’une action (drawer — fondations, sans UI).
+ */
+export async function updateWeeklyActionRecord(
+  id: number,
+  input: {
+    titre: string;
+    statut: WeeklyActionStatut | string;
+    porteurId: number | null;
+    missionId: number | null;
+    dateFin: Date | null;
+    weeklyDu: Date | null;
+    notes: string;
+  },
+): Promise<void> {
+  assertWritableUpdateTableId(WEEKLY_ACTION_TABLE_ID);
+  if (!Number.isFinite(id) || id <= 0) {
+    throw new Error("Identifiant action invalide.");
+  }
+  const titre = input.titre.trim();
+  if (!titre) {
+    throw new Error("Le titre de l’action ne peut pas être vide.");
+  }
+  await getWritableTable(WEEKLY_ACTION_TABLE_ID).update({
+    id,
+    fields: {
+      Titre: titre,
+      Statut: normalizeWeeklyActionStatut(input.statut),
+      Porteur:
+        input.porteurId != null && input.porteurId > 0 ? input.porteurId : null,
+      Mission:
+        input.missionId != null && input.missionId > 0 ? input.missionId : null,
+      Date_fin:
+        input.dateFin != null ? weeklyActionDateTimestamp(input.dateFin) : null,
+      Weekly_du:
+        input.weeklyDu != null
+          ? weeklyActionDateTimestamp(input.weeklyDu)
+          : null,
+      Notes: input.notes.trim(),
+    },
+  });
 }

@@ -5,6 +5,7 @@ import {
   KANBAN_COMMENTAIRES_TABLE_ID,
   KANBAN_TABLE_ID,
   ACL_PROFIL_TABLE_ID,
+  WEEKLY_ACTION_TABLE_ID,
   WEEKLY_AGENDA_TABLE_ID,
   WEEKLY_COACHS_TABLE_ID,
   WEEKLY_PHASE_TABLE_ID,
@@ -38,10 +39,11 @@ export const BDC_DEPENSES_TABLE_IDS = [
 /** Réexport lecture grille tarifs (lazy `/equipe`). */
 export { EQUIPE_TJM_TABLE_ID };
 
-/** Tables satellite Weekly (lazy) — phase, agenda, allowlist coachs. */
+/** Tables satellite Weekly (lazy) — phase, agenda, actions, allowlist coachs. */
 export const WEEKLY_TABLE_IDS = [
   WEEKLY_PHASE_TABLE_ID,
   WEEKLY_AGENDA_TABLE_ID,
+  WEEKLY_ACTION_TABLE_ID,
   WEEKLY_COACHS_TABLE_ID,
 ] as const;
 

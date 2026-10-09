@@ -10,6 +10,7 @@ import {
   toMission,
   toMissionEnfant,
   toProduitSdpc,
+  toWeeklyAction,
   toWeeklyAgenda,
   toWeeklyPhase,
 } from "../gristMap";
@@ -19,6 +20,7 @@ import type {
   Mission,
   MissionEnfant,
   ProduitSdpc,
+  WeeklyActionRow,
   WeeklyAgendaRow,
   WeeklyPhaseRow,
 } from "../types";
@@ -35,6 +37,8 @@ export type WeeklyCoachData = {
   produits: ProduitSdpc[];
   phases: WeeklyPhaseRow[];
   agenda: WeeklyAgendaRow[];
+  /** Actions Ops — fondations (pas d’UI liste encore). */
+  actions: WeeklyActionRow[];
 };
 
 export type WeeklyCoachDataState = WeeklyCoachData & {
@@ -52,6 +56,7 @@ const EMPTY: WeeklyCoachData = {
   produits: [],
   phases: [],
   agenda: [],
+  actions: [],
 };
 
 export async function loadWeeklyCoachTables(): Promise<
@@ -64,6 +69,7 @@ export async function loadWeeklyCoachTables(): Promise<
     "produits",
     "Weekly_phase",
     "Weekly_agenda",
+    "Weekly_action",
   ] as const;
   const settled = await Promise.allSettled([
     fetchAllowlistedTable("Missions"),
@@ -72,6 +78,7 @@ export async function loadWeeklyCoachTables(): Promise<
     fetchAllowlistedTable("Tableau_de_pilotage_SDPC_Produits_SDPC"),
     fetchAllowlistedTable("Weekly_phase"),
     fetchAllowlistedTable("Weekly_agenda"),
+    fetchAllowlistedTable("Weekly_action"),
   ]);
 
   const failed: string[] = [];
@@ -106,6 +113,9 @@ export async function loadWeeklyCoachTables(): Promise<
     ),
     agenda: pick(5, (raw) =>
       recordsFromFetchTable(raw).map((row) => toWeeklyAgenda(row as GristRecord)),
+    ),
+    actions: pick(6, (raw) =>
+      recordsFromFetchTable(raw).map((row) => toWeeklyAction(row as GristRecord)),
     ),
   };
 }
