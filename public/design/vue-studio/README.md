@@ -5,7 +5,7 @@
 Deux maquettes HTML autonomes pour faire réagir l’équipe (Philippe et autres) sur une
 idée de « vue studio » : qui travaille sur quels produits. Ce n’est **pas** encore
 l’écran Accueil du widget React — seulement des fichiers à ouvrir dans le navigateur
-ou via des liens publics stables après merge.
+ou via des liens publics.
 
 | Prototype | Idée |
 |-----------|------|
@@ -13,6 +13,20 @@ ou via des liens publics stables après merge.
 | **Orbites** | Chaque produit = planète ; les personnes gravitent autour (satellites) |
 
 Données fictives. Pas de météo Weekly. Pas de connexion Grist.
+
+## Voir le dessin (branche PR, un clic)
+
+Liens **jsDelivr** (rendu HTML, pas le code source) — branche `spike/vue-studio-prototypes-html` :
+
+- [Constellation](https://cdn.jsdelivr.net/gh/DNUM-SocialGouv/pilotage_studios_grist@spike/vue-studio-prototypes-html/design/vue-studio/prototype-constellation-studio.html)
+- [Orbites](https://cdn.jsdelivr.net/gh/DNUM-SocialGouv/pilotage_studios_grist@spike/vue-studio-prototypes-html/design/vue-studio/prototype-orbites-studio.html)
+
+Secours [raw.githack](https://raw.githack.com/) (mêmes chemins) :
+
+- [Constellation](https://raw.githack.com/DNUM-SocialGouv/pilotage_studios_grist/spike/vue-studio-prototypes-html/design/vue-studio/prototype-constellation-studio.html)
+- [Orbites](https://raw.githack.com/DNUM-SocialGouv/pilotage_studios_grist/spike/vue-studio-prototypes-html/design/vue-studio/prototype-orbites-studio.html)
+
+Les liens blob GitHub (`…/blob/…`) montrent le **code**, pas le rendu — à éviter pour le feedback.
 
 ## Ouvrir en local
 
@@ -38,4 +52,4 @@ Base : `https://dnum-socialgouv.github.io/pilotage_studios_grist/`
 ## Hors scope
 
 - Implémentation React Accueil / nav / gardes
-- Écriture Grist / kanban Feedback (commentaire carte = hors ce spike dépôt)
+- Sync kanban Nature=Produit (cette carte Feedback reste hors feuille de route produit)
