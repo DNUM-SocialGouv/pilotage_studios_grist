@@ -9,6 +9,8 @@ import type { MissionEnfant, SuiviMensuel } from "../../types";
 import {
   aggregateCraByEnfantId,
   groupSuiviRowsByEnfantId,
+  sumJoursBarEquipePrestations,
+  sumSuiviJoursHorsPrestationForMission,
   sumSuiviTtcHorsPrestationForMission,
 } from "../../utils/craByMission";
 import { formatGristDate } from "../../utils/formatGristDate";
@@ -186,15 +188,10 @@ export function MissionEquipePrestationsPanel({
     [realisationsFiltrees, missionId, enfants],
   );
 
-  const joursLabel = useMemo(() => {
-    let jours = 0;
-    for (const s of realisationsFiltrees) {
-      if (typeof s.Nb_jours === "number" && Number.isFinite(s.Nb_jours)) {
-        jours += s.Nb_jours;
-      }
-    }
-    return jours.toLocaleString("fr-FR", { maximumFractionDigits: 4 });
-  }, [realisationsFiltrees]);
+  const horsPrestationJours = useMemo(
+    () => sumSuiviJoursHorsPrestationForMission(realisationsFiltrees, missionId, enfants),
+    [realisationsFiltrees, missionId, enfants],
+  );
 
   const enfantsApresPeriode = useMemo(() => {
     if (!periodeFilterActive) {
@@ -258,6 +255,34 @@ export function MissionEquipePrestationsPanel({
     equipesByIntervenantId,
     horsPrestationTtc,
     showFilters,
+  ]);
+
+  /** Même périmètre que `ttcParEquipe` (filtre équipe + période déjà dans les maps). */
+  const joursLabel = useMemo(() => {
+    const jours =
+      !showFilters || !equipeFilter
+        ? sumJoursBarEquipePrestations(
+            enfantsApresPeriode,
+            joursByEnfantId,
+            horsPrestationJours,
+            true,
+          )
+        : equipeFilter === EQUIPE_HORS_PRESTATION_LABEL
+          ? horsPrestationJours
+          : sumJoursBarEquipePrestations(
+              enfantsFiltres,
+              joursByEnfantId,
+              horsPrestationJours,
+              false,
+            );
+    return jours.toLocaleString("fr-FR", { maximumFractionDigits: 4 });
+  }, [
+    showFilters,
+    equipeFilter,
+    enfantsApresPeriode,
+    enfantsFiltres,
+    joursByEnfantId,
+    horsPrestationJours,
   ]);
 
   const emptyMessage = (() => {

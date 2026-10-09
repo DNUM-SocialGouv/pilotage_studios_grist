@@ -100,3 +100,49 @@ export function sumSuiviTtcHorsPrestationForMission(
   }
   return sum;
 }
+
+/**
+ * Jours des CRA du master **hors** prestations enfants du jeu fourni
+ * (même périmètre que {@link sumSuiviTtcHorsPrestationForMission}).
+ */
+export function sumSuiviJoursHorsPrestationForMission(
+  suiviRows: SuiviMensuel[],
+  missionId: number,
+  enfants: MissionEnfant[] = [],
+): number {
+  const enfantsById = new Map(enfants.map((e) => [e.id, e]));
+  let sum = 0;
+  for (const row of suiviRows) {
+    if (!suiviBelongsToMasterMission(row, missionId, enfantsById)) {
+      continue;
+    }
+    const enfantId = extractGristReferenceId(row.Mission_enfant);
+    if (enfantId != null && enfantId !== 0 && enfantsById.has(enfantId)) {
+      continue;
+    }
+    const j =
+      typeof row.Nb_jours === "number" && Number.isFinite(row.Nb_jours) ? row.Nb_jours : 0;
+    sum += j;
+  }
+  return sum;
+}
+
+/**
+ * Total jours de la barre « Équipe & prestations » : même périmètre que les
+ * tranches TTC (prestations du filtre + hors prestation si inclus).
+ */
+export function sumJoursBarEquipePrestations(
+  enfantsInScope: ReadonlyArray<{ id: number }>,
+  joursByEnfantId: Map<number, number>,
+  horsPrestationJours: number,
+  includeHorsPrestation: boolean,
+): number {
+  let sum = 0;
+  for (const e of enfantsInScope) {
+    sum += joursByEnfantId.get(e.id) ?? 0;
+  }
+  if (includeHorsPrestation) {
+    sum += horsPrestationJours;
+  }
+  return sum;
+}

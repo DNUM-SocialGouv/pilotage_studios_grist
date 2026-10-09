@@ -5,6 +5,8 @@ import {
   aggregateCraByEnfantId,
   aggregateCraByMissionId,
   groupSuiviRowsByEnfantId,
+  sumJoursBarEquipePrestations,
+  sumSuiviJoursHorsPrestationForMission,
   sumSuiviTtcHorsPrestationForMission,
   totauxCraForEnfant,
 } from "./craByMission.ts";
@@ -287,5 +289,53 @@ describe("sumSuiviTtcHorsPrestationForMission", () => {
       { id: 3, Missions: 200, Calcul_TTC: 10 },
     ];
     assert.equal(sumSuiviTtcHorsPrestationForMission(rows, 100, enfants), 75);
+  });
+});
+
+describe("sumSuiviJoursHorsPrestationForMission", () => {
+  it("somme les jours legacy hors enfants connus", () => {
+    const enfants: MissionEnfant[] = [{ id: 10, Mission: 100 }];
+    const rows: SuiviMensuel[] = [
+      { id: 1, Mission_enfant: 10, Missions: 100, Nb_jours: 2 },
+      { id: 2, Missions: 100, Nb_jours: 3.5 },
+      { id: 3, Missions: 200, Nb_jours: 9 },
+    ];
+    assert.equal(sumSuiviJoursHorsPrestationForMission(rows, 100, enfants), 3.5);
+  });
+});
+
+describe("sumJoursBarEquipePrestations", () => {
+  it("somme les jours des prestations du filtre (sans hors prestation)", () => {
+    const joursByEnfantId = new Map<number, number>([
+      [10, 10],
+      [11, 4.5],
+      [12, 140],
+    ]);
+    // Filtre « Design » = prestations 10 + 11 seulement → jours baissent
+    assert.equal(
+      sumJoursBarEquipePrestations(
+        [{ id: 10 }, { id: 11 }],
+        joursByEnfantId,
+        2,
+        false,
+      ),
+      14.5,
+    );
+  });
+
+  it("inclut les jours hors prestation quand demandé (toutes les équipes)", () => {
+    const joursByEnfantId = new Map<number, number>([
+      [10, 10],
+      [12, 140],
+    ]);
+    assert.equal(
+      sumJoursBarEquipePrestations(
+        [{ id: 10 }, { id: 12 }],
+        joursByEnfantId,
+        4.5,
+        true,
+      ),
+      154.5,
+    );
   });
 });
