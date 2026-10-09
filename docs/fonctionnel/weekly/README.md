@@ -31,7 +31,7 @@ SegmentedControl Sujets|Actions seul :
 | Onglet | Contenu |
 |--------|---------|
 | **Sujets** | Liste agenda + sous-nav SegmentedControl **À faire \| Historique** (sujets traités) |
-| **Actions** | Kanban 3 colonnes **À faire \| En cours \| Done** + create inline |
+| **Actions** | Kanban 3 colonnes **À faire \| En cours \| Done** + drawer create / édition |
 | **Kanban** | Board missions (phases `Weekly_phase`) — **plus** affiché en permanence au-dessus |
 
 **Pas en V1** : 4ᵉ onglet **Historique** global (sujets + actions) — prévu plus
@@ -56,7 +56,7 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 | Produits SDPC | Lecture — libellé produit |
 | **`Weekly_phase`** | Create + update — 1 ligne / mission : `Mission` (Ref) · `Phase` (`prochainement` \| `cadrage` \| `actif` \| `autonomie`) · `Meteo` · `Note_ops` · `Membre_equipe` (RefList → `Equipe`) |
 | **`Weekly_agenda`** | Create + update `Traite` / `Traite_le` / `Texte` (titre) / `Detail` / `Mission` — sujets : `Texte` (titre) · `Detail` (opt., drawer) · `Auteur` · `Email` · `Mission` (opt.) · `Traite` · `Traite_le` (Date, jour du coche) · `Cree_le` |
-| **`Weekly_action`** | Create + update — actions Ops (kanban + create inline ; drawer édition à venir) : `Titre` · `Statut` (`A faire` \| `En cours`) · `Porteur` (Ref→Equipe) · `Mission` (opt.) · `Date_fin` · `Weekly_du` · `Notes` · `Fait` · `Fait_le` · `Cree_le` · `Email` ; **pas** de delete |
+| **`Weekly_action`** | Create + update — actions Ops (kanban + drawer SM create / édition) : `Titre` · `Statut` (`A faire` \| `En cours`) · `Porteur` (Ref→Equipe) · `Mission` (opt.) · `Date_fin` · `Weekly_du` · `Notes` · `Fait` · `Fait_le` · `Cree_le` · `Email` ; **pas** de delete |
 | **`Weekly_coachs`** | Lecture widget (allowlist) — `E_mail` ; écriture **hors widget** (Owner / Admin UI) |
 
 ### Cartes kanban (variante A)
@@ -137,7 +137,7 @@ Flag `WEEKLY_PHASE_OPS_COLUMNS_READY = true`. **Aucune** colonne / écriture sur
 - Clic **carte** (clavier Enter/Espace) → drawer suivi (SM) ; lien fiche **dans** le drawer (secondaire).
 - Badge météo carte : `Weekly_phase.Meteo` seulement (jamais `Missions.Meteo` pour le suivi ops).
 
-### Actions Ops (V1 partielle — kanban + create)
+### Actions Ops (V1 — kanban + drawer)
 
 Table **`Weekly_action`** (singulier). ACL = patron `Weekly_agenda`
 (Owner + coachs). Choice `Statut` : `A faire` / `En cours` ; « Fait » =
@@ -157,19 +157,20 @@ colonnes, drag, menu clavier « Déplacer vers… »).
 | UI | Comportement |
 |----|--------------|
 | Onglet **Actions** | Board 3 colonnes (Done visibles) + compteur « N ouvertes » dans le libellé d’onglet |
+| CTA header | **« Ajouter une action »** → drawer SM create (pas de barre inline) |
 | Carte | Titre · badge statut (ou « Fait ») · Porté par · mission · Weekly du · Fin le (alerte retard) |
 | Drag / menu → Done | `Fait=true` + `Fait_le` = aujourd’hui (`Statut` inchangé) |
 | Drag / menu hors Done | `Fait=false`, `Fait_le` vidé, `Statut` = colonne cible |
 | Drag À faire ↔ En cours | update `Statut` (+ reset `Fait` idempotent) |
-| Clic carte | **No-op** V1 (drawer édition = tranche suivante) |
-| Create inline | Titre (Entrée) · porteur prérempli session · mission opt. · date fin (+7 j) · Ajouter |
+| Clic carte | Ouvre le **drawer SM** édition (prérempli) |
+| Drawer create / edit | Titre · Porteur (session à create) · Mission opt. · Statut (À faire / En cours) · Date de fin · Weekly du (défaut = jour create) · Notes · case **Fait** (édition seulement) → Enregistrer / Ajouter ; Échap / Annuler / scrim ferment sans save |
 
 ## Hors scope (ce bolt)
 
 Timer weekly, clôture magique / table `Weekly_session`, point bloquant,
 écriture `Meteo` / note / coach sur `Missions`, CRA. Colonne Équipe dédiée
-(modèle plus global plus tard). Drawer édition + historique actions =
-tranches suivantes.
+(modèle plus global plus tard). Historique actions groupées par `Weekly_du` =
+tranche suivante.
 
 ## ACL (HITL Owner — UI Grist uniquement)
 

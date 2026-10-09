@@ -1,14 +1,11 @@
 /**
  * Onglet Actions Weekly Ops — kanban 3 colonnes (À faire | En cours | Done)
- * + create inline. Shell mutualisé `KanbanBoard` / `KanbanCardShell` (missions).
- * Drawer édition = tranche suivante (PR3) ; clic carte = no-op (menu / drag).
+ * + drawer SM create / édition. Done aussi via drag / menu.
  */
 
-import { useEffect, useId, useMemo, useState, type DragEvent, type FormEvent } from "react";
+import { useId, useMemo, useState, type DragEvent } from "react";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Button } from "@codegouvfr/react-dsfr/Button";
-import { Input } from "@codegouvfr/react-dsfr/Input";
-import { Select } from "@codegouvfr/react-dsfr/Select";
 import { KanbanBoard } from "../kanban/KanbanBoard";
 import { KanbanCardShell } from "../kanban/KanbanCardShell";
 import type { WeeklyActionRow } from "../../types";
@@ -16,22 +13,19 @@ import { extractGristReferenceId } from "../../utils/gristReferences";
 import {
   WEEKLY_ACTION_COLUMNS,
   columnKeyForWeeklyAction,
-  defaultWeeklyActionDateFin,
   formatWeeklyActionDayShort,
   groupWeeklyActionsByColumn,
   isWeeklyActionDateFinOverdue,
-  matchWeeklyActionPorteurId,
-  parseLocalDateInputValue,
   parseWeeklyActionDate,
-  toLocalDateInputValue,
   weeklyActionStatutLabel,
   type WeeklyActionColumnKey,
 } from "../../utils/weeklyAction";
-import {
-  createWeeklyActionRecord,
-  updateWeeklyActionColumn,
-} from "../../utils/weeklyGristWrite";
+import { updateWeeklyActionColumn } from "../../utils/weeklyGristWrite";
 import { firstNameFromDisplayName } from "../../utils/welcomeHomeByRole";
+import {
+  WeeklyActionFormDrawer,
+  type WeeklyActionDrawerMode,
+} from "./WeeklyActionFormDrawer";
 
 function ActionKanbanCard({
   action,
@@ -42,6 +36,7 @@ function ActionKanbanCard({
   onDragStart,
   onDragEnd,
   onMove,
+  onOpen,
 }: {
   action: WeeklyActionRow;
   columnKey: WeeklyActionColumnKey;
@@ -51,6 +46,7 @@ function ActionKanbanCard({
   onDragStart: (id: number) => void;
   onDragEnd: () => void;
   onMove: (actionId: number, columnKey: WeeklyActionColumnKey) => void;
+  onOpen: (action: WeeklyActionRow) => void;
 }) {
   const titre = (action.Titre ?? "Action").trim() || "Action";
   const fait = action.Fait === true;
@@ -85,9 +81,7 @@ function ActionKanbanCard({
       busy={busy}
       draggable
       ariaLabel={ariaLabel}
-      onActivate={() => {
-        /* PR3 : drawer édition — no-op V1 (menu / drag pour changer colonne). */
-      }}
+      onActivate={() => onOpen(action)}
       onDragStart={(id) => onDragStart(Number(id))}
       onDragEnd={onDragEnd}
       moveTargets={moveTargets}
@@ -151,41 +145,21 @@ export function WeeklyActionsPanel({
   /** Après drag / menu colonne (recharger). Défaut = `onCreated`. */
   onColumnUpdated?: () => Promise<void>;
 }) {
-  const formId = useId();
-  const titreInputId = `${formId}-titre`;
-  const defaultPorteur = useMemo(
-    () => matchWeeklyActionPorteurId(intervenants, sessionEmail),
-    [intervenants, sessionEmail],
-  );
-  const defaultDateFin = useMemo(
-    () => toLocalDateInputValue(defaultWeeklyActionDateFin()),
-    [],
-  );
-
-  const [titre, setTitre] = useState("");
-  const [porteurId, setPorteurId] = useState<string>("");
-  const [missionId, setMissionId] = useState("");
-  const [dateFin, setDateFin] = useState(defaultDateFin);
+  const addActionCtaId = useId();
   const [error, setError] = useState<string | null>(null);
   const [statusOk, setStatusOk] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
   const [dragActionId, setDragActionId] = useState<number | null>(null);
   const [busyActionId, setBusyActionId] = useState<number | null>(null);
-
-  useEffect(() => {
-    setPorteurId(defaultPorteur != null ? String(defaultPorteur) : "");
-  }, [defaultPorteur]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerMode, setDrawerMode] =
+    useState<WeeklyActionDrawerMode>("create");
+  const [drawerAction, setDrawerAction] = useState<WeeklyActionRow | null>(
+    null,
+  );
 
   const byColumn = useMemo(
     () => groupWeeklyActionsByColumn(actions),
     [actions],
-  );
-
-  const openCount = useMemo(
-    () =>
-      (byColumn.get("a_faire")?.length ?? 0) +
-      (byColumn.get("en_cours")?.length ?? 0),
-    [byColumn],
   );
 
   const porteurLabelById = useMemo(() => {
@@ -201,6 +175,29 @@ export function WeeklyActionsPanel({
   }, [intervenants]);
 
   const reloadAfterWrite = onColumnUpdated ?? onCreated;
+
+  const openCreate = () => {
+    setDrawerMode("create");
+    setDrawerAction(null);
+    setDrawerOpen(true);
+  };
+
+  const openEdit = (action: WeeklyActionRow) => {
+    setDrawerMode("edit");
+    setDrawerAction(action);
+    setDrawerOpen(true);
+  };
+
+  const closeDrawer = () => {
+    const restoreCta = drawerMode === "create";
+    setDrawerOpen(false);
+    setDrawerAction(null);
+    if (restoreCta) {
+      requestAnimationFrame(() => {
+        document.getElementById(addActionCtaId)?.focus();
+      });
+    }
+  };
 
   const changeColumn = async (
     actionId: number,
@@ -248,63 +245,32 @@ export function WeeklyActionsPanel({
     colBg: col.colBg,
   }));
 
-  const onSubmit = async (ev: FormEvent) => {
-    ev.preventDefault();
-    const trimmed = titre.trim();
-    if (!trimmed) {
-      setError("Indiquez un titre pour l’action.");
-      document.getElementById(titreInputId)?.focus();
-      return;
-    }
-    const porteur =
-      porteurId !== "" && Number.isFinite(Number(porteurId))
-        ? Number(porteurId)
-        : null;
-    const mission =
-      missionId !== "" && Number.isFinite(Number(missionId))
-        ? Number(missionId)
-        : null;
-    const fin = dateFin ? parseLocalDateInputValue(dateFin) : null;
-
-    setError(null);
-    setSubmitting(true);
-    try {
-      await createWeeklyActionRecord({
-        titre: trimmed,
-        porteurId: porteur,
-        missionId: mission,
-        dateFin: fin,
-        email: sessionEmail ?? "",
-      });
-      setTitre("");
-      setMissionId("");
-      setDateFin(toLocalDateInputValue(defaultWeeklyActionDateFin()));
-      setPorteurId(defaultPorteur != null ? String(defaultPorteur) : "");
-      await onCreated();
-      document.getElementById(titreInputId)?.focus();
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Impossible d’ajouter l’action.",
-      );
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const disabled = busy || submitting;
-
   return (
     <div>
-      <div className="fr-mb-2w">
+      <div
+        className="fr-mb-2w"
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "0.5rem 0.75rem",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         <h2 className="fr-h5" style={{ margin: 0 }}>
           Actions
         </h2>
-        <p className="fr-hint-text fr-mb-0" style={{ marginTop: "0.25rem" }}>
-          À revoir à chaque weekly · {openCount} ouvertes
-          {actions.length > openCount
-            ? ` · ${actions.length - openCount} done`
-            : ""}
-        </p>
+        <Button
+          type="button"
+          priority="secondary"
+          size="small"
+          iconId="fr-icon-add-line"
+          disabled={busy}
+          onClick={openCreate}
+          nativeButtonProps={{ id: addActionCtaId }}
+        >
+          Ajouter une action
+        </Button>
       </div>
 
       {error ? (
@@ -326,12 +292,6 @@ export function WeeklyActionsPanel({
           onDropColumn(key as WeeklyActionColumnKey)(e)
         }
         statusMessage={statusOk}
-        hint={
-          <p className="fr-hint-text fr-mb-0">
-            Glissez une carte ou utilisez le menu pour changer de colonne.
-            L’édition complète arrivera ensuite.
-          </p>
-        }
         renderCards={(columnKey) =>
           (byColumn.get(columnKey as WeeklyActionColumnKey) ?? []).map(
             (action) => {
@@ -352,6 +312,7 @@ export function WeeklyActionsPanel({
                   onDragStart={setDragActionId}
                   onDragEnd={() => setDragActionId(null)}
                   onMove={(id, key) => void changeColumn(id, key)}
+                  onOpen={openEdit}
                 />
               );
             },
@@ -359,85 +320,21 @@ export function WeeklyActionsPanel({
         }
       />
 
-      <form
-        id={formId}
-        className="fr-mt-3w"
-        onSubmit={(ev) => void onSubmit(ev)}
-        aria-label="Nouvelle action"
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "0.75rem",
-          alignItems: "end",
+      <WeeklyActionFormDrawer
+        open={drawerOpen}
+        mode={drawerMode}
+        action={drawerAction}
+        missionOptions={missionOptions}
+        equipeOptions={equipeOptions}
+        intervenants={intervenants}
+        sessionEmail={sessionEmail}
+        busy={busy}
+        onClose={closeDrawer}
+        onSaved={async () => {
+          setError(null);
+          await onCreated();
         }}
-      >
-        <div style={{ flex: "1 1 14rem", minWidth: "12rem" }}>
-          <Input
-            label="Titre"
-            nativeInputProps={{
-              id: titreInputId,
-              value: titre,
-              onChange: (e) => setTitre(e.currentTarget.value),
-              placeholder: "Nouvelle action (Entrée)",
-              disabled,
-              autoComplete: "off",
-            }}
-          />
-        </div>
-        <div style={{ flex: "1 1 10rem", minWidth: "9rem" }}>
-          <Select
-            label="Porteur"
-            nativeSelectProps={{
-              value: porteurId,
-              onChange: (e) => setPorteurId(e.currentTarget.value),
-              disabled,
-            }}
-          >
-            <option value="">Sans porteur</option>
-            {equipeOptions.map((o) => (
-              <option key={o.id} value={o.id}>
-                {o.label}
-              </option>
-            ))}
-          </Select>
-        </div>
-        <div style={{ flex: "1 1 10rem", minWidth: "9rem" }}>
-          <Select
-            label="Mission"
-            nativeSelectProps={{
-              value: missionId,
-              onChange: (e) => setMissionId(e.currentTarget.value),
-              disabled,
-            }}
-          >
-            <option value="">Sans mission liée</option>
-            {missionOptions.map((o) => (
-              <option key={o.id} value={o.id}>
-                {o.label}
-              </option>
-            ))}
-          </Select>
-        </div>
-        <div style={{ flex: "0 1 9rem" }}>
-          <Input
-            label="Date de fin"
-            nativeInputProps={{
-              type: "date",
-              value: dateFin,
-              onChange: (e) => setDateFin(e.currentTarget.value),
-              disabled,
-            }}
-          />
-        </div>
-        <Button
-          type="submit"
-          priority="primary"
-          iconId="fr-icon-add-line"
-          disabled={disabled}
-        >
-          Ajouter
-        </Button>
-      </form>
+      />
     </div>
   );
 }

@@ -65,14 +65,16 @@ export function weeklyActionFaitLeTimestamp(now: Date = new Date()): number {
 }
 
 /**
- * Champs create inline (fondations — pas d’UI encore).
- * `Weekly_du` / `Cree_le` = jour local du create ; `Statut` défaut `A faire`.
+ * Champs create action (`Weekly_action`).
+ * `Weekly_du` défaut = jour local du create (surchargeable) ; `Cree_le` = jour create ;
+ * `Statut` défaut `A faire`.
  */
 export function buildWeeklyActionCreateFields(input: {
   titre: string;
   porteurId: number | null;
   missionId?: number | null;
   dateFin?: Date | null;
+  weeklyDu?: Date | null;
   notes?: string;
   email?: string;
   statut?: WeeklyActionStatut;
@@ -86,6 +88,8 @@ export function buildWeeklyActionCreateFields(input: {
   const dayTs = weeklyActionDateTimestamp(now);
   const dateFin =
     input.dateFin != null ? weeklyActionDateTimestamp(input.dateFin) : null;
+  const weeklyDu =
+    input.weeklyDu != null ? weeklyActionDateTimestamp(input.weeklyDu) : dayTs;
   return {
     Titre: titre,
     Statut: normalizeWeeklyActionStatut(
@@ -96,7 +100,7 @@ export function buildWeeklyActionCreateFields(input: {
     Mission:
       input.missionId != null && input.missionId > 0 ? input.missionId : null,
     Date_fin: dateFin,
-    Weekly_du: dayTs,
+    Weekly_du: weeklyDu,
     Notes: (input.notes ?? "").trim(),
     Fait: false,
     Fait_le: null,

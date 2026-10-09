@@ -247,6 +247,7 @@ export async function createWeeklyActionRecord(input: {
   porteurId: number | null;
   missionId?: number | null;
   dateFin?: Date | null;
+  weeklyDu?: Date | null;
   notes?: string;
   email?: string;
   statut?: WeeklyActionStatut;

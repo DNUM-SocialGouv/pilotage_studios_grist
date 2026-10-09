@@ -110,6 +110,19 @@ describe("buildWeeklyActionCreateFields", () => {
       /titre/i,
     );
   });
+
+  it("accepte Weekly_du explicite sans changer Cree_le", () => {
+    const now = new Date(2026, 9, 9, 16, 0, 0);
+    const weeklyDu = new Date(2026, 9, 2);
+    const fields = buildWeeklyActionCreateFields({
+      titre: "Action datée",
+      porteurId: null,
+      weeklyDu,
+      now,
+    });
+    assert.equal(fields.Weekly_du, weeklyActionFaitLeTimestamp(weeklyDu));
+    assert.equal(fields.Cree_le, weeklyActionFaitLeTimestamp(now));
+  });
 });
 
 describe("filterWeeklyActionsEnCours / sort", () => {
