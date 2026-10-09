@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prototype spike — Vue Studio (constellation)</title>
+  <style>
+    :root {
+      --bg: #f6f6f6;
+      --panel: #ffffff;
+      --ink: #161616;
+      --muted: #666666;
+      --line: #dddddd;
+      --blue: #000091;
+      --blue-soft: #e3e3fd;
+      --blue-mid: #6a6af4;
+      --product: #18753c;
+      --product-soft: #b8fec9;
+      --focus: #0a76f6;
+      --focus-ring: #f5a300;
+      --dim: 0.18;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Marianne, "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.45;
+      padding: 1.25rem 1.5rem 2.5rem;
+    }
+
+    h1 {
+      font-size: 1.35rem;
+      margin: 0 0 0.35rem;
+      color: var(--blue);
+    }
+
+    .lead {
+      color: var(--muted);
+      margin: 0 0 1.25rem;
+      max-width: 42rem;
+      font-size: 0.95rem;
+    }
+
+    .shell {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      max-width: 64rem;
+      padding: 1rem 1.25rem 1.35rem;
+    }
+
+    .shell h2 {
+      font-size: 1.05rem;
+      margin: 0 0 0.85rem;
+    }
+
+    /* Studios selector */
+    .studios {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      align-items: center;
+      margin-bottom: 0.85rem;
+      font-size: 0.875rem;
+    }
+
+    .studios-label {
+      font-weight: 600;
+      margin-right: 0.15rem;
+      color: var(--ink);
+    }
+
+    .studio-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.65rem;
+      border: 1px solid var(--blue);
+      background: var(--panel);
+      color: var(--blue);
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 0;
+    }
+
+    .studio-chip:hover { background: var(--blue-soft); }
+
+    .studio-chip[aria-pressed="true"] {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .studio-chip:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    .studio-chip .count {
+      font-weight: 500;
+      font-size: 0.8em;
+      opacity: 0.85;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 1.1rem;
+      flex-wrap: wrap;
+      font-size: 0.8rem;
+      margin: 0 0 0.75rem;
+      color: var(--muted);
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .legend .swatch {
+      display: inline-block;
+      width: 0.75rem;
+      height: 0.75rem;
+      border: 2px solid;
+      flex-shrink: 0;
+    }
+
+    .legend .swatch.person {
+      background: var(--blue-soft);
+      border-color: var(--blue);
+      border-radius: 50%;
+    }
+
+    .legend .swatch.product {
+      background: var(--product-soft);
+      border-color: var(--product);
+    }
+
+    .legend .swatch.link {
+      width: 1.1rem;
+      height: 0;
+      border: 0;
+      border-top: 2.5px solid var(--blue-mid);
+      border-radius: 0;
+    }
+
+    /* Layout: graph + detail */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr minmax(12rem, 15rem);
+      gap: 1rem;
+      align-items: start;
+    }
+
+    @media (max-width: 899px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+      .mobile-hint {
+        display: block;
+      }
+    }
+
+    .mobile-hint {
+      display: none;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin: 0 0 0.5rem;
+      padding: 0.45rem 0.6rem;
+      background: #fff8e8;
+      border: 1px solid #e8c47a;
+    }
+
+    .graph-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      background: #fafafa;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    svg.constellation {
+      display: block;
+      width: 100%;
+      min-width: 720px;
+      height: auto;
+    }
+
+    .edge {
+      stroke: var(--blue-mid);
+      stroke-width: 1.6;
+      fill: none;
+      opacity: 0.7;
+      pointer-events: stroke;
+      cursor: pointer;
+      transition: opacity 0.12s ease, stroke-width 0.12s ease;
+    }
+
+    .edge.is-related {
+      stroke: var(--blue);
+      stroke-width: 2.6;
+      opacity: 1;
+    }
+
+    .edge.is-dim { opacity: var(--dim); }
+
+    .node {
+      cursor: pointer;
+      outline: none;
+    }
+
+    .node .shape-person {
+      fill: var(--blue-soft);
+      stroke: var(--blue);
+      stroke-width: 2;
+    }
+
+    .node .shape-product {
+      fill: var(--product-soft);
+      stroke: var(--product);
+      stroke-width: 2;
+    }
+
+    .node .label {
+      font-size: 11px;
+      fill: var(--ink);
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .node.is-related .shape-person,
+    .node.is-related .shape-product {
+      stroke-width: 3;
+    }
+
+    .node.is-active .shape-person {
+      fill: var(--blue);
+      stroke: var(--blue);
+    }
+
+    .node.is-active .shape-person + .label,
+    .node.is-active .shape-product + .label {
+      font-weight: 700;
+      fill: var(--blue);
+    }
+
+    .node.is-active .shape-product {
+      fill: var(--product);
+      stroke: var(--product);
+    }
+
+    .node.is-active .shape-product + .label {
+      fill: var(--product);
+    }
+
+    .node.is-dim { opacity: var(--dim); }
+
+    .node:focus .shape-person,
+    .node:focus .shape-product,
+    .node:hover .shape-person,
+    .node:hover .shape-product {
+      filter: drop-shadow(0 0 0 transparent);
+      stroke-width: 3;
+    }
+
+    .node:focus-visible .shape-person,
+    .node:focus-visible .shape-product {
+      stroke: var(--focus-ring);
+      stroke-width: 3.5;
+    }
+
+    /* Detail panel */
+    .detail {
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 0.85rem 0.95rem;
+      min-height: 10rem;
+      font-size: 0.875rem;
+    }
+
+    .detail h3 {
+      font-size: 0.95rem;
+      margin: 0 0 0.35rem;
+      color: var(--blue);
+    }
+
+    .detail .meta {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin: 0 0 0.65rem;
+    }
+
+    .detail .empty {
+      color: var(--muted);
+      margin: 0;
+      font-size: 0.85rem;
+    }
+
+    .detail ul {
+      margin: 0;
+      padding-left: 1.1rem;
+    }
+
+    .detail li { margin-bottom: 0.25rem; }
+
+    .detail .badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.1rem 0.4rem;
+      background: var(--blue-soft);
+      color: var(--blue);
+      margin-bottom: 0.5rem;
+    }
+
+    .detail .badge.product-badge {
+      background: var(--product-soft);
+      color: var(--product);
+    }
+
+    /* Stats strip */
+    .stats {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin: 0.65rem 0 0;
+    }
+
+    /* A11y list */
+    details.a11y-list {
+      margin-top: 1.15rem;
+      border-top: 1px solid var(--line);
+      padding-top: 0.85rem;
+    }
+
+    details.a11y-list summary {
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--blue);
+      padding: 0.2rem 0;
+    }
+
+    details.a11y-list summary:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    .list-by-studio {
+      margin: 0.75rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .list-by-studio > li {
+      margin-bottom: 0.85rem;
+    }
+
+    .list-by-studio h4 {
+      font-size: 0.88rem;
+      margin: 0 0 0.35rem;
+    }
+
+    .list-by-studio ul {
+      margin: 0;
+      padding-left: 1.15rem;
+      font-size: 0.875rem;
+    }
+
+    .list-by-studio li { margin-bottom: 0.2rem; }
+
+    .hint {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin: 1rem 0 0;
+      max-width: 48rem;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Prototype spike — Vue Studio (constellation)</h1>
+  <p class="lead">
+    En clair : d’un coup d’œil, on voit <strong>qui</strong> (cercles) est relié à
+    <strong>quel produit</strong> (carrés) via des prestations en cours (traits).
+    Filtrez un ou plusieurs studios. Pas de météo Weekly — données fictives pour juger la forme.
+    Prototype spike — hors produit React (fichier HTML autonome pour feedback).
+  </p>
+
+  <section class="shell" aria-labelledby="bloc-title">
+    <h2 id="bloc-title">Studio — en ce moment</h2>
+
+    <div class="studios" role="group" aria-label="Studios à afficher">
+      <span class="studios-label">Studios :</span>
+      <!-- chips filled by JS -->
+    </div>
+
+    <div class="legend" aria-hidden="true">
+      <span><i class="swatch person"></i> Personne</span>
+      <span><i class="swatch product"></i> Produit</span>
+      <span><i class="swatch link"></i> Prestation en cours</span>
+    </div>
+
+    <p class="mobile-hint" role="note">
+      Sur petit écran : faites défiler le graphique horizontalement, ou ouvrez la liste ci-dessous.
+    </p>
+
+    <div class="main-grid">
+      <div>
+        <div class="graph-wrap">
+          <svg
+            class="constellation"
+            viewBox="0 0 900 520"
+            role="img"
+            aria-labelledby="const-title const-desc"
+            id="graph"
+          >
+            <title id="const-title">Constellation personnes et produits des studios sélectionnés</title>
+            <desc id="const-desc">
+              Graphique bipartite : personnes à gauche, produits à droite,
+              traits = prestations en cours. Utilisez la liste repliée pour une alternative textuelle.
+            </desc>
+            <g id="edges"></g>
+            <g id="nodes"></g>
+          </svg>
+        </div>
+        <p class="stats" id="stats" aria-live="polite"></p>
+      </div>
+
+      <aside class="detail" id="detail" aria-live="polite">
+        <p class="empty">Cliquez ou activez un nœud (Entrée / Espace) pour voir le détail.</p>
+      </aside>
+    </div>
+
+    <details class="a11y-list" id="a11y-details">
+      <summary>Liste (alternative textuelle) — mêmes données</summary>
+      <div id="a11y-content"></div>
+    </details>
+
+    <p class="hint">
+      Prototype spike — hors produit React (fichier HTML autonome). Layout fixe bipartite — pas de physique force-directed.
+      En produit (plus tard) : clic personne → fiche Équipe · clic produit → fiche Produit.
+    </p>
+  </section>
+
+  <script>
+(function () {
+  "use strict";
+
+  /* ------------------------------------------------------------------
+   * Données mock FR — 3 studios, ~15 personnes, 7 produits, ~20 liens
+   * ------------------------------------------------------------------ */
+  var STUDIOS = [
+    { id: "design", label: "Studio Design" },
+    { id: "data", label: "Studio Data" },
+    { id: "transfo", label: "Studio Transfo" }
+  ];
+
+  var PEOPLE = [
+    { id: "p1", name: "Estelle Vierne", role: "Coach", studio: "design" },
+    { id: "p2", name: "Nathalie Molines", role: "Coach", studio: "design" },
+    { id: "p3", name: "Camille Roux", role: "Designer", studio: "design" },
+    { id: "p4", name: "Julien Moreau", role: "Designer", studio: "design" },
+    { id: "p5", name: "Sarah Benali", role: "UX Research", studio: "design" },
+    { id: "p6", name: "Philippe Larroque", role: "ProductOps", studio: "data" },
+    { id: "p7", name: "Amine Khelifi", role: "Data analyste", studio: "data" },
+    { id: "p8", name: "Claire Dupont", role: "ProductOps", studio: "data" },
+    { id: "p9", name: "Hugo Bertrand", role: "Ingénieur data", studio: "data" },
+    { id: "p10", name: "Léa Martin", role: "Coach", studio: "transfo" },
+    { id: "p11", name: "Omar Diallo", role: "Chef de projet", studio: "transfo" },
+    { id: "p12", name: "Inès Garnier", role: "Facilitatrice", studio: "transfo" },
+    { id: "p13", name: "Thomas Petit", role: "ProductOps", studio: "transfo" },
+    { id: "p14", name: "Marie Lefèvre", role: "Designer", studio: "design" },
+    { id: "p15", name: "Nicolas Faure", role: "Data analyste", studio: "data" }
+  ];
+
+  var PRODUCTS = [
+    { id: "d1", name: "Alpha", studio: "design" },
+    { id: "d2", name: "Beta Access", studio: "design" },
+    { id: "d3", name: "Portail RH", studio: "design" },
+    { id: "d4", name: "Tableau Pilotage", studio: "data" },
+    { id: "d5", name: "Catalogue Data", studio: "data" },
+    { id: "d6", name: "Transformation DNUM", studio: "transfo" },
+    { id: "d7", name: "Parcours Usagers", studio: "transfo" }
+  ];
+
+  /* personId, productId, prestation label */
+  var LINKS = [
+    { id: "l1", person: "p1", product: "d1", prestation: "Coaching design Alpha" },
+    { id: "l2", person: "p2", product: "d1", prestation: "Ateliers usagers Alpha" },
+    { id: "l3", person: "p2", product: "d2", prestation: "Revue accessibilité Beta" },
+    { id: "l4", person: "p3", product: "d2", prestation: "Maquettes Beta Access" },
+    { id: "l5", person: "p3", product: "d3", prestation: "UI Portail RH" },
+    { id: "l6", person: "p4", product: "d3", prestation: "Design system Portail RH" },
+    { id: "l7", person: "p5", product: "d1", prestation: "Entretiens Alpha" },
+    { id: "l8", person: "p5", product: "d2", prestation: "Tests utilisateurs Beta" },
+    { id: "l9", person: "p14", product: "d3", prestation: "Illustrations Portail RH" },
+    { id: "l10", person: "p6", product: "d4", prestation: "Appui ProductOps Pilotage" },
+    { id: "l11", person: "p6", product: "d6", prestation: "Appui Transfo DNUM" },
+    { id: "l12", person: "p7", product: "d4", prestation: "Indicateurs Pilotage" },
+    { id: "l13", person: "p7", product: "d5", prestation: "Qualité Catalogue Data" },
+    { id: "l14", person: "p8", product: "d5", prestation: "ProductOps Catalogue" },
+    { id: "l15", person: "p9", product: "d4", prestation: "Pipeline Pilotage" },
+    { id: "l16", person: "p9", product: "d5", prestation: "APIs Catalogue Data" },
+    { id: "l17", person: "p15", product: "d4", prestation: "Reporting mensuel" },
+    { id: "l18", person: "p10", product: "d6", prestation: "Coaching Transfo DNUM" },
+    { id: "l19", person: "p10", product: "d7", prestation: "Ateliers Parcours Usagers" },
+    { id: "l20", person: "p11", product: "d6", prestation: "Pilotage Transfo DNUM" },
+    { id: "l21", person: "p12", product: "d7", prestation: "Facilitation Parcours" },
+    { id: "l22", person: "p13", product: "d6", prestation: "Ops Transformation" },
+    { id: "l23", person: "p13", product: "d7", prestation: "Suivi Parcours Usagers" },
+    { id: "l1b", person: "p1", product: "d3", prestation: "Conseil design Portail RH" }
+  ];
+
+  /* ------------------------------------------------------------------
+   * State
+   * ------------------------------------------------------------------ */
+  var activeStudios = { design: true, data: true, transfo: true };
+  var selectedId = null;
+  var hoverId = null;
+
+  var peopleById = indexBy(PEOPLE, "id");
+  var productsById = indexBy(PRODUCTS, "id");
+
+  /* ------------------------------------------------------------------
+   * Layout bipartite déterministe
+   * ------------------------------------------------------------------ */
+  var LAYOUT = {
+    width: 900,
+    height: 520,
+    leftX: 130,
+    rightX: 740,
+    topPad: 36,
+    bottomPad: 28,
+    personR: 18,
+    productW: 56,
+    productH: 34
+  };
+
+  function indexBy(arr, key) {
+    var m = {};
+    for (var i = 0; i < arr.length; i++) m[arr[i][key]] = arr[i];
+    return m;
+  }
+
+  function studioLabel(id) {
+    for (var i = 0; i < STUDIOS.length; i++) {
+      if (STUDIOS[i].id === id) return STUDIOS[i].label;
+    }
+    return id;
+  }
+
+  function filteredData() {
+    var people = PEOPLE.filter(function (p) { return activeStudios[p.studio]; });
+    var products = PRODUCTS.filter(function (d) { return activeStudios[d.studio]; });
+    var personSet = {};
+    var productSet = {};
+    people.forEach(function (p) { personSet[p.id] = true; });
+    products.forEach(function (d) { productSet[d.id] = true; });
+    var links = LINKS.filter(function (l) {
+      return personSet[l.person] && productSet[l.product];
+    });
+    /* Ne garder que nœuds qui ont au moins 1 lien (choix V1 exploration) */
+    var linkedPeople = {};
+    var linkedProducts = {};
+    links.forEach(function (l) {
+      linkedPeople[l.person] = true;
+      linkedProducts[l.product] = true;
+    });
+    people = people.filter(function (p) { return linkedPeople[p.id]; });
+    products = products.filter(function (d) { return linkedProducts[d.id]; });
+    return { people: people, products: products, links: links };
+  }
+
+  function layoutPositions(data) {
+    var pos = {};
+    var nP = data.people.length;
+    var nD = data.products.length;
+    var usableH = LAYOUT.height - LAYOUT.topPad - LAYOUT.bottomPad;
+
+    data.people.forEach(function (p, i) {
+      var y = LAYOUT.topPad + (nP === 1 ? usableH / 2 : (usableH * i) / (nP - 1));
+      pos[p.id] = { x: LAYOUT.leftX, y: y, kind: "person" };
+    });
+
+    data.products.forEach(function (d, i) {
+      var y = LAYOUT.topPad + (nD === 1 ? usableH / 2 : (usableH * i) / (nD - 1));
+      pos[d.id] = { x: LAYOUT.rightX, y: y, kind: "product" };
+    });
+
+    return pos;
+  }
+
+  function relatedIds(nodeId, links) {
+    var set = {};
+    set[nodeId] = true;
+    links.forEach(function (l) {
+      if (l.person === nodeId || l.product === nodeId) {
+        set[l.person] = true;
+        set[l.product] = true;
+        set[l.id] = true;
+      }
+    });
+    return set;
+  }
+
+  function focusId() {
+    return hoverId || selectedId;
+  }
+
+  /* ------------------------------------------------------------------
+   * Render chips
+   * ------------------------------------------------------------------ */
+  function renderChips() {
+    var host = document.querySelector(".studios");
+    var label = host.querySelector(".studios-label");
+    host.innerHTML = "";
+    host.appendChild(label);
+
+    STUDIOS.forEach(function (s) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "studio-chip";
+      btn.setAttribute("aria-pressed", activeStudios[s.id] ? "true" : "false");
+      var nPeople = PEOPLE.filter(function (p) { return p.studio === s.id; }).length;
+      btn.innerHTML = s.label + ' <span class="count">(' + nPeople + ')</span>';
+      btn.addEventListener("click", function () {
+        var onCount = Object.keys(activeStudios).filter(function (k) {
+          return activeStudios[k];
+        }).length;
+        if (activeStudios[s.id] && onCount === 1) {
+          /* garder au moins un studio */
+          return;
+        }
+        activeStudios[s.id] = !activeStudios[s.id];
+        selectedId = null;
+        hoverId = null;
+        renderAll();
+      });
+      host.appendChild(btn);
+    });
+  }
+
+  /* ------------------------------------------------------------------
+   * Render SVG
+   * ------------------------------------------------------------------ */
+  function renderGraph() {
+    var data = filteredData();
+    var pos = layoutPositions(data);
+    var focus = focusId();
+    var related = focus ? relatedIds(focus, data.links) : null;
+
+    var edgesG = document.getElementById("edges");
+    var nodesG = document.getElementById("nodes");
+    edgesG.innerHTML = "";
+    nodesG.innerHTML = "";
+
+    /* Edges */
+    data.links.forEach(function (l) {
+      var a = pos[l.person];
+      var b = pos[l.product];
+      if (!a || !b) return;
+      var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      var midX = (a.x + b.x) / 2;
+      var d =
+        "M" + a.x + "," + a.y +
+        " C" + midX + "," + a.y +
+        " " + midX + "," + b.y +
+        " " + b.x + "," + b.y;
+      path.setAttribute("d", d);
+      path.setAttribute("class", "edge");
+      path.setAttribute("data-id", l.id);
+      path.setAttribute("data-person", l.person);
+      path.setAttribute("data-product", l.product);
+
+      if (related) {
+        if (related[l.id]) path.classList.add("is-related");
+        else path.classList.add("is-dim");
+      }
+
+      path.addEventListener("mouseenter", function () {
+        hoverId = l.person;
+        renderGraph();
+        renderDetail(l.person, data, true);
+      });
+      path.addEventListener("mouseleave", function () {
+        hoverId = null;
+        renderGraph();
+        renderDetail(selectedId, data, false);
+      });
+      path.addEventListener("click", function () {
+        selectedId = l.person;
+        renderGraph();
+        renderDetail(selectedId, data, false);
+      });
+
+      edgesG.appendChild(path);
+    });
+
+    /* People */
+    data.people.forEach(function (p) {
+      var pt = pos[p.id];
+      var g = makeNodeGroup(p.id, "person", p.name + ", " + p.role + ", " + studioLabel(p.studio));
+      g.setAttribute("transform", "translate(" + pt.x + "," + pt.y + ")");
+
+      if (related) {
+        if (related[p.id]) g.classList.add("is-related");
+        else g.classList.add("is-dim");
+      }
+      if (selectedId === p.id) g.classList.add("is-active");
+
+      var circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      circle.setAttribute("r", String(LAYOUT.personR));
+      circle.setAttribute("class", "shape-person");
+      g.appendChild(circle);
+
+      var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      text.setAttribute("class", "label");
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("y", String(LAYOUT.personR + 14));
+      text.textContent = shortName(p.name);
+      g.appendChild(text);
+
+      bindNodeEvents(g, p.id, data);
+      nodesG.appendChild(g);
+    });
+
+    /* Products */
+    data.products.forEach(function (d) {
+      var pt = pos[d.id];
+      var g = makeNodeGroup(d.id, "product", d.name + ", produit, " + studioLabel(d.studio));
+      g.setAttribute("transform", "translate(" + pt.x + "," + pt.y + ")");
+
+      if (related) {
+        if (related[d.id]) g.classList.add("is-related");
+        else g.classList.add("is-dim");
+      }
+      if (selectedId === d.id) g.classList.add("is-active");
+
+      var rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      var w = Math.max(LAYOUT.productW, d.name.length * 6.2 + 16);
+      rect.setAttribute("x", String(-w / 2));
+      rect.setAttribute("y", String(-LAYOUT.productH / 2));
+      rect.setAttribute("width", String(w));
+      rect.setAttribute("height", String(LAYOUT.productH));
+      rect.setAttribute("class", "shape-product");
+      g.appendChild(rect);
+
+      var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      text.setAttribute("class", "label");
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("y", String(LAYOUT.productH / 2 + 14));
+      text.textContent = d.name;
+      g.appendChild(text);
+
+      bindNodeEvents(g, d.id, data);
+      nodesG.appendChild(g);
+    });
+
+    /* Stats */
+    document.getElementById("stats").textContent =
+      data.people.length + " personne" + (data.people.length > 1 ? "s" : "") +
+      " · " + data.products.length + " produit" + (data.products.length > 1 ? "s" : "") +
+      " · " + data.links.length + " prestation" + (data.links.length > 1 ? "s" : "") +
+      " en cours";
+  }
+
+  function makeNodeGroup(id, kind, ariaLabel) {
+    var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    g.setAttribute("class", "node");
+    g.setAttribute("data-id", id);
+    g.setAttribute("data-kind", kind);
+    g.setAttribute("tabindex", "0");
+    g.setAttribute("role", "button");
+    g.setAttribute("aria-label", ariaLabel);
+    return g;
+  }
+
+  function bindNodeEvents(g, id, data) {
+    g.addEventListener("mouseenter", function () {
+      hoverId = id;
+      renderGraph();
+      renderDetail(id, data, true);
+    });
+    g.addEventListener("mouseleave", function () {
+      hoverId = null;
+      renderGraph();
+      renderDetail(selectedId, data, false);
+    });
+    g.addEventListener("click", function () {
+      selectedId = id;
+      renderGraph();
+      renderDetail(id, data, false);
+    });
+    g.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        selectedId = id;
+        renderGraph();
+        renderDetail(id, data, false);
+      }
+    });
+    g.addEventListener("focus", function () {
+      hoverId = id;
+      renderGraph();
+      renderDetail(id, data, true);
+    });
+    g.addEventListener("blur", function () {
+      hoverId = null;
+      renderGraph();
+      renderDetail(selectedId, filteredData(), false);
+    });
+  }
+
+  function shortName(full) {
+    var parts = full.split(" ");
+    if (parts.length < 2) return full;
+    return parts[0];
+  }
+
+  /* ------------------------------------------------------------------
+   * Detail panel
+   * ------------------------------------------------------------------ */
+  function renderDetail(nodeId, data, isHover) {
+    var el = document.getElementById("detail");
+    if (!nodeId) {
+      el.innerHTML = '<p class="empty">Cliquez ou activez un nœud (Entrée / Espace) pour voir le détail.</p>';
+      return;
+    }
+
+    var person = peopleById[nodeId];
+    var product = productsById[nodeId];
+
+    if (person) {
+      var links = data.links.filter(function (l) { return l.person === person.id; });
+      var html =
+        '<span class="badge">Personne</span>' +
+        "<h3>" + escapeHtml(person.name) + "</h3>" +
+        '<p class="meta">' + escapeHtml(person.role) + " · " +
+        escapeHtml(studioLabel(person.studio)) + "</p>";
+      if (links.length === 0) {
+        html += "<p>Aucune prestation visible avec le filtre actuel.</p>";
+      } else {
+        html += "<p><strong>Prestations en cours</strong></p><ul>";
+        links.forEach(function (l) {
+          var prod = productsById[l.product];
+          html +=
+            "<li>" + escapeHtml(l.prestation) +
+            " → <em>" + escapeHtml(prod ? prod.name : l.product) + "</em></li>";
+        });
+        html += "</ul>";
+      }
+      if (isHover && selectedId !== nodeId) {
+        html += '<p class="meta" style="margin-top:0.65rem;">Survol — cliquer pour figer</p>';
+      }
+      el.innerHTML = html;
+      return;
+    }
+
+    if (product) {
+      var linksP = data.links.filter(function (l) { return l.product === product.id; });
+      var htmlP =
+        '<span class="badge product-badge">Produit</span>' +
+        "<h3>" + escapeHtml(product.name) + "</h3>" +
+        '<p class="meta">' + escapeHtml(studioLabel(product.studio)) + "</p>";
+      if (linksP.length === 0) {
+        htmlP += "<p>Aucune prestation visible avec le filtre actuel.</p>";
+      } else {
+        htmlP += "<p><strong>Personnes reliées</strong></p><ul>";
+        linksP.forEach(function (l) {
+          var pe = peopleById[l.person];
+          htmlP +=
+            "<li>" + escapeHtml(pe ? pe.name : l.person) +
+            " — " + escapeHtml(l.prestation) + "</li>";
+        });
+        htmlP += "</ul>";
+      }
+      if (isHover && selectedId !== nodeId) {
+        htmlP += '<p class="meta" style="margin-top:0.65rem;">Survol — cliquer pour figer</p>';
+      }
+      el.innerHTML = htmlP;
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  /* ------------------------------------------------------------------
+   * A11y list
+   * ------------------------------------------------------------------ */
+  function renderA11yList() {
+    var data = filteredData();
+    var host = document.getElementById("a11y-content");
+    var byStudio = {};
+
+    STUDIOS.forEach(function (s) {
+      if (!activeStudios[s.id]) return;
+      byStudio[s.id] = [];
+    });
+
+    data.links.forEach(function (l) {
+      var pe = peopleById[l.person];
+      var pr = productsById[l.product];
+      if (!pe || !pr) return;
+      var sid = pe.studio;
+      if (!byStudio[sid]) byStudio[sid] = [];
+      byStudio[sid].push({
+        person: pe.name,
+        role: pe.role,
+        product: pr.name,
+        prestation: l.prestation
+      });
+    });
+
+    var html = '<ul class="list-by-studio">';
+    STUDIOS.forEach(function (s) {
+      var items = byStudio[s.id];
+      if (!items || items.length === 0) return;
+      items.sort(function (a, b) {
+        return a.person.localeCompare(b.person, "fr");
+      });
+      html += "<li><h4>" + escapeHtml(s.label) + "</h4><ul>";
+      items.forEach(function (it) {
+        html +=
+          "<li><strong>" + escapeHtml(it.person) + "</strong> (" +
+          escapeHtml(it.role) + ") — " +
+          escapeHtml(it.prestation) + " · produit " +
+          escapeHtml(it.product) + "</li>";
+      });
+      html += "</ul></li>";
+    });
+    html += "</ul>";
+
+    if (data.links.length === 0) {
+      html = "<p>Aucun lien avec les studios sélectionnés.</p>";
+    }
+    host.innerHTML = html;
+  }
+
+  /* ------------------------------------------------------------------
+   * Boot
+   * ------------------------------------------------------------------ */
+  function renderAll() {
+    renderChips();
+    renderGraph();
+    renderDetail(selectedId, filteredData(), false);
+    renderA11yList();
+  }
+
+  renderAll();
+})();
+  </script>
+</body>
+</html>
