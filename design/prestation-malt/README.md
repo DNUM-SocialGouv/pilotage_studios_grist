@@ -1,0 +1,42 @@
+# Prestation Malt — gabarit drawer (spike)
+
+## En clair
+
+Maquettes HTML du tiroir « Modifier la prestation » enrichi : champs actuels
+(titre, intervenant, jours, statut, date) + proposition **Mission Malt**,
+**bon de commande** et **lien Sofiane**. Ce n’est **pas** encore le drawer React
+du widget — seulement un fichier à ouvrir pour discuter le feedback Kanban
+« Mission malt dans prestation ».
+
+Données fictives. Pas de connexion Grist. Pas d’écriture.
+
+## Voir le dessin (branche PR, un clic)
+
+Liens **jsDelivr** (rendu HTML, pas le code source) — branche `spike/gabarit-prestation-malt` :
+
+- [Gabarit drawer prestation Malt](https://cdn.jsdelivr.net/gh/DNUM-SocialGouv/pilotage_studios_grist@spike/gabarit-prestation-malt/design/prestation-malt/gabarit-drawer-prestation-malt.html)
+
+Secours [raw.githack](https://raw.githack.com/) :
+
+- [Gabarit drawer](https://raw.githack.com/DNUM-SocialGouv/pilotage_studios_grist/spike/gabarit-prestation-malt/design/prestation-malt/gabarit-drawer-prestation-malt.html)
+
+Les liens blob GitHub (`…/blob/…`) montrent le **code**, pas le rendu — à éviter pour le feedback.
+
+## Ouvrir en local
+
+```bash
+open design/prestation-malt/gabarit-drawer-prestation-malt.html
+```
+
+Même fichier sous `public/design/prestation-malt/` : Vite le copie dans `dist/`
+au build → GitHub Pages après merge sur `main`.
+
+## URL Pages (après merge)
+
+- [Gabarit drawer](https://dnum-socialgouv.github.io/pilotage_studios_grist/design/prestation-malt/gabarit-drawer-prestation-malt.html)
+
+## Hors scope
+
+- Implémentation React `MissionEnfantDrawer` / colonnes Grist
+- Sync kanban Nature=Produit (feedback hors feuille de route produit)
+- Matrice rôles / portage app solo

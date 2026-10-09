@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gabarit — Drawer Modifier la prestation (Mission Malt)</title>
+  <style>
+    :root {
+      --bg: #f6f6f6;
+      --surface: #ffffff;
+      --ink: #161616;
+      --muted: #666666;
+      --line: #dddddd;
+      --blue: #000091;
+      --blue-soft: #e3e3fd;
+      --blue-mid: #6a6af4;
+      --focus: #0a76f6;
+      --scrim: rgba(22, 22, 22, 0.5);
+      --ok: #18753c;
+      --ok-soft: #b8fec9;
+      --font: Marianne, "Segoe UI", system-ui, sans-serif;
+      --drawer-w: min(32rem, 100vw);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 56rem;
+      margin: 0 auto;
+      padding: 1.25rem 1.5rem 2.5rem;
+    }
+
+    h1 {
+      font-size: 1.35rem;
+      margin: 0 0 0.35rem;
+      color: var(--blue);
+    }
+
+    .lead {
+      color: var(--muted);
+      margin: 0 0 1rem;
+      max-width: 42rem;
+      font-size: 0.95rem;
+    }
+
+    .legend {
+      display: inline-block;
+      border-left: 4px solid var(--blue);
+      background: var(--blue-soft);
+      color: var(--ink);
+      padding: 0.65rem 0.9rem;
+      margin: 0 0 1.25rem;
+      font-size: 0.9rem;
+      max-width: 42rem;
+    }
+
+    .stage {
+      position: relative;
+      min-height: 28rem;
+      border: 1px dashed var(--line);
+      background:
+        repeating-linear-gradient(
+          -12deg,
+          transparent,
+          transparent 11px,
+          rgba(0, 0, 0, 0.03) 11px,
+          rgba(0, 0, 0, 0.03) 12px
+        ),
+        var(--surface);
+      padding: 1.25rem 1rem 5rem;
+    }
+
+    .fake-chrome {
+      opacity: 0.4;
+      pointer-events: none;
+      user-select: none;
+      max-width: 28rem;
+    }
+
+    .fake-bar {
+      height: 0.7rem;
+      width: 8rem;
+      background: var(--line);
+      margin-bottom: 0.75rem;
+    }
+
+    .fake-title {
+      height: 1.4rem;
+      width: 14rem;
+      background: var(--line);
+      margin-bottom: 0.75rem;
+    }
+
+    .fake-line {
+      height: 0.65rem;
+      background: var(--line);
+      margin-bottom: 0.5rem;
+      max-width: 22rem;
+    }
+
+    .fake-line.short { max-width: 12rem; }
+
+    .open-btn {
+      margin-top: 1rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #fff;
+      background: var(--blue);
+      border: 1px solid var(--blue);
+      padding: 0.6rem 1.1rem;
+      cursor: pointer;
+    }
+
+    .open-btn:hover { background: #1212ff; }
+    .open-btn:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    /* Overlay + drawer */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--scrim);
+      z-index: 100;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .overlay[hidden] { display: none; }
+
+    .drawer {
+      width: var(--drawer-w);
+      max-width: 100%;
+      height: 100%;
+      background: var(--surface);
+      box-shadow: -8px 0 24px rgba(0, 0, 20, 0.18);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .drawer__header {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1.25rem 1.25rem 0.75rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .drawer__header h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 700;
+      flex: 1;
+    }
+
+    .drawer__desc {
+      margin: 0.4rem 0 0;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+
+    .btn-close {
+      font-family: inherit;
+      font-size: 0.875rem;
+      background: transparent;
+      border: none;
+      color: var(--blue);
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 0.25rem 0.4rem;
+      flex-shrink: 0;
+    }
+
+    .btn-close:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .drawer__body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem 1.25rem 1.5rem;
+    }
+
+    .banner-prop {
+      background: var(--blue-soft);
+      border: 1px solid var(--blue-mid);
+      padding: 0.65rem 0.85rem;
+      margin: 0 0 1.15rem;
+      font-size: 0.875rem;
+    }
+
+    .banner-prop strong {
+      color: var(--blue);
+      display: block;
+      margin-bottom: 0.15rem;
+    }
+
+    .field {
+      margin-bottom: 1rem;
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+
+    .field .hint {
+      display: block;
+      font-weight: 400;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.15rem;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 0.5rem 0.65rem;
+      border: 1px solid var(--ink);
+      background: var(--surface);
+      color: var(--ink);
+      border-radius: 0;
+    }
+
+    .field input:focus-visible,
+    .field select:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem 1rem;
+    }
+
+    @media (max-width: 480px) {
+      .field-row { grid-template-columns: 1fr; }
+    }
+
+    .field--new {
+      position: relative;
+      background: #f5f5fe;
+      border: 1px dashed var(--blue-mid);
+      padding: 0.85rem 0.85rem 0.35rem;
+      margin-bottom: 1rem;
+    }
+
+    .badge-new {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: #fff;
+      background: var(--blue);
+      padding: 0.15rem 0.45rem;
+      margin-bottom: 0.45rem;
+    }
+
+    .section-prop {
+      margin: 1.35rem 0 0.75rem;
+      padding-top: 0.85rem;
+      border-top: 1px solid var(--line);
+    }
+
+    .section-prop h3 {
+      margin: 0 0 0.35rem;
+      font-size: 0.95rem;
+      color: var(--blue);
+    }
+
+    .section-prop p {
+      margin: 0 0 0.85rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .drawer__footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+      padding: 0.9rem 1.25rem;
+      border-top: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .btn {
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.55rem 1.1rem;
+      cursor: pointer;
+      border: 1px solid var(--blue);
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .btn--secondary {
+      background: var(--surface);
+      color: var(--blue);
+    }
+
+    .btn--primary {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .btn--primary:hover { background: #1212ff; }
+
+    .toast {
+      position: fixed;
+      bottom: 1.25rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ok);
+      color: #fff;
+      padding: 0.65rem 1.1rem;
+      font-size: 0.9rem;
+      z-index: 200;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .toast[hidden] { display: none; }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Gabarit — Modifier la prestation (Mission Malt)</h1>
+    <p class="lead">
+      Proposition visuelle pour enrichir le tiroir prestation : champs existants
+      + Mission Malt, bon de commande et lien Sofiane. Données fictives, hors produit.
+    </p>
+    <p class="legend">
+      <strong>Gabarit — champs proposés (hors produit)</strong><br />
+      Les blocs encadrés en pointillé bleu portent le badge « Nouveau ».
+      Fermer / Annuler / Enregistrer sont des stubs (pas d’écriture Grist).
+    </p>
+
+    <div class="stage" aria-hidden="true">
+      <div class="fake-chrome">
+        <div class="fake-bar"></div>
+        <div class="fake-title"></div>
+        <div class="fake-line"></div>
+        <div class="fake-line short"></div>
+        <div class="fake-line"></div>
+      </div>
+      <button type="button" class="open-btn" id="reopen" style="pointer-events: auto; opacity: 1;">
+        Rouvrir le tiroir
+      </button>
+    </div>
+  </div>
+
+  <div
+    class="overlay"
+    id="overlay"
+    role="presentation"
+  >
+    <aside
+      class="drawer"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="drawer-title"
+      aria-describedby="drawer-desc"
+    >
+      <header class="drawer__header">
+        <div>
+          <h2 id="drawer-title">Modifier la prestation</h2>
+          <p class="drawer__desc" id="drawer-desc">
+            Met à jour le staffing de cette prestation (titre, intervenant, jours, statut, date de début).
+          </p>
+        </div>
+        <button type="button" class="btn-close" id="btn-close" title="Fermer">
+          Fermer
+        </button>
+      </header>
+
+      <div class="drawer__body">
+        <div class="banner-prop" role="note">
+          <strong>Proposition</strong>
+          Gabarit — champs proposés (hors produit). Les champs « Nouveau » ne sont pas encore dans le widget.
+        </div>
+
+        <form id="form-prestation" novalidate>
+          <div class="field">
+            <label for="titre">Titre de la prestation</label>
+            <input id="titre" name="titre" type="text" value="Accompagnement design system" />
+            <span class="hint">Vide → nom de l’intervenant.</span>
+          </div>
+
+          <div class="field">
+            <label for="intervenant">Intervenant *</label>
+            <select id="intervenant" name="intervenant" required>
+              <option value="alice" selected>Alice Martin (Malt)</option>
+              <option value="bob">Bob Dupont (OCTO)</option>
+              <option value="cara">Cara Leroy (Malt)</option>
+            </select>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="jours">Jours envisagés</label>
+              <input id="jours" name="jours" type="text" inputmode="decimal" value="40" />
+            </div>
+            <div class="field">
+              <label for="statut">Statut</label>
+              <select id="statut" name="statut">
+                <option value="En cours" selected>En cours</option>
+                <option value="À démarrer">À démarrer</option>
+                <option value="Terminé">Terminé</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field" style="max-width: 50%;">
+            <label for="debut">Date de début</label>
+            <input id="debut" name="debut" type="date" value="2026-03-01" />
+          </div>
+
+          <div class="section-prop">
+            <h3>Rattachement plateforme (proposé)</h3>
+            <p>
+              Champs demandés dans le feedback « Mission malt dans prestation » —
+              à discuter avant toute colonne Grist.
+            </p>
+          </div>
+
+          <div class="field field--new">
+            <span class="badge-new">Nouveau</span>
+            <label for="mission-malt">Mission Malt</label>
+            <input
+              id="mission-malt"
+              name="mission-malt"
+              type="text"
+              placeholder="Ex. Mission Design System — Studio Produit"
+              value="Mission Design System — Studio Produit"
+            />
+            <span class="hint">Libellé exact côté plateforme Malt (référence mission).</span>
+          </div>
+
+          <div class="field field--new">
+            <span class="badge-new">Nouveau</span>
+            <label for="bdc">Bon de commande</label>
+            <select id="bdc" name="bdc">
+              <option value="">— Choisir un BDC —</option>
+              <option value="bdc-24012" selected>BDC-24012 · Chorus 2024-8812</option>
+              <option value="bdc-24048">BDC-24048 · Chorus 2024-9021</option>
+              <option value="bdc-manuel">Saisie manuelle…</option>
+            </select>
+            <span class="hint">Un seul BDC pour la prestation (évite de le retaper chaque mois de CRA).</span>
+          </div>
+
+          <div class="field field--new">
+            <span class="badge-new">Nouveau</span>
+            <label for="sofiane">Lien Sofiane <span style="font-weight:400;color:var(--muted);">(optionnel)</span></label>
+            <input
+              id="sofiane"
+              name="sofiane"
+              type="url"
+              placeholder="https://…"
+              value="https://exemple.sofiane.gouv.fr/commande/24012"
+            />
+            <span class="hint">Utile si le BDC sélectionné porte déjà un lien ; sinon saisie libre.</span>
+          </div>
+
+          <p class="sr-only" id="form-note">
+            Les boutons Enregistrer et Annuler sont des stubs de démonstration.
+          </p>
+        </form>
+      </div>
+
+      <footer class="drawer__footer">
+        <button type="button" class="btn btn--secondary" id="btn-cancel">Annuler</button>
+        <button type="submit" form="form-prestation" class="btn btn--primary" id="btn-save">
+          Enregistrer les modifications
+        </button>
+      </footer>
+    </aside>
+  </div>
+
+  <div class="toast" id="toast" hidden role="status" aria-live="polite">
+    Stub : aucune écriture (gabarit hors produit).
+  </div>
+
+  <script>
+    (function () {
+      var overlay = document.getElementById("overlay");
+      var toast = document.getElementById("toast");
+      var toastTimer;
+
+      function closeDrawer() {
+        overlay.hidden = true;
+        document.getElementById("reopen").focus();
+      }
+
+      function openDrawer() {
+        overlay.hidden = false;
+        document.getElementById("btn-close").focus();
+      }
+
+      function showToast() {
+        toast.hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () {
+          toast.hidden = true;
+        }, 2800);
+      }
+
+      document.getElementById("btn-close").addEventListener("click", closeDrawer);
+      document.getElementById("btn-cancel").addEventListener("click", closeDrawer);
+      document.getElementById("reopen").addEventListener("click", openDrawer);
+
+      overlay.addEventListener("click", function (e) {
+        if (e.target === overlay) closeDrawer();
+      });
+
+      document.getElementById("form-prestation").addEventListener("submit", function (e) {
+        e.preventDefault();
+        showToast();
+      });
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && !overlay.hidden) {
+          e.preventDefault();
+          closeDrawer();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
