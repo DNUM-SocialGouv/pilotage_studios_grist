@@ -135,6 +135,32 @@ export interface WeeklyAgendaRow {
   Cree_le?: string | number;
 }
 
+/**
+ * Action décidée en Weekly Ops (table satellite `Weekly_action`).
+ * Choice `Statut` stocké avec espaces : `A faire` · `En cours`.
+ * « Fait » = booléen `Fait` (pas un 3ᵉ Choice).
+ */
+export interface WeeklyActionRow {
+  id: number;
+  Titre?: string;
+  /** Choice Grist : `A faire` | `En cours`. */
+  Statut?: string;
+  /** Ref → `Equipe`. */
+  Porteur?: unknown;
+  /** Ref → `Missions` (optionnel). */
+  Mission?: unknown;
+  /** Timestamp Grist Date (secondes) ou ISO. */
+  Date_fin?: string | number | null;
+  /** Jour du weekly d’origine (Date) — défaut = jour du create. */
+  Weekly_du?: string | number | null;
+  Notes?: string;
+  Fait?: boolean;
+  /** Jour du coche Fait (Date) — miroir `Traite_le`. */
+  Fait_le?: string | number | null;
+  Cree_le?: string | number | null;
+  Email?: string;
+}
+
 export interface MissionEnfant {
   id: number;
   /** Ref → `Missions` — colonne Grist `Mission_parent` (legacy `Mission`). */

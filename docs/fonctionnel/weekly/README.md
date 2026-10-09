@@ -38,6 +38,7 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 | Produits SDPC | Lecture — libellé produit |
 | **`Weekly_phase`** | Create + update — 1 ligne / mission : `Mission` (Ref) · `Phase` (`prochainement` \| `cadrage` \| `actif` \| `autonomie`) · `Meteo` · `Note_ops` · `Membre_equipe` (RefList → `Equipe`) |
 | **`Weekly_agenda`** | Create + update `Traite` / `Traite_le` / `Texte` (titre) / `Detail` / `Mission` — sujets : `Texte` (titre) · `Detail` (opt., drawer) · `Auteur` · `Email` · `Mission` (opt.) · `Traite` · `Traite_le` (Date, jour du coche) · `Cree_le` |
+| **`Weekly_action`** | Create + update (fondations code — **pas d’UI liste/drawer encore**) — actions Ops : `Titre` · `Statut` (`A faire` \| `En cours`) · `Porteur` (Ref→Equipe) · `Mission` (opt.) · `Date_fin` · `Weekly_du` · `Notes` · `Fait` · `Fait_le` · `Cree_le` · `Email` ; **pas** de delete |
 | **`Weekly_coachs`** | Lecture widget (allowlist) — `E_mail` ; écriture **hors widget** (Owner / Admin UI) |
 
 ### Cartes kanban (variante A)
@@ -118,11 +119,20 @@ Flag `WEEKLY_PHASE_OPS_COLUMNS_READY = true`. **Aucune** colonne / écriture sur
 - Clic **carte** (clavier Enter/Espace) → drawer suivi (SM) ; lien fiche **dans** le drawer (secondaire).
 - Badge météo carte : `Weekly_phase.Meteo` seulement (jamais `Missions.Meteo` pour le suivi ops).
 
+### Actions Ops (fondations — PR1)
+
+Table **`Weekly_action`** (singulier) : allowlists lecture/écriture + mapping +
+helpers create/update. **Pas** encore d’onglet Actions ni de drawer sur
+`/weekly` (tranches UI suivantes). ACL couche 6 = même patron que
+`Weekly_agenda` (Owner + coachs listés). Choice `Statut` stocké avec espaces
+(`A faire` / `En cours`) ; « Fait » = booléen `Fait` + `Fait_le`.
+
 ## Hors scope (ce bolt)
 
-Timer weekly, clôture magique / table `Weekly_session`, point bloquant, **actions
-structurées** (colonne Actions du prototype historique), écriture `Meteo` / note /
-coach sur `Missions`, CRA. Colonne Équipe dédiée (modèle plus global plus tard).
+Timer weekly, clôture magique / table `Weekly_session`, point bloquant,
+écriture `Meteo` / note / coach sur `Missions`, CRA. Colonne Équipe dédiée
+(modèle plus global plus tard). UI liste / drawer Actions = tranches
+suivantes (fondations allowlist déjà en place).
 
 ## ACL (HITL Owner — UI Grist uniquement)
 
@@ -142,10 +152,11 @@ Access Rules → **User Attributes** :
 | 2 | `user.Email == rec.E_mail` | `+R` | Chacun ne lit **que sa** ligne (le widget vérifie la présence). |
 | 3 | `True` | `-CRUD` | Autres : aucun accès. |
 
-### Tables `Weekly_phase` et `Weekly_agenda` (`*` / Toutes)
+### Tables `Weekly_phase`, `Weekly_agenda` et `Weekly_action` (`*` / Toutes)
 
 Ordre 1 → 3. **`OWNER` sans guillemets**. Pas d’accès automatique Admin / Resp. par rôle.  
-**Appliqué** Owner UI (vérif MCP 2026-10-03).
+**Appliqué** Owner UI (`Weekly_phase` / `Weekly_agenda` : 2026-10-03 ;
+`Weekly_action` : vérif MCP 2026-10-09).
 
 | # | Condition | Droits | Mémo |
 |---|-----------|--------|------|

@@ -10,11 +10,13 @@ import type {
   PlanActivite,
   ProduitSdpc,
   SuiviMensuel,
+  WeeklyActionRow,
   WeeklyAgendaRow,
   WeeklyPhaseRow,
 } from "./types";
 import { asGristChoice } from "./utils/gristReferences";
 import { missionEnfantFromGrist } from "./utils/missionEnfants";
+import { normalizeWeeklyActionStatut } from "./utils/weeklyAction";
 
 export function recordsFromFetchTable(raw: GristFetchTableResult): GristRecord[] {
   const ids = raw.id ?? [];
@@ -222,6 +224,31 @@ export function toWeeklyAgenda(record: GristRecord): WeeklyAgendaRow {
       typeof record.Cree_le === "number" || typeof record.Cree_le === "string"
         ? record.Cree_le
         : undefined,
+  };
+}
+
+function asOptionalDateValue(value: unknown): string | number | null {
+  if (value == null || value === "") return null;
+  if (typeof value === "number" || typeof value === "string") return value;
+  return null;
+}
+
+export function toWeeklyAction(record: GristRecord): WeeklyActionRow {
+  const fait = record.Fait;
+  const statutRaw = asGristChoice(record.Statut) ?? asString(record.Statut);
+  return {
+    id: record.id,
+    Titre: asString(record.Titre) ?? asMultilineText(record.Titre),
+    Statut: normalizeWeeklyActionStatut(statutRaw),
+    Porteur: record.Porteur,
+    Mission: record.Mission,
+    Date_fin: asOptionalDateValue(record.Date_fin),
+    Weekly_du: asOptionalDateValue(record.Weekly_du),
+    Notes: asMultilineText(record.Notes) ?? asString(record.Notes),
+    Fait: typeof fait === "boolean" ? fait : fait === true || fait === "true",
+    Fait_le: asOptionalDateValue(record.Fait_le),
+    Cree_le: asOptionalDateValue(record.Cree_le),
+    Email: asString(record.Email),
   };
 }
 
