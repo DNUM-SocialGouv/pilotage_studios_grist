@@ -2,12 +2,13 @@
 
 ## En clair
 
-Écran de **synchro** pour la team Product Ops et les coachs : un kanban des
-**missions** (titres issus de Grist) et une liste de **sujets à aborder** partagée.
-Un **clic sur la carte** ouvre un **tiroir** (météo, **un ou plusieurs**
-membres équipe Ops, note, échanges liés). La phase, le suivi ops et l’agenda
-vivent dans des **tables satellites Weekly** — on ne modifie **pas** les
-colonnes de `Missions` / `Missions_enfants`. Le lien CRA viendra plus tard.
+Écran de **synchro** pour la team Product Ops et les coachs, organisé en
+**trois onglets** : **Sujets** à aborder, **Actions** décidées, et **Kanban**
+des missions. Un **clic sur une carte** du kanban ouvre un **tiroir** (météo,
+**un ou plusieurs** membres équipe Ops, note, échanges liés). La phase, le
+suivi ops, l’agenda et les actions vivent dans des **tables satellites Weekly**
+— on ne modifie **pas** les colonnes de `Missions` / `Missions_enfants`.
+Le lien CRA viendra plus tard.
 
 ## Route & accès
 
@@ -21,6 +22,23 @@ colonnes de `Missions` / `Missions_enfants`. Le lien CRA viendra plus tard.
 Les e-mails **ne sont pas** dans le dépôt git : uniquement dans Grist
 (`Weekly_coachs.E_mail`). Owner / Admin (rôle) maintiennent la liste dans l’UI Grist
 — cela n’ouvre **pas** l’écran Weekly Ops s’ils ne sont pas eux-mêmes dans la table.
+
+## Mise en page (onglets V1)
+
+Sur `/weekly`, **Tabs DSFR** (pattern fiches BDC / Missions) — **pas** un
+SegmentedControl Sujets|Actions seul :
+
+| Onglet | Contenu |
+|--------|---------|
+| **Sujets** | Liste agenda + sous-nav SegmentedControl **À faire \| Historique** (sujets traités) |
+| **Actions** | Liste « en cours » (`Fait = false`) + create inline |
+| **Kanban** | Board missions (phases `Weekly_phase`) — **plus** affiché en permanence au-dessus |
+
+**Pas en V1** : 4ᵉ onglet **Historique** global (sujets + actions) — prévu plus
+tard ; l’historique sujets reste **sous** l’onglet Sujets d’ici là.
+
+Accessibilité : clavier (flèches / tabulation DSFR Tabs), `aria-selected` sur
+l’onglet actif, **un seul** panneau visible à la fois.
 
 ## Affichage (clair / sombre)
 
@@ -89,9 +107,9 @@ Flag `WEEKLY_PHASE_OPS_COLUMNS_READY = true`. **Aucune** colonne / écriture sur
 | Méta liste / drawer | `Auteur` (prénom) · `Cree_le` (date relative) · `Traite` |
 | **Date de traitement** (historique) | `Traite_le` (Date) — écrite au coche `Traite` ; vidée si on décoche |
 
-#### Onglets À faire | Historique (V1)
+#### Sous-nav À faire | Historique (sous l’onglet Sujets)
 
-- Section **Sujets à aborder** : bascule **À faire** / **Historique** (SegmentedControl DSFR) — **pas** de route dédiée, **pas** de `Page_*`.
+- Dans l’onglet principal **Sujets** : bascule **À faire** / **Historique** (SegmentedControl DSFR) — **pas** de route dédiée, **pas** de `Page_*`, **pas** encore l’onglet Historique global.
 - **À faire** : sujets `Traite = false` uniquement. CTA **« Nouveau sujet »** dans l’en-tête (option B) — **pas** de formulaire permanent sous la liste.
 - **Historique** : sujets `Traite = true`, timeline par **jour exact** de `Traite_le` (pastille), regroupés par **mois**. **Pas** de colonne Actions (V1.1).
 - Coche Traite → écrit `Traite = true` + `Traite_le` = jour calendaire local ; le sujet **disparaît** de À faire et apparaît dans Historique.
@@ -125,11 +143,11 @@ Table **`Weekly_action`** (singulier). ACL = patron `Weekly_agenda`
 (Owner + coachs). Choice `Statut` : `A faire` / `En cours` ; « Fait » =
 booléen `Fait` + `Fait_le`.
 
-Sur `/weekly`, SegmentedControl **Sujets \| Actions** :
+Sur `/weekly`, onglet **Actions** (Tabs principaux — voir « Mise en page ») :
 
 | UI | Comportement |
 |----|--------------|
-| Onglet **Actions** | Liste **uniquement** `Fait = false` + compteur « N en cours » |
+| Onglet **Actions** | Liste **uniquement** `Fait = false` + compteur « N en cours » dans le libellé d’onglet |
 | Carte | Titre · badge statut · Porté par · mission · Weekly du · Fin le · notes repliables |
 | Create inline | Titre (Entrée) · porteur prérempli session · mission opt. · date fin (+7 j) · Ajouter |
 | Drawer édition / coche Fait | **Pas encore** (tranche suivante) |

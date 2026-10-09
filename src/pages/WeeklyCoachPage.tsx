@@ -12,6 +12,7 @@ import { Button } from "@codegouvfr/react-dsfr/Button";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { SegmentedControl } from "@codegouvfr/react-dsfr/SegmentedControl";
 import { Select } from "@codegouvfr/react-dsfr/Select";
+import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
 import { Link } from "react-router-dom";
 import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
 import { KanbanBoard } from "../components/kanban/KanbanBoard";
@@ -59,9 +60,16 @@ import { firstNameFromDisplayName } from "../utils/welcomeHomeByRole";
 import type { WeeklyAgendaRow } from "../types";
 
 type AgendaDialogMode = "view" | "edit" | "create";
+/** Sous-nav sous l’onglet Sujets (V1) — historique sujets local, pas l’onglet global. */
 type AgendaTab = "a-faire" | "historique";
-/** Zone droite Weekly : sujets agenda ou actions Ops. */
-type WeeklySidePanel = "sujets" | "actions";
+/**
+ * Onglets principaux Weekly Ops (V1).
+ * TODO V1.1+ : 4ᵉ onglet « Historique » global (sujets traités + actions créées) —
+ * ne pas l’afficher tant que la PR Historique n’est pas ouverte ; garder
+ * À faire | Historique *sous* Sujets d’ici là.
+ */
+type WeeklyMainTab = "sujets" | "actions" | "kanban";
+// Prêt pour la future PR : "sujets" | "actions" | "kanban" | "historique"
 
 function AgendaSujetRow({
   sujet,
@@ -716,11 +724,9 @@ export function WeeklyCoachPage() {
   const [createAgendaMissionId, setCreateAgendaMissionId] = useState<
     number | null
   >(null);
-  const [sidePanel, setSidePanel] = useState<WeeklySidePanel>("sujets");
+  const [mainTab, setMainTab] = useState<WeeklyMainTab>("sujets");
   const [agendaTab, setAgendaTab] = useState<AgendaTab>("a-faire");
   const nouveauSujetCtaId = "weekly-nouveau-sujet-cta";
-  const sidePanelTabsName = useId();
-  const sidePanelId = useId();
   const agendaTabsName = useId();
   const agendaPanelId = useId();
   const [actionError, setActionError] = useState<string | null>(null);
@@ -855,6 +861,8 @@ export function WeeklyCoachPage() {
 
   const openCreateAgendaForMission = (missionId: number) => {
     closeSuivi();
+    setMainTab("sujets");
+    setAgendaTab("a-faire");
     setCreateAgendaMissionId(missionId);
     setDialogMode("create");
     setDialogSujet(null);
@@ -1051,45 +1059,289 @@ export function WeeklyCoachPage() {
 
       {data.status === "ok" ? (
         <>
-          <section
-            className="fr-mb-4w"
-            aria-label="Sujets et actions Weekly"
-            style={{
-              background: "var(--background-alt-blue-france)",
-              padding: "1rem 1.25rem",
+          <Tabs
+            label="Sections Weekly Ops"
+            className="fr-mb-2w"
+            selectedTabId={mainTab}
+            onTabChange={(tabId) => {
+              // Pas d’onglet « historique » en V1 (préparé en type / TODO ci-dessus).
+              if (tabId === "actions" || tabId === "kanban" || tabId === "sujets") {
+                setMainTab(tabId);
+              }
             }}
+            tabs={[
+              {
+                tabId: "sujets",
+                label: "Sujets",
+                iconId: "fr-icon-chat-3-line",
+              },
+              {
+                tabId: "actions",
+                label:
+                  actionsEnCoursCount > 0
+                    ? `Actions (${actionsEnCoursCount})`
+                    : "Actions",
+                iconId: "fr-icon-checkbox-circle-line",
+              },
+              {
+                tabId: "kanban",
+                label: "Kanban",
+                iconId: "fr-icon-layout-grid-line",
+              },
+              // TODO V1.1+ : { tabId: "historique", label: "Historique", iconId: "fr-icon-time-line" },
+            ]}
           >
-            <div className="fr-mb-2w">
-              <SegmentedControl
-                legend="Sujets ou Actions"
-                hideLegend
-                name={sidePanelTabsName}
-                small
-                segments={[
-                  {
-                    label: "Sujets",
-                    nativeInputProps: {
-                      value: "sujets",
-                      checked: sidePanel === "sujets",
-                      onChange: () => setSidePanel("sujets"),
-                      "aria-controls": sidePanelId,
-                    },
-                  },
-                  {
-                    label: `Actions (${actionsEnCoursCount} en cours)`,
-                    nativeInputProps: {
-                      value: "actions",
-                      checked: sidePanel === "actions",
-                      onChange: () => setSidePanel("actions"),
-                      "aria-controls": sidePanelId,
-                    },
-                  },
-                ]}
-              />
-            </div>
+            {mainTab === "sujets" ? (
+              <section
+                aria-label="Sujets à aborder"
+                style={{
+                  background: "var(--background-alt-blue-france)",
+                  padding: "1rem 1.25rem",
+                }}
+              >
+                <div
+                  className="fr-mb-2w"
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "0.5rem 0.75rem",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <h2 className="fr-h5" style={{ margin: 0 }}>
+                    Sujets à aborder
+                  </h2>
+                  {agendaTab === "a-faire" ? (
+                    <Button
+                      type="button"
+                      priority="secondary"
+                      size="small"
+                      iconId="fr-icon-add-line"
+                      disabled={agendaBusy || data.isReloading}
+                      onClick={() => openCreateAgendaDialog()}
+                      nativeButtonProps={{ id: nouveauSujetCtaId }}
+                    >
+                      Nouveau sujet
+                    </Button>
+                  ) : null}
+                </div>
 
-            <div id={sidePanelId} role="tabpanel">
-              {sidePanel === "actions" ? (
+                <div className="fr-mb-2w">
+                  <SegmentedControl
+                    legend="À faire ou Historique des sujets"
+                    hideLegend
+                    name={agendaTabsName}
+                    small
+                    segments={[
+                      {
+                        label: `À faire (${agendaAFaire.length})`,
+                        nativeInputProps: {
+                          value: "a-faire",
+                          checked: agendaTab === "a-faire",
+                          onChange: () => setAgendaTab("a-faire"),
+                          "aria-controls": agendaPanelId,
+                        },
+                      },
+                      {
+                        label: `Historique (${historiqueSujetCount})`,
+                        nativeInputProps: {
+                          value: "historique",
+                          checked: agendaTab === "historique",
+                          onChange: () => setAgendaTab("historique"),
+                          "aria-controls": agendaPanelId,
+                        },
+                      },
+                    ]}
+                  />
+                </div>
+
+                <div id={agendaPanelId} role="tabpanel">
+                  {agendaTab === "a-faire" ? (
+                    agendaAFaire.length === 0 ? (
+                      <p
+                        className="fr-text--sm fr-mb-0"
+                        style={{ color: "var(--text-mention-grey)" }}
+                      >
+                        Aucun sujet à aborder pour l’instant.
+                      </p>
+                    ) : (
+                      <ul
+                        className="fr-raw-list fr-mb-0"
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "4px",
+                          margin: 0,
+                          padding: 0,
+                        }}
+                      >
+                        {agendaAFaire.map((s) => {
+                          const mid = extractGristReferenceId(s.Mission) ?? null;
+                          return (
+                            <li key={s.id}>
+                              <AgendaSujetRow
+                                sujet={s}
+                                missionId={mid}
+                                missionLabel={
+                                  mid != null
+                                    ? missionTitleById.get(mid)
+                                    : undefined
+                                }
+                                busy={agendaBusy || data.isReloading}
+                                onToggle={(id, traite) =>
+                                  void onToggleTraite(id, traite)
+                                }
+                                onView={(row) => openAgendaDialog(row, "view")}
+                                onEdit={(row) => openAgendaDialog(row, "edit")}
+                              />
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )
+                  ) : historiqueSujetCount === 0 ? (
+                    <p
+                      className="fr-text--sm fr-mb-0"
+                      style={{ color: "var(--text-mention-grey)" }}
+                    >
+                      Aucun sujet traité pour l’instant. Cochez un sujet dans « À
+                      faire » pour le ranger ici par date.
+                    </p>
+                  ) : (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "1.25rem",
+                      }}
+                    >
+                      {agendaHistoriqueMonths.map((month) => (
+                        <section
+                          key={month.monthKey}
+                          aria-label={`${month.label} — ${month.sujetCount} sujet${month.sujetCount > 1 ? "s" : ""} abordé${month.sujetCount > 1 ? "s" : ""}`}
+                        >
+                          <h3
+                            className="fr-text--sm fr-mb-2w"
+                            style={{
+                              margin: 0,
+                              fontWeight: 700,
+                              color: "var(--text-title-grey)",
+                            }}
+                          >
+                            {month.label}
+                            <span
+                              className="fr-hint-text"
+                              style={{ marginLeft: "0.5rem", fontWeight: 400 }}
+                            >
+                              {month.sujetCount} sujet
+                              {month.sujetCount > 1 ? "s" : ""} abordé
+                              {month.sujetCount > 1 ? "s" : ""}
+                            </span>
+                          </h3>
+                          <ol
+                            className="fr-raw-list"
+                            style={{
+                              margin: 0,
+                              padding: 0,
+                              listStyle: "none",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "1rem",
+                              borderLeft:
+                                "2px solid var(--border-default-blue-france)",
+                              paddingLeft: "1rem",
+                            }}
+                          >
+                            {month.days.map((day) => (
+                              <li key={day.dayKey}>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    flexWrap: "wrap",
+                                    gap: "0.5rem 0.75rem",
+                                    alignItems: "baseline",
+                                    marginBottom: "0.5rem",
+                                  }}
+                                >
+                                  <span
+                                    className="fr-badge fr-badge--blue-france fr-badge--sm"
+                                    title={day.labelLong}
+                                  >
+                                    {day.labelShort}
+                                  </span>
+                                  <h4
+                                    className="fr-sr-only"
+                                    id={`weekly-hist-day-${day.dayKey}`}
+                                  >
+                                    {day.labelLong}
+                                  </h4>
+                                  <span
+                                    className="fr-hint-text"
+                                    style={{ margin: 0 }}
+                                  >
+                                    {day.sujets.length} sujet
+                                    {day.sujets.length > 1 ? "s" : ""}
+                                  </span>
+                                </div>
+                                <ul
+                                  className="fr-raw-list"
+                                  aria-labelledby={`weekly-hist-day-${day.dayKey}`}
+                                  style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: "4px",
+                                    margin: 0,
+                                    padding: 0,
+                                  }}
+                                >
+                                  {day.sujets.map((s) => {
+                                    const mid =
+                                      extractGristReferenceId(s.Mission) ?? null;
+                                    return (
+                                      <li key={s.id}>
+                                        <AgendaSujetRow
+                                          sujet={s}
+                                          missionId={mid}
+                                          missionLabel={
+                                            mid != null
+                                              ? missionTitleById.get(mid)
+                                              : undefined
+                                          }
+                                          busy={agendaBusy || data.isReloading}
+                                          onToggle={(id, traite) =>
+                                            void onToggleTraite(id, traite)
+                                          }
+                                          onView={(row) =>
+                                            openAgendaDialog(row, "view")
+                                          }
+                                          onEdit={(row) =>
+                                            openAgendaDialog(row, "edit")
+                                          }
+                                        />
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
+                              </li>
+                            ))}
+                          </ol>
+                        </section>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </section>
+            ) : null}
+
+            {mainTab === "actions" ? (
+              <section
+                aria-label="Actions Weekly"
+                style={{
+                  background: "var(--background-alt-blue-france)",
+                  padding: "1rem 1.25rem",
+                }}
+              >
                 <WeeklyActionsPanel
                   actions={data.actions}
                   intervenants={data.intervenants}
@@ -1111,268 +1363,89 @@ export function WeeklyCoachPage() {
                     }
                   }}
                 />
-              ) : (
-                <>
-            <div
-              className="fr-mb-2w"
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "0.5rem 0.75rem",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <h2 className="fr-h5" style={{ margin: 0 }}>
-                Sujets à aborder
-              </h2>
-              {agendaTab === "a-faire" ? (
-                <Button
-                  type="button"
-                  priority="secondary"
-                  size="small"
-                  iconId="fr-icon-add-line"
-                  disabled={agendaBusy || data.isReloading}
-                  onClick={() => openCreateAgendaDialog()}
-                  nativeButtonProps={{ id: nouveauSujetCtaId }}
-                >
-                  Nouveau sujet
-                </Button>
-              ) : null}
-            </div>
+              </section>
+            ) : null}
 
-            <div className="fr-mb-2w">
-              <SegmentedControl
-                legend="À faire ou Historique"
-                hideLegend
-                name={agendaTabsName}
-                small
-                segments={[
-                  {
-                    label: `À faire (${agendaAFaire.length})`,
-                    nativeInputProps: {
-                      value: "a-faire",
-                      checked: agendaTab === "a-faire",
-                      onChange: () => setAgendaTab("a-faire"),
-                      "aria-controls": agendaPanelId,
-                    },
-                  },
-                  {
-                    label: `Historique (${historiqueSujetCount})`,
-                    nativeInputProps: {
-                      value: "historique",
-                      checked: agendaTab === "historique",
-                      onChange: () => setAgendaTab("historique"),
-                      "aria-controls": agendaPanelId,
-                    },
-                  },
-                ]}
-              />
-            </div>
-
-            <div id={agendaPanelId} role="tabpanel">
-              {agendaTab === "a-faire" ? (
-                agendaAFaire.length === 0 ? (
-                  <p
-                    className="fr-text--sm fr-mb-0"
-                    style={{ color: "var(--text-mention-grey)" }}
-                  >
-                    Aucun sujet à aborder pour l’instant.
-                  </p>
-                ) : (
-                  <ul
-                    className="fr-raw-list fr-mb-0"
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "4px",
-                      margin: 0,
-                      padding: 0,
-                    }}
-                  >
-                    {agendaAFaire.map((s) => {
-                      const mid = extractGristReferenceId(s.Mission) ?? null;
-                      return (
-                        <li key={s.id}>
-                          <AgendaSujetRow
-                            sujet={s}
-                            missionId={mid}
-                            missionLabel={
-                              mid != null
-                                ? missionTitleById.get(mid)
-                                : undefined
-                            }
-                            busy={agendaBusy || data.isReloading}
-                            onToggle={(id, traite) =>
-                              void onToggleTraite(id, traite)
-                            }
-                            onView={(row) => openAgendaDialog(row, "view")}
-                            onEdit={(row) => openAgendaDialog(row, "edit")}
-                          />
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )
-              ) : historiqueSujetCount === 0 ? (
-                <p
-                  className="fr-text--sm fr-mb-0"
-                  style={{ color: "var(--text-mention-grey)" }}
-                >
-                  Aucun sujet traité pour l’instant. Cochez un sujet dans « À
-                  faire » pour le ranger ici par date.
-                </p>
-              ) : (
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "1.25rem",
-                  }}
-                >
-                  {agendaHistoriqueMonths.map((month) => (
-                    <section
-                      key={month.monthKey}
-                      aria-label={`${month.label} — ${month.sujetCount} sujet${month.sujetCount > 1 ? "s" : ""} abordé${month.sujetCount > 1 ? "s" : ""}`}
-                    >
-                      <h3
-                        className="fr-text--sm fr-mb-2w"
-                        style={{
-                          margin: 0,
-                          fontWeight: 700,
-                          color: "var(--text-title-grey)",
-                        }}
-                      >
-                        {month.label}
-                        <span
-                          className="fr-hint-text"
-                          style={{ marginLeft: "0.5rem", fontWeight: 400 }}
-                        >
-                          {month.sujetCount} sujet
-                          {month.sujetCount > 1 ? "s" : ""} abordé
-                          {month.sujetCount > 1 ? "s" : ""}
-                        </span>
-                      </h3>
-                      <ol
-                        className="fr-raw-list"
-                        style={{
-                          margin: 0,
-                          padding: 0,
-                          listStyle: "none",
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "1rem",
-                          borderLeft:
-                            "2px solid var(--border-default-blue-france)",
-                          paddingLeft: "1rem",
-                        }}
-                      >
-                        {month.days.map((day) => (
-                          <li key={day.dayKey}>
-                            <div
-                              style={{
-                                display: "flex",
-                                flexWrap: "wrap",
-                                gap: "0.5rem 0.75rem",
-                                alignItems: "baseline",
-                                marginBottom: "0.5rem",
-                              }}
-                            >
-                              <span
-                                className="fr-badge fr-badge--blue-france fr-badge--sm"
-                                title={day.labelLong}
-                              >
-                                {day.labelShort}
-                              </span>
-                              <h4
-                                className="fr-sr-only"
-                                id={`weekly-hist-day-${day.dayKey}`}
-                              >
-                                {day.labelLong}
-                              </h4>
-                              <span className="fr-hint-text" style={{ margin: 0 }}>
-                                {day.sujets.length} sujet
-                                {day.sujets.length > 1 ? "s" : ""}
-                              </span>
-                            </div>
-                            <ul
-                              className="fr-raw-list"
-                              aria-labelledby={`weekly-hist-day-${day.dayKey}`}
-                              style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                gap: "4px",
-                                margin: 0,
-                                padding: 0,
-                              }}
-                            >
-                              {day.sujets.map((s) => {
-                                const mid =
-                                  extractGristReferenceId(s.Mission) ?? null;
-                                return (
-                                  <li key={s.id}>
-                                    <AgendaSujetRow
-                                      sujet={s}
-                                      missionId={mid}
-                                      missionLabel={
-                                        mid != null
-                                          ? missionTitleById.get(mid)
-                                          : undefined
-                                      }
-                                      busy={agendaBusy || data.isReloading}
-                                      onToggle={(id, traite) =>
-                                        void onToggleTraite(id, traite)
-                                      }
-                                      onView={(row) =>
-                                        openAgendaDialog(row, "view")
-                                      }
-                                      onEdit={(row) =>
-                                        openAgendaDialog(row, "edit")
-                                      }
-                                    />
-                                  </li>
-                                );
-                              })}
-                            </ul>
-                          </li>
-                        ))}
-                      </ol>
-                    </section>
-                  ))}
+            {mainTab === "kanban" ? (
+              <section aria-label="Kanban des missions">
+                <div className="fr-mb-2w">
+                  <h2 className="fr-h5" style={{ margin: 0 }}>
+                    Missions
+                  </h2>
                 </div>
-              )}
-            </div>
+                <KanbanBoard
+                  ariaLabel="Kanban des missions"
+                  columns={WEEKLY_PHASES.map((col) => ({
+                    key: col.key,
+                    label: col.label,
+                    count: byPhase[col.key].length,
+                    dot: col.dot,
+                    colBg: col.colBg,
+                  }))}
+                  onDropColumn={(key, e) =>
+                    onDropColumn(key as WeeklyPhaseKey)(e)
+                  }
+                  hint={
+                    <>
+                      <span className="fr-hint-text" style={{ margin: 0 }}>
+                        {cards.length} mission{cards.length > 1 ? "s" : ""}.
+                      </span>
+                      <span className="fr-hint-text" style={{ margin: 0 }}>
+                        Déplacez une carte (glisser-déposer) ou changez la phase
+                        au clavier via le menu de chaque carte.
+                      </span>
+                      {data.isReloading ? (
+                        <span className="fr-text--xs" role="status">
+                          Mise à jour…
+                        </span>
+                      ) : null}
+                    </>
+                  }
+                  renderCards={(columnKey) =>
+                    byPhase[columnKey as WeeklyPhaseKey].map((card) => (
+                      <WeeklyCardView
+                        key={card.missionId}
+                        card={card}
+                        busy={
+                          busyMissionId === card.missionId || data.isReloading
+                        }
+                        onOpenSuivi={openSuivi}
+                        onDragStart={setDragMissionId}
+                        onDragEnd={() => setDragMissionId(null)}
+                        onMovePhase={(id, phase) => void changePhase(id, phase)}
+                      />
+                    ))
+                  }
+                />
+              </section>
+            ) : null}
+          </Tabs>
 
-                </>
-              )}
-            </div>
-
-            <AgendaSujetDialog
-              open={dialogOpen}
-              sujet={dialogSujet}
-              mode={dialogMode}
-              missionId={
-                dialogSujet != null
-                  ? extractGristReferenceId(dialogSujet.Mission) ?? null
-                  : null
-              }
-              missionLabel={
-                dialogSujet != null
-                  ? missionTitleById.get(
-                      extractGristReferenceId(dialogSujet.Mission) ?? -1,
-                    )
-                  : undefined
-              }
-              missionOptions={missionOptions}
-              defaultAuteur={defaultAuteur}
-              defaultCreateMissionId={createAgendaMissionId}
-              busy={agendaBusy || data.isReloading}
-              onClose={closeAgendaDialog}
-              onSave={onSaveAgendaSujet}
-              onCreate={onCreateAgendaSujet}
-              onSwitchToEdit={() => setDialogMode("edit")}
-            />
-          </section>
+          <AgendaSujetDialog
+            open={dialogOpen}
+            sujet={dialogSujet}
+            mode={dialogMode}
+            missionId={
+              dialogSujet != null
+                ? extractGristReferenceId(dialogSujet.Mission) ?? null
+                : null
+            }
+            missionLabel={
+              dialogSujet != null
+                ? missionTitleById.get(
+                    extractGristReferenceId(dialogSujet.Mission) ?? -1,
+                  )
+                : undefined
+            }
+            missionOptions={missionOptions}
+            defaultAuteur={defaultAuteur}
+            defaultCreateMissionId={createAgendaMissionId}
+            busy={agendaBusy || data.isReloading}
+            onClose={closeAgendaDialog}
+            onSave={onSaveAgendaSujet}
+            onCreate={onCreateAgendaSujet}
+            onSwitchToEdit={() => setDialogMode("edit")}
+          />
 
           <WeeklySuiviDrawer
             open={suiviOpen}
@@ -1384,55 +1457,10 @@ export function WeeklyCoachPage() {
             onSaveSuivi={onSaveSuivi}
             onViewSujet={(sujet) => {
               closeSuivi();
+              setMainTab("sujets");
               openAgendaDialog(sujet, "view");
             }}
             onNouveauSujet={openCreateAgendaForMission}
-          />
-
-          <div className="fr-mb-2w">
-            <h2 className="fr-h5" style={{ margin: 0 }}>
-              Missions
-            </h2>
-          </div>
-          <KanbanBoard
-            ariaLabel="Kanban des missions"
-            columns={WEEKLY_PHASES.map((col) => ({
-              key: col.key,
-              label: col.label,
-              count: byPhase[col.key].length,
-              dot: col.dot,
-              colBg: col.colBg,
-            }))}
-            onDropColumn={(key, e) => onDropColumn(key as WeeklyPhaseKey)(e)}
-            hint={
-              <>
-                <span className="fr-hint-text" style={{ margin: 0 }}>
-                  {cards.length} mission{cards.length > 1 ? "s" : ""}.
-                </span>
-                <span className="fr-hint-text" style={{ margin: 0 }}>
-                  Déplacez une carte (glisser-déposer) ou changez la phase au
-                  clavier via le menu de chaque carte.
-                </span>
-                {data.isReloading ? (
-                  <span className="fr-text--xs" role="status">
-                    Mise à jour…
-                  </span>
-                ) : null}
-              </>
-            }
-            renderCards={(columnKey) =>
-              byPhase[columnKey as WeeklyPhaseKey].map((card) => (
-                <WeeklyCardView
-                  key={card.missionId}
-                  card={card}
-                  busy={busyMissionId === card.missionId || data.isReloading}
-                  onOpenSuivi={openSuivi}
-                  onDragStart={setDragMissionId}
-                  onDragEnd={() => setDragMissionId(null)}
-                  onMovePhase={(id, phase) => void changePhase(id, phase)}
-                />
-              ))
-            }
           />
         </>
       ) : null}
