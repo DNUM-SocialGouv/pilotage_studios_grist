@@ -48,6 +48,8 @@ export type WeeklyActionFormDrawerProps = {
   busy: boolean;
   onClose: () => void;
   onSaved: () => Promise<void>;
+  /** Demande de suppression (édition) — confirmation gérée par le parent. */
+  onRequestDelete?: (action: WeeklyActionRow) => void;
 };
 
 export function WeeklyActionFormDrawer({
@@ -61,6 +63,7 @@ export function WeeklyActionFormDrawer({
   busy,
   onClose,
   onSaved,
+  onRequestDelete,
 }: WeeklyActionFormDrawerProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -483,6 +486,19 @@ export function WeeklyActionFormDrawer({
                     Annuler
                   </Button>
                 </li>
+                {mode === "edit" && action && onRequestDelete ? (
+                  <li>
+                    <Button
+                      type="button"
+                      priority="tertiary"
+                      iconId="fr-icon-delete-line"
+                      onClick={() => onRequestDelete(action)}
+                      disabled={formBusy}
+                    >
+                      Supprimer
+                    </Button>
+                  </li>
+                ) : null}
               </ul>
             </div>
           </div>

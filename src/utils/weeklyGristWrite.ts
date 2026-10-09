@@ -8,6 +8,7 @@ import {
   WEEKLY_ACTION_TABLE_ID,
   WEEKLY_AGENDA_TABLE_ID,
   WEEKLY_PHASE_TABLE_ID,
+  assertWritableDeleteTableId,
   assertWritableTableId,
   assertWritableUpdateTableId,
 } from "../security/writeTableAllowlist.ts";
@@ -241,7 +242,7 @@ export async function updateWeeklyAgendaSujet(
   await getWritableTable(WEEKLY_AGENDA_TABLE_ID).update({ id, fields });
 }
 
-/** Create une action Weekly Ops (`Weekly_action`) — pas de delete widget. */
+/** Create une action Weekly Ops (`Weekly_action`). */
 export async function createWeeklyActionRecord(input: {
   titre: string;
   porteurId: number | null;
@@ -342,4 +343,22 @@ export async function updateWeeklyActionRecord(
       Notes: input.notes.trim(),
     },
   });
+}
+
+/**
+ * Supprime une action Weekly Ops (`Weekly_action.destroy`).
+ * Exception allowlist : seule table avec delete widget ; un id à la fois (pas de masse).
+ */
+export async function deleteWeeklyAction(id: number): Promise<void> {
+  assertWritableDeleteTableId(WEEKLY_ACTION_TABLE_ID);
+  if (!Number.isFinite(id) || id <= 0) {
+    throw new Error("Identifiant action invalide.");
+  }
+  const table = getWritableTable(WEEKLY_ACTION_TABLE_ID);
+  if (typeof table.destroy !== "function") {
+    throw new Error(
+      "Suppression Grist indisponible (hors iframe ou API trop ancienne).",
+    );
+  }
+  await table.destroy([id]);
 }

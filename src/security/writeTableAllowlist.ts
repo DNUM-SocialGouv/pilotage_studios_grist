@@ -17,7 +17,8 @@
  *   — jamais `Missions` — pas de delete).
  * - `Weekly_agenda` : create + update `Traite` / `Traite_le` / `Texte` (titre) /
  *   `Detail` / `Mission` (sujets à aborder — pas de delete).
- * - `Weekly_action` : create + update (actions Ops — pas de delete).
+ * - `Weekly_action` : create + update + **delete** (actions Ops — seule table
+ *   autorisée pour `getTable().destroy` ; confirmation UI obligatoire ; pas de masse).
  * - `BDC` : update only (drawer cadre fiche — pas de create/delete).
  */
 
@@ -33,7 +34,7 @@ export const EQUIPE_TABLE_ID = "Equipe";
 export const EQUIPE_TJM_TABLE_ID = "Equipe_TJM";
 export const WEEKLY_PHASE_TABLE_ID = "Weekly_phase";
 export const WEEKLY_AGENDA_TABLE_ID = "Weekly_agenda";
-/** Actions décidées en Weekly Ops — create + update (pas de delete). */
+/** Actions décidées en Weekly Ops — create + update + delete (exception). */
 export const WEEKLY_ACTION_TABLE_ID = "Weekly_action";
 /** Allowlist e-mails coachs Weekly — lecture seule widget (pas d’écriture). */
 export const WEEKLY_COACHS_TABLE_ID = "Weekly_coachs";
@@ -73,12 +74,24 @@ export const WRITE_TABLE_UPDATE_ALLOWLIST = [
 
 export type WritableUpdateTableId = (typeof WRITE_TABLE_UPDATE_ALLOWLIST)[number];
 
+/**
+ * Tables autorisées pour `getTable().destroy` (sous-ensemble strict).
+ * Exception produit : `Weekly_action` uniquement — une ligne à la fois, après confirm UI.
+ */
+export const WRITE_TABLE_DELETE_ALLOWLIST = [WEEKLY_ACTION_TABLE_ID] as const;
+
+export type WritableDeleteTableId = (typeof WRITE_TABLE_DELETE_ALLOWLIST)[number];
+
 export function isWritableTableId(tableId: string): tableId is WritableTableId {
   return (WRITE_TABLE_ALLOWLIST as readonly string[]).includes(tableId);
 }
 
 export function isWritableUpdateTableId(tableId: string): tableId is WritableUpdateTableId {
   return (WRITE_TABLE_UPDATE_ALLOWLIST as readonly string[]).includes(tableId);
+}
+
+export function isWritableDeleteTableId(tableId: string): tableId is WritableDeleteTableId {
+  return (WRITE_TABLE_DELETE_ALLOWLIST as readonly string[]).includes(tableId);
 }
 
 export function assertWritableTableId(tableId: string): asserts tableId is WritableTableId {
@@ -92,5 +105,13 @@ export function assertWritableUpdateTableId(
 ): asserts tableId is WritableUpdateTableId {
   if (!isWritableUpdateTableId(tableId)) {
     throw new Error(`Table Grist non autorisée pour mise à jour widget : ${tableId}`);
+  }
+}
+
+export function assertWritableDeleteTableId(
+  tableId: string,
+): asserts tableId is WritableDeleteTableId {
+  if (!isWritableDeleteTableId(tableId)) {
+    throw new Error(`Table Grist non autorisée pour suppression widget : ${tableId}`);
   }
 }

@@ -1,6 +1,6 @@
 /**
  * Onglet Actions Weekly Ops — kanban 3 colonnes (À faire | En cours | Done)
- * + drawer SM create / édition. Done aussi via drag / menu.
+ * + drawer SM create / édition + delete confirmé. Done aussi via drag / menu.
  */
 
 import { useId, useMemo, useState, type DragEvent } from "react";
@@ -20,8 +20,12 @@ import {
   weeklyActionStatutLabel,
   type WeeklyActionColumnKey,
 } from "../../utils/weeklyAction";
-import { updateWeeklyActionColumn } from "../../utils/weeklyGristWrite";
+import {
+  deleteWeeklyAction,
+  updateWeeklyActionColumn,
+} from "../../utils/weeklyGristWrite";
 import { firstNameFromDisplayName } from "../../utils/welcomeHomeByRole";
+import { WeeklyActionDeleteConfirmDialog } from "./WeeklyActionDeleteConfirmDialog";
 import {
   WeeklyActionFormDrawer,
   type WeeklyActionDrawerMode,
@@ -37,6 +41,7 @@ function ActionKanbanCard({
   onDragEnd,
   onMove,
   onOpen,
+  onRequestDelete,
 }: {
   action: WeeklyActionRow;
   columnKey: WeeklyActionColumnKey;
@@ -47,6 +52,7 @@ function ActionKanbanCard({
   onDragEnd: () => void;
   onMove: (actionId: number, columnKey: WeeklyActionColumnKey) => void;
   onOpen: (action: WeeklyActionRow) => void;
+  onRequestDelete: (action: WeeklyActionRow) => void;
 }) {
   const titre = (action.Titre ?? "Action").trim() || "Action";
   const fait = action.Fait === true;
@@ -86,6 +92,14 @@ function ActionKanbanCard({
       onDragEnd={onDragEnd}
       moveTargets={moveTargets}
       onMove={(key) => onMove(action.id, key as WeeklyActionColumnKey)}
+      menuItems={[
+        {
+          id: "delete-action",
+          label: "Supprimer",
+          iconClassName: "fr-icon-delete-line",
+          onClick: () => onRequestDelete(action),
+        },
+      ]}
       menuTitle={`Actions — ${titre}`}
     >
       <h4 className="pilotage-kanban-card__title">{titre}</h4>
@@ -156,6 +170,10 @@ export function WeeklyActionsPanel({
   const [drawerAction, setDrawerAction] = useState<WeeklyActionRow | null>(
     null,
   );
+  const [deleteTarget, setDeleteTarget] = useState<WeeklyActionRow | null>(
+    null,
+  );
+  const [deleting, setDeleting] = useState(false);
 
   const byColumn = useMemo(
     () => groupWeeklyActionsByColumn(actions),
@@ -196,6 +214,43 @@ export function WeeklyActionsPanel({
       requestAnimationFrame(() => {
         document.getElementById(addActionCtaId)?.focus();
       });
+    }
+  };
+
+  const requestDelete = (action: WeeklyActionRow) => {
+    setError(null);
+    setStatusOk(null);
+    setDeleteTarget(action);
+  };
+
+  const cancelDelete = () => {
+    if (deleting) return;
+    setDeleteTarget(null);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteTarget == null) return;
+    const id = deleteTarget.id;
+    setDeleting(true);
+    setError(null);
+    setStatusOk(null);
+    try {
+      await deleteWeeklyAction(id);
+      setDeleteTarget(null);
+      if (drawerOpen && drawerAction?.id === id) {
+        setDrawerOpen(false);
+        setDrawerAction(null);
+      }
+      setStatusOk("Action supprimée.");
+      await reloadAfterWrite();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Impossible de supprimer l’action.",
+      );
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -308,11 +363,16 @@ export function WeeklyActionsPanel({
                   porteurLabel={
                     pid != null ? porteurLabelById.get(pid) : undefined
                   }
-                  busy={busyActionId === action.id || busy}
+                  busy={
+                    busyActionId === action.id ||
+                    busy ||
+                    (deleting && deleteTarget?.id === action.id)
+                  }
                   onDragStart={setDragActionId}
                   onDragEnd={() => setDragActionId(null)}
                   onMove={(id, key) => void changeColumn(id, key)}
                   onOpen={openEdit}
+                  onRequestDelete={requestDelete}
                 />
               );
             },
@@ -328,12 +388,21 @@ export function WeeklyActionsPanel({
         equipeOptions={equipeOptions}
         intervenants={intervenants}
         sessionEmail={sessionEmail}
-        busy={busy}
+        busy={busy || deleting}
         onClose={closeDrawer}
         onSaved={async () => {
           setError(null);
           await onCreated();
         }}
+        onRequestDelete={requestDelete}
+      />
+
+      <WeeklyActionDeleteConfirmDialog
+        open={deleteTarget != null}
+        actionTitle={(deleteTarget?.Titre ?? "").trim()}
+        busy={deleting}
+        onCancel={cancelDelete}
+        onConfirm={() => void confirmDelete()}
       />
     </div>
   );

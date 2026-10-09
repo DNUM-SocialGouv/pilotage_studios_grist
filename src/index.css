@@ -2071,6 +2071,28 @@ button.fr-link:disabled {
   width: min(48rem, 94vw);
 }
 
+/* Confirmation delete (ex. Weekly_action) — dialog centré accessible. */
+.pilotage-confirm-dialog {
+  background: transparent;
+  border: none;
+  color: var(--text-default-grey);
+  color-scheme: light;
+  margin: auto;
+  max-width: min(32rem, calc(100vw - 2rem));
+  padding: 0;
+}
+
+.pilotage-confirm-dialog::backdrop {
+  background: rgba(22, 22, 22, 0.64);
+}
+
+.pilotage-confirm-dialog__panel {
+  background: var(--background-default-grey);
+  border: 1px solid var(--border-default-grey);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.22);
+  color: var(--text-default-grey);
+}
+
 /* Weekly kanban — carte mission variante A (badge météo coin + avatar). */
 .weekly-card {
   position: relative;
