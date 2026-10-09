@@ -3,10 +3,10 @@
 ## En clair
 
 Maquettes HTML du tiroir « Modifier la prestation » enrichi : champs actuels
-(titre, intervenant, jours, statut, date) + proposition **Mission Malt**,
-**bon de commande** et **lien Sofiane**. Ce n’est **pas** encore le drawer React
-du widget — seulement un fichier à ouvrir pour discuter le feedback Kanban
-« Mission malt dans prestation ».
+(titre, intervenant, jours, statut, date) + proposition **Mission Malt (URL)**,
+**bon de commande** et **lien Sofiane**, plus un bloc **Questions ouvertes**.
+Ce n’est **pas** encore le drawer React du widget — seulement un fichier à
+ouvrir pour discuter le feedback Kanban « Mission malt dans prestation ».
 
 Données fictives. Pas de connexion Grist. Pas d’écriture.
 
