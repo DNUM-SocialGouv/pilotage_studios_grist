@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prototype spike — Vue Studio (orbites)</title>
+  <!--
+    Choix multi-produits (lisibilité) :
+    Une personne liée à N produits apparaît comme N satellites distincts
+    (un par orbite), plutôt qu’un marqueur partagé au milieu.
+    Raison : chaque système planète reste autonome — on lit « qui gravite
+    autour de CE produit » sans croiser des traits entre systèmes.
+    Le highlight (survol / focus / sélection) relie les copies : toutes
+    les instances du même personId + toutes les planètes liées s’allument.
+  -->
+  <style>
+    :root {
+      --bg: #f6f6f6;
+      --panel: #ffffff;
+      --ink: #161616;
+      --muted: #666666;
+      --line: #dddddd;
+      --blue: #000091;
+      --blue-soft: #e3e3fd;
+      --blue-mid: #6a6af4;
+      --product: #18753c;
+      --product-soft: #b8fec9;
+      --focus: #0a76f6;
+      --focus-ring: #f5a300;
+      --dim: 0.18;
+      --orbit-stroke: #a5a5f0;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Marianne, "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.45;
+      padding: 1.25rem 1.5rem 2.5rem;
+    }
+
+    h1 {
+      font-size: 1.35rem;
+      margin: 0 0 0.35rem;
+      color: var(--blue);
+    }
+
+    .lead {
+      color: var(--muted);
+      margin: 0 0 1.25rem;
+      max-width: 42rem;
+      font-size: 0.95rem;
+    }
+
+    .shell {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      max-width: 64rem;
+      padding: 1rem 1.25rem 1.35rem;
+    }
+
+    .shell h2 {
+      font-size: 1.05rem;
+      margin: 0 0 0.85rem;
+    }
+
+    .studios {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      align-items: center;
+      margin-bottom: 0.85rem;
+      font-size: 0.875rem;
+    }
+
+    .studios-label {
+      font-weight: 600;
+      margin-right: 0.15rem;
+      color: var(--ink);
+    }
+
+    .studio-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.65rem;
+      border: 1px solid var(--blue);
+      background: var(--panel);
+      color: var(--blue);
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 0;
+    }
+
+    .studio-chip:hover { background: var(--blue-soft); }
+
+    .studio-chip[aria-pressed="true"] {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .studio-chip:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    .studio-chip .count {
+      font-weight: 500;
+      font-size: 0.8em;
+      opacity: 0.85;
+    }
+
+    .toolbar-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.25rem;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .motion-ctrl {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .motion-ctrl label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      cursor: pointer;
+    }
+
+    .legend {
+      display: flex;
+      gap: 1.1rem;
+      flex-wrap: wrap;
+      font-size: 0.8rem;
+      margin: 0 0 0.75rem;
+      color: var(--muted);
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .legend .swatch {
+      display: inline-block;
+      width: 0.75rem;
+      height: 0.75rem;
+      border: 2px solid;
+      flex-shrink: 0;
+    }
+
+    .legend .swatch.planet {
+      background: var(--product-soft);
+      border-color: var(--product);
+      border-radius: 50%;
+    }
+
+    .legend .swatch.satellite {
+      background: var(--blue-soft);
+      border-color: var(--blue);
+      border-radius: 50%;
+      width: 0.55rem;
+      height: 0.55rem;
+    }
+
+    .legend .swatch.orbit-ring {
+      width: 1rem;
+      height: 1rem;
+      border-radius: 50%;
+      border: 1.5px dashed var(--orbit-stroke);
+      background: transparent;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr minmax(12rem, 15rem);
+      gap: 1rem;
+      align-items: start;
+    }
+
+    @media (max-width: 899px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+      .mobile-hint {
+        display: block;
+      }
+    }
+
+    .mobile-hint {
+      display: none;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin: 0 0 0.5rem;
+      padding: 0.45rem 0.6rem;
+      background: #fff8e8;
+      border: 1px solid #e8c47a;
+    }
+
+    .graph-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #fafafa, #f2f2f8);
+      -webkit-overflow-scrolling: touch;
+    }
+
+    svg.orbits {
+      display: block;
+      width: 100%;
+      min-width: 720px;
+      height: auto;
+      /* fallback si height:auto échoue en file:// */
+      min-height: 360px;
+    }
+
+    .orbit-path {
+      pointer-events: none;
+      transition: opacity 0.12s ease;
+    }
+
+    .orbit-path.is-related { opacity: 1; }
+    .orbit-path.is-dim { opacity: var(--dim); }
+
+    /* Pas d’animation CSS transform — elle écrase les translate SVG.
+       Rotation opt-in via SMIL animateTransform uniquement. */
+
+    .node {
+      cursor: pointer;
+      outline: none;
+    }
+
+    .node .label {
+      font-size: 11px;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .node .label-planet {
+      font-size: 11px;
+      font-weight: 700;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .node.is-dim { opacity: var(--dim); }
+
+    .detail {
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 0.85rem 0.95rem;
+      min-height: 10rem;
+      font-size: 0.875rem;
+    }
+
+    .detail h3 {
+      font-size: 0.95rem;
+      margin: 0 0 0.35rem;
+      color: var(--blue);
+    }
+
+    .detail .meta {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin: 0 0 0.65rem;
+    }
+
+    .detail .empty {
+      color: var(--muted);
+      margin: 0;
+      font-size: 0.85rem;
+    }
+
+    .detail ul {
+      margin: 0;
+      padding-left: 1.1rem;
+    }
+
+    .detail li { margin-bottom: 0.25rem; }
+
+    .detail .badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.1rem 0.4rem;
+      background: var(--blue-soft);
+      color: var(--blue);
+      margin-bottom: 0.5rem;
+    }
+
+    .detail .badge.product-badge {
+      background: var(--product-soft);
+      color: var(--product);
+    }
+
+    .stats {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin: 0.65rem 0 0;
+    }
+
+    details.a11y-list {
+      margin-top: 1.15rem;
+      border-top: 1px solid var(--line);
+      padding-top: 0.85rem;
+    }
+
+    details.a11y-list summary {
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--blue);
+      padding: 0.2rem 0;
+    }
+
+    details.a11y-list summary:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    .list-by-studio {
+      margin: 0.75rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .list-by-studio > li {
+      margin-bottom: 0.85rem;
+    }
+
+    .list-by-studio h4 {
+      font-size: 0.88rem;
+      margin: 0 0 0.35rem;
+    }
+
+    .list-by-studio ul {
+      margin: 0;
+      padding-left: 1.15rem;
+      font-size: 0.875rem;
+    }
+
+    .list-by-studio li { margin-bottom: 0.2rem; }
+
+    .hint {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin: 1rem 0 0;
+      max-width: 48rem;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Prototype spike — Vue Studio (orbites)</h1>
+  <p class="lead">
+    En clair : chaque <strong>produit</strong> est une planète ; les <strong>personnes</strong>
+    (satellites) gravitent autour du produit auquel elles sont liées.
+    Une personne sur deux produits apparaît sur deux orbites. Filtrez un ou plusieurs studios.
+    Pas de météo Weekly — données fictives pour comparer avec la constellation.
+    Prototype spike — hors produit React (fichier HTML autonome pour feedback).
+  </p>
+
+  <section class="shell" aria-labelledby="bloc-title">
+    <h2 id="bloc-title">Studio — en ce moment</h2>
+
+    <div class="toolbar-row">
+      <div class="studios" role="group" aria-label="Studios à afficher">
+        <span class="studios-label">Studios :</span>
+        <!-- chips filled by JS -->
+      </div>
+      <div class="motion-ctrl">
+        <label>
+          <input type="checkbox" id="animate-orbits" />
+          Animer les orbites (lent)
+        </label>
+      </div>
+    </div>
+
+    <div class="legend" aria-hidden="true">
+      <span><i class="swatch planet"></i> Planète (produit)</span>
+      <span><i class="swatch satellite"></i> Satellite (personne)</span>
+      <span><i class="swatch orbit-ring"></i> Orbite (prestations en cours)</span>
+    </div>
+
+    <p class="mobile-hint" role="note">
+      Sur petit écran : faites défiler le graphique horizontalement, ou ouvrez la liste ci-dessous.
+    </p>
+
+    <div class="main-grid">
+      <div>
+        <div class="graph-wrap">
+          <svg
+            class="orbits"
+            viewBox="0 0 1000 720"
+            width="1000"
+            height="720"
+            role="img"
+            aria-labelledby="orb-title orb-desc"
+            id="graph"
+          >
+            <title id="orb-title">Systèmes orbitaux produits et personnes des studios sélectionnés</title>
+            <desc id="orb-desc">
+              Chaque produit est une planète centrale ; les personnes liées orbitent autour.
+              Une personne multi-produits apparaît sur plusieurs orbites.
+              Utilisez la liste repliée pour une alternative textuelle.
+            </desc>
+            <g id="systems"></g>
+          </svg>
+        </div>
+        <p class="stats" id="stats" aria-live="polite"></p>
+      </div>
+
+      <aside class="detail" id="detail" aria-live="polite">
+        <p class="empty">Cliquez ou activez un nœud (Entrée / Espace) pour voir le détail.</p>
+      </aside>
+    </div>
+
+    <details class="a11y-list" id="a11y-details">
+      <summary>Liste (alternative textuelle) — mêmes données</summary>
+      <div id="a11y-content"></div>
+    </details>
+
+    <p class="hint">
+      Prototype spike — hors produit React (fichier HTML autonome) — concept C2 orbites (non retenu Accueil V1).
+      Layout déterministe : planètes en grille, satellites répartis sur l’anneau.
+      Animation SMIL lente opt-in (case à cocher) ; off si prefers-reduced-motion.
+      Fix SVG : pas de `.className =` sur éléments SVG (throw) ; fills/strokes inline.
+      En produit (plus tard) : clic personne → fiche Équipe · clic produit → fiche Produit.
+    </p>
+  </section>
+
+  <script>
+(function () {
+  "use strict";
+
+  /* ------------------------------------------------------------------
+   * Données mock FR — mêmes IDs / noms / studios / liens que constellation
+   * ------------------------------------------------------------------ */
+  var STUDIOS = [
+    { id: "design", label: "Studio Design" },
+    { id: "data", label: "Studio Data" },
+    { id: "transfo", label: "Studio Transfo" }
+  ];
+
+  var PEOPLE = [
+    { id: "p1", name: "Estelle Vierne", role: "Coach", studio: "design" },
+    { id: "p2", name: "Nathalie Molines", role: "Coach", studio: "design" },
+    { id: "p3", name: "Camille Roux", role: "Designer", studio: "design" },
+    { id: "p4", name: "Julien Moreau", role: "Designer", studio: "design" },
+    { id: "p5", name: "Sarah Benali", role: "UX Research", studio: "design" },
+    { id: "p6", name: "Philippe Larroque", role: "ProductOps", studio: "data" },
+    { id: "p7", name: "Amine Khelifi", role: "Data analyste", studio: "data" },
+    { id: "p8", name: "Claire Dupont", role: "ProductOps", studio: "data" },
+    { id: "p9", name: "Hugo Bertrand", role: "Ingénieur data", studio: "data" },
+    { id: "p10", name: "Léa Martin", role: "Coach", studio: "transfo" },
+    { id: "p11", name: "Omar Diallo", role: "Chef de projet", studio: "transfo" },
+    { id: "p12", name: "Inès Garnier", role: "Facilitatrice", studio: "transfo" },
+    { id: "p13", name: "Thomas Petit", role: "ProductOps", studio: "transfo" },
+    { id: "p14", name: "Marie Lefèvre", role: "Designer", studio: "design" },
+    { id: "p15", name: "Nicolas Faure", role: "Data analyste", studio: "data" }
+  ];
+
+  var PRODUCTS = [
+    { id: "d1", name: "Alpha", studio: "design" },
+    { id: "d2", name: "Beta Access", studio: "design" },
+    { id: "d3", name: "Portail RH", studio: "design" },
+    { id: "d4", name: "Tableau Pilotage", studio: "data" },
+    { id: "d5", name: "Catalogue Data", studio: "data" },
+    { id: "d6", name: "Transformation DNUM", studio: "transfo" },
+    { id: "d7", name: "Parcours Usagers", studio: "transfo" }
+  ];
+
+  /* personId, productId, prestation label — mêmes liens que constellation */
+  var LINKS = [
+    { id: "l1", person: "p1", product: "d1", prestation: "Coaching design Alpha" },
+    { id: "l2", person: "p2", product: "d1", prestation: "Ateliers usagers Alpha" },
+    { id: "l3", person: "p2", product: "d2", prestation: "Revue accessibilité Beta" },
+    { id: "l4", person: "p3", product: "d2", prestation: "Maquettes Beta Access" },
+    { id: "l5", person: "p3", product: "d3", prestation: "UI Portail RH" },
+    { id: "l6", person: "p4", product: "d3", prestation: "Design system Portail RH" },
+    { id: "l7", person: "p5", product: "d1", prestation: "Entretiens Alpha" },
+    { id: "l8", person: "p5", product: "d2", prestation: "Tests utilisateurs Beta" },
+    { id: "l9", person: "p14", product: "d3", prestation: "Illustrations Portail RH" },
+    { id: "l10", person: "p6", product: "d4", prestation: "Appui ProductOps Pilotage" },
+    { id: "l11", person: "p6", product: "d6", prestation: "Appui Transfo DNUM" },
+    { id: "l12", person: "p7", product: "d4", prestation: "Indicateurs Pilotage" },
+    { id: "l13", person: "p7", product: "d5", prestation: "Qualité Catalogue Data" },
+    { id: "l14", person: "p8", product: "d5", prestation: "ProductOps Catalogue" },
+    { id: "l15", person: "p9", product: "d4", prestation: "Pipeline Pilotage" },
+    { id: "l16", person: "p9", product: "d5", prestation: "APIs Catalogue Data" },
+    { id: "l17", person: "p15", product: "d4", prestation: "Reporting mensuel" },
+    { id: "l18", person: "p10", product: "d6", prestation: "Coaching Transfo DNUM" },
+    { id: "l19", person: "p10", product: "d7", prestation: "Ateliers Parcours Usagers" },
+    { id: "l20", person: "p11", product: "d6", prestation: "Pilotage Transfo DNUM" },
+    { id: "l21", person: "p12", product: "d7", prestation: "Facilitation Parcours" },
+    { id: "l22", person: "p13", product: "d6", prestation: "Ops Transformation" },
+    { id: "l23", person: "p13", product: "d7", prestation: "Suivi Parcours Usagers" },
+    { id: "l1b", person: "p1", product: "d3", prestation: "Conseil design Portail RH" }
+  ];
+
+  /* ------------------------------------------------------------------
+   * State
+   * ------------------------------------------------------------------ */
+  var activeStudios = { design: true, data: true, transfo: true };
+  var selectedId = null;
+  var hoverId = null;
+  var orbitsAnimated = false;
+
+  var peopleById = indexBy(PEOPLE, "id");
+  var productsById = indexBy(PRODUCTS, "id");
+
+  var LAYOUT = {
+    width: 1000,
+    height: 720,
+    padX: 110,
+    padY: 100,
+    planetR: 28,
+    satR: 13,
+    orbitBase: 72,
+    orbitPerSat: 6,
+    orbitMax: 98,
+    minCell: 210
+  };
+
+  function indexBy(arr, key) {
+    var m = {};
+    for (var i = 0; i < arr.length; i++) m[arr[i][key]] = arr[i];
+    return m;
+  }
+
+  function studioLabel(id) {
+    for (var i = 0; i < STUDIOS.length; i++) {
+      if (STUDIOS[i].id === id) return STUDIOS[i].label;
+    }
+    return id;
+  }
+
+  function filteredData() {
+    var people = PEOPLE.filter(function (p) { return activeStudios[p.studio]; });
+    var products = PRODUCTS.filter(function (d) { return activeStudios[d.studio]; });
+    var personSet = {};
+    var productSet = {};
+    people.forEach(function (p) { personSet[p.id] = true; });
+    products.forEach(function (d) { productSet[d.id] = true; });
+    var links = LINKS.filter(function (l) {
+      return personSet[l.person] && productSet[l.product];
+    });
+    /* Ne garder que nœuds qui ont au moins 1 lien (choix V1 exploration) */
+    var linkedPeople = {};
+    var linkedProducts = {};
+    links.forEach(function (l) {
+      linkedPeople[l.person] = true;
+      linkedProducts[l.product] = true;
+    });
+    people = people.filter(function (p) { return linkedPeople[p.id]; });
+    products = products.filter(function (d) { return linkedProducts[d.id]; });
+    return { people: people, products: products, links: links };
+  }
+
+  /* Grouper les satellites par planète */
+  function systemsFrom(data) {
+    return data.products.map(function (prod) {
+      var sats = [];
+      var seen = {};
+      data.links.forEach(function (l) {
+        if (l.product !== prod.id) return;
+        if (seen[l.person]) return;
+        seen[l.person] = true;
+        var pe = peopleById[l.person];
+        if (pe) sats.push(pe);
+      });
+      sats.sort(function (a, b) {
+        return a.name.localeCompare(b.name, "fr");
+      });
+      var orbitR = Math.min(
+        LAYOUT.orbitMax,
+        LAYOUT.orbitBase + Math.max(0, sats.length - 2) * LAYOUT.orbitPerSat
+      );
+      return { product: prod, satellites: sats, orbitR: orbitR };
+    });
+  }
+
+  /* Disposition planètes en grille (évite chevauchement) */
+  function layoutSystems(systems) {
+    var n = systems.length;
+    if (n === 0) return [];
+
+    var cols = Math.ceil(Math.sqrt(n));
+    if (n <= 3) cols = n;
+    else if (n <= 4) cols = 2;
+    else if (n <= 6) cols = 3;
+    else cols = 4;
+
+    var rows = Math.ceil(n / cols);
+    var usableW = LAYOUT.width - 2 * LAYOUT.padX;
+    var usableH = LAYOUT.height - 2 * LAYOUT.padY;
+    var cellW = Math.max(LAYOUT.minCell, usableW / cols);
+    var cellH = Math.max(LAYOUT.minCell, usableH / rows);
+    /* Recentrer si grille plus petite que le canvas */
+    var gridW = cellW * cols;
+    var gridH = cellH * rows;
+    var ox = (LAYOUT.width - gridW) / 2 + cellW / 2;
+    var oy = (LAYOUT.height - gridH) / 2 + cellH / 2;
+
+    return systems.map(function (sys, i) {
+      var col = i % cols;
+      var row = Math.floor(i / cols);
+      /* Dernière rangée incomplète : centrer les cellules */
+      var rowCount = Math.min(cols, n - row * cols);
+      var rowOffset = ((cols - rowCount) * cellW) / 2;
+      return {
+        product: sys.product,
+        satellites: sys.satellites,
+        orbitR: sys.orbitR,
+        cx: ox + rowOffset + col * cellW,
+        cy: oy + row * cellH
+      };
+    });
+  }
+
+  function relatedIds(nodeId, links) {
+    var set = {};
+    set[nodeId] = true;
+    links.forEach(function (l) {
+      if (l.person === nodeId || l.product === nodeId) {
+        set[l.person] = true;
+        set[l.product] = true;
+        set[l.id] = true;
+      }
+    });
+    return set;
+  }
+
+  function focusId() {
+    return hoverId || selectedId;
+  }
+
+  function prefersReducedMotion() {
+    return window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  /* ------------------------------------------------------------------
+   * Render chips
+   * ------------------------------------------------------------------ */
+  function renderChips() {
+    var host = document.querySelector(".studios");
+    var label = host.querySelector(".studios-label");
+    host.innerHTML = "";
+    host.appendChild(label);
+
+    STUDIOS.forEach(function (s) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "studio-chip";
+      btn.setAttribute("aria-pressed", activeStudios[s.id] ? "true" : "false");
+      var nPeople = PEOPLE.filter(function (p) { return p.studio === s.id; }).length;
+      btn.innerHTML = s.label + ' <span class="count">(' + nPeople + ')</span>';
+      btn.addEventListener("click", function () {
+        var onCount = Object.keys(activeStudios).filter(function (k) {
+          return activeStudios[k];
+        }).length;
+        if (activeStudios[s.id] && onCount === 1) {
+          return;
+        }
+        activeStudios[s.id] = !activeStudios[s.id];
+        selectedId = null;
+        hoverId = null;
+        renderAll();
+      });
+      host.appendChild(btn);
+    });
+  }
+
+  /* ------------------------------------------------------------------
+   * Render SVG orbit systems
+   * ------------------------------------------------------------------ */
+  var SVG_NS = "http://www.w3.org/2000/svg";
+  var COLORS = {
+    blue: "#000091",
+    blueSoft: "#e3e3fd",
+    product: "#18753c",
+    productSoft: "#b8fec9",
+    ink: "#161616",
+    orbit: "#a5a5f0",
+    focusRing: "#f5a300"
+  };
+
+  function clearSvgChildren(el) {
+    while (el.firstChild) el.removeChild(el.firstChild);
+  }
+
+  function svgEl(name) {
+    return document.createElementNS(SVG_NS, name);
+  }
+
+  function renderGraph() {
+    var data = filteredData();
+    var systems = layoutSystems(systemsFrom(data));
+    var focus = focusId();
+    var related = focus ? relatedIds(focus, data.links) : null;
+    var doAnimate = orbitsAnimated && !prefersReducedMotion();
+
+    var systemsG = document.getElementById("systems");
+    /* Ne jamais systemsG.className = … (SVGAnimatedString en lecture seule → throw) */
+    clearSvgChildren(systemsG);
+
+    systems.forEach(function (sys, sysIdx) {
+      var gSys = svgEl("g");
+      gSys.setAttribute("class", "system");
+      gSys.setAttribute("data-product", sys.product.id);
+      gSys.setAttribute("transform", "translate(" + sys.cx + "," + sys.cy + ")");
+
+      /* Anneau d’orbite — attrs inline (file:// / Safari) */
+      var ring = svgEl("circle");
+      ring.setAttribute("r", String(sys.orbitR));
+      ring.setAttribute("class", "orbit-path");
+      ring.setAttribute("fill", "none");
+      ring.setAttribute("stroke", COLORS.orbit);
+      ring.setAttribute("stroke-width", "1.25");
+      ring.setAttribute("stroke-dasharray", "4 5");
+      ring.setAttribute("opacity", "0.85");
+      if (related) {
+        if (related[sys.product.id]) {
+          ring.setAttribute("class", "orbit-path is-related");
+          ring.setAttribute("stroke", COLORS.blue);
+          ring.setAttribute("stroke-width", "2");
+          ring.removeAttribute("stroke-dasharray");
+          ring.setAttribute("opacity", "1");
+        } else {
+          ring.setAttribute("class", "orbit-path is-dim");
+          ring.setAttribute("opacity", "0.18");
+        }
+      }
+      gSys.appendChild(ring);
+
+      /* Satellites — translate SVG figé ; SMIL rotate opt-in sur le groupe */
+      var spin = svgEl("g");
+      spin.setAttribute("class", "system-spin");
+
+      if (doAnimate) {
+        var anim = svgEl("animateTransform");
+        anim.setAttribute("attributeName", "transform");
+        anim.setAttribute("attributeType", "XML");
+        anim.setAttribute("type", "rotate");
+        anim.setAttribute("from", "0 0 0");
+        anim.setAttribute("to", (sysIdx % 2 === 1 ? "-360" : "360") + " 0 0");
+        anim.setAttribute("dur", sysIdx % 2 === 1 ? "52s" : "40s");
+        anim.setAttribute("repeatCount", "indefinite");
+        spin.appendChild(anim);
+      }
+
+      var nSat = sys.satellites.length;
+      sys.satellites.forEach(function (pe, i) {
+        var angle = nSat === 0 ? 0 : (-Math.PI / 2) + (2 * Math.PI * i) / nSat;
+        var sx = Math.cos(angle) * sys.orbitR;
+        var sy = Math.sin(angle) * sys.orbitR;
+
+        var wrap = svgEl("g");
+        wrap.setAttribute("transform", "translate(" + sx + "," + sy + ")");
+
+        var isActive = selectedId === pe.id;
+        var isRel = !related || related[pe.id];
+        var isDim = related && !related[pe.id];
+
+        var g = makeNodeGroup(
+          pe.id,
+          "person",
+          pe.name + ", " + pe.role + ", satellite de " + sys.product.name +
+            ", " + studioLabel(pe.studio)
+        );
+        g.setAttribute("data-product", sys.product.id);
+        if (isDim) g.setAttribute("class", "node is-dim");
+        else if (isRel && related) g.setAttribute("class", "node is-related");
+        if (isActive) g.setAttribute("class", (g.getAttribute("class") || "node") + " is-active");
+
+        var circle = svgEl("circle");
+        circle.setAttribute("r", String(LAYOUT.satR));
+        circle.setAttribute("class", "shape-satellite");
+        circle.setAttribute("fill", isActive ? COLORS.blue : COLORS.blueSoft);
+        circle.setAttribute("stroke", COLORS.blue);
+        circle.setAttribute("stroke-width", isActive || (related && isRel) ? "3" : "2");
+        g.appendChild(circle);
+
+        var text = svgEl("text");
+        text.setAttribute("class", "label");
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("y", String(LAYOUT.satR + 13));
+        text.setAttribute("fill", isActive ? COLORS.blue : COLORS.ink);
+        text.setAttribute("font-size", "11");
+        if (isActive) text.setAttribute("font-weight", "700");
+        text.textContent = shortName(pe.name);
+        g.appendChild(text);
+
+        bindNodeEvents(g, pe.id, data);
+        wrap.appendChild(g);
+        spin.appendChild(wrap);
+      });
+
+      gSys.appendChild(spin);
+
+      /* Planète au centre (fixe, hors spin) */
+      var isPlanetActive = selectedId === sys.product.id;
+      var isPlanetRel = !related || related[sys.product.id];
+      var isPlanetDim = related && !related[sys.product.id];
+
+      var gPlanet = makeNodeGroup(
+        sys.product.id,
+        "product",
+        sys.product.name + ", planète produit, " + studioLabel(sys.product.studio)
+      );
+      if (isPlanetDim) gPlanet.setAttribute("class", "node is-dim");
+      else if (related && isPlanetRel) gPlanet.setAttribute("class", "node is-related");
+      if (isPlanetActive) {
+        gPlanet.setAttribute("class", (gPlanet.getAttribute("class") || "node") + " is-active");
+      }
+
+      var planet = svgEl("circle");
+      planet.setAttribute("r", String(LAYOUT.planetR));
+      planet.setAttribute("class", "shape-planet");
+      planet.setAttribute("fill", isPlanetActive ? COLORS.product : COLORS.productSoft);
+      planet.setAttribute("stroke", COLORS.product);
+      planet.setAttribute(
+        "stroke-width",
+        isPlanetActive || (related && isPlanetRel) ? "3" : "2.25"
+      );
+      gPlanet.appendChild(planet);
+
+      var pLabel = svgEl("text");
+      pLabel.setAttribute("class", "label-planet");
+      pLabel.setAttribute("text-anchor", "middle");
+      pLabel.setAttribute("dominant-baseline", "central");
+      pLabel.setAttribute("y", "1");
+      pLabel.setAttribute("fill", isPlanetActive ? "#ffffff" : COLORS.product);
+      pLabel.setAttribute("font-size", "11");
+      pLabel.setAttribute("font-weight", "700");
+      pLabel.textContent = shortProduct(sys.product.name);
+      gPlanet.appendChild(pLabel);
+
+      bindNodeEvents(gPlanet, sys.product.id, data);
+      gSys.appendChild(gPlanet);
+
+      systemsG.appendChild(gSys);
+    });
+
+    document.getElementById("stats").textContent =
+      data.people.length + " personne" + (data.people.length > 1 ? "s" : "") +
+      " · " + data.products.length + " planète" + (data.products.length > 1 ? "s" : "") +
+      " · " + data.links.length + " prestation" + (data.links.length > 1 ? "s" : "") +
+      " en cours" +
+      " · satellites dupliqués si multi-produits";
+  }
+
+  function makeNodeGroup(id, kind, ariaLabel) {
+    var g = svgEl("g");
+    g.setAttribute("class", "node");
+    g.setAttribute("data-id", id);
+    g.setAttribute("data-kind", kind);
+    g.setAttribute("tabindex", "0");
+    g.setAttribute("role", "button");
+    g.setAttribute("aria-label", ariaLabel);
+    return g;
+  }
+
+  function bindNodeEvents(g, id, data) {
+    g.addEventListener("mouseenter", function () {
+      hoverId = id;
+      renderGraph();
+      renderDetail(id, data, true);
+    });
+    g.addEventListener("mouseleave", function () {
+      hoverId = null;
+      renderGraph();
+      renderDetail(selectedId, data, false);
+    });
+    g.addEventListener("click", function () {
+      selectedId = id;
+      renderGraph();
+      renderDetail(id, data, false);
+    });
+    g.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        selectedId = id;
+        renderGraph();
+        renderDetail(id, data, false);
+      }
+    });
+    g.addEventListener("focus", function () {
+      hoverId = id;
+      renderGraph();
+      renderDetail(id, data, true);
+    });
+    g.addEventListener("blur", function () {
+      hoverId = null;
+      renderGraph();
+      renderDetail(selectedId, filteredData(), false);
+    });
+  }
+
+  function shortName(full) {
+    var parts = full.split(" ");
+    if (parts.length < 2) return full;
+    return parts[0];
+  }
+
+  function shortProduct(name) {
+    if (name.length <= 12) return name;
+    var parts = name.split(" ");
+    if (parts.length >= 2) return parts[0];
+    return name.slice(0, 10) + "…";
+  }
+
+  /* ------------------------------------------------------------------
+   * Detail panel — même UX que constellation
+   * ------------------------------------------------------------------ */
+  function renderDetail(nodeId, data, isHover) {
+    var el = document.getElementById("detail");
+    if (!nodeId) {
+      el.innerHTML = '<p class="empty">Cliquez ou activez un nœud (Entrée / Espace) pour voir le détail.</p>';
+      return;
+    }
+
+    var person = peopleById[nodeId];
+    var product = productsById[nodeId];
+
+    if (person) {
+      var links = data.links.filter(function (l) { return l.person === person.id; });
+      var html =
+        '<span class="badge">Satellite (personne)</span>' +
+        "<h3>" + escapeHtml(person.name) + "</h3>" +
+        '<p class="meta">' + escapeHtml(person.role) + " · " +
+        escapeHtml(studioLabel(person.studio)) + "</p>";
+      if (links.length === 0) {
+        html += "<p>Aucune prestation visible avec le filtre actuel.</p>";
+      } else {
+        html += "<p><strong>Orbites (prestations en cours)</strong></p><ul>";
+        links.forEach(function (l) {
+          var prod = productsById[l.product];
+          html +=
+            "<li>" + escapeHtml(l.prestation) +
+            " → <em>" + escapeHtml(prod ? prod.name : l.product) + "</em></li>";
+        });
+        html += "</ul>";
+        if (links.length > 1) {
+          html +=
+            '<p class="meta" style="margin-top:0.5rem;">Présente sur ' +
+            links.length + " orbites (copie par planète).</p>";
+        }
+      }
+      if (isHover && selectedId !== nodeId) {
+        html += '<p class="meta" style="margin-top:0.65rem;">Survol — cliquer pour figer</p>';
+      }
+      el.innerHTML = html;
+      return;
+    }
+
+    if (product) {
+      var linksP = data.links.filter(function (l) { return l.product === product.id; });
+      var htmlP =
+        '<span class="badge product-badge">Planète (produit)</span>' +
+        "<h3>" + escapeHtml(product.name) + "</h3>" +
+        '<p class="meta">' + escapeHtml(studioLabel(product.studio)) + "</p>";
+      if (linksP.length === 0) {
+        htmlP += "<p>Aucune prestation visible avec le filtre actuel.</p>";
+      } else {
+        htmlP += "<p><strong>Satellites reliés</strong></p><ul>";
+        linksP.forEach(function (l) {
+          var pe = peopleById[l.person];
+          htmlP +=
+            "<li>" + escapeHtml(pe ? pe.name : l.person) +
+            " — " + escapeHtml(l.prestation) + "</li>";
+        });
+        htmlP += "</ul>";
+      }
+      if (isHover && selectedId !== nodeId) {
+        htmlP += '<p class="meta" style="margin-top:0.65rem;">Survol — cliquer pour figer</p>';
+      }
+      el.innerHTML = htmlP;
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  /* ------------------------------------------------------------------
+   * A11y list — mêmes données
+   * ------------------------------------------------------------------ */
+  function renderA11yList() {
+    var data = filteredData();
+    var host = document.getElementById("a11y-content");
+    var byStudio = {};
+
+    STUDIOS.forEach(function (s) {
+      if (!activeStudios[s.id]) return;
+      byStudio[s.id] = [];
+    });
+
+    data.links.forEach(function (l) {
+      var pe = peopleById[l.person];
+      var pr = productsById[l.product];
+      if (!pe || !pr) return;
+      var sid = pe.studio;
+      if (!byStudio[sid]) byStudio[sid] = [];
+      byStudio[sid].push({
+        person: pe.name,
+        role: pe.role,
+        product: pr.name,
+        prestation: l.prestation
+      });
+    });
+
+    var html = '<ul class="list-by-studio">';
+    STUDIOS.forEach(function (s) {
+      var items = byStudio[s.id];
+      if (!items || items.length === 0) return;
+      items.sort(function (a, b) {
+        return a.person.localeCompare(b.person, "fr");
+      });
+      html += "<li><h4>" + escapeHtml(s.label) + "</h4><ul>";
+      items.forEach(function (it) {
+        html +=
+          "<li><strong>" + escapeHtml(it.person) + "</strong> (" +
+          escapeHtml(it.role) + ") — " +
+          escapeHtml(it.prestation) + " · produit " +
+          escapeHtml(it.product) + "</li>";
+      });
+      html += "</ul></li>";
+    });
+    html += "</ul>";
+
+    if (data.links.length === 0) {
+      html = "<p>Aucun lien avec les studios sélectionnés.</p>";
+    }
+    host.innerHTML = html;
+  }
+
+  function renderAll() {
+    renderChips();
+    renderGraph();
+    renderDetail(selectedId, filteredData(), false);
+    renderA11yList();
+  }
+
+  var animBox = document.getElementById("animate-orbits");
+  animBox.addEventListener("change", function (e) {
+    orbitsAnimated = !!(e.target.checked && !prefersReducedMotion());
+    /* Re-render : SMIL injecté seulement si opt-in — ne touche pas className SVG */
+    renderGraph();
+  });
+
+  if (prefersReducedMotion()) {
+    animBox.checked = false;
+    animBox.disabled = true;
+    orbitsAnimated = false;
+  }
+
+  try {
+    renderAll();
+  } catch (err) {
+    document.getElementById("stats").textContent =
+      "Erreur rendu graph : " + (err && err.message ? err.message : String(err));
+    if (typeof console !== "undefined" && console.error) console.error(err);
+  }
+})();
+  </script>
+</body>
+</html>
