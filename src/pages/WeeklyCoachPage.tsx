@@ -17,6 +17,7 @@ import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
 import { KanbanBoard } from "../components/kanban/KanbanBoard";
 import { KanbanCardShell } from "../components/kanban/KanbanCardShell";
 import { MissionProse } from "../components/missions/MissionProse";
+import { WeeklyActionsPanel } from "../components/weekly/WeeklyActionsPanel";
 import { WeeklySuiviDrawer } from "../components/weekly/WeeklySuiviDrawer";
 import { useAclProfil } from "../AclProfilContext";
 import { useGristPa } from "../GristPaContext";
@@ -24,6 +25,9 @@ import { useWeeklyCoachAllowlist } from "../hooks/useWeeklyCoachAllowlist";
 import { useWeeklyCoachData } from "../hooks/useWeeklyCoachData";
 import { NothingHerePage } from "../security/NothingHerePage";
 import { extractGristReferenceId } from "../utils/gristReferences";
+import {
+  filterWeeklyActionsEnCours,
+} from "../utils/weeklyAction";
 import {
   defaultWeeklyAuteurPrenom,
   formatWeeklyAgendaCreatedAt,
@@ -56,6 +60,8 @@ import type { WeeklyAgendaRow } from "../types";
 
 type AgendaDialogMode = "view" | "edit" | "create";
 type AgendaTab = "a-faire" | "historique";
+/** Zone droite Weekly : sujets agenda ou actions Ops. */
+type WeeklySidePanel = "sujets" | "actions";
 
 function AgendaSujetRow({
   sujet,
@@ -710,10 +716,14 @@ export function WeeklyCoachPage() {
   const [createAgendaMissionId, setCreateAgendaMissionId] = useState<
     number | null
   >(null);
+  const [sidePanel, setSidePanel] = useState<WeeklySidePanel>("sujets");
   const [agendaTab, setAgendaTab] = useState<AgendaTab>("a-faire");
   const nouveauSujetCtaId = "weekly-nouveau-sujet-cta";
+  const sidePanelTabsName = useId();
+  const sidePanelId = useId();
   const agendaTabsName = useId();
   const agendaPanelId = useId();
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const defaultAuteur = defaultWeeklyAuteurPrenom(displayName, sessionEmail);
 
@@ -755,6 +765,11 @@ export function WeeklyCoachPage() {
   const historiqueSujetCount = useMemo(
     () => agendaHistoriqueMonths.reduce((n, m) => n + m.sujetCount, 0),
     [agendaHistoriqueMonths],
+  );
+
+  const actionsEnCoursCount = useMemo(
+    () => filterWeeklyActionsEnCours(data.actions).length,
+    [data.actions],
   );
 
   const missionTitleById = useMemo(() => {
@@ -1011,6 +1026,15 @@ export function WeeklyCoachPage() {
           description={agendaError}
         />
       ) : null}
+      {actionError ? (
+        <Alert
+          className="fr-mb-2w"
+          severity="error"
+          small
+          title="Actions"
+          description={actionError}
+        />
+      ) : null}
 
       {data.status === "loading" ? (
         <p className="fr-text--sm" role="status">
@@ -1029,12 +1053,66 @@ export function WeeklyCoachPage() {
         <>
           <section
             className="fr-mb-4w"
-            aria-label="Sujets à aborder"
+            aria-label="Sujets et actions Weekly"
             style={{
               background: "var(--background-alt-blue-france)",
               padding: "1rem 1.25rem",
             }}
           >
+            <div className="fr-mb-2w">
+              <SegmentedControl
+                legend="Sujets ou Actions"
+                hideLegend
+                name={sidePanelTabsName}
+                small
+                segments={[
+                  {
+                    label: "Sujets",
+                    nativeInputProps: {
+                      value: "sujets",
+                      checked: sidePanel === "sujets",
+                      onChange: () => setSidePanel("sujets"),
+                      "aria-controls": sidePanelId,
+                    },
+                  },
+                  {
+                    label: `Actions (${actionsEnCoursCount} en cours)`,
+                    nativeInputProps: {
+                      value: "actions",
+                      checked: sidePanel === "actions",
+                      onChange: () => setSidePanel("actions"),
+                      "aria-controls": sidePanelId,
+                    },
+                  },
+                ]}
+              />
+            </div>
+
+            <div id={sidePanelId} role="tabpanel">
+              {sidePanel === "actions" ? (
+                <WeeklyActionsPanel
+                  actions={data.actions}
+                  intervenants={data.intervenants}
+                  missionTitleById={missionTitleById}
+                  missionOptions={missionOptions}
+                  equipeOptions={equipeOptions}
+                  sessionEmail={sessionEmail}
+                  busy={data.isReloading}
+                  onCreated={async () => {
+                    setActionError(null);
+                    try {
+                      await data.reload();
+                    } catch (err) {
+                      setActionError(
+                        err instanceof Error
+                          ? err.message
+                          : "Impossible de recharger les actions.",
+                      );
+                    }
+                  }}
+                />
+              ) : (
+                <>
             <div
               className="fr-mb-2w"
               style={{
@@ -1262,6 +1340,10 @@ export function WeeklyCoachPage() {
                     </section>
                   ))}
                 </div>
+              )}
+            </div>
+
+                </>
               )}
             </div>
 

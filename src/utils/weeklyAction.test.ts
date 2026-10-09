@@ -1,11 +1,19 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import type { WeeklyActionRow } from "../types.ts";
 import {
   WEEKLY_ACTION_STATUT,
   buildWeeklyActionCreateFields,
   buildWeeklyActionFaitFields,
+  defaultWeeklyActionDateFin,
+  filterWeeklyActionsEnCours,
+  isWeeklyActionDateFinOverdue,
+  matchWeeklyActionPorteurId,
   normalizeWeeklyActionStatut,
+  sortWeeklyActionsEnCours,
+  toLocalDateInputValue,
   weeklyActionFaitLeTimestamp,
+  weeklyActionStatutLabel,
 } from "./weeklyAction.ts";
 
 describe("normalizeWeeklyActionStatut", () => {
@@ -97,6 +105,71 @@ describe("buildWeeklyActionCreateFields", () => {
           porteurId: null,
         }),
       /titre/i,
+    );
+  });
+});
+
+describe("filterWeeklyActionsEnCours / sort", () => {
+  it("ne garde que Fait=false et trie par date de fin", () => {
+    const rows: WeeklyActionRow[] = [
+      { id: 3, Titre: "C", Fait: false, Date_fin: 1_800_000_000 },
+      { id: 1, Titre: "A", Fait: true, Date_fin: 1_700_000_000 },
+      { id: 2, Titre: "B", Fait: false, Date_fin: 1_700_000_000 },
+      { id: 4, Titre: "D", Fait: false, Date_fin: null },
+    ];
+    const open = filterWeeklyActionsEnCours(rows);
+    assert.deepEqual(
+      open.map((r) => r.id),
+      [3, 2, 4],
+    );
+    assert.deepEqual(
+      sortWeeklyActionsEnCours(open).map((r) => r.id),
+      [2, 3, 4],
+    );
+  });
+});
+
+describe("weeklyActionStatutLabel / overdue / defaults", () => {
+  it("libellé UI À faire", () => {
+    assert.equal(weeklyActionStatutLabel("A faire"), "À faire");
+    assert.equal(weeklyActionStatutLabel("En cours"), "En cours");
+  });
+
+  it("détecte une date de fin dépassée", () => {
+    const now = new Date(2026, 9, 9);
+    assert.equal(
+      isWeeklyActionDateFinOverdue(new Date(2026, 9, 8), now, false),
+      true,
+    );
+    assert.equal(
+      isWeeklyActionDateFinOverdue(new Date(2026, 9, 9), now, false),
+      false,
+    );
+    assert.equal(
+      isWeeklyActionDateFinOverdue(new Date(2026, 9, 8), now, true),
+      false,
+    );
+  });
+
+  it("date fin défaut +7 jours et match porteur session", () => {
+    const now = new Date(2026, 9, 9);
+    assert.equal(
+      toLocalDateInputValue(defaultWeeklyActionDateFin(now)),
+      "2026-10-16",
+    );
+    assert.equal(
+      matchWeeklyActionPorteurId(
+        [
+          { id: 1, E_mail: "a@example.com" },
+          { id: 2, E_mail: "B@Example.com" },
+        ],
+        "b@example.com",
+      ),
+      2,
+    );
+    assert.equal(
+      matchWeeklyActionPorteurId([{ id: 1, E_mail: "a@example.com" }], null),
+      null,
     );
   });
 });

@@ -3,6 +3,10 @@
  * Valeurs Choice figées sur le schéma Grist (espaces) : `A faire` · `En cours`.
  */
 
+import type { WeeklyActionRow } from "../types.ts";
+import { parseWeeklyAgendaDateValue } from "./weeklyAgenda.ts";
+import { normalizeWeeklyCoachEmail } from "./weeklyCoachAccess.ts";
+
 /** Valeurs stockées dans `Weekly_action.Statut` (Choice Grist). */
 export const WEEKLY_ACTION_STATUT = {
   A_FAIRE: "A faire",
@@ -112,4 +116,108 @@ export function buildWeeklyActionFaitFields(
     Fait: fait,
     Fait_le: fait ? weeklyActionFaitLeTimestamp(now) : null,
   };
+}
+
+/** Liste « Actions en cours » : uniquement les non faites. */
+export function filterWeeklyActionsEnCours(
+  actions: readonly WeeklyActionRow[],
+): WeeklyActionRow[] {
+  return actions.filter((a) => !a.Fait);
+}
+
+/** Tri : date de fin croissante (sans date en dernier), puis id. */
+export function sortWeeklyActionsEnCours(
+  actions: readonly WeeklyActionRow[],
+): WeeklyActionRow[] {
+  return [...actions].sort((a, b) => {
+    const da = parseWeeklyActionDate(a.Date_fin);
+    const db = parseWeeklyActionDate(b.Date_fin);
+    if (da == null && db == null) return a.id - b.id;
+    if (da == null) return 1;
+    if (db == null) return -1;
+    const diff = da.getTime() - db.getTime();
+    return diff !== 0 ? diff : a.id - b.id;
+  });
+}
+
+export function parseWeeklyActionDate(
+  value: string | number | null | undefined,
+): Date | null {
+  return parseWeeklyAgendaDateValue(value);
+}
+
+/** Défaut confort create : +7 jours calendaires. */
+export function defaultWeeklyActionDateFin(now: Date = new Date()): Date {
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7);
+}
+
+/** Valeur `<input type="date">` locale `YYYY-MM-DD`. */
+export function toLocalDateInputValue(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+export function parseLocalDateInputValue(value: string): Date | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+  if (!m) return null;
+  const y = Number(m[1]);
+  const mo = Number(m[2]);
+  const d = Number(m[3]);
+  if (!Number.isFinite(y) || !Number.isFinite(mo) || !Number.isFinite(d)) {
+    return null;
+  }
+  return new Date(y, mo - 1, d);
+}
+
+/** Libellé UI statut (accent sur « À faire »). */
+export function weeklyActionStatutLabel(
+  statut: string | undefined,
+): string {
+  return normalizeWeeklyActionStatut(statut) === WEEKLY_ACTION_STATUT.EN_COURS
+    ? "En cours"
+    : "À faire";
+}
+
+/** Date de fin dépassée (jour local) et action non faite. */
+export function isWeeklyActionDateFinOverdue(
+  dateFin: Date | null,
+  now: Date = new Date(),
+  fait = false,
+): boolean {
+  if (fait || dateFin == null) return false;
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const fin = new Date(
+    dateFin.getFullYear(),
+    dateFin.getMonth(),
+    dateFin.getDate(),
+  );
+  return fin.getTime() < today.getTime();
+}
+
+/** Libellé court « JJ/MM » (liste). */
+export function formatWeeklyActionDayShort(date: Date): string {
+  const d = String(date.getDate()).padStart(2, "0");
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  return `${d}/${m}`;
+}
+
+/**
+ * Porteur prérempli session : match e-mail → fiche `Equipe`
+ * (même logique que jointure coachs).
+ */
+export function matchWeeklyActionPorteurId(
+  intervenants: readonly {
+    id: number;
+    E_mail?: string | null;
+  }[],
+  sessionEmail: string | null | undefined,
+): number | null {
+  const n = normalizeWeeklyCoachEmail(sessionEmail);
+  if (!n) return null;
+  const found = intervenants.find(
+    (p) => normalizeWeeklyCoachEmail(p.E_mail) === n,
+  );
+  return found != null && found.id > 0 ? found.id : null;
 }
