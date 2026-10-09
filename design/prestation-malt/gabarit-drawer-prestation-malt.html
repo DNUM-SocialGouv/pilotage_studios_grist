@@ -212,7 +212,8 @@
       margin-bottom: 1rem;
     }
 
-    .field label {
+    .field label,
+    .field .label-like {
       display: block;
       font-size: 0.875rem;
       font-weight: 600;
@@ -243,6 +244,32 @@
     .field select:focus-visible {
       outline: 2px solid var(--focus);
       outline-offset: 2px;
+    }
+
+    .readonly-box {
+      width: 100%;
+      min-height: 2.5rem;
+      padding: 0.5rem 0.65rem;
+      border: 1px solid var(--line);
+      background: #f6f6f6;
+      color: var(--ink);
+      font-size: 0.95rem;
+      word-break: break-all;
+    }
+
+    .readonly-box a {
+      color: var(--blue);
+      font-weight: 600;
+    }
+
+    .readonly-box a:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .readonly-box--empty {
+      color: var(--muted);
+      font-style: italic;
     }
 
     .field-row {
@@ -388,7 +415,8 @@
     <h1>Gabarit — Modifier la prestation (Mission Malt)</h1>
     <p class="lead">
       Proposition visuelle pour enrichir le tiroir prestation : champs existants
-      + Mission Malt, bon de commande et lien Sofiane. Données fictives, hors produit.
+      + Mission Malt, bon de commande, et lien Sofiane en lecture (issu du BDC).
+      Données fictives, hors produit.
     </p>
     <p class="legend">
       <strong>Gabarit — champs proposés (hors produit)</strong><br />
@@ -504,22 +532,29 @@
               <option value="">— Choisir un BDC —</option>
               <option value="bdc-24012" selected>BDC-24012 · Chorus 2024-8812</option>
               <option value="bdc-24048">BDC-24048 · Chorus 2024-9021</option>
-              <option value="bdc-manuel">Saisie manuelle…</option>
+              <option value="bdc-sans-sofiane">BDC-24101 · Chorus 2024-9150 (sans Sofiane)</option>
             </select>
             <span class="hint">Pré-remplit le BDC du CRA ; reste modifiable sur chaque ligne CRA (règle envisagée).</span>
           </div>
 
           <div class="field field--new">
             <span class="badge-new">Nouveau</span>
-            <label for="sofiane">Lien Sofiane <span style="font-weight:400;color:var(--muted);">(optionnel)</span></label>
-            <input
-              id="sofiane"
-              name="sofiane"
-              type="url"
-              placeholder="https://…"
-              value="https://exemple.sofiane.gouv.fr/commande/24012"
-            />
-            <span class="hint">Utile si le BDC sélectionné porte déjà un lien ; sinon saisie libre.</span>
+            <div id="sofiane-label" class="label-like">Lien Sofiane</div>
+            <div
+              class="readonly-box"
+              id="sofiane-box"
+              role="status"
+              aria-labelledby="sofiane-label"
+              aria-live="polite"
+            >
+              <a
+                id="sofiane-link"
+                href="https://exemple.sofiane.gouv.fr/commande/24012"
+                target="_blank"
+                rel="noopener noreferrer"
+              >https://exemple.sofiane.gouv.fr/commande/24012</a>
+            </div>
+            <span class="hint">Issu du BDC sélectionné — pas de saisie séparée (évite la double saisie).</span>
           </div>
 
           <div class="questions" role="note" aria-labelledby="questions-title">
@@ -532,6 +567,11 @@
               <li>
                 <strong>BDC / Sofiane</strong>
                 <ul>
+                  <li>
+                    <strong>Tranché (porteur)</strong> : le lien Sofiane est
+                    <strong>déjà rattaché au BDC</strong> → affichage lecture seule
+                    dès qu’on choisit le BDC ; <strong>pas</strong> de champ Sofiane éditable.
+                  </li>
                   <li>Que fait-on si, <strong>en cours de prestation</strong>, on <strong>change de BDC</strong> ?</li>
                   <li>
                     Règle métier envisagée : le BDC au niveau prestation
@@ -566,7 +606,16 @@
     (function () {
       var overlay = document.getElementById("overlay");
       var toast = document.getElementById("toast");
+      var bdcSelect = document.getElementById("bdc");
+      var sofianeBox = document.getElementById("sofiane-box");
       var toastTimer;
+
+      /** Mock : lien Sofiane déjà porté par chaque BDC (comme en Grist). */
+      var sofianeByBdc = {
+        "bdc-24012": "https://exemple.sofiane.gouv.fr/commande/24012",
+        "bdc-24048": "https://exemple.sofiane.gouv.fr/commande/24048",
+        "bdc-sans-sofiane": ""
+      };
 
       function closeDrawer() {
         overlay.hidden = true;
@@ -586,9 +635,38 @@
         }, 2800);
       }
 
+      function updateSofianeFromBdc() {
+        var key = bdcSelect.value;
+        var url = key && sofianeByBdc[key] ? sofianeByBdc[key] : "";
+
+        sofianeBox.classList.remove("readonly-box--empty");
+        sofianeBox.textContent = "";
+
+        if (!key) {
+          sofianeBox.classList.add("readonly-box--empty");
+          sofianeBox.textContent = "Aucun BDC sélectionné — lien Sofiane indisponible.";
+          return;
+        }
+
+        if (!url) {
+          sofianeBox.classList.add("readonly-box--empty");
+          sofianeBox.textContent = "Ce BDC n’a pas de lien Sofiane rattaché.";
+          return;
+        }
+
+        var a = document.createElement("a");
+        a.id = "sofiane-link";
+        a.href = url;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.textContent = url;
+        sofianeBox.appendChild(a);
+      }
+
       document.getElementById("btn-close").addEventListener("click", closeDrawer);
       document.getElementById("btn-cancel").addEventListener("click", closeDrawer);
       document.getElementById("reopen").addEventListener("click", openDrawer);
+      bdcSelect.addEventListener("change", updateSofianeFromBdc);
 
       overlay.addEventListener("click", function (e) {
         if (e.target === overlay) closeDrawer();
@@ -605,6 +683,8 @@
           closeDrawer();
         }
       });
+
+      updateSofianeFromBdc();
     })();
   </script>
 </body>
