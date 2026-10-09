@@ -287,6 +287,9 @@ export function WeeklyActionFormDrawer({
                   <h2 id={titleId} className="fr-h5 fr-mb-0">
                     {dialogTitle}
                   </h2>
+                  <p className="fr-text--sm fr-text-mention--grey fr-mb-0 fr-mt-1w">
+                    Qui fait quoi, pour quand.
+                  </p>
                 </div>
                 <div className="fr-col-auto">
                   <button
@@ -304,7 +307,11 @@ export function WeeklyActionFormDrawer({
 
             <div className="pilotage-drawer-dialog__body fr-px-3w fr-pb-3w fr-pt-0">
               <form ref={formRef} onSubmit={(ev) => void submitForm(ev)}>
-                <div className="fr-grid-row fr-grid-row--gutters">
+                {/*
+                  Demi-colonnes via `.pilotage-drawer-form-col-half` (pas fr-col-md-6) :
+                  l’iframe Grist est souvent < breakpoint md → md-6 restait full-width.
+                */}
+                <div className="fr-grid-row fr-grid-row--gutters pilotage-drawer-form-row">
                   <div className="fr-col-12">
                     <Input
                       label="Titre"
@@ -326,7 +333,7 @@ export function WeeklyActionFormDrawer({
                       }}
                     />
                   </div>
-                  <div className="fr-col-12 fr-col-md-6">
+                  <div className="fr-col-12 pilotage-drawer-form-col-half">
                     <Select
                       label="Porteur"
                       nativeSelectProps={{
@@ -345,7 +352,7 @@ export function WeeklyActionFormDrawer({
                       ))}
                     </Select>
                   </div>
-                  <div className="fr-col-12 fr-col-md-6">
+                  <div className="fr-col-12 pilotage-drawer-form-col-half">
                     <Select
                       label="Mission liée"
                       nativeSelectProps={{
@@ -364,7 +371,7 @@ export function WeeklyActionFormDrawer({
                       ))}
                     </Select>
                   </div>
-                  <div className="fr-col-12 fr-col-md-6">
+                  <div className="fr-col-12 pilotage-drawer-form-col-half">
                     <Select
                       label="Statut"
                       nativeSelectProps={{
@@ -385,7 +392,7 @@ export function WeeklyActionFormDrawer({
                       </option>
                     </Select>
                   </div>
-                  <div className="fr-col-12 fr-col-md-6">
+                  <div className="fr-col-12 pilotage-drawer-form-col-half">
                     <Input
                       label="Date de fin"
                       nativeInputProps={{
@@ -397,7 +404,7 @@ export function WeeklyActionFormDrawer({
                       }}
                     />
                   </div>
-                  <div className="fr-col-12">
+                  <div className="fr-col-12 pilotage-drawer-form-col-half">
                     <Input
                       label="Weekly du"
                       state={
@@ -421,24 +428,11 @@ export function WeeklyActionFormDrawer({
                       }}
                     />
                   </div>
-                  <div className="fr-col-12">
-                    <Input
-                      label="Notes"
-                      textArea
-                      nativeTextAreaProps={{
-                        id: notesFieldId,
-                        value: draftNotes,
-                        onChange: (e) => setDraftNotes(e.currentTarget.value),
-                        disabled: formBusy,
-                        rows: 3,
-                      }}
-                    />
-                  </div>
                   {mode === "edit" ? (
-                    <div className="fr-col-12">
+                    <div className="fr-col-12 pilotage-drawer-form-col-half">
                       <div
                         className="fr-checkbox-group fr-checkbox-group--sm"
-                        style={{ margin: 0 }}
+                        style={{ marginTop: "2rem" }}
                       >
                         <input
                           type="checkbox"
@@ -456,6 +450,19 @@ export function WeeklyActionFormDrawer({
                       </div>
                     </div>
                   ) : null}
+                  <div className="fr-col-12">
+                    <Input
+                      label="Notes"
+                      textArea
+                      nativeTextAreaProps={{
+                        id: notesFieldId,
+                        value: draftNotes,
+                        onChange: (e) => setDraftNotes(e.currentTarget.value),
+                        disabled: formBusy,
+                        rows: 3,
+                      }}
+                    />
+                  </div>
                 </div>
 
                 {writeError ? (

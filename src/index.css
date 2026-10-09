@@ -2071,6 +2071,24 @@ button.fr-link:disabled {
   width: min(48rem, 94vw);
 }
 
+/*
+ * Demi-colonnes formulaire dans le drawer SM.
+ * Ne pas compter sur fr-col-md-6 : l’iframe Grist est souvent < 48em (md),
+ * donc les paires restaient empilées full-width malgré la grille.
+ */
+.pilotage-drawer-dialog--sm .pilotage-drawer-form-row > .pilotage-drawer-form-col-half {
+  flex: 0 0 50%;
+  max-width: 50%;
+  width: 100%;
+}
+
+@media (max-width: 28rem) {
+  .pilotage-drawer-dialog--sm .pilotage-drawer-form-row > .pilotage-drawer-form-col-half {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
 /* Confirmation delete (ex. Weekly_action) — dialog centré accessible. */
 .pilotage-confirm-dialog {
   background: transparent;
