@@ -293,6 +293,33 @@
       color: var(--muted);
     }
 
+    .questions {
+      margin: 1.35rem 0 0;
+      padding: 0.85rem 0.9rem;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-left: 4px solid var(--blue);
+    }
+
+    .questions h3 {
+      margin: 0 0 0.5rem;
+      font-size: 0.95rem;
+      color: var(--blue);
+    }
+
+    .questions ol {
+      margin: 0;
+      padding-left: 1.25rem;
+      font-size: 0.875rem;
+    }
+
+    .questions li { margin-bottom: 0.55rem; }
+    .questions li:last-child { margin-bottom: 0; }
+    .questions ul {
+      margin: 0.35rem 0 0;
+      padding-left: 1.1rem;
+    }
+
     .drawer__footer {
       display: flex;
       justify-content: flex-end;
@@ -459,15 +486,15 @@
 
           <div class="field field--new">
             <span class="badge-new">Nouveau</span>
-            <label for="mission-malt">Mission Malt</label>
+            <label for="mission-malt">Mission Malt (URL)</label>
             <input
               id="mission-malt"
               name="mission-malt"
-              type="text"
-              placeholder="Ex. Mission Design System — Studio Produit"
-              value="Mission Design System — Studio Produit"
+              type="url"
+              placeholder="https://www.malt.fr/…"
+              value="https://www.malt.fr/profile/exemple/mission/design-system"
             />
-            <span class="hint">Libellé exact côté plateforme Malt (référence mission).</span>
+            <span class="hint">Proposition : lien vers la fiche mission Malt (plutôt qu’un libellé texte seul).</span>
           </div>
 
           <div class="field field--new">
@@ -479,7 +506,7 @@
               <option value="bdc-24048">BDC-24048 · Chorus 2024-9021</option>
               <option value="bdc-manuel">Saisie manuelle…</option>
             </select>
-            <span class="hint">Un seul BDC pour la prestation (évite de le retaper chaque mois de CRA).</span>
+            <span class="hint">Pré-remplit le BDC du CRA ; reste modifiable sur chaque ligne CRA (règle envisagée).</span>
           </div>
 
           <div class="field field--new">
@@ -493,6 +520,27 @@
               value="https://exemple.sofiane.gouv.fr/commande/24012"
             />
             <span class="hint">Utile si le BDC sélectionné porte déjà un lien ; sinon saisie libre.</span>
+          </div>
+
+          <div class="questions" role="note" aria-labelledby="questions-title">
+            <h3 id="questions-title">Questions ouvertes</h3>
+            <ol>
+              <li>
+                <strong>Référence mission Malt</strong> — plutôt un champ <strong>URL</strong>
+                (lien fiche Malt) qu’un libellé texte ?
+              </li>
+              <li>
+                <strong>BDC / Sofiane</strong>
+                <ul>
+                  <li>Que fait-on si, <strong>en cours de prestation</strong>, on <strong>change de BDC</strong> ?</li>
+                  <li>
+                    Règle métier envisagée : le BDC au niveau prestation
+                    <strong>pré-remplit</strong> le choix BDC du CRA,
+                    <strong>tout en restant modifiable</strong> ensuite sur chaque ligne CRA ?
+                  </li>
+                </ul>
+              </li>
+            </ol>
           </div>
 
           <p class="sr-only" id="form-note">
