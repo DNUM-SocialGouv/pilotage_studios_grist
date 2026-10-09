@@ -242,10 +242,6 @@ export function WeeklyActionFormDrawer({
   const formBusy = busy || submitting;
   const dialogTitle =
     mode === "create" ? "Nouvelle action" : "Modifier l’action";
-  const dialogHint =
-    mode === "create"
-      ? "Engagement Ops : qui fait quoi, pour quand. Le passage en Done se fait aussi par glisser-déposer sur le kanban."
-      : "Modifiez les champs puis Enregistrer. Done = case Fait ou glisser la carte vers Done.";
 
   // Options porteur : liste coachs + orphelin déjà assigné
   const porteurSelectOptions = (() => {
@@ -291,9 +287,6 @@ export function WeeklyActionFormDrawer({
                   <h2 id={titleId} className="fr-h5 fr-mb-0">
                     {dialogTitle}
                   </h2>
-                  <p className="fr-text--sm fr-text-mention--grey fr-mb-0 fr-mt-1w">
-                    {dialogHint}
-                  </p>
                 </div>
                 <div className="fr-col-auto">
                   <button
@@ -311,143 +304,159 @@ export function WeeklyActionFormDrawer({
 
             <div className="pilotage-drawer-dialog__body fr-px-3w fr-pb-3w fr-pt-0">
               <form ref={formRef} onSubmit={(ev) => void submitForm(ev)}>
-                <Input
-                  label="Titre"
-                  state={localError && !draftTitre.trim() ? "error" : "default"}
-                  stateRelatedMessage={
-                    localError && !draftTitre.trim() ? localError : undefined
-                  }
-                  nativeInputProps={{
-                    id: titreFieldId,
-                    value: draftTitre,
-                    onChange: (e) => setDraftTitre(e.currentTarget.value),
-                    disabled: formBusy,
-                    "aria-required": true,
-                    autoComplete: "off",
-                  }}
-                />
-                <Select
-                  className="fr-mt-2w"
-                  label="Porteur"
-                  hint="Prérempli avec votre fiche si l’e-mail de session correspond."
-                  nativeSelectProps={{
-                    id: porteurFieldId,
-                    value: draftPorteurId,
-                    onChange: (e) => setDraftPorteurId(e.currentTarget.value),
-                    disabled: formBusy,
-                  }}
-                >
-                  <option value="">Sans porteur</option>
-                  {porteurSelectOptions.map((o) => (
-                    <option key={o.id} value={String(o.id)}>
-                      {o.label}
-                    </option>
-                  ))}
-                </Select>
-                <Select
-                  className="fr-mt-2w"
-                  label="Mission liée"
-                  hint="Optionnel — rattache l’action à une mission du kanban."
-                  nativeSelectProps={{
-                    id: missionFieldId,
-                    value: draftMissionId,
-                    onChange: (e) => setDraftMissionId(e.currentTarget.value),
-                    disabled: formBusy,
-                  }}
-                >
-                  <option value="">Sans mission liée</option>
-                  {missionSelectOptions.map((o) => (
-                    <option key={o.id} value={String(o.id)}>
-                      {o.label}
-                    </option>
-                  ))}
-                </Select>
-                <Select
-                  className="fr-mt-2w"
-                  label="Statut"
-                  hint="À faire ou En cours. Done = case Fait ou glisser vers Done."
-                  nativeSelectProps={{
-                    id: statutFieldId,
-                    value: draftStatut,
-                    onChange: (e) =>
-                      setDraftStatut(
-                        normalizeWeeklyActionStatut(e.currentTarget.value),
-                      ),
-                    disabled: formBusy,
-                  }}
-                >
-                  <option value={WEEKLY_ACTION_STATUT.A_FAIRE}>À faire</option>
-                  <option value={WEEKLY_ACTION_STATUT.EN_COURS}>En cours</option>
-                </Select>
-                <Input
-                  className="fr-mt-2w"
-                  label="Date de fin"
-                  hintText="Optionnel — échéance souhaitée."
-                  nativeInputProps={{
-                    id: dateFinFieldId,
-                    type: "date",
-                    value: draftDateFin,
-                    onChange: (e) => setDraftDateFin(e.currentTarget.value),
-                    disabled: formBusy,
-                  }}
-                />
-                <Input
-                  className="fr-mt-2w"
-                  label="Weekly du"
-                  hintText="Date de la synchro d’origine (défaut = jour de création)."
-                  state={
-                    localError && !parseLocalDateInputValue(draftWeeklyDu)
-                      ? "error"
-                      : "default"
-                  }
-                  stateRelatedMessage={
-                    localError && !parseLocalDateInputValue(draftWeeklyDu)
-                      ? localError
-                      : undefined
-                  }
-                  nativeInputProps={{
-                    id: weeklyDuFieldId,
-                    type: "date",
-                    value: draftWeeklyDu,
-                    onChange: (e) => setDraftWeeklyDu(e.currentTarget.value),
-                    disabled: formBusy,
-                    "aria-required": true,
-                  }}
-                />
-                <Input
-                  className="fr-mt-2w"
-                  label="Notes"
-                  hintText="Optionnel — mémo de réunion (texte libre)."
-                  textArea
-                  nativeTextAreaProps={{
-                    id: notesFieldId,
-                    value: draftNotes,
-                    onChange: (e) => setDraftNotes(e.currentTarget.value),
-                    disabled: formBusy,
-                    rows: 4,
-                  }}
-                />
-                {mode === "edit" ? (
-                  <div
-                    className="fr-checkbox-group fr-checkbox-group--sm fr-mt-2w"
-                    style={{ margin: 0 }}
-                  >
-                    <input
-                      type="checkbox"
-                      id={faitFieldId}
-                      name="fait"
-                      checked={draftFait}
-                      disabled={formBusy}
-                      onChange={(e) => setDraftFait(e.currentTarget.checked)}
+                <div className="fr-grid-row fr-grid-row--gutters">
+                  <div className="fr-col-12">
+                    <Input
+                      label="Titre"
+                      state={
+                        localError && !draftTitre.trim() ? "error" : "default"
+                      }
+                      stateRelatedMessage={
+                        localError && !draftTitre.trim()
+                          ? localError
+                          : undefined
+                      }
+                      nativeInputProps={{
+                        id: titreFieldId,
+                        value: draftTitre,
+                        onChange: (e) => setDraftTitre(e.currentTarget.value),
+                        disabled: formBusy,
+                        "aria-required": true,
+                        autoComplete: "off",
+                      }}
                     />
-                    <label className="fr-label" htmlFor={faitFieldId}>
-                      Fait
-                      <span className="fr-hint-text">
-                        Coche = Done (même effet que glisser vers Done).
-                      </span>
-                    </label>
                   </div>
-                ) : null}
+                  <div className="fr-col-12 fr-col-md-6">
+                    <Select
+                      label="Porteur"
+                      nativeSelectProps={{
+                        id: porteurFieldId,
+                        value: draftPorteurId,
+                        onChange: (e) =>
+                          setDraftPorteurId(e.currentTarget.value),
+                        disabled: formBusy,
+                      }}
+                    >
+                      <option value="">Sans porteur</option>
+                      {porteurSelectOptions.map((o) => (
+                        <option key={o.id} value={String(o.id)}>
+                          {o.label}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                  <div className="fr-col-12 fr-col-md-6">
+                    <Select
+                      label="Mission liée"
+                      nativeSelectProps={{
+                        id: missionFieldId,
+                        value: draftMissionId,
+                        onChange: (e) =>
+                          setDraftMissionId(e.currentTarget.value),
+                        disabled: formBusy,
+                      }}
+                    >
+                      <option value="">Sans mission liée</option>
+                      {missionSelectOptions.map((o) => (
+                        <option key={o.id} value={String(o.id)}>
+                          {o.label}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                  <div className="fr-col-12 fr-col-md-6">
+                    <Select
+                      label="Statut"
+                      nativeSelectProps={{
+                        id: statutFieldId,
+                        value: draftStatut,
+                        onChange: (e) =>
+                          setDraftStatut(
+                            normalizeWeeklyActionStatut(e.currentTarget.value),
+                          ),
+                        disabled: formBusy,
+                      }}
+                    >
+                      <option value={WEEKLY_ACTION_STATUT.A_FAIRE}>
+                        À faire
+                      </option>
+                      <option value={WEEKLY_ACTION_STATUT.EN_COURS}>
+                        En cours
+                      </option>
+                    </Select>
+                  </div>
+                  <div className="fr-col-12 fr-col-md-6">
+                    <Input
+                      label="Date de fin"
+                      nativeInputProps={{
+                        id: dateFinFieldId,
+                        type: "date",
+                        value: draftDateFin,
+                        onChange: (e) => setDraftDateFin(e.currentTarget.value),
+                        disabled: formBusy,
+                      }}
+                    />
+                  </div>
+                  <div className="fr-col-12">
+                    <Input
+                      label="Weekly du"
+                      state={
+                        localError && !parseLocalDateInputValue(draftWeeklyDu)
+                          ? "error"
+                          : "default"
+                      }
+                      stateRelatedMessage={
+                        localError && !parseLocalDateInputValue(draftWeeklyDu)
+                          ? localError
+                          : undefined
+                      }
+                      nativeInputProps={{
+                        id: weeklyDuFieldId,
+                        type: "date",
+                        value: draftWeeklyDu,
+                        onChange: (e) =>
+                          setDraftWeeklyDu(e.currentTarget.value),
+                        disabled: formBusy,
+                        "aria-required": true,
+                      }}
+                    />
+                  </div>
+                  <div className="fr-col-12">
+                    <Input
+                      label="Notes"
+                      textArea
+                      nativeTextAreaProps={{
+                        id: notesFieldId,
+                        value: draftNotes,
+                        onChange: (e) => setDraftNotes(e.currentTarget.value),
+                        disabled: formBusy,
+                        rows: 3,
+                      }}
+                    />
+                  </div>
+                  {mode === "edit" ? (
+                    <div className="fr-col-12">
+                      <div
+                        className="fr-checkbox-group fr-checkbox-group--sm"
+                        style={{ margin: 0 }}
+                      >
+                        <input
+                          type="checkbox"
+                          id={faitFieldId}
+                          name="fait"
+                          checked={draftFait}
+                          disabled={formBusy}
+                          onChange={(e) =>
+                            setDraftFait(e.currentTarget.checked)
+                          }
+                        />
+                        <label className="fr-label" htmlFor={faitFieldId}>
+                          Fait
+                        </label>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
 
                 {writeError ? (
                   <Alert
