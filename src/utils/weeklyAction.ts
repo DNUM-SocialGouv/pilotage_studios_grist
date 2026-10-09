@@ -118,7 +118,87 @@ export function buildWeeklyActionFaitFields(
   };
 }
 
-/** Liste « Actions en cours » : uniquement les non faites. */
+/** Colonnes kanban onglet Actions (UI figée). */
+export const WEEKLY_ACTION_COLUMN_KEYS = [
+  "a_faire",
+  "en_cours",
+  "done",
+] as const;
+
+export type WeeklyActionColumnKey =
+  (typeof WEEKLY_ACTION_COLUMN_KEYS)[number];
+
+export type WeeklyActionColumnDef = {
+  key: WeeklyActionColumnKey;
+  label: string;
+  dot: string;
+  colBg: string;
+};
+
+/** Pipeline 3 colonnes — même shell visuel que missions / Weekly phase. */
+export const WEEKLY_ACTION_COLUMNS: readonly WeeklyActionColumnDef[] = [
+  {
+    key: "a_faire",
+    label: "À faire",
+    dot: "var(--text-label-grey)",
+    colBg: "var(--background-contrast-grey)",
+  },
+  {
+    key: "en_cours",
+    label: "En cours",
+    dot: "var(--text-label-blue-cumulus)",
+    colBg: "var(--background-contrast-blue-cumulus)",
+  },
+  {
+    key: "done",
+    label: "Done",
+    dot: "var(--text-label-green-emeraude)",
+    colBg: "var(--background-contrast-green-emeraude)",
+  },
+] as const;
+
+/**
+ * Colonne UI ← `Fait` + `Statut`.
+ * Done = `Fait=true` (même si Statut ancien) ; sinon Statut normalisé.
+ */
+export function columnKeyForWeeklyAction(
+  action: Pick<WeeklyActionRow, "Fait" | "Statut">,
+): WeeklyActionColumnKey {
+  if (action.Fait === true) return "done";
+  return normalizeWeeklyActionStatut(action.Statut) ===
+    WEEKLY_ACTION_STATUT.EN_COURS
+    ? "en_cours"
+    : "a_faire";
+}
+
+export function isWeeklyActionColumnKey(
+  value: string | null | undefined,
+): value is WeeklyActionColumnKey {
+  return WEEKLY_ACTION_COLUMN_KEYS.includes(value as WeeklyActionColumnKey);
+}
+
+/**
+ * Champs Grist au drag / menu « Déplacer vers… ».
+ * - Done → `Fait=true` + `Fait_le` (Statut inchangé)
+ * - Hors Done → `Fait=false`, `Fait_le` vidé, `Statut` = colonne cible
+ */
+export function buildWeeklyActionColumnMoveFields(
+  columnKey: WeeklyActionColumnKey,
+  now: Date = new Date(),
+): Record<string, unknown> {
+  if (columnKey === "done") {
+    return buildWeeklyActionFaitFields(true, now);
+  }
+  return {
+    ...buildWeeklyActionFaitFields(false, now),
+    Statut:
+      columnKey === "en_cours"
+        ? WEEKLY_ACTION_STATUT.EN_COURS
+        : WEEKLY_ACTION_STATUT.A_FAIRE,
+  };
+}
+
+/** Liste « Actions en cours » : uniquement les non faites (compteur onglet). */
 export function filterWeeklyActionsEnCours(
   actions: readonly WeeklyActionRow[],
 ): WeeklyActionRow[] {
@@ -138,6 +218,22 @@ export function sortWeeklyActionsEnCours(
     const diff = da.getTime() - db.getTime();
     return diff !== 0 ? diff : a.id - b.id;
   });
+}
+
+/** Groupe toutes les actions (y compris Done) par colonne kanban. */
+export function groupWeeklyActionsByColumn(
+  actions: readonly WeeklyActionRow[],
+): Map<WeeklyActionColumnKey, WeeklyActionRow[]> {
+  const map = new Map<WeeklyActionColumnKey, WeeklyActionRow[]>();
+  for (const key of WEEKLY_ACTION_COLUMN_KEYS) {
+    map.set(key, []);
+  }
+  const sorted = sortWeeklyActionsEnCours(actions);
+  for (const action of sorted) {
+    const key = columnKeyForWeeklyAction(action);
+    map.get(key)!.push(action);
+  }
+  return map;
 }
 
 export function parseWeeklyActionDate(

@@ -12,9 +12,12 @@ import {
   assertWritableUpdateTableId,
 } from "../security/writeTableAllowlist.ts";
 import {
+  buildWeeklyActionColumnMoveFields,
   buildWeeklyActionCreateFields,
   buildWeeklyActionFaitFields,
+  isWeeklyActionColumnKey,
   normalizeWeeklyActionStatut,
+  type WeeklyActionColumnKey,
   type WeeklyActionStatut,
   weeklyActionDateTimestamp,
 } from "./weeklyAction.ts";
@@ -272,6 +275,28 @@ export async function updateWeeklyActionFait(
   await getWritableTable(WEEKLY_ACTION_TABLE_ID).update({
     id,
     fields: buildWeeklyActionFaitFields(fait, now),
+  });
+}
+
+/**
+ * Déplace une action vers une colonne kanban (drag / menu clavier).
+ * Colonnes : `a_faire` · `en_cours` · `done`.
+ */
+export async function updateWeeklyActionColumn(
+  id: number,
+  columnKey: WeeklyActionColumnKey | string,
+  now: Date = new Date(),
+): Promise<void> {
+  assertWritableUpdateTableId(WEEKLY_ACTION_TABLE_ID);
+  if (!Number.isFinite(id) || id <= 0) {
+    throw new Error("Identifiant action invalide.");
+  }
+  if (!isWeeklyActionColumnKey(columnKey)) {
+    throw new Error("Colonne action invalide.");
+  }
+  await getWritableTable(WEEKLY_ACTION_TABLE_ID).update({
+    id,
+    fields: buildWeeklyActionColumnMoveFields(columnKey, now),
   });
 }
 

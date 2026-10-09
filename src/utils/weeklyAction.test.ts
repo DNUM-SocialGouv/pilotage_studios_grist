@@ -3,10 +3,13 @@ import { describe, it } from "node:test";
 import type { WeeklyActionRow } from "../types.ts";
 import {
   WEEKLY_ACTION_STATUT,
+  buildWeeklyActionColumnMoveFields,
   buildWeeklyActionCreateFields,
   buildWeeklyActionFaitFields,
+  columnKeyForWeeklyAction,
   defaultWeeklyActionDateFin,
   filterWeeklyActionsEnCours,
+  groupWeeklyActionsByColumn,
   isWeeklyActionDateFinOverdue,
   matchWeeklyActionPorteurId,
   normalizeWeeklyActionStatut,
@@ -125,6 +128,70 @@ describe("filterWeeklyActionsEnCours / sort", () => {
     assert.deepEqual(
       sortWeeklyActionsEnCours(open).map((r) => r.id),
       [2, 3, 4],
+    );
+  });
+});
+
+describe("columnKeyForWeeklyAction / move fields / group", () => {
+  it("mappe Fait + Statut vers les 3 colonnes (variantes espaces)", () => {
+    assert.equal(
+      columnKeyForWeeklyAction({ Fait: false, Statut: "A faire" }),
+      "a_faire",
+    );
+    assert.equal(
+      columnKeyForWeeklyAction({ Fait: false, Statut: "à faire" }),
+      "a_faire",
+    );
+    assert.equal(
+      columnKeyForWeeklyAction({ Fait: false, Statut: "En cours" }),
+      "en_cours",
+    );
+    assert.equal(
+      columnKeyForWeeklyAction({ Fait: true, Statut: "A faire" }),
+      "done",
+    );
+    assert.equal(
+      columnKeyForWeeklyAction({ Fait: true, Statut: "En cours" }),
+      "done",
+    );
+  });
+
+  it("écrit Fait/Fait_le vers Done et Statut hors Done", () => {
+    const now = new Date(2026, 9, 9, 14, 0, 0);
+    assert.deepEqual(buildWeeklyActionColumnMoveFields("done", now), {
+      Fait: true,
+      Fait_le: weeklyActionFaitLeTimestamp(now),
+    });
+    assert.deepEqual(buildWeeklyActionColumnMoveFields("a_faire", now), {
+      Fait: false,
+      Fait_le: null,
+      Statut: "A faire",
+    });
+    assert.deepEqual(buildWeeklyActionColumnMoveFields("en_cours", now), {
+      Fait: false,
+      Fait_le: null,
+      Statut: "En cours",
+    });
+  });
+
+  it("groupe toutes les actions y compris Done", () => {
+    const rows: WeeklyActionRow[] = [
+      { id: 1, Titre: "A", Fait: false, Statut: "A faire", Date_fin: null },
+      { id: 2, Titre: "B", Fait: false, Statut: "En cours", Date_fin: null },
+      { id: 3, Titre: "C", Fait: true, Statut: "A faire", Date_fin: null },
+    ];
+    const byCol = groupWeeklyActionsByColumn(rows);
+    assert.deepEqual(
+      byCol.get("a_faire")?.map((r) => r.id),
+      [1],
+    );
+    assert.deepEqual(
+      byCol.get("en_cours")?.map((r) => r.id),
+      [2],
+    );
+    assert.deepEqual(
+      byCol.get("done")?.map((r) => r.id),
+      [3],
     );
   });
 });
