@@ -138,6 +138,7 @@ export function WeeklyActionsPanel({
   intervenants,
   missionTitleById,
   missionOptions,
+  sujetOptions,
   equipeOptions,
   sessionEmail,
   busy,
@@ -152,6 +153,12 @@ export function WeeklyActionsPanel({
   }[];
   missionTitleById: ReadonlyMap<number, string>;
   missionOptions: readonly { id: number; label: string }[];
+  /**
+   * Options sujet agenda (`Weekly_agenda`) pour le drawer create/édition.
+   * Toujours passer la liste chargée (même vide) — le select « Sujet associé »
+   * reste visible si la colonne Owner est prête.
+   */
+  sujetOptions: readonly { id: number; label: string }[];
   equipeOptions: readonly { id: number; label: string }[];
   sessionEmail: string | null | undefined;
   busy: boolean;
@@ -385,6 +392,7 @@ export function WeeklyActionsPanel({
         mode={drawerMode}
         action={drawerAction}
         missionOptions={missionOptions}
+        sujetOptions={sujetOptions}
         equipeOptions={equipeOptions}
         intervenants={intervenants}
         sessionEmail={sessionEmail}

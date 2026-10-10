@@ -87,7 +87,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | `Missions` / `Missions_enfants` | CRUD | R/U dép. | R ses missions | R / — | Non (rôle) | |
 | `Weekly_phase` | CRUD* | —† | —† | — | **Appliqué** ACL + widget (allowlist) | *Owner document ; †si `user.Email == user.Weekly_coach.E_mail` |
 | `Weekly_agenda` | CRUD* | —† | —† | — | **Appliqué** ACL + widget (allowlist) | Idem |
-| `Weekly_action` | CRUD* | —† | —† | — | **Appliqué** ACL + widget (allowlist create/update/**delete**) | Idem ; delete widget = une ligne après confirm UI (menu ⋮ + drawer) — exception unique |
+| `Weekly_action` | CRUD* | —† | —† | — | **Appliqué** ACL + widget (allowlist create/update/**delete**) | Idem ; delete widget = une ligne après confirm UI ; lien carte/sujet via `Mission` (+ `Sujet` Ref→agenda **HITL Owner**, flag code) |
 | `Weekly_coachs` | CRUD | — | R soi | — | **Appliqué** ACL ; widget lecture | Allowlist e-mails — **pas** dans git ; pas d’écriture widget |
 | `Kanban` (feedback + produit) | CRU (liste + colonne + corps Admin) | C (+ R) | C (+ R) | C (+ R) | **Appliqué** (ACL) + widget | Owner/Admin `+CRUD` (colonne + `Resume`/`Message`) ; `True` → `+CR-UD` |
 | `Kanban_commentaires` | CR | C (+ R) | C (+ R) | C (+ R) | **Appliqué** (ACL) + widget | Owner/Admin `+CRUD` ; `True` → `+CR-UD` |
@@ -110,6 +110,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-10-10 | Weekly Ops **lier action** depuis carte Kanban mission + sujet agenda (dialogue Créer \| Rattacher) ; persist `Mission` + `Sujet` (colonne Owner vérifiée MCP, `WEEKLY_ACTION_SUJET_COLUMN_READY=true`) ; **N/A `Page_*`** | 5, 6 (doc colonne) | [#128](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/pull/128) · kanban `weekly-card-lier-action` (HITL create) |
 | 2026-10-09 | Weekly Ops **actions** : delete widget `Weekly_action` (exception allowlist `destroy`, une ligne) + confirmation accessible (menu ⋮ carte + drawer édition) ; **pas** de masse ; **N/A `Page_*`** | 5, 6 | [#127](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/pull/127) · kanban `weekly-op-actions` |
 | 2026-10-09 | Weekly Ops **actions** fondations : table `Weekly_action` allowlist lecture/écriture (create+update, pas delete) ; types / mapping / helpers Statut (`A faire`/`En cours`) + `Fait`/`Fait_le` ; fetch lazy `/weekly` sans UI liste/drawer ; ACL couche 6 = patron agenda (Owner + coachs) ; **N/A `Page_*`** (même garde `Weekly_coachs`) | 5, 6 | kanban `weekly-op-actions` id=62 · PR fondations |
 | 2026-10-08 | Weekly Ops historique sujets : onglets **À faire \| Historique** ; écriture `Weekly_agenda.Traite_le` (Date) avec `Traite` ; traité disparaît de À faire ; **pas** colonne Actions ; pastille = jour exact ; **N/A `Page_*`** (même écran `/weekly`) | 5, 6 (doc colonne) | kanban `weekly-historique-sujets` (sync Mac si MCP) |

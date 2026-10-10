@@ -2082,6 +2082,18 @@ button.fr-link:disabled {
   width: 100%;
 }
 
+/*
+ * Rattachements Mission → Sujet : **toujours empilés** (1 col).
+ * Une grille 2 cols dans l’iframe Grist faisait manquer « Sujet associé »
+ * (hors viewport / confondu avec Mission). Stack vertical = fiable.
+ */
+.pilotage-drawer-dialog--sm .pilotage-drawer-form-links {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 0.75rem;
+  width: 100%;
+}
+
 @media (max-width: 28rem) {
   .pilotage-drawer-dialog--sm .pilotage-drawer-form-row > .pilotage-drawer-form-col-half {
     flex: 0 0 100%;

@@ -27,6 +27,7 @@ import {
   type WeeklyActionStatut,
 } from "../../utils/weeklyAction";
 import {
+  WEEKLY_ACTION_SUJET_COLUMN_READY,
   createWeeklyActionRecord,
   updateWeeklyActionFait,
   updateWeeklyActionRecord,
@@ -39,6 +40,8 @@ export type WeeklyActionFormDrawerProps = {
   mode: WeeklyActionDrawerMode;
   action: WeeklyActionRow | null;
   missionOptions: readonly { id: number; label: string }[];
+  /** Options sujet agenda (`Weekly_agenda`) — affichées si colonne `Sujet` prête. */
+  sujetOptions?: readonly { id: number; label: string }[];
   equipeOptions: readonly { id: number; label: string }[];
   intervenants: readonly {
     id: number;
@@ -50,6 +53,15 @@ export type WeeklyActionFormDrawerProps = {
   onSaved: () => Promise<void>;
   /** Demande de suppression (édition) — confirmation gérée par le parent. */
   onRequestDelete?: (action: WeeklyActionRow) => void;
+  /** Préremplissage Mission en create (ex. depuis carte Kanban / sujet). */
+  defaultMissionId?: number | null;
+  /**
+   * Préremplissage Sujet en create — écrit seulement si colonne Owner prête
+   * (passé via createWeeklyActionRecord / flag).
+   */
+  defaultSujetId?: number | null;
+  /** Empêche de changer la mission préremplie (contexte carte). */
+  lockMission?: boolean;
 };
 
 export function WeeklyActionFormDrawer({
@@ -57,6 +69,7 @@ export function WeeklyActionFormDrawer({
   mode,
   action,
   missionOptions,
+  sujetOptions = [],
   equipeOptions,
   intervenants,
   sessionEmail,
@@ -64,6 +77,9 @@ export function WeeklyActionFormDrawer({
   onClose,
   onSaved,
   onRequestDelete,
+  defaultMissionId = null,
+  defaultSujetId = null,
+  lockMission = false,
 }: WeeklyActionFormDrawerProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -71,15 +87,20 @@ export function WeeklyActionFormDrawer({
   const titreFieldId = useId();
   const porteurFieldId = useId();
   const missionFieldId = useId();
+  const sujetFieldId = useId();
+  const rattachementsHeadingId = useId();
   const statutFieldId = useId();
   const dateFinFieldId = useId();
   const weeklyDuFieldId = useId();
   const notesFieldId = useId();
   const faitFieldId = useId();
 
+  const showSujetField = WEEKLY_ACTION_SUJET_COLUMN_READY;
+
   const [draftTitre, setDraftTitre] = useState("");
   const [draftPorteurId, setDraftPorteurId] = useState("");
   const [draftMissionId, setDraftMissionId] = useState("");
+  const [draftSujetId, setDraftSujetId] = useState("");
   const [draftStatut, setDraftStatut] = useState<WeeklyActionStatut>(
     WEEKLY_ACTION_STATUT.A_FAIRE,
   );
@@ -102,7 +123,16 @@ export function WeeklyActionFormDrawer({
       );
       setDraftTitre("");
       setDraftPorteurId(defaultPorteur != null ? String(defaultPorteur) : "");
-      setDraftMissionId("");
+      setDraftMissionId(
+        defaultMissionId != null && defaultMissionId > 0
+          ? String(defaultMissionId)
+          : "",
+      );
+      setDraftSujetId(
+        showSujetField && defaultSujetId != null && defaultSujetId > 0
+          ? String(defaultSujetId)
+          : "",
+      );
       setDraftStatut(WEEKLY_ACTION_STATUT.A_FAIRE);
       setDraftDateFin(toLocalDateInputValue(defaultWeeklyActionDateFin(now)));
       setDraftWeeklyDu(toLocalDateInputValue(now));
@@ -115,6 +145,10 @@ export function WeeklyActionFormDrawer({
       setDraftPorteurId(pid != null && pid > 0 ? String(pid) : "");
       const mid = extractGristReferenceId(action.Mission);
       setDraftMissionId(mid != null && mid > 0 ? String(mid) : "");
+      const sid = extractGristReferenceId(action.Sujet);
+      setDraftSujetId(
+        showSujetField && sid != null && sid > 0 ? String(sid) : "",
+      );
       setDraftStatut(normalizeWeeklyActionStatut(action.Statut));
       const dateFin = parseWeeklyActionDate(action.Date_fin);
       setDraftDateFin(dateFin ? toLocalDateInputValue(dateFin) : "");
@@ -136,6 +170,7 @@ export function WeeklyActionFormDrawer({
     action?.Titre,
     action?.Porteur,
     action?.Mission,
+    action?.Sujet,
     action?.Statut,
     action?.Date_fin,
     action?.Weekly_du,
@@ -143,6 +178,9 @@ export function WeeklyActionFormDrawer({
     action?.Fait,
     intervenants,
     sessionEmail,
+    defaultMissionId,
+    defaultSujetId,
+    showSujetField,
   ]);
 
   useEffect(() => {
@@ -193,6 +231,7 @@ export function WeeklyActionFormDrawer({
     try {
       const porteurId = parseOptionalId(draftPorteurId);
       const missionId = parseOptionalId(draftMissionId);
+      const sujetId = showSujetField ? parseOptionalId(draftSujetId) : null;
       const dateFin = draftDateFin
         ? parseLocalDateInputValue(draftDateFin)
         : null;
@@ -203,6 +242,7 @@ export function WeeklyActionFormDrawer({
           titre,
           porteurId,
           missionId,
+          sujetId,
           dateFin,
           weeklyDu,
           notes,
@@ -216,6 +256,7 @@ export function WeeklyActionFormDrawer({
           statut: draftStatut,
           porteurId,
           missionId,
+          sujetId: showSujetField ? sujetId : undefined,
           dateFin,
           weeklyDu,
           notes,
@@ -262,6 +303,24 @@ export function WeeklyActionFormDrawer({
       if (mid != null && mid > 0 && !rows.some((r) => r.id === mid)) {
         rows.push({ id: mid, label: `Mission #${mid}` });
       }
+    }
+    return rows;
+  })();
+
+  const sujetSelectOptions = (() => {
+    const rows = [...sujetOptions];
+    if (mode === "edit" && action) {
+      const sid = extractGristReferenceId(action.Sujet);
+      if (sid != null && sid > 0 && !rows.some((r) => r.id === sid)) {
+        rows.push({ id: sid, label: `Sujet #${sid}` });
+      }
+    } else if (
+      mode === "create" &&
+      defaultSujetId != null &&
+      defaultSujetId > 0 &&
+      !rows.some((r) => r.id === defaultSujetId)
+    ) {
+      rows.push({ id: defaultSujetId, label: `Sujet #${defaultSujetId}` });
     }
     return rows;
   })();
@@ -354,25 +413,6 @@ export function WeeklyActionFormDrawer({
                   </div>
                   <div className="fr-col-12 pilotage-drawer-form-col-half">
                     <Select
-                      label="Mission liée"
-                      nativeSelectProps={{
-                        id: missionFieldId,
-                        value: draftMissionId,
-                        onChange: (e) =>
-                          setDraftMissionId(e.currentTarget.value),
-                        disabled: formBusy,
-                      }}
-                    >
-                      <option value="">Sans mission liée</option>
-                      {missionSelectOptions.map((o) => (
-                        <option key={o.id} value={String(o.id)}>
-                          {o.label}
-                        </option>
-                      ))}
-                    </Select>
-                  </div>
-                  <div className="fr-col-12 pilotage-drawer-form-col-half">
-                    <Select
                       label="Statut"
                       nativeSelectProps={{
                         id: statutFieldId,
@@ -391,6 +431,71 @@ export function WeeklyActionFormDrawer({
                         En cours
                       </option>
                     </Select>
+                  </div>
+                  {/*
+                    Rattachements empilés (Mission puis Sujet) — jamais côte à
+                    côte : dans l’iframe le 2ᵉ select 2-cols passait inaperçu.
+                    Sujet toujours rendu si flag Owner prêt (liste vide OK).
+                  */}
+                  <div className="fr-col-12">
+                    <p
+                      className="fr-text--sm fr-text-mention--grey fr-mb-1w"
+                      id={rattachementsHeadingId}
+                    >
+                      Rattachements (optionnels)
+                    </p>
+                    <div
+                      className="pilotage-drawer-form-links"
+                      data-testid="weekly-action-links"
+                      role="group"
+                      aria-labelledby={rattachementsHeadingId}
+                    >
+                      <Select
+                        label="Mission liée"
+                        nativeSelectProps={{
+                          id: missionFieldId,
+                          value: draftMissionId,
+                          onChange: (e) =>
+                            setDraftMissionId(e.currentTarget.value),
+                          disabled:
+                            formBusy || (mode === "create" && lockMission),
+                        }}
+                      >
+                        <option value="">Sans mission liée</option>
+                        {missionSelectOptions.map((o) => (
+                          <option key={o.id} value={String(o.id)}>
+                            {o.label}
+                          </option>
+                        ))}
+                      </Select>
+                      {showSujetField ? (
+                        <div>
+                          <Select
+                            label="Sujet associé"
+                            nativeSelectProps={{
+                              id: sujetFieldId,
+                              value: draftSujetId,
+                              onChange: (e) =>
+                                setDraftSujetId(e.currentTarget.value),
+                              disabled: formBusy,
+                              "aria-label": "Sujet associé",
+                            }}
+                          >
+                            <option value="">Sans sujet lié</option>
+                            {sujetSelectOptions.map((o) => (
+                              <option key={o.id} value={String(o.id)}>
+                                {o.label}
+                              </option>
+                            ))}
+                          </Select>
+                          <p className="fr-hint-text fr-mt-1v">
+                            {sujetSelectOptions.length === 0
+                              ? "Aucun sujet dans l’agenda pour l’instant."
+                              : "Sujet de l’onglet Sujets (agenda Weekly)."}
+                          </p>
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
                   <div className="fr-col-12 pilotage-drawer-form-col-half">
                     <Input

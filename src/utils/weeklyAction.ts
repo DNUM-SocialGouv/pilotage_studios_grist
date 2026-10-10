@@ -4,6 +4,7 @@
  */
 
 import type { WeeklyActionRow } from "../types.ts";
+import { extractGristReferenceId } from "./gristReferences.ts";
 import { parseWeeklyAgendaDateValue } from "./weeklyAgenda.ts";
 import { normalizeWeeklyCoachEmail } from "./weeklyCoachAccess.ts";
 
@@ -68,11 +69,16 @@ export function weeklyActionFaitLeTimestamp(now: Date = new Date()): number {
  * Champs create action (`Weekly_action`).
  * `Weekly_du` défaut = jour local du create (surchargeable) ; `Cree_le` = jour create ;
  * `Statut` défaut `A faire`.
+ * `sujetId` → colonne `Sujet` uniquement si `includeSujet` (flag Owner).
  */
 export function buildWeeklyActionCreateFields(input: {
   titre: string;
   porteurId: number | null;
   missionId?: number | null;
+  /** Ref → `Weekly_agenda` — écrit seulement si `includeSujet`. */
+  sujetId?: number | null;
+  /** Inclure le champ `Sujet` (colonne Owner prête). */
+  includeSujet?: boolean;
   dateFin?: Date | null;
   weeklyDu?: Date | null;
   notes?: string;
@@ -90,7 +96,7 @@ export function buildWeeklyActionCreateFields(input: {
     input.dateFin != null ? weeklyActionDateTimestamp(input.dateFin) : null;
   const weeklyDu =
     input.weeklyDu != null ? weeklyActionDateTimestamp(input.weeklyDu) : dayTs;
-  return {
+  const fields: Record<string, unknown> = {
     Titre: titre,
     Statut: normalizeWeeklyActionStatut(
       input.statut ?? WEEKLY_ACTION_STATUT.A_FAIRE,
@@ -107,6 +113,72 @@ export function buildWeeklyActionCreateFields(input: {
     Cree_le: dayTs,
     Email: (input.email ?? "").trim(),
   };
+  if (input.includeSujet) {
+    fields.Sujet =
+      input.sujetId != null && input.sujetId > 0 ? input.sujetId : null;
+  }
+  return fields;
+}
+
+/** Actions déjà liées à une mission (Ref `Mission`). */
+export function filterWeeklyActionsByMission(
+  actions: readonly WeeklyActionRow[],
+  missionId: number,
+): WeeklyActionRow[] {
+  if (!Number.isFinite(missionId) || missionId <= 0) return [];
+  return sortWeeklyActionsEnCours(
+    actions.filter((a) => {
+      const mid = extractGristReferenceId(a.Mission);
+      return mid != null && mid > 0 && mid === missionId;
+    }),
+  );
+}
+
+/** Actions déjà liées à un sujet agenda (Ref `Sujet`). */
+export function filterWeeklyActionsBySujet(
+  actions: readonly WeeklyActionRow[],
+  sujetId: number,
+): WeeklyActionRow[] {
+  if (!Number.isFinite(sujetId) || sujetId <= 0) return [];
+  return sortWeeklyActionsEnCours(
+    actions.filter((a) => {
+      const sid = extractGristReferenceId(a.Sujet);
+      return sid != null && sid > 0 && sid === sujetId;
+    }),
+  );
+}
+
+/**
+ * Actions rattachables à un contexte mission et/ou sujet :
+ * non faites, et pas déjà liées à ce même contexte.
+ */
+export function filterWeeklyActionsLinkable(
+  actions: readonly WeeklyActionRow[],
+  context: {
+    missionId?: number | null;
+    sujetId?: number | null;
+  },
+): WeeklyActionRow[] {
+  const missionId =
+    context.missionId != null && context.missionId > 0
+      ? context.missionId
+      : null;
+  const sujetId =
+    context.sujetId != null && context.sujetId > 0 ? context.sujetId : null;
+  if (missionId == null && sujetId == null) return [];
+  return sortWeeklyActionsEnCours(
+    filterWeeklyActionsEnCours(actions).filter((a) => {
+      if (missionId != null) {
+        const mid = extractGristReferenceId(a.Mission);
+        if (mid != null && mid > 0 && mid === missionId) return false;
+      }
+      if (sujetId != null) {
+        const sid = extractGristReferenceId(a.Sujet);
+        if (sid != null && sid > 0 && sid === sujetId) return false;
+      }
+      return true;
+    }),
+  );
 }
 
 /**

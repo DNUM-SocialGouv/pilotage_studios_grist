@@ -12,7 +12,8 @@ import { Input } from "@codegouvfr/react-dsfr/Input";
 import { Link } from "react-router-dom";
 import { DsfrSelectRichMulti } from "../dsfr/DsfrSelectRichMulti";
 import { MissionProse } from "../missions/MissionProse";
-import type { WeeklyAgendaRow } from "../../types";
+import { WeeklyLinkedActionsSection } from "./WeeklyLinkedActionsSection";
+import type { WeeklyActionRow, WeeklyAgendaRow } from "../../types";
 import {
   formatWeeklyAgendaCreatedAt,
   parseWeeklyAgendaCreatedAt,
@@ -42,6 +43,8 @@ export type WeeklySuiviDrawerProps = {
   open: boolean;
   card: WeeklyCard | null;
   agendaLies: readonly WeeklyAgendaRow[];
+  /** Actions déjà liées à la mission (`Weekly_action.Mission`). */
+  actionsLies?: readonly WeeklyActionRow[];
   /** Personnes Ops (`Equipe` ∩ `Weekly_coachs`) pour le select Membre_equipe. */
   equipeOptions: readonly WeeklyEquipeOption[];
   busy: boolean;
@@ -56,6 +59,10 @@ export type WeeklySuiviDrawerProps = {
   }) => Promise<void>;
   onViewSujet: (sujet: WeeklyAgendaRow) => void;
   onNouveauSujet: (missionId: number) => void;
+  /** Ouvre le dialogue Créer | Rattacher pour cette mission. */
+  onLierAction?: (missionId: number, missionLabel: string) => void;
+  /** Ouvre l’édition d’une action liée (onglet Actions / drawer). */
+  onViewAction?: (action: WeeklyActionRow) => void;
 };
 
 function parseMembreIds(values: readonly string[]): number[] {
@@ -80,12 +87,15 @@ export function WeeklySuiviDrawer({
   open,
   card,
   agendaLies,
+  actionsLies = [],
   equipeOptions,
   busy,
   onClose,
   onSaveSuivi,
   onViewSujet,
   onNouveauSujet,
+  onLierAction,
+  onViewAction,
 }: WeeklySuiviDrawerProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -541,134 +551,153 @@ export function WeeklySuiviDrawer({
                       </p>
                     )}
                   </section>
-                </>
-              )}
 
-              <section className="fr-mt-4w" aria-labelledby={`${titleId}-echanges`}>
-                <div
-                  className="fr-mb-1w"
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "0.5rem",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <h3 id={`${titleId}-echanges`} className="fr-h6 fr-mb-0">
-                    Derniers échanges
-                  </h3>
-                  {card != null ? (
-                    <Button
-                      type="button"
-                      priority="tertiary no outline"
-                      size="small"
-                      iconId="fr-icon-add-line"
-                      disabled={locked}
-                      onClick={() => onNouveauSujet(card.missionId)}
+                  <WeeklyLinkedActionsSection
+                    titleId={titleId}
+                    actions={actionsLies}
+                    hint="Actions Ops rattachées à cette mission."
+                    locked={locked}
+                    onLier={
+                      onLierAction
+                        ? () => onLierAction(card.missionId, card.titre)
+                        : undefined
+                    }
+                    onViewAction={onViewAction}
+                  />
+
+                  <section
+                    className="fr-mt-4w"
+                    aria-labelledby={`${titleId}-echanges`}
+                  >
+                    <div
+                      className="fr-mb-1w"
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "0.5rem",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
                     >
-                      Nouveau sujet
-                    </Button>
-                  ) : null}
-                </div>
-                <p className="fr-hint-text fr-mb-2w">
-                  Sujets Weekly liés à cette mission.
-                </p>
-                {agendaLies.length === 0 ? (
-                  <p
-                    className="fr-text--sm"
-                    style={{ color: "var(--text-mention-grey)" }}
-                  >
-                    Aucun sujet lié pour l’instant.
-                  </p>
-                ) : (
-                  <ul
-                    className="fr-raw-list"
-                    style={{
-                      margin: 0,
-                      padding: 0,
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "0.25rem",
-                    }}
-                  >
-                    {agendaLies.map((sujet) => {
-                      const titre = (sujet.Texte ?? "Sujet").trim();
-                      const auteur = weeklyAgendaAuteurPrenom(sujet.Auteur);
-                      const createdAt = parseWeeklyAgendaCreatedAt(sujet.Cree_le);
-                      const createdLabel = formatWeeklyAgendaCreatedAt(sujet.Cree_le);
-                      return (
-                        <li
-                          key={sujet.id}
-                          style={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: "0.35rem 0.75rem",
-                            alignItems: "baseline",
-                            justifyContent: "space-between",
-                            padding: "0.45rem 0",
-                            borderTop: "1px solid var(--border-default-grey)",
-                          }}
-                        >
-                          <div style={{ minWidth: 0 }}>
-                            <p
-                              className="fr-text--sm fr-mb-0"
+                      <h3 id={`${titleId}-echanges`} className="fr-h6 fr-mb-0">
+                        Derniers échanges
+                      </h3>
+                      <Button
+                        type="button"
+                        priority="tertiary no outline"
+                        size="small"
+                        iconId="fr-icon-add-line"
+                        disabled={locked}
+                        onClick={() => onNouveauSujet(card.missionId)}
+                      >
+                        Nouveau sujet
+                      </Button>
+                    </div>
+                    <p className="fr-hint-text fr-mb-2w">
+                      Sujets Weekly liés à cette mission.
+                    </p>
+                    {agendaLies.length === 0 ? (
+                      <p
+                        className="fr-text--sm"
+                        style={{ color: "var(--text-mention-grey)" }}
+                      >
+                        Aucun sujet lié pour l’instant.
+                      </p>
+                    ) : (
+                      <ul
+                        className="fr-raw-list"
+                        style={{
+                          margin: 0,
+                          padding: 0,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "0.25rem",
+                        }}
+                      >
+                        {agendaLies.map((sujet) => {
+                          const titre = (sujet.Texte ?? "Sujet").trim();
+                          const auteur = weeklyAgendaAuteurPrenom(sujet.Auteur);
+                          const createdAt = parseWeeklyAgendaCreatedAt(
+                            sujet.Cree_le,
+                          );
+                          const createdLabel = formatWeeklyAgendaCreatedAt(
+                            sujet.Cree_le,
+                          );
+                          return (
+                            <li
+                              key={sujet.id}
                               style={{
-                                fontWeight: 500,
-                                textDecoration: sujet.Traite
-                                  ? "line-through"
-                                  : undefined,
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: "0.35rem 0.75rem",
+                                alignItems: "baseline",
+                                justifyContent: "space-between",
+                                padding: "0.45rem 0",
+                                borderTop:
+                                  "1px solid var(--border-default-grey)",
                               }}
                             >
-                              {titre}
-                            </p>
-                            <p
-                              className="fr-text--xs fr-mb-0"
-                              style={{ color: "var(--text-mention-grey)" }}
-                            >
-                              {auteur}
-                              {createdLabel && createdAt ? (
-                                <>
-                                  {" "}
-                                  <span aria-hidden="true">·</span>{" "}
-                                  <time dateTime={createdAt.toISOString()}>
-                                    {createdLabel}
-                                  </time>
-                                </>
-                              ) : null}
-                            </p>
-                          </div>
-                          <Button
-                            type="button"
-                            priority="tertiary no outline"
-                            size="small"
-                            iconId="fr-icon-eye-line"
-                            disabled={locked}
-                            onClick={() => onViewSujet(sujet)}
-                          >
-                            Voir
-                          </Button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </section>
+                              <div style={{ minWidth: 0 }}>
+                                <p
+                                  className="fr-text--sm fr-mb-0"
+                                  style={{
+                                    fontWeight: 500,
+                                    textDecoration: sujet.Traite
+                                      ? "line-through"
+                                      : undefined,
+                                  }}
+                                >
+                                  {titre}
+                                </p>
+                                <p
+                                  className="fr-text--xs fr-mb-0"
+                                  style={{ color: "var(--text-mention-grey)" }}
+                                >
+                                  {auteur}
+                                  {createdLabel && createdAt ? (
+                                    <>
+                                      {" "}
+                                      <span aria-hidden="true">·</span>{" "}
+                                      <time dateTime={createdAt.toISOString()}>
+                                        {createdLabel}
+                                      </time>
+                                    </>
+                                  ) : null}
+                                </p>
+                              </div>
+                              <Button
+                                type="button"
+                                priority="tertiary no outline"
+                                size="small"
+                                iconId="fr-icon-eye-line"
+                                disabled={locked}
+                                onClick={() => onViewSujet(sujet)}
+                              >
+                                Voir
+                              </Button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </section>
 
-              {card != null ? (
-                <p
-                  className="fr-mt-4w fr-pt-2w"
-                  style={{ borderTop: "1px dashed var(--border-default-grey)" }}
-                >
-                  <Link
-                    className="fr-link fr-link--sm"
-                    to={`/missions/${card.missionId}`}
-                    onClick={close}
+                  <p
+                    className="fr-mt-4w fr-pt-2w"
+                    style={{
+                      borderTop: "1px dashed var(--border-default-grey)",
+                    }}
                   >
-                    Ouvrir la fiche mission
-                  </Link>
-                </p>
-              ) : null}
+                    <Link
+                      className="fr-link fr-link--sm"
+                      to={`/missions/${card.missionId}`}
+                      onClick={close}
+                    >
+                      Ouvrir la fiche mission
+                    </Link>
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>

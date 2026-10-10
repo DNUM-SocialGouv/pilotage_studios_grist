@@ -18,7 +18,13 @@ import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
 import { KanbanBoard } from "../components/kanban/KanbanBoard";
 import { KanbanCardShell } from "../components/kanban/KanbanCardShell";
 import { MissionProse } from "../components/missions/MissionProse";
+import { WeeklyActionFormDrawer } from "../components/weekly/WeeklyActionFormDrawer";
 import { WeeklyActionsPanel } from "../components/weekly/WeeklyActionsPanel";
+import {
+  WeeklyLinkActionDialog,
+  type WeeklyLinkActionContext,
+} from "../components/weekly/WeeklyLinkActionDialog";
+import { WeeklyLinkedActionsSection } from "../components/weekly/WeeklyLinkedActionsSection";
 import { WeeklySuiviDrawer } from "../components/weekly/WeeklySuiviDrawer";
 import { useAclProfil } from "../AclProfilContext";
 import { useGristPa } from "../GristPaContext";
@@ -27,6 +33,8 @@ import { useWeeklyCoachData } from "../hooks/useWeeklyCoachData";
 import { NothingHerePage } from "../security/NothingHerePage";
 import { extractGristReferenceId } from "../utils/gristReferences";
 import {
+  filterWeeklyActionsByMission,
+  filterWeeklyActionsBySujet,
   filterWeeklyActionsEnCours,
 } from "../utils/weeklyAction";
 import {
@@ -38,12 +46,14 @@ import {
 } from "../utils/weeklyAgenda";
 import { weeklyOpsMembreOptions } from "../utils/weeklyCoachAccess";
 import {
+  WEEKLY_ACTION_SUJET_COLUMN_READY,
   createWeeklyAgendaRecord,
   updateWeeklyAgendaSujet,
   updateWeeklyAgendaTraite,
   upsertWeeklyPhase,
   upsertWeeklyPhaseSuivi,
 } from "../utils/weeklyGristWrite";
+import type { WeeklyActionRow, WeeklyAgendaRow } from "../types";
 import {
   WEEKLY_CARD_MEMBRE_AVATARS_VISIBLE,
   WEEKLY_PHASES,
@@ -57,7 +67,6 @@ import {
   type WeeklyPhaseKey,
 } from "../utils/weeklyPhases";
 import { firstNameFromDisplayName } from "../utils/welcomeHomeByRole";
-import type { WeeklyAgendaRow } from "../types";
 
 type AgendaDialogMode = "view" | "edit" | "create";
 /** Sous-nav sous l’onglet Sujets (V1) — historique sujets local, pas l’onglet global. */
@@ -76,17 +85,22 @@ function AgendaSujetRow({
   missionLabel,
   missionId,
   busy,
+  linkedActionsCount = 0,
   onToggle,
   onView,
   onEdit,
+  onLierAction,
 }: {
   sujet: WeeklyAgendaRow;
   missionLabel?: string;
   missionId: number | null;
   busy: boolean;
+  /** Nombre d’actions liées via `Weekly_action.Sujet`. */
+  linkedActionsCount?: number;
   onToggle: (id: number, traite: boolean) => void;
   onView: (sujet: WeeklyAgendaRow) => void;
   onEdit: (sujet: WeeklyAgendaRow) => void;
+  onLierAction?: (sujet: WeeklyAgendaRow) => void;
 }) {
   const checkId = `weekly-agenda-${sujet.id}`;
   const titleId = `${checkId}-title`;
@@ -166,6 +180,16 @@ function AgendaSujetRow({
               </Link>
             </>
           ) : null}
+          {linkedActionsCount > 0 ? (
+            <>
+              <span aria-hidden="true">·</span>
+              <span>
+                {linkedActionsCount === 1
+                  ? "1 action liée"
+                  : `${linkedActionsCount} actions liées`}
+              </span>
+            </>
+          ) : null}
         </p>
       </div>
       <div
@@ -198,6 +222,19 @@ function AgendaSujetRow({
         >
           Modifier
         </Button>
+        {onLierAction ? (
+          <Button
+            type="button"
+            priority="tertiary no outline"
+            size="small"
+            iconId="fr-icon-links-line"
+            disabled={busy}
+            onClick={() => onLierAction(sujet)}
+            title={`Lier une action : ${titre}`}
+          >
+            Action
+          </Button>
+        ) : null}
       </div>
     </article>
   );
@@ -213,11 +250,15 @@ function AgendaSujetDialog({
   defaultAuteur,
   /** Préremplissage mission en mode create (ex. depuis drawer suivi). */
   defaultCreateMissionId = null,
+  /** Actions déjà liées à ce sujet (`Weekly_action.Sujet`). */
+  actionsLies = [],
   busy,
   onClose,
   onSave,
   onCreate,
   onSwitchToEdit,
+  onLierAction,
+  onViewAction,
 }: {
   open: boolean;
   sujet: WeeklyAgendaRow | null;
@@ -227,6 +268,7 @@ function AgendaSujetDialog({
   missionOptions: { id: number; label: string }[];
   defaultAuteur: string;
   defaultCreateMissionId?: number | null;
+  actionsLies?: readonly WeeklyActionRow[];
   busy: boolean;
   onClose: () => void;
   onSave: (input: {
@@ -242,6 +284,8 @@ function AgendaSujetDialog({
     auteur: string;
   }) => Promise<void>;
   onSwitchToEdit: () => void;
+  onLierAction?: (sujet: WeeklyAgendaRow) => void;
+  onViewAction?: (action: WeeklyActionRow) => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -449,6 +493,18 @@ function AgendaSujetDialog({
                       </>
                     ) : null}
                   </p>
+                  <WeeklyLinkedActionsSection
+                    titleId={titleId}
+                    actions={actionsLies}
+                    hint="Actions Ops rattachées à ce sujet."
+                    locked={busy}
+                    onLier={
+                      onLierAction && sujet != null
+                        ? () => onLierAction(sujet)
+                        : undefined
+                    }
+                    onViewAction={onViewAction}
+                  />
                 </>
               ) : mode === "edit" || mode === "create" ? (
                 <form ref={formRef} onSubmit={(e) => void submitForm(e)}>
@@ -567,14 +623,19 @@ function AgendaSujetDialog({
 function WeeklyCardView({
   card,
   busy,
+  linkedActionsCount = 0,
   onOpenSuivi,
+  onLierAction,
   onDragStart,
   onDragEnd,
   onMovePhase,
 }: {
   card: WeeklyCard;
   busy: boolean;
+  /** Nombre d’actions liées via `Weekly_action.Mission`. */
+  linkedActionsCount?: number;
   onOpenSuivi: (missionId: number) => void;
+  onLierAction: (missionId: number, missionLabel: string) => void;
   onDragStart: (missionId: number) => void;
   onDragEnd: () => void;
   onMovePhase: (missionId: number, phase: WeeklyPhaseKey) => void;
@@ -600,6 +661,12 @@ function WeeklyCardView({
     0,
     membres.length - WEEKLY_CARD_MEMBRE_AVATARS_VISIBLE,
   );
+  const actionsLabel =
+    linkedActionsCount > 0
+      ? linkedActionsCount === 1
+        ? "1 action liée"
+        : `${linkedActionsCount} actions liées`
+      : null;
 
   // aria-label remplace le contenu pour le nom accessible : y inclure
   // météo / membres / meta visibles (sinon masqués aux lecteurs d’écran).
@@ -609,6 +676,7 @@ function WeeklyCardView({
     membresAria,
     metaParts.length > 0 ? metaParts.join(", ") : null,
     hasNote ? "note de suivi" : null,
+    actionsLabel,
     "ouvrir le suivi",
   ]
     .filter(Boolean)
@@ -636,6 +704,12 @@ function WeeklyCardView({
           label: "Ouvrir le suivi",
           iconClassName: "fr-icon-eye-line",
           onClick: () => onOpenSuivi(card.missionId),
+        },
+        {
+          id: "lier-action",
+          label: "Lier une action",
+          iconClassName: "fr-icon-links-line",
+          onClick: () => onLierAction(card.missionId, card.titre),
         },
       ]}
     >
@@ -689,12 +763,23 @@ function WeeklyCardView({
         </p>
       ) : null}
 
-      {hasNote ? (
+      {hasNote || linkedActionsCount > 0 ? (
         <p className="weekly-card__badges" aria-hidden="true">
-          <span
-            className="fr-icon-align-left fr-icon--sm weekly-card__note-icon"
-            title="Note de suivi"
-          />
+          {hasNote ? (
+            <span
+              className="fr-icon-align-left fr-icon--sm weekly-card__note-icon"
+              title="Note de suivi"
+            />
+          ) : null}
+          {linkedActionsCount > 0 ? (
+            <span
+              className="fr-badge fr-badge--sm fr-badge--blue-cumulus fr-badge--no-icon"
+              title={actionsLabel ?? undefined}
+            >
+              {linkedActionsCount}
+              {linkedActionsCount === 1 ? " action" : " actions"}
+            </span>
+          ) : null}
         </p>
       ) : null}
     </KanbanCardShell>
@@ -730,6 +815,22 @@ export function WeeklyCoachPage() {
   const agendaTabsName = useId();
   const agendaPanelId = useId();
   const [actionError, setActionError] = useState<string | null>(null);
+  /** Dialogue Créer | Rattacher (carte mission ou sujet). */
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [linkContext, setLinkContext] = useState<WeeklyLinkActionContext | null>(
+    null,
+  );
+  /** Drawer create / édition action hors onglet Actions (lien depuis carte / sujet). */
+  const [linkFormOpen, setLinkFormOpen] = useState(false);
+  const [linkFormMode, setLinkFormMode] = useState<"create" | "edit">("create");
+  const [linkFormAction, setLinkFormAction] = useState<WeeklyActionRow | null>(
+    null,
+  );
+  const [linkFormDefaults, setLinkFormDefaults] = useState<{
+    missionId: number | null;
+    sujetId: number | null;
+    lockMission: boolean;
+  }>({ missionId: null, sujetId: null, lockMission: false });
 
   const defaultAuteur = defaultWeeklyAuteurPrenom(displayName, sessionEmail);
 
@@ -791,6 +892,20 @@ export function WeeklyCoachPage() {
     [cards],
   );
 
+  /** Options drawer action — sujets agenda (à faire + historique). */
+  const sujetOptions = useMemo(
+    () =>
+      [...data.agenda]
+        .map((s) => ({
+          id: s.id,
+          label: (s.Texte ?? "").trim() || `Sujet #${s.id}`,
+        }))
+        .sort((a, b) =>
+          a.label.localeCompare(b.label, "fr", { sensitivity: "base" }),
+        ),
+    [data.agenda],
+  );
+
   const equipeOptions = useMemo(
     () => weeklyOpsMembreOptions(data.intervenants, coachAllowlist.emails),
     [data.intervenants, coachAllowlist.emails],
@@ -811,6 +926,50 @@ export function WeeklyCoachPage() {
     );
   }, [agendaSorted, suiviMissionId]);
 
+  const actionsLiesSuivi = useMemo(() => {
+    if (suiviMissionId == null) return [];
+    return filterWeeklyActionsByMission(data.actions, suiviMissionId);
+  }, [data.actions, suiviMissionId]);
+
+  /** Compteurs actions liées par mission (badge carte kanban). */
+  const linkedActionsCountByMission = useMemo(() => {
+    const map = new Map<number, number>();
+    for (const action of data.actions) {
+      const mid = extractGristReferenceId(action.Mission);
+      if (mid == null || mid <= 0) continue;
+      map.set(mid, (map.get(mid) ?? 0) + 1);
+    }
+    return map;
+  }, [data.actions]);
+
+  /** Compteurs actions liées par sujet (méta ligne agenda). */
+  const linkedActionsCountBySujet = useMemo(() => {
+    const map = new Map<number, number>();
+    for (const action of data.actions) {
+      const sid = extractGristReferenceId(action.Sujet);
+      if (sid == null || sid <= 0) continue;
+      map.set(sid, (map.get(sid) ?? 0) + 1);
+    }
+    return map;
+  }, [data.actions]);
+
+  const actionsLiesSujetDialog = useMemo(() => {
+    if (dialogSujet == null) return [];
+    return filterWeeklyActionsBySujet(data.actions, dialogSujet.id);
+  }, [data.actions, dialogSujet]);
+
+  const porteurLabelById = useMemo(() => {
+    const m = new Map<number, string>();
+    for (const p of data.intervenants) {
+      const label =
+        firstNameFromDisplayName(p.Prenom_Nom ?? "") ||
+        (p.Prenom_Nom ?? "").trim() ||
+        `Personne #${p.id}`;
+      m.set(p.id, label);
+    }
+    return m;
+  }, [data.intervenants]);
+
   if (pa.untrustedEmbed || pa.outsideGrist) {
     return <NothingHerePage />;
   }
@@ -818,6 +977,75 @@ export function WeeklyCoachPage() {
   const openSuivi = (missionId: number) => {
     setSuiviMissionId(missionId);
     setSuiviOpen(true);
+  };
+
+  const openLinkActionForMission = (
+    missionId: number,
+    missionLabel: string,
+  ) => {
+    setLinkContext({
+      missionId,
+      sujetId: null,
+      contextLabel: missionLabel,
+    });
+    setLinkDialogOpen(true);
+  };
+
+  const openLinkActionForSujet = (sujet: WeeklyAgendaRow) => {
+    const titre = (sujet.Texte ?? "Sujet").trim() || "Sujet";
+    const mid = extractGristReferenceId(sujet.Mission);
+    setLinkContext({
+      missionId: mid != null && mid > 0 ? mid : null,
+      sujetId: sujet.id,
+      contextLabel: titre,
+    });
+    setLinkDialogOpen(true);
+  };
+
+  const closeLinkDialog = () => {
+    setLinkDialogOpen(false);
+    setLinkContext(null);
+  };
+
+  const openLinkCreateForm = (ctx: WeeklyLinkActionContext) => {
+    setLinkFormMode("create");
+    setLinkFormAction(null);
+    setLinkFormDefaults({
+      missionId:
+        ctx.missionId != null && ctx.missionId > 0 ? ctx.missionId : null,
+      sujetId: ctx.sujetId != null && ctx.sujetId > 0 ? ctx.sujetId : null,
+      lockMission: ctx.missionId != null && ctx.missionId > 0,
+    });
+    setLinkFormOpen(true);
+  };
+
+  const openLinkEditForm = (action: WeeklyActionRow) => {
+    setLinkFormMode("edit");
+    setLinkFormAction(action);
+    setLinkFormDefaults({
+      missionId: null,
+      sujetId: null,
+      lockMission: false,
+    });
+    setLinkFormOpen(true);
+  };
+
+  const closeLinkForm = () => {
+    setLinkFormOpen(false);
+    setLinkFormAction(null);
+  };
+
+  const reloadActions = async () => {
+    setActionError(null);
+    try {
+      await data.reload();
+    } catch (err) {
+      setActionError(
+        err instanceof Error
+          ? err.message
+          : "Impossible de recharger les actions.",
+      );
+    }
   };
 
   const closeSuivi = () => {
@@ -1188,12 +1416,16 @@ export function WeeklyCoachPage() {
                                     ? missionTitleById.get(mid)
                                     : undefined
                                 }
+                                linkedActionsCount={
+                                  linkedActionsCountBySujet.get(s.id) ?? 0
+                                }
                                 busy={agendaBusy || data.isReloading}
                                 onToggle={(id, traite) =>
                                   void onToggleTraite(id, traite)
                                 }
                                 onView={(row) => openAgendaDialog(row, "view")}
                                 onEdit={(row) => openAgendaDialog(row, "edit")}
+                                onLierAction={openLinkActionForSujet}
                               />
                             </li>
                           );
@@ -1308,6 +1540,10 @@ export function WeeklyCoachPage() {
                                               ? missionTitleById.get(mid)
                                               : undefined
                                           }
+                                          linkedActionsCount={
+                                            linkedActionsCountBySujet.get(s.id) ??
+                                            0
+                                          }
                                           busy={agendaBusy || data.isReloading}
                                           onToggle={(id, traite) =>
                                             void onToggleTraite(id, traite)
@@ -1318,6 +1554,7 @@ export function WeeklyCoachPage() {
                                           onEdit={(row) =>
                                             openAgendaDialog(row, "edit")
                                           }
+                                          onLierAction={openLinkActionForSujet}
                                         />
                                       </li>
                                     );
@@ -1347,6 +1584,7 @@ export function WeeklyCoachPage() {
                   intervenants={data.intervenants}
                   missionTitleById={missionTitleById}
                   missionOptions={missionOptions}
+                  sujetOptions={sujetOptions}
                   equipeOptions={equipeOptions}
                   sessionEmail={sessionEmail}
                   busy={data.isReloading}
@@ -1409,7 +1647,11 @@ export function WeeklyCoachPage() {
                         busy={
                           busyMissionId === card.missionId || data.isReloading
                         }
+                        linkedActionsCount={
+                          linkedActionsCountByMission.get(card.missionId) ?? 0
+                        }
                         onOpenSuivi={openSuivi}
+                        onLierAction={openLinkActionForMission}
                         onDragStart={setDragMissionId}
                         onDragEnd={() => setDragMissionId(null)}
                         onMovePhase={(id, phase) => void changePhase(id, phase)}
@@ -1440,17 +1682,24 @@ export function WeeklyCoachPage() {
             missionOptions={missionOptions}
             defaultAuteur={defaultAuteur}
             defaultCreateMissionId={createAgendaMissionId}
+            actionsLies={actionsLiesSujetDialog}
             busy={agendaBusy || data.isReloading}
             onClose={closeAgendaDialog}
             onSave={onSaveAgendaSujet}
             onCreate={onCreateAgendaSujet}
             onSwitchToEdit={() => setDialogMode("edit")}
+            onLierAction={openLinkActionForSujet}
+            onViewAction={(action) => {
+              closeAgendaDialog();
+              openLinkEditForm(action);
+            }}
           />
 
           <WeeklySuiviDrawer
             open={suiviOpen}
             card={suiviCard}
             agendaLies={agendaLiesSuivi}
+            actionsLies={actionsLiesSuivi}
             equipeOptions={equipeOptions}
             busy={suiviBusy || data.isReloading}
             onClose={closeSuivi}
@@ -1461,6 +1710,40 @@ export function WeeklyCoachPage() {
               openAgendaDialog(sujet, "view");
             }}
             onNouveauSujet={openCreateAgendaForMission}
+            onLierAction={openLinkActionForMission}
+            onViewAction={(action) => {
+              closeSuivi();
+              openLinkEditForm(action);
+            }}
+          />
+
+          <WeeklyLinkActionDialog
+            open={linkDialogOpen}
+            context={linkContext}
+            actions={data.actions}
+            porteurLabelById={porteurLabelById}
+            sujetColumnReady={WEEKLY_ACTION_SUJET_COLUMN_READY}
+            busy={data.isReloading}
+            onClose={closeLinkDialog}
+            onCreate={openLinkCreateForm}
+            onAttached={reloadActions}
+          />
+
+          <WeeklyActionFormDrawer
+            open={linkFormOpen}
+            mode={linkFormMode}
+            action={linkFormAction}
+            missionOptions={missionOptions}
+            sujetOptions={sujetOptions}
+            equipeOptions={equipeOptions}
+            intervenants={data.intervenants}
+            sessionEmail={sessionEmail}
+            busy={data.isReloading}
+            defaultMissionId={linkFormDefaults.missionId}
+            defaultSujetId={linkFormDefaults.sujetId}
+            lockMission={linkFormDefaults.lockMission}
+            onClose={closeLinkForm}
+            onSaved={reloadActions}
           />
         </>
       ) : null}
