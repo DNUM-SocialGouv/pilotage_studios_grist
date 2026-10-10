@@ -24,6 +24,7 @@ import {
   WeeklyLinkActionDialog,
   type WeeklyLinkActionContext,
 } from "../components/weekly/WeeklyLinkActionDialog";
+import { WeeklyLinkedActionsSection } from "../components/weekly/WeeklyLinkedActionsSection";
 import { WeeklySuiviDrawer } from "../components/weekly/WeeklySuiviDrawer";
 import { useAclProfil } from "../AclProfilContext";
 import { useGristPa } from "../GristPaContext";
@@ -33,6 +34,7 @@ import { NothingHerePage } from "../security/NothingHerePage";
 import { extractGristReferenceId } from "../utils/gristReferences";
 import {
   filterWeeklyActionsByMission,
+  filterWeeklyActionsBySujet,
   filterWeeklyActionsEnCours,
 } from "../utils/weeklyAction";
 import {
@@ -83,6 +85,7 @@ function AgendaSujetRow({
   missionLabel,
   missionId,
   busy,
+  linkedActionsCount = 0,
   onToggle,
   onView,
   onEdit,
@@ -92,6 +95,8 @@ function AgendaSujetRow({
   missionLabel?: string;
   missionId: number | null;
   busy: boolean;
+  /** Nombre d’actions liées via `Weekly_action.Sujet`. */
+  linkedActionsCount?: number;
   onToggle: (id: number, traite: boolean) => void;
   onView: (sujet: WeeklyAgendaRow) => void;
   onEdit: (sujet: WeeklyAgendaRow) => void;
@@ -175,6 +180,16 @@ function AgendaSujetRow({
               </Link>
             </>
           ) : null}
+          {linkedActionsCount > 0 ? (
+            <>
+              <span aria-hidden="true">·</span>
+              <span>
+                {linkedActionsCount === 1
+                  ? "1 action liée"
+                  : `${linkedActionsCount} actions liées`}
+              </span>
+            </>
+          ) : null}
         </p>
       </div>
       <div
@@ -235,11 +250,15 @@ function AgendaSujetDialog({
   defaultAuteur,
   /** Préremplissage mission en mode create (ex. depuis drawer suivi). */
   defaultCreateMissionId = null,
+  /** Actions déjà liées à ce sujet (`Weekly_action.Sujet`). */
+  actionsLies = [],
   busy,
   onClose,
   onSave,
   onCreate,
   onSwitchToEdit,
+  onLierAction,
+  onViewAction,
 }: {
   open: boolean;
   sujet: WeeklyAgendaRow | null;
@@ -249,6 +268,7 @@ function AgendaSujetDialog({
   missionOptions: { id: number; label: string }[];
   defaultAuteur: string;
   defaultCreateMissionId?: number | null;
+  actionsLies?: readonly WeeklyActionRow[];
   busy: boolean;
   onClose: () => void;
   onSave: (input: {
@@ -264,6 +284,8 @@ function AgendaSujetDialog({
     auteur: string;
   }) => Promise<void>;
   onSwitchToEdit: () => void;
+  onLierAction?: (sujet: WeeklyAgendaRow) => void;
+  onViewAction?: (action: WeeklyActionRow) => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -471,6 +493,18 @@ function AgendaSujetDialog({
                       </>
                     ) : null}
                   </p>
+                  <WeeklyLinkedActionsSection
+                    titleId={titleId}
+                    actions={actionsLies}
+                    hint="Actions Ops rattachées à ce sujet."
+                    locked={busy}
+                    onLier={
+                      onLierAction && sujet != null
+                        ? () => onLierAction(sujet)
+                        : undefined
+                    }
+                    onViewAction={onViewAction}
+                  />
                 </>
               ) : mode === "edit" || mode === "create" ? (
                 <form ref={formRef} onSubmit={(e) => void submitForm(e)}>
@@ -589,6 +623,7 @@ function AgendaSujetDialog({
 function WeeklyCardView({
   card,
   busy,
+  linkedActionsCount = 0,
   onOpenSuivi,
   onLierAction,
   onDragStart,
@@ -597,6 +632,8 @@ function WeeklyCardView({
 }: {
   card: WeeklyCard;
   busy: boolean;
+  /** Nombre d’actions liées via `Weekly_action.Mission`. */
+  linkedActionsCount?: number;
   onOpenSuivi: (missionId: number) => void;
   onLierAction: (missionId: number, missionLabel: string) => void;
   onDragStart: (missionId: number) => void;
@@ -624,6 +661,12 @@ function WeeklyCardView({
     0,
     membres.length - WEEKLY_CARD_MEMBRE_AVATARS_VISIBLE,
   );
+  const actionsLabel =
+    linkedActionsCount > 0
+      ? linkedActionsCount === 1
+        ? "1 action liée"
+        : `${linkedActionsCount} actions liées`
+      : null;
 
   // aria-label remplace le contenu pour le nom accessible : y inclure
   // météo / membres / meta visibles (sinon masqués aux lecteurs d’écran).
@@ -633,6 +676,7 @@ function WeeklyCardView({
     membresAria,
     metaParts.length > 0 ? metaParts.join(", ") : null,
     hasNote ? "note de suivi" : null,
+    actionsLabel,
     "ouvrir le suivi",
   ]
     .filter(Boolean)
@@ -719,12 +763,23 @@ function WeeklyCardView({
         </p>
       ) : null}
 
-      {hasNote ? (
+      {hasNote || linkedActionsCount > 0 ? (
         <p className="weekly-card__badges" aria-hidden="true">
-          <span
-            className="fr-icon-align-left fr-icon--sm weekly-card__note-icon"
-            title="Note de suivi"
-          />
+          {hasNote ? (
+            <span
+              className="fr-icon-align-left fr-icon--sm weekly-card__note-icon"
+              title="Note de suivi"
+            />
+          ) : null}
+          {linkedActionsCount > 0 ? (
+            <span
+              className="fr-badge fr-badge--sm fr-badge--blue-cumulus fr-badge--no-icon"
+              title={actionsLabel ?? undefined}
+            >
+              {linkedActionsCount}
+              {linkedActionsCount === 1 ? " action" : " actions"}
+            </span>
+          ) : null}
         </p>
       ) : null}
     </KanbanCardShell>
@@ -861,6 +916,33 @@ export function WeeklyCoachPage() {
     if (suiviMissionId == null) return [];
     return filterWeeklyActionsByMission(data.actions, suiviMissionId);
   }, [data.actions, suiviMissionId]);
+
+  /** Compteurs actions liées par mission (badge carte kanban). */
+  const linkedActionsCountByMission = useMemo(() => {
+    const map = new Map<number, number>();
+    for (const action of data.actions) {
+      const mid = extractGristReferenceId(action.Mission);
+      if (mid == null || mid <= 0) continue;
+      map.set(mid, (map.get(mid) ?? 0) + 1);
+    }
+    return map;
+  }, [data.actions]);
+
+  /** Compteurs actions liées par sujet (méta ligne agenda). */
+  const linkedActionsCountBySujet = useMemo(() => {
+    const map = new Map<number, number>();
+    for (const action of data.actions) {
+      const sid = extractGristReferenceId(action.Sujet);
+      if (sid == null || sid <= 0) continue;
+      map.set(sid, (map.get(sid) ?? 0) + 1);
+    }
+    return map;
+  }, [data.actions]);
+
+  const actionsLiesSujetDialog = useMemo(() => {
+    if (dialogSujet == null) return [];
+    return filterWeeklyActionsBySujet(data.actions, dialogSujet.id);
+  }, [data.actions, dialogSujet]);
 
   const porteurLabelById = useMemo(() => {
     const m = new Map<number, string>();
@@ -1320,6 +1402,9 @@ export function WeeklyCoachPage() {
                                     ? missionTitleById.get(mid)
                                     : undefined
                                 }
+                                linkedActionsCount={
+                                  linkedActionsCountBySujet.get(s.id) ?? 0
+                                }
                                 busy={agendaBusy || data.isReloading}
                                 onToggle={(id, traite) =>
                                   void onToggleTraite(id, traite)
@@ -1441,6 +1526,10 @@ export function WeeklyCoachPage() {
                                               ? missionTitleById.get(mid)
                                               : undefined
                                           }
+                                          linkedActionsCount={
+                                            linkedActionsCountBySujet.get(s.id) ??
+                                            0
+                                          }
                                           busy={agendaBusy || data.isReloading}
                                           onToggle={(id, traite) =>
                                             void onToggleTraite(id, traite)
@@ -1543,6 +1632,9 @@ export function WeeklyCoachPage() {
                         busy={
                           busyMissionId === card.missionId || data.isReloading
                         }
+                        linkedActionsCount={
+                          linkedActionsCountByMission.get(card.missionId) ?? 0
+                        }
                         onOpenSuivi={openSuivi}
                         onLierAction={openLinkActionForMission}
                         onDragStart={setDragMissionId}
@@ -1575,11 +1667,17 @@ export function WeeklyCoachPage() {
             missionOptions={missionOptions}
             defaultAuteur={defaultAuteur}
             defaultCreateMissionId={createAgendaMissionId}
+            actionsLies={actionsLiesSujetDialog}
             busy={agendaBusy || data.isReloading}
             onClose={closeAgendaDialog}
             onSave={onSaveAgendaSujet}
             onCreate={onCreateAgendaSujet}
             onSwitchToEdit={() => setDialogMode("edit")}
+            onLierAction={openLinkActionForSujet}
+            onViewAction={(action) => {
+              closeAgendaDialog();
+              openLinkEditForm(action);
+            }}
           />
 
           <WeeklySuiviDrawer

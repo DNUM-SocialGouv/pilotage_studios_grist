@@ -71,6 +71,7 @@ Shell UI commun avec la liste Missions (`KanbanBoard` / `KanbanCardShell` : colo
 | Badge météo (coin) | `Weekly_phase.Meteo` — pastille tonée + icône (absent si vide) |
 | Membres + avatars | `Weekly_phase.Membre_equipe` (RefList) → **avatars empilés** (max 3 + « +k ») — `aria-label` = prénoms joints — **absent** si non assigné |
 | Indicateur note | Icône (style Trello) si `Weekly_phase.Note_ops` non vide — **pas** le texte sur la carte |
+| Badge actions | Compteur « N action(s) » si au moins une `Weekly_action.Mission` = carte |
 | Phase | **Colonne** kanban uniquement — **pas** de select Phase sur la carte |
 
 ### Drawer suivi mission (V1)
@@ -82,7 +83,7 @@ Shell UI commun avec la liste Missions (`KanbanBoard` / `KanbanCardShell` : colo
 | Ouverture | **Lecture** par défaut |
 | Météo + Membres | Lecture ; bouton **Modifier** → édition (3 boutons météo · select **multi** porteurs Ops = `Equipe` ∩ e-mails `Weekly_coachs`, + orphelins déjà assignés) puis Enregistrer / Annuler |
 | Note ops | Lecture `MissionProse` ; **Modifier** / **Ajouter** → textarea Markdown (pattern contexte mission / note studio) ; icônes Enregistrer / Annuler — **pas** de fermeture auto du drawer |
-| Actions liées | `Weekly_action` filtrées `Mission` = carte + **Lier une action** (Créer \| Rattacher) |
+| Actions liées | Liste visible des `Weekly_action` filtrées `Mission` = carte (titre cliquable → édition) + **Lier une action** (Créer \| Rattacher) ; état vide + CTA |
 | Derniers échanges | `Weekly_agenda` filtrés par mission + Voir / Nouveau sujet |
 | Lien fiche | Navigation `/missions/:id` (secondaire) — **pas** de sync note/météo |
 
@@ -120,8 +121,8 @@ Flag `WEEKLY_PHASE_OPS_COLUMNS_READY = true`. **Aucune** colonne / écriture sur
 
 #### Liste & drawer
 
-- Liste compacte : **titre** + méta `Prénom · date relative` (+ lien mission éventuel) + **Voir** / **Modifier** — pas le détail.
-- Drawer lecture : titre, détail (`MissionProse` — markdown léger + liens internes), mission (lien fiche), méta date / auteur.
+- Liste compacte : **titre** + méta `Prénom · date relative` (+ lien mission éventuel + compteur « N action(s) liée(s) » si `Weekly_action.Sujet`) + **Voir** / **Modifier** / **Action** (lier) — pas le détail.
+- Drawer lecture : titre, détail (`MissionProse` — markdown léger + liens internes), mission (lien fiche), méta date / auteur, section **Actions liées** (liste filtrée `Sujet` = id, titre cliquable → édition, CTA Lier / état vide).
 - Drawer édition : titre, détail optionnel (textarea markdown), select mission → **Enregistrer**.
 - Drawer **create** (même tiroir) : titre, détail, mission, prénom auteur → **Ajouter** ; focus titre à l’ouverture ; focus retour au CTA après fermeture create.
 - État vide À faire : « Aucun sujet à aborder… » ; Historique vide : message d’aide.
@@ -174,10 +175,11 @@ Même dialogue **Créer \| Rattacher** depuis :
 | Entrée | Persistance |
 |--------|-------------|
 | Menu ⋮ carte Kanban · bouton drawer suivi « Lier une action » | `Weekly_action.Mission` = mission de la carte |
-| Bouton « Action » sur une ligne sujet | `Sujet` = id agenda + `Mission` = mission du sujet si présente |
+| Bouton « Action » / CTA drawer sujet « Lier une action » | `Sujet` = id agenda + `Mission` = mission du sujet si présente |
 
 - **Créer** → drawer action avec Mission (et Sujet) préremplis.
 - **Rattacher** → update des liens sur une action ouverte non déjà liée à ce contexte.
+- **Visibilité** : après lien, les actions apparaissent dans le drawer suivi (filtre `Mission`) **et** dans le drawer sujet en lecture (filtre `Sujet`) ; compteurs sur carte kanban / ligne sujet.
 - Flag `WEEKLY_ACTION_SUJET_COLUMN_READY` : **`true`** (colonne `Sujet` vérifiée MCP 2026-10-10, Ref INTEGER → `Weekly_agenda`). Create / rattacher depuis un sujet persiste `Sujet`.
 
 ## Hors scope (ce bolt)

@@ -129,7 +129,7 @@ export function filterWeeklyActionsByMission(
   return sortWeeklyActionsEnCours(
     actions.filter((a) => {
       const mid = extractGristReferenceId(a.Mission);
-      return mid === missionId;
+      return mid != null && mid > 0 && mid === missionId;
     }),
   );
 }
@@ -143,7 +143,7 @@ export function filterWeeklyActionsBySujet(
   return sortWeeklyActionsEnCours(
     actions.filter((a) => {
       const sid = extractGristReferenceId(a.Sujet);
-      return sid === sujetId;
+      return sid != null && sid > 0 && sid === sujetId;
     }),
   );
 }
@@ -170,11 +170,11 @@ export function filterWeeklyActionsLinkable(
     filterWeeklyActionsEnCours(actions).filter((a) => {
       if (missionId != null) {
         const mid = extractGristReferenceId(a.Mission);
-        if (mid === missionId) return false;
+        if (mid != null && mid > 0 && mid === missionId) return false;
       }
       if (sujetId != null) {
         const sid = extractGristReferenceId(a.Sujet);
-        if (sid === sujetId) return false;
+        if (sid != null && sid > 0 && sid === sujetId) return false;
       }
       return true;
     }),
