@@ -150,8 +150,8 @@ export interface WeeklyActionRow {
   /** Ref → `Missions` (optionnel). */
   Mission?: unknown;
   /**
-   * Ref → `Weekly_agenda` (optionnel) — colonne Owner `Sujet`.
-   * Absente tant que `WEEKLY_ACTION_SUJET_COLUMN_READY` est faux.
+   * Ref → `Weekly_agenda` (optionnel) — colonne Owner `Sujet`
+   * (`WEEKLY_ACTION_SUJET_COLUMN_READY`).
    */
   Sujet?: unknown;
   /** Timestamp Grist Date (secondes) ou ISO. */

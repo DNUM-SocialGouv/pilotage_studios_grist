@@ -56,7 +56,7 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 | Produits SDPC | Lecture — libellé produit |
 | **`Weekly_phase`** | Create + update — 1 ligne / mission : `Mission` (Ref) · `Phase` (`prochainement` \| `cadrage` \| `actif` \| `autonomie`) · `Meteo` · `Note_ops` · `Membre_equipe` (RefList → `Equipe`) |
 | **`Weekly_agenda`** | Create + update `Traite` / `Traite_le` / `Texte` (titre) / `Detail` / `Mission` — sujets : `Texte` (titre) · `Detail` (opt., drawer) · `Auteur` · `Email` · `Mission` (opt.) · `Traite` · `Traite_le` (Date, jour du coche) · `Cree_le` |
-| **`Weekly_action`** | Create + update + **delete** (exception widget) — actions Ops (kanban + drawer SM create / édition) : `Titre` · `Statut` (`A faire` \| `En cours`) · `Porteur` (Ref→Equipe) · `Mission` (opt.) · **`Sujet`** (opt., Ref→`Weekly_agenda` — **HITL Owner**, flag `WEEKLY_ACTION_SUJET_COLUMN_READY`) · `Date_fin` · `Weekly_du` · `Notes` · `Fait` · `Fait_le` · `Cree_le` · `Email` ; delete **une** ligne après confirmation (menu ⋮ carte + bouton drawer) — **pas** de delete en masse ; **Lier** depuis carte Kanban / sujet (Créer pré-lié ou Rattacher) |
+| **`Weekly_action`** | Create + update + **delete** (exception widget) — actions Ops (kanban + drawer SM create / édition) : `Titre` · `Statut` (`A faire` \| `En cours`) · `Porteur` (Ref→Equipe) · `Mission` (opt.) · **`Sujet`** (opt., Ref→`Weekly_agenda` — colonne Owner **présente**, flag `WEEKLY_ACTION_SUJET_COLUMN_READY=true`) · `Date_fin` · `Weekly_du` · `Notes` · `Fait` · `Fait_le` · `Cree_le` · `Email` ; delete **une** ligne après confirmation (menu ⋮ carte + bouton drawer) — **pas** de delete en masse ; **Lier** depuis carte Kanban / sujet (Créer pré-lié ou Rattacher) |
 | **`Weekly_coachs`** | Lecture widget (allowlist) — `E_mail` ; écriture **hors widget** (Owner / Admin UI) |
 
 ### Cartes kanban (variante A)
@@ -174,11 +174,11 @@ Même dialogue **Créer \| Rattacher** depuis :
 | Entrée | Persistance |
 |--------|-------------|
 | Menu ⋮ carte Kanban · bouton drawer suivi « Lier une action » | `Weekly_action.Mission` = mission de la carte |
-| Bouton « Action » sur une ligne sujet | `Sujet` = id agenda (**si** colonne Owner) + `Mission` = mission du sujet si présente |
+| Bouton « Action » sur une ligne sujet | `Sujet` = id agenda + `Mission` = mission du sujet si présente |
 
 - **Créer** → drawer action avec Mission (et Sujet) préremplis.
 - **Rattacher** → update des liens sur une action ouverte non déjà liée à ce contexte.
-- Flag `WEEKLY_ACTION_SUJET_COLUMN_READY` : `false` tant que Owner n’a pas créé `Weekly_action.Sujet` (Ref → `Weekly_agenda`). UI sujet reste visible ; écriture `Sujet` et rattachement sujet-seul bloqués avec message d’aide.
+- Flag `WEEKLY_ACTION_SUJET_COLUMN_READY` : **`true`** (colonne `Sujet` vérifiée MCP 2026-10-10, Ref INTEGER → `Weekly_agenda`). Create / rattacher depuis un sujet persiste `Sujet`.
 
 ## Hors scope (ce bolt)
 

@@ -34,11 +34,11 @@ import {
 export const WEEKLY_AGENDA_DETAIL_COLUMN_READY = true;
 
 /**
- * Colonne Grist `Weekly_action.Sujet` (Ref → `Weekly_agenda`) — **HITL Owner**.
- * `false` tant que la colonne n’est pas créée dans le document.
- * UI « Lier depuis un sujet » reste visible ; écriture `Sujet` gardée derrière ce flag.
+ * Colonne Grist `Weekly_action.Sujet` (Ref → `Weekly_agenda`) — confirmée MCP
+ * doc `nei9DeARs5Eo` (2026-10-10) : colId `Sujet`, type INTEGER (= Ref).
+ * `true` → create / rattacher depuis un sujet persiste `Sujet`.
  */
-export const WEEKLY_ACTION_SUJET_COLUMN_READY = false;
+export const WEEKLY_ACTION_SUJET_COLUMN_READY = true;
 
 export { WEEKLY_PHASE_OPS_COLUMNS_READY };
 
