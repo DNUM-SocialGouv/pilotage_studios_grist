@@ -2082,10 +2082,27 @@ button.fr-link:disabled {
   width: 100%;
 }
 
+/*
+ * Paire Mission | Sujet associé — grille 2 cols forcée (iframe étroite).
+ * Indépendante du flex half-cols pour que le champ Sujet ne disparaisse
+ * jamais du viewport / du flux quand la colonne Owner est prête.
+ */
+.pilotage-drawer-dialog--sm .pilotage-drawer-form-links {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 1rem;
+  row-gap: 0;
+  width: 100%;
+}
+
 @media (max-width: 28rem) {
   .pilotage-drawer-dialog--sm .pilotage-drawer-form-row > .pilotage-drawer-form-col-half {
     flex: 0 0 100%;
     max-width: 100%;
+  }
+
+  .pilotage-drawer-dialog--sm .pilotage-drawer-form-links {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

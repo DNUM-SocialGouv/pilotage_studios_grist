@@ -260,6 +260,16 @@ describe("filterWeeklyActionsByMission / BySujet / Linkable", () => {
     });
     assert.equal(withSujet.Sujet, 5);
   });
+
+  it("écrit Sujet null quand includeSujet et sujetId vide (Sans sujet lié)", () => {
+    const fields = buildWeeklyActionCreateFields({
+      titre: "X",
+      porteurId: null,
+      sujetId: null,
+      includeSujet: true,
+    });
+    assert.equal(fields.Sujet, null);
+  });
 });
 
 describe("weeklyActionStatutLabel / overdue / defaults", () => {
