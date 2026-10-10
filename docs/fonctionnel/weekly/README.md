@@ -31,7 +31,7 @@ SegmentedControl Sujets|Actions seul :
 | Onglet | Contenu |
 |--------|---------|
 | **Sujets** | Liste agenda + sous-nav SegmentedControl **À faire \| Historique** (sujets traités) |
-| **Actions** | Kanban 3 colonnes **À faire \| En cours \| Done** + drawer create / édition |
+| **Actions** | Kanban 3 colonnes **À faire \| En cours \| Done** + drawer lecture → édition / create |
 | **Kanban** | Board missions (phases `Weekly_phase`) — **plus** affiché en permanence au-dessus |
 
 **Pas en V1** : 4ᵉ onglet **Historique** global (sujets + actions) — prévu plus
@@ -56,7 +56,7 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 | Produits SDPC | Lecture — libellé produit |
 | **`Weekly_phase`** | Create + update — 1 ligne / mission : `Mission` (Ref) · `Phase` (`prochainement` \| `cadrage` \| `actif` \| `autonomie`) · `Meteo` · `Note_ops` · `Membre_equipe` (RefList → `Equipe`) |
 | **`Weekly_agenda`** | Create + update `Traite` / `Traite_le` / `Texte` (titre) / `Detail` / `Mission` — sujets : `Texte` (titre) · `Detail` (opt., drawer) · `Auteur` · `Email` · `Mission` (opt.) · `Traite` · `Traite_le` (Date, jour du coche) · `Cree_le` |
-| **`Weekly_action`** | Create + update + **delete** (exception widget) — actions Ops (kanban + drawer SM create / édition) : `Titre` · `Statut` (`A faire` \| `En cours`) · `Porteur` (Ref→Equipe) · `Mission` (opt.) · **`Sujet`** (opt., Ref→`Weekly_agenda` — colonne Owner **présente**, flag `WEEKLY_ACTION_SUJET_COLUMN_READY=true`) · `Date_fin` · `Weekly_du` · `Notes` · `Fait` · `Fait_le` · `Cree_le` · `Email` ; delete **une** ligne après confirmation (menu ⋮ carte + bouton drawer) — **pas** de delete en masse ; **Lier** depuis carte Kanban / sujet (Créer pré-lié ou Rattacher) |
+| **`Weekly_action`** | Create + update + **delete** (exception widget) — actions Ops (kanban + drawer SM lecture → édition / create) : `Titre` · `Statut` (`A faire` \| `En cours`) · `Porteur` (Ref→Equipe) · `Mission` (opt.) · **`Sujet`** (opt., Ref→`Weekly_agenda` — colonne Owner **présente**, flag `WEEKLY_ACTION_SUJET_COLUMN_READY=true`) · `Date_fin` · `Weekly_du` · `Notes` · `Fait` · `Fait_le` · `Cree_le` · `Email` ; delete **une** ligne après confirmation (menu ⋮ carte + bouton drawer lecture / édition) — **pas** de delete en masse ; **Lier** depuis carte Kanban / sujet (Créer pré-lié ou Rattacher) |
 | **`Weekly_coachs`** | Lecture widget (allowlist) — `E_mail` ; écriture **hors widget** (Owner / Admin UI) |
 
 ### Cartes kanban (variante A)
@@ -83,7 +83,7 @@ Shell UI commun avec la liste Missions (`KanbanBoard` / `KanbanCardShell` : colo
 | Ouverture | **Lecture** par défaut |
 | Météo + Membres | Lecture ; bouton **Modifier** → édition (3 boutons météo · select **multi** porteurs Ops = `Equipe` ∩ e-mails `Weekly_coachs`, + orphelins déjà assignés) puis Enregistrer / Annuler |
 | Note ops | Lecture `MissionProse` ; **Modifier** / **Ajouter** → textarea Markdown (pattern contexte mission / note studio) ; icônes Enregistrer / Annuler — **pas** de fermeture auto du drawer |
-| Actions liées | Liste visible des `Weekly_action` filtrées `Mission` = carte (titre cliquable → édition) + **Lier une action** (Créer \| Rattacher) ; état vide + CTA |
+| Actions liées | Liste visible des `Weekly_action` filtrées `Mission` = carte (titre / **Voir** → fiche lecture puis **Modifier**) + **Lier une action** (Créer \| Rattacher) ; état vide + CTA |
 | Derniers échanges | `Weekly_agenda` filtrés par mission + Voir / Nouveau sujet |
 | Lien fiche | Navigation `/missions/:id` (secondaire) — **pas** de sync note/météo |
 
@@ -122,7 +122,7 @@ Flag `WEEKLY_PHASE_OPS_COLUMNS_READY = true`. **Aucune** colonne / écriture sur
 #### Liste & drawer
 
 - Liste compacte : **titre** + méta `Prénom · date relative` (+ lien mission éventuel + compteur « N action(s) liée(s) » si `Weekly_action.Sujet`) + **Voir** / **Modifier** / **Action** (lier) — pas le détail.
-- Drawer lecture : titre, détail (`MissionProse` — markdown léger + liens internes), mission (lien fiche), méta date / auteur, section **Actions liées** (liste filtrée `Sujet` = id, titre cliquable → édition, CTA Lier / état vide).
+- Drawer lecture : titre, détail (`MissionProse` — markdown léger + liens internes), mission (lien fiche), méta date / auteur, section **Actions liées** (liste filtrée `Sujet` = id, titre / **Voir** → fiche lecture action puis **Modifier**, CTA Lier / état vide).
 - Drawer édition : titre, détail optionnel (textarea markdown), select mission → **Enregistrer**.
 - Drawer **create** (même tiroir) : titre, détail, mission, prénom auteur → **Ajouter** ; focus titre à l’ouverture ; focus retour au CTA après fermeture create.
 - État vide À faire : « Aucun sujet à aborder… » ; Historique vide : message d’aide.
@@ -164,9 +164,10 @@ colonnes, drag, menu clavier « Déplacer vers… »).
 | Drag / menu → Done | `Fait=true` + `Fait_le` = aujourd’hui (`Statut` inchangé) |
 | Drag / menu hors Done | `Fait=false`, `Fait_le` vidé, `Statut` = colonne cible |
 | Drag À faire ↔ En cours | update `Statut` (+ reset `Fait` idempotent) |
-| Clic carte | Ouvre le **drawer SM** édition (prérempli) |
-| Drawer create / edit | Titre · Porteur (session à create) · Statut · bloc **Rattachements** empilé : **Mission liée** puis **Sujet associé** (selects optionnels — Sujet **toujours affiché** si `WEEKLY_ACTION_SUJET_COLUMN_READY`, même liste agenda vide ; stack 1 col pour l’iframe) · Date de fin · Weekly du · Notes · case **Fait** (édition) → Enregistrer / Ajouter |
-| **Supprimer** | Menu ⋮ carte **et** bouton tertiaire drawer édition → dialogue « Supprimer cette action ? » (irréversible) → `destroy` une ligne ; **pas** de delete en masse |
+| Clic carte | Ouvre le **drawer SM** en **lecture** (fiche scannable) — pas le formulaire |
+| Drawer lecture | Titre · Porteur · Statut (badge) · Mission · Sujet · Date de fin · Weekly du · Fait · Notes → CTA **Modifier** / Fermer / Supprimer |
+| Drawer create / edit | Titre · Porteur (session à create) · Statut · bloc **Rattachements** empilé : **Mission liée** puis **Sujet associé** (selects optionnels — Sujet **toujours affiché** si `WEEKLY_ACTION_SUJET_COLUMN_READY`, même liste agenda vide ; stack 1 col pour l’iframe) · Date de fin · Weekly du · Notes · case **Fait** (édition) → Enregistrer / Ajouter ; **Annuler** en édition revient à la lecture si ouverte depuis la fiche |
+| **Supprimer** | Menu ⋮ carte **et** bouton tertiaire drawer lecture / édition → dialogue « Supprimer cette action ? » (irréversible) → `destroy` une ligne ; **pas** de delete en masse |
 
 ### Lier une action (carte mission ou sujet)
 
