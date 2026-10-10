@@ -1,6 +1,6 @@
 /**
  * Onglet Actions Weekly Ops — kanban 3 colonnes (À faire | En cours | Done)
- * + drawer SM create / édition + delete confirmé. Done aussi via drag / menu.
+ * + drawer SM lecture → édition + create + delete confirmé. Done aussi via drag / menu.
  */
 
 import { useId, useMemo, useState, type DragEvent } from "react";
@@ -207,8 +207,9 @@ export function WeeklyActionsPanel({
     setDrawerOpen(true);
   };
 
-  const openEdit = (action: WeeklyActionRow) => {
-    setDrawerMode("edit");
+  /** Clic carte → fiche lecture (pas le formulaire). */
+  const openView = (action: WeeklyActionRow) => {
+    setDrawerMode("view");
     setDrawerAction(action);
     setDrawerOpen(true);
   };
@@ -378,7 +379,7 @@ export function WeeklyActionsPanel({
                   onDragStart={setDragActionId}
                   onDragEnd={() => setDragActionId(null)}
                   onMove={(id, key) => void changeColumn(id, key)}
-                  onOpen={openEdit}
+                  onOpen={openView}
                   onRequestDelete={requestDelete}
                 />
               );
@@ -398,6 +399,8 @@ export function WeeklyActionsPanel({
         sessionEmail={sessionEmail}
         busy={busy || deleting}
         onClose={closeDrawer}
+        onSwitchToEdit={() => setDrawerMode("edit")}
+        onSwitchToView={() => setDrawerMode("view")}
         onSaved={async () => {
           setError(null);
           await onCreated();
