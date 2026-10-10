@@ -50,6 +50,15 @@ export type WeeklyActionFormDrawerProps = {
   onSaved: () => Promise<void>;
   /** Demande de suppression (édition) — confirmation gérée par le parent. */
   onRequestDelete?: (action: WeeklyActionRow) => void;
+  /** Préremplissage Mission en create (ex. depuis carte Kanban / sujet). */
+  defaultMissionId?: number | null;
+  /**
+   * Préremplissage Sujet en create — écrit seulement si colonne Owner prête
+   * (passé via createWeeklyActionRecord / flag).
+   */
+  defaultSujetId?: number | null;
+  /** Empêche de changer la mission préremplie (contexte carte). */
+  lockMission?: boolean;
 };
 
 export function WeeklyActionFormDrawer({
@@ -64,6 +73,9 @@ export function WeeklyActionFormDrawer({
   onClose,
   onSaved,
   onRequestDelete,
+  defaultMissionId = null,
+  defaultSujetId = null,
+  lockMission = false,
 }: WeeklyActionFormDrawerProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -102,7 +114,11 @@ export function WeeklyActionFormDrawer({
       );
       setDraftTitre("");
       setDraftPorteurId(defaultPorteur != null ? String(defaultPorteur) : "");
-      setDraftMissionId("");
+      setDraftMissionId(
+        defaultMissionId != null && defaultMissionId > 0
+          ? String(defaultMissionId)
+          : "",
+      );
       setDraftStatut(WEEKLY_ACTION_STATUT.A_FAIRE);
       setDraftDateFin(toLocalDateInputValue(defaultWeeklyActionDateFin(now)));
       setDraftWeeklyDu(toLocalDateInputValue(now));
@@ -143,6 +159,7 @@ export function WeeklyActionFormDrawer({
     action?.Fait,
     intervenants,
     sessionEmail,
+    defaultMissionId,
   ]);
 
   useEffect(() => {
@@ -203,6 +220,10 @@ export function WeeklyActionFormDrawer({
           titre,
           porteurId,
           missionId,
+          sujetId:
+            defaultSujetId != null && defaultSujetId > 0
+              ? defaultSujetId
+              : null,
           dateFin,
           weeklyDu,
           notes,
@@ -360,7 +381,8 @@ export function WeeklyActionFormDrawer({
                         value: draftMissionId,
                         onChange: (e) =>
                           setDraftMissionId(e.currentTarget.value),
-                        disabled: formBusy,
+                        disabled:
+                          formBusy || (mode === "create" && lockMission),
                       }}
                     >
                       <option value="">Sans mission liée</option>

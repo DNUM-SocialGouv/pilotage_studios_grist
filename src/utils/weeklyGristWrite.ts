@@ -33,6 +33,13 @@ import {
  */
 export const WEEKLY_AGENDA_DETAIL_COLUMN_READY = true;
 
+/**
+ * Colonne Grist `Weekly_action.Sujet` (Ref → `Weekly_agenda`) — **HITL Owner**.
+ * `false` tant que la colonne n’est pas créée dans le document.
+ * UI « Lier depuis un sujet » reste visible ; écriture `Sujet` gardée derrière ce flag.
+ */
+export const WEEKLY_ACTION_SUJET_COLUMN_READY = false;
+
 export { WEEKLY_PHASE_OPS_COLUMNS_READY };
 
 function parseCreateId(result: GristTableCreateResult): number {
@@ -247,6 +254,8 @@ export async function createWeeklyActionRecord(input: {
   titre: string;
   porteurId: number | null;
   missionId?: number | null;
+  /** Ref → `Weekly_agenda` — ignoré si colonne Owner absente. */
+  sujetId?: number | null;
   dateFin?: Date | null;
   weeklyDu?: Date | null;
   notes?: string;
@@ -255,11 +264,44 @@ export async function createWeeklyActionRecord(input: {
   now?: Date;
 }): Promise<number> {
   assertWritableTableId(WEEKLY_ACTION_TABLE_ID);
-  const fields = buildWeeklyActionCreateFields(input);
+  const fields = buildWeeklyActionCreateFields({
+    ...input,
+    includeSujet: WEEKLY_ACTION_SUJET_COLUMN_READY,
+  });
   const result = await getWritableTable(WEEKLY_ACTION_TABLE_ID).create({
     fields,
   });
   return parseCreateId(result);
+}
+
+/**
+ * Rattache une action existante à une mission et/ou un sujet (lien depuis carte).
+ * N’écrit `Sujet` que si `WEEKLY_ACTION_SUJET_COLUMN_READY`.
+ */
+export async function updateWeeklyActionLinks(
+  id: number,
+  input: {
+    missionId?: number | null;
+    sujetId?: number | null;
+  },
+): Promise<void> {
+  assertWritableUpdateTableId(WEEKLY_ACTION_TABLE_ID);
+  if (!Number.isFinite(id) || id <= 0) {
+    throw new Error("Identifiant action invalide.");
+  }
+  const fields: Record<string, unknown> = {};
+  if (input.missionId !== undefined) {
+    fields.Mission =
+      input.missionId != null && input.missionId > 0 ? input.missionId : null;
+  }
+  if (WEEKLY_ACTION_SUJET_COLUMN_READY && input.sujetId !== undefined) {
+    fields.Sujet =
+      input.sujetId != null && input.sujetId > 0 ? input.sujetId : null;
+  }
+  if (Object.keys(fields).length === 0) {
+    throw new Error("Aucun lien à enregistrer (mission / sujet).");
+  }
+  await getWritableTable(WEEKLY_ACTION_TABLE_ID).update({ id, fields });
 }
 
 /**
@@ -312,6 +354,7 @@ export async function updateWeeklyActionRecord(
     statut: WeeklyActionStatut | string;
     porteurId: number | null;
     missionId: number | null;
+    sujetId?: number | null;
     dateFin: Date | null;
     weeklyDu: Date | null;
     notes: string;
@@ -325,23 +368,28 @@ export async function updateWeeklyActionRecord(
   if (!titre) {
     throw new Error("Le titre de l’action ne peut pas être vide.");
   }
+  const fields: Record<string, unknown> = {
+    Titre: titre,
+    Statut: normalizeWeeklyActionStatut(input.statut),
+    Porteur:
+      input.porteurId != null && input.porteurId > 0 ? input.porteurId : null,
+    Mission:
+      input.missionId != null && input.missionId > 0 ? input.missionId : null,
+    Date_fin:
+      input.dateFin != null ? weeklyActionDateTimestamp(input.dateFin) : null,
+    Weekly_du:
+      input.weeklyDu != null
+        ? weeklyActionDateTimestamp(input.weeklyDu)
+        : null,
+    Notes: input.notes.trim(),
+  };
+  if (WEEKLY_ACTION_SUJET_COLUMN_READY && input.sujetId !== undefined) {
+    fields.Sujet =
+      input.sujetId != null && input.sujetId > 0 ? input.sujetId : null;
+  }
   await getWritableTable(WEEKLY_ACTION_TABLE_ID).update({
     id,
-    fields: {
-      Titre: titre,
-      Statut: normalizeWeeklyActionStatut(input.statut),
-      Porteur:
-        input.porteurId != null && input.porteurId > 0 ? input.porteurId : null,
-      Mission:
-        input.missionId != null && input.missionId > 0 ? input.missionId : null,
-      Date_fin:
-        input.dateFin != null ? weeklyActionDateTimestamp(input.dateFin) : null,
-      Weekly_du:
-        input.weeklyDu != null
-          ? weeklyActionDateTimestamp(input.weeklyDu)
-          : null,
-      Notes: input.notes.trim(),
-    },
+    fields,
   });
 }
 

@@ -149,6 +149,11 @@ export interface WeeklyActionRow {
   Porteur?: unknown;
   /** Ref → `Missions` (optionnel). */
   Mission?: unknown;
+  /**
+   * Ref → `Weekly_agenda` (optionnel) — colonne Owner `Sujet`.
+   * Absente tant que `WEEKLY_ACTION_SUJET_COLUMN_READY` est faux.
+   */
+  Sujet?: unknown;
   /** Timestamp Grist Date (secondes) ou ISO. */
   Date_fin?: string | number | null;
   /** Jour du weekly d’origine (Date) — défaut = jour du create. */

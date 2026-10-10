@@ -8,7 +8,10 @@ import {
   buildWeeklyActionFaitFields,
   columnKeyForWeeklyAction,
   defaultWeeklyActionDateFin,
+  filterWeeklyActionsByMission,
+  filterWeeklyActionsBySujet,
   filterWeeklyActionsEnCours,
+  filterWeeklyActionsLinkable,
   groupWeeklyActionsByColumn,
   isWeeklyActionDateFinOverdue,
   matchWeeklyActionPorteurId,
@@ -206,6 +209,56 @@ describe("columnKeyForWeeklyAction / move fields / group", () => {
       byCol.get("done")?.map((r) => r.id),
       [3],
     );
+  });
+});
+
+describe("filterWeeklyActionsByMission / BySujet / Linkable", () => {
+  const rows: WeeklyActionRow[] = [
+    { id: 1, Titre: "A", Fait: false, Mission: 10, Sujet: 100 },
+    { id: 2, Titre: "B", Fait: false, Mission: 20, Sujet: null },
+    { id: 3, Titre: "C", Fait: true, Mission: 10, Sujet: 100 },
+    { id: 4, Titre: "D", Fait: false, Mission: null, Sujet: null },
+  ];
+
+  it("filtre par mission", () => {
+    assert.deepEqual(
+      filterWeeklyActionsByMission(rows, 10).map((r) => r.id),
+      [1, 3],
+    );
+  });
+
+  it("filtre par sujet", () => {
+    assert.deepEqual(
+      filterWeeklyActionsBySujet(rows, 100).map((r) => r.id),
+      [1, 3],
+    );
+  });
+
+  it("propose les rattachables (ouvertes, pas déjà liées)", () => {
+    assert.deepEqual(
+      filterWeeklyActionsLinkable(rows, { missionId: 10 }).map((r) => r.id),
+      [2, 4],
+    );
+    assert.deepEqual(
+      filterWeeklyActionsLinkable(rows, { sujetId: 100 }).map((r) => r.id),
+      [2, 4],
+    );
+  });
+
+  it("inclut Sujet dans create seulement si includeSujet", () => {
+    const without = buildWeeklyActionCreateFields({
+      titre: "X",
+      porteurId: null,
+      sujetId: 5,
+    });
+    assert.equal("Sujet" in without, false);
+    const withSujet = buildWeeklyActionCreateFields({
+      titre: "X",
+      porteurId: null,
+      sujetId: 5,
+      includeSujet: true,
+    });
+    assert.equal(withSujet.Sujet, 5);
   });
 });
 

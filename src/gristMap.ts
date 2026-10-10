@@ -242,6 +242,8 @@ export function toWeeklyAction(record: GristRecord): WeeklyActionRow {
     Statut: normalizeWeeklyActionStatut(statutRaw),
     Porteur: record.Porteur,
     Mission: record.Mission,
+    /** Colonne Owner `Sujet` — absente → undefined (feature-detect). */
+    Sujet: "Sujet" in record ? record.Sujet : undefined,
     Date_fin: asOptionalDateValue(record.Date_fin),
     Weekly_du: asOptionalDateValue(record.Weekly_du),
     Notes: asMultilineText(record.Notes) ?? asString(record.Notes),

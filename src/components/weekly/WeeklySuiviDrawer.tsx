@@ -12,12 +12,13 @@ import { Input } from "@codegouvfr/react-dsfr/Input";
 import { Link } from "react-router-dom";
 import { DsfrSelectRichMulti } from "../dsfr/DsfrSelectRichMulti";
 import { MissionProse } from "../missions/MissionProse";
-import type { WeeklyAgendaRow } from "../../types";
+import type { WeeklyActionRow, WeeklyAgendaRow } from "../../types";
 import {
   formatWeeklyAgendaCreatedAt,
   parseWeeklyAgendaCreatedAt,
   weeklyAgendaAuteurPrenom,
 } from "../../utils/weeklyAgenda";
+import { weeklyActionStatutLabel } from "../../utils/weeklyAction";
 import {
   WEEKLY_METEO_OPTIONS,
   WEEKLY_PHASES,
@@ -42,6 +43,8 @@ export type WeeklySuiviDrawerProps = {
   open: boolean;
   card: WeeklyCard | null;
   agendaLies: readonly WeeklyAgendaRow[];
+  /** Actions déjà liées à la mission (`Weekly_action.Mission`). */
+  actionsLies?: readonly WeeklyActionRow[];
   /** Personnes Ops (`Equipe` ∩ `Weekly_coachs`) pour le select Membre_equipe. */
   equipeOptions: readonly WeeklyEquipeOption[];
   busy: boolean;
@@ -56,6 +59,10 @@ export type WeeklySuiviDrawerProps = {
   }) => Promise<void>;
   onViewSujet: (sujet: WeeklyAgendaRow) => void;
   onNouveauSujet: (missionId: number) => void;
+  /** Ouvre le dialogue Créer | Rattacher pour cette mission. */
+  onLierAction?: (missionId: number, missionLabel: string) => void;
+  /** Ouvre l’édition d’une action liée (onglet Actions / drawer). */
+  onViewAction?: (action: WeeklyActionRow) => void;
 };
 
 function parseMembreIds(values: readonly string[]): number[] {
@@ -80,12 +87,15 @@ export function WeeklySuiviDrawer({
   open,
   card,
   agendaLies,
+  actionsLies = [],
   equipeOptions,
   busy,
   onClose,
   onSaveSuivi,
   onViewSujet,
   onNouveauSujet,
+  onLierAction,
+  onViewAction,
 }: WeeklySuiviDrawerProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -543,6 +553,114 @@ export function WeeklySuiviDrawer({
                   </section>
                 </>
               )}
+
+              <section className="fr-mt-4w" aria-labelledby={`${titleId}-actions`}>
+                <div
+                  className="fr-mb-1w"
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "0.5rem",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <h3 id={`${titleId}-actions`} className="fr-h6 fr-mb-0">
+                    Actions liées
+                  </h3>
+                  {card != null && onLierAction ? (
+                    <Button
+                      type="button"
+                      priority="tertiary no outline"
+                      size="small"
+                      iconId="fr-icon-links-line"
+                      disabled={locked}
+                      onClick={() =>
+                        onLierAction(card.missionId, card.titre)
+                      }
+                    >
+                      Lier une action
+                    </Button>
+                  ) : null}
+                </div>
+                <p className="fr-hint-text fr-mb-2w">
+                  Actions Ops rattachées à cette mission.
+                </p>
+                {actionsLies.length === 0 ? (
+                  <p
+                    className="fr-text--sm"
+                    style={{ color: "var(--text-mention-grey)" }}
+                  >
+                    Aucune action liée pour l’instant.
+                  </p>
+                ) : (
+                  <ul
+                    className="fr-raw-list"
+                    style={{
+                      margin: 0,
+                      padding: 0,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "0.25rem",
+                    }}
+                  >
+                    {actionsLies.map((action) => {
+                      const titre =
+                        (action.Titre ?? "Action").trim() || "Action";
+                      const fait = action.Fait === true;
+                      const statut = fait
+                        ? "Fait"
+                        : weeklyActionStatutLabel(action.Statut);
+                      return (
+                        <li
+                          key={action.id}
+                          style={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: "0.35rem 0.75rem",
+                            alignItems: "baseline",
+                            justifyContent: "space-between",
+                            padding: "0.45rem 0",
+                            borderTop: "1px solid var(--border-default-grey)",
+                          }}
+                        >
+                          <div style={{ minWidth: 0 }}>
+                            <p
+                              className="fr-text--sm fr-mb-0"
+                              style={{
+                                fontWeight: 500,
+                                textDecoration: fait
+                                  ? "line-through"
+                                  : undefined,
+                              }}
+                            >
+                              {titre}
+                            </p>
+                            <p
+                              className="fr-text--xs fr-mb-0"
+                              style={{ color: "var(--text-mention-grey)" }}
+                            >
+                              {statut}
+                            </p>
+                          </div>
+                          {onViewAction ? (
+                            <Button
+                              type="button"
+                              priority="tertiary no outline"
+                              size="small"
+                              iconId="fr-icon-eye-line"
+                              disabled={locked}
+                              onClick={() => onViewAction(action)}
+                            >
+                              Voir
+                            </Button>
+                          ) : null}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </section>
 
               <section className="fr-mt-4w" aria-labelledby={`${titleId}-echanges`}>
                 <div
