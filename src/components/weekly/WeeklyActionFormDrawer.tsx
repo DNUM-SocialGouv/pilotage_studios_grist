@@ -88,6 +88,7 @@ export function WeeklyActionFormDrawer({
   const porteurFieldId = useId();
   const missionFieldId = useId();
   const sujetFieldId = useId();
+  const rattachementsHeadingId = useId();
   const statutFieldId = useId();
   const dateFinFieldId = useId();
   const weeklyDuFieldId = useId();
@@ -432,38 +433,42 @@ export function WeeklyActionFormDrawer({
                     </Select>
                   </div>
                   {/*
-                    Mission | Sujet : rangée dédiée (CSS grid), toujours visible
-                    si colonne Owner prête — même liste vide (« Sans sujet lié »).
-                    Ne pas mélanger dans le flex half-cols (risque de manquer
-                    le 2ᵉ champ dans l’iframe / scroll).
+                    Rattachements empilés (Mission puis Sujet) — jamais côte à
+                    côte : dans l’iframe le 2ᵉ select 2-cols passait inaperçu.
+                    Sujet toujours rendu si flag Owner prêt (liste vide OK).
                   */}
-                  {showSujetField ? (
-                    <div className="fr-col-12">
-                      <p className="fr-text--sm fr-text-mention--grey fr-mb-1w">
-                        Rattachements (optionnels)
-                      </p>
-                      <div
-                        className="pilotage-drawer-form-links"
-                        data-testid="weekly-action-links"
+                  <div className="fr-col-12">
+                    <p
+                      className="fr-text--sm fr-text-mention--grey fr-mb-1w"
+                      id={rattachementsHeadingId}
+                    >
+                      Rattachements (optionnels)
+                    </p>
+                    <div
+                      className="pilotage-drawer-form-links"
+                      data-testid="weekly-action-links"
+                      role="group"
+                      aria-labelledby={rattachementsHeadingId}
+                    >
+                      <Select
+                        label="Mission liée"
+                        nativeSelectProps={{
+                          id: missionFieldId,
+                          value: draftMissionId,
+                          onChange: (e) =>
+                            setDraftMissionId(e.currentTarget.value),
+                          disabled:
+                            formBusy || (mode === "create" && lockMission),
+                        }}
                       >
-                        <Select
-                          label="Mission liée"
-                          nativeSelectProps={{
-                            id: missionFieldId,
-                            value: draftMissionId,
-                            onChange: (e) =>
-                              setDraftMissionId(e.currentTarget.value),
-                            disabled:
-                              formBusy || (mode === "create" && lockMission),
-                          }}
-                        >
-                          <option value="">Sans mission liée</option>
-                          {missionSelectOptions.map((o) => (
-                            <option key={o.id} value={String(o.id)}>
-                              {o.label}
-                            </option>
-                          ))}
-                        </Select>
+                        <option value="">Sans mission liée</option>
+                        {missionSelectOptions.map((o) => (
+                          <option key={o.id} value={String(o.id)}>
+                            {o.label}
+                          </option>
+                        ))}
+                      </Select>
+                      {showSujetField ? (
                         <div>
                           <Select
                             label="Sujet associé"
@@ -489,30 +494,9 @@ export function WeeklyActionFormDrawer({
                               : "Sujet de l’onglet Sujets (agenda Weekly)."}
                           </p>
                         </div>
-                      </div>
+                      ) : null}
                     </div>
-                  ) : (
-                    <div className="fr-col-12 pilotage-drawer-form-col-half">
-                      <Select
-                        label="Mission liée"
-                        nativeSelectProps={{
-                          id: missionFieldId,
-                          value: draftMissionId,
-                          onChange: (e) =>
-                            setDraftMissionId(e.currentTarget.value),
-                          disabled:
-                            formBusy || (mode === "create" && lockMission),
-                        }}
-                      >
-                        <option value="">Sans mission liée</option>
-                        {missionSelectOptions.map((o) => (
-                          <option key={o.id} value={String(o.id)}>
-                            {o.label}
-                          </option>
-                        ))}
-                      </Select>
-                    </div>
-                  )}
+                  </div>
                   <div className="fr-col-12 pilotage-drawer-form-col-half">
                     <Input
                       label="Date de fin"
