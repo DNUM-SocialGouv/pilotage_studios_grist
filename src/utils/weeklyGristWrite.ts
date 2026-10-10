@@ -8,13 +8,17 @@ import {
   WEEKLY_ACTION_TABLE_ID,
   WEEKLY_AGENDA_TABLE_ID,
   WEEKLY_PHASE_TABLE_ID,
+  assertWritableDeleteTableId,
   assertWritableTableId,
   assertWritableUpdateTableId,
 } from "../security/writeTableAllowlist.ts";
 import {
+  buildWeeklyActionColumnMoveFields,
   buildWeeklyActionCreateFields,
   buildWeeklyActionFaitFields,
+  isWeeklyActionColumnKey,
   normalizeWeeklyActionStatut,
+  type WeeklyActionColumnKey,
   type WeeklyActionStatut,
   weeklyActionDateTimestamp,
 } from "./weeklyAction.ts";
@@ -238,12 +242,13 @@ export async function updateWeeklyAgendaSujet(
   await getWritableTable(WEEKLY_AGENDA_TABLE_ID).update({ id, fields });
 }
 
-/** Create une action Weekly Ops (`Weekly_action`) — pas de delete widget. */
+/** Create une action Weekly Ops (`Weekly_action`). */
 export async function createWeeklyActionRecord(input: {
   titre: string;
   porteurId: number | null;
   missionId?: number | null;
   dateFin?: Date | null;
+  weeklyDu?: Date | null;
   notes?: string;
   email?: string;
   statut?: WeeklyActionStatut;
@@ -272,6 +277,28 @@ export async function updateWeeklyActionFait(
   await getWritableTable(WEEKLY_ACTION_TABLE_ID).update({
     id,
     fields: buildWeeklyActionFaitFields(fait, now),
+  });
+}
+
+/**
+ * Déplace une action vers une colonne kanban (drag / menu clavier).
+ * Colonnes : `a_faire` · `en_cours` · `done`.
+ */
+export async function updateWeeklyActionColumn(
+  id: number,
+  columnKey: WeeklyActionColumnKey | string,
+  now: Date = new Date(),
+): Promise<void> {
+  assertWritableUpdateTableId(WEEKLY_ACTION_TABLE_ID);
+  if (!Number.isFinite(id) || id <= 0) {
+    throw new Error("Identifiant action invalide.");
+  }
+  if (!isWeeklyActionColumnKey(columnKey)) {
+    throw new Error("Colonne action invalide.");
+  }
+  await getWritableTable(WEEKLY_ACTION_TABLE_ID).update({
+    id,
+    fields: buildWeeklyActionColumnMoveFields(columnKey, now),
   });
 }
 
@@ -316,4 +343,22 @@ export async function updateWeeklyActionRecord(
       Notes: input.notes.trim(),
     },
   });
+}
+
+/**
+ * Supprime une action Weekly Ops (`Weekly_action.destroy`).
+ * Exception allowlist : seule table avec delete widget ; un id à la fois (pas de masse).
+ */
+export async function deleteWeeklyAction(id: number): Promise<void> {
+  assertWritableDeleteTableId(WEEKLY_ACTION_TABLE_ID);
+  if (!Number.isFinite(id) || id <= 0) {
+    throw new Error("Identifiant action invalide.");
+  }
+  const table = getWritableTable(WEEKLY_ACTION_TABLE_ID);
+  if (typeof table.destroy !== "function") {
+    throw new Error(
+      "Suppression Grist indisponible (hors iframe ou API trop ancienne).",
+    );
+  }
+  await table.destroy([id]);
 }

@@ -2071,6 +2071,46 @@ button.fr-link:disabled {
   width: min(48rem, 94vw);
 }
 
+/*
+ * Demi-colonnes formulaire dans le drawer SM.
+ * Ne pas compter sur fr-col-md-6 : l’iframe Grist est souvent < 48em (md),
+ * donc les paires restaient empilées full-width malgré la grille.
+ */
+.pilotage-drawer-dialog--sm .pilotage-drawer-form-row > .pilotage-drawer-form-col-half {
+  flex: 0 0 50%;
+  max-width: 50%;
+  width: 100%;
+}
+
+@media (max-width: 28rem) {
+  .pilotage-drawer-dialog--sm .pilotage-drawer-form-row > .pilotage-drawer-form-col-half {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+/* Confirmation delete (ex. Weekly_action) — dialog centré accessible. */
+.pilotage-confirm-dialog {
+  background: transparent;
+  border: none;
+  color: var(--text-default-grey);
+  color-scheme: light;
+  margin: auto;
+  max-width: min(32rem, calc(100vw - 2rem));
+  padding: 0;
+}
+
+.pilotage-confirm-dialog::backdrop {
+  background: rgba(22, 22, 22, 0.64);
+}
+
+.pilotage-confirm-dialog__panel {
+  background: var(--background-default-grey);
+  border: 1px solid var(--border-default-grey);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.22);
+  color: var(--text-default-grey);
+}
+
 /* Weekly kanban — carte mission variante A (badge météo coin + avatar). */
 .weekly-card {
   position: relative;

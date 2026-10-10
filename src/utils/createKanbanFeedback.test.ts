@@ -9,8 +9,10 @@ import {
 import { feedbackAuteurOptionsFromEquipeTable } from "./feedbackEquipe.ts";
 import { pageOptionFromPathname } from "./feedbackPages.ts";
 import {
+  assertWritableDeleteTableId,
   assertWritableTableId,
   assertWritableUpdateTableId,
+  isWritableDeleteTableId,
   isWritableTableId,
   isWritableUpdateTableId,
 } from "../security/writeTableAllowlist.ts";
@@ -31,6 +33,18 @@ describe("writeTableAllowlist", () => {
     assert.equal(isWritableUpdateTableId("Retours"), false);
     assert.throws(() => assertWritableTableId("Plan_activite"), /non autorisée/);
     assert.throws(() => assertWritableUpdateTableId("Retours"), /non autorisée/);
+  });
+
+  it("autorise delete uniquement pour Weekly_action", () => {
+    assert.equal(isWritableDeleteTableId("Weekly_action"), true);
+    assert.equal(isWritableDeleteTableId("Weekly_agenda"), false);
+    assert.equal(isWritableDeleteTableId("Weekly_phase"), false);
+    assert.equal(isWritableDeleteTableId("Missions"), false);
+    assert.equal(isWritableDeleteTableId("Kanban"), false);
+    assert.throws(
+      () => assertWritableDeleteTableId("Weekly_agenda"),
+      /suppression widget/,
+    );
   });
 });
 

@@ -13,6 +13,11 @@ export interface GristTableOps {
     id: number;
     fields: Record<string, unknown>;
   }) => Promise<void>;
+  /**
+   * Suppression de lignes — allowlist `WRITE_TABLE_DELETE_ALLOWLIST` uniquement
+   * (`Weekly_action`). `rowIds` = un ou plusieurs ids numériques.
+   */
+  destroy?: (rowIds: number[]) => Promise<void>;
 }
 
 export interface GristApi {
