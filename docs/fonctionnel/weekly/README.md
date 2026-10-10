@@ -165,7 +165,7 @@ colonnes, drag, menu clavier « Déplacer vers… »).
 | Drag / menu hors Done | `Fait=false`, `Fait_le` vidé, `Statut` = colonne cible |
 | Drag À faire ↔ En cours | update `Statut` (+ reset `Fait` idempotent) |
 | Clic carte | Ouvre le **drawer SM** édition (prérempli) |
-| Drawer create / edit | Titre · Porteur (session à create) · Mission opt. · Statut (À faire / En cours) · Date de fin · Weekly du (défaut = jour create) · Notes · case **Fait** (édition seulement) → Enregistrer / Ajouter ; Échap / Annuler / scrim ferment sans save |
+| Drawer create / edit | Titre · Porteur (session à create) · Statut · **Mission** + **Sujet** liés (même rangée, selects optionnels « Sans … » — Sujet si `WEEKLY_ACTION_SUJET_COLUMN_READY`) · Date de fin · Weekly du (défaut = jour create) · Notes · case **Fait** (édition seulement) → Enregistrer / Ajouter ; Échap / Annuler / scrim ferment sans save |
 | **Supprimer** | Menu ⋮ carte **et** bouton tertiaire drawer édition → dialogue « Supprimer cette action ? » (irréversible) → `destroy` une ligne ; **pas** de delete en masse |
 
 ### Lier une action (carte mission ou sujet)

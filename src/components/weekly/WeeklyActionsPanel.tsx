@@ -138,6 +138,7 @@ export function WeeklyActionsPanel({
   intervenants,
   missionTitleById,
   missionOptions,
+  sujetOptions = [],
   equipeOptions,
   sessionEmail,
   busy,
@@ -152,6 +153,8 @@ export function WeeklyActionsPanel({
   }[];
   missionTitleById: ReadonlyMap<number, string>;
   missionOptions: readonly { id: number; label: string }[];
+  /** Options sujet agenda pour le drawer create/édition. */
+  sujetOptions?: readonly { id: number; label: string }[];
   equipeOptions: readonly { id: number; label: string }[];
   sessionEmail: string | null | undefined;
   busy: boolean;
@@ -385,6 +388,7 @@ export function WeeklyActionsPanel({
         mode={drawerMode}
         action={drawerAction}
         missionOptions={missionOptions}
+        sujetOptions={sujetOptions}
         equipeOptions={equipeOptions}
         intervenants={intervenants}
         sessionEmail={sessionEmail}

@@ -892,6 +892,20 @@ export function WeeklyCoachPage() {
     [cards],
   );
 
+  /** Options drawer action — sujets agenda (à faire + historique). */
+  const sujetOptions = useMemo(
+    () =>
+      [...data.agenda]
+        .map((s) => ({
+          id: s.id,
+          label: (s.Texte ?? "").trim() || `Sujet #${s.id}`,
+        }))
+        .sort((a, b) =>
+          a.label.localeCompare(b.label, "fr", { sensitivity: "base" }),
+        ),
+    [data.agenda],
+  );
+
   const equipeOptions = useMemo(
     () => weeklyOpsMembreOptions(data.intervenants, coachAllowlist.emails),
     [data.intervenants, coachAllowlist.emails],
@@ -1570,6 +1584,7 @@ export function WeeklyCoachPage() {
                   intervenants={data.intervenants}
                   missionTitleById={missionTitleById}
                   missionOptions={missionOptions}
+                  sujetOptions={sujetOptions}
                   equipeOptions={equipeOptions}
                   sessionEmail={sessionEmail}
                   busy={data.isReloading}
@@ -1719,6 +1734,7 @@ export function WeeklyCoachPage() {
             mode={linkFormMode}
             action={linkFormAction}
             missionOptions={missionOptions}
+            sujetOptions={sujetOptions}
             equipeOptions={equipeOptions}
             intervenants={data.intervenants}
             sessionEmail={sessionEmail}

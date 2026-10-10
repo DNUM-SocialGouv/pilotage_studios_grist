@@ -27,6 +27,7 @@ import {
   type WeeklyActionStatut,
 } from "../../utils/weeklyAction";
 import {
+  WEEKLY_ACTION_SUJET_COLUMN_READY,
   createWeeklyActionRecord,
   updateWeeklyActionFait,
   updateWeeklyActionRecord,
@@ -39,6 +40,8 @@ export type WeeklyActionFormDrawerProps = {
   mode: WeeklyActionDrawerMode;
   action: WeeklyActionRow | null;
   missionOptions: readonly { id: number; label: string }[];
+  /** Options sujet agenda (`Weekly_agenda`) — affichées si colonne `Sujet` prête. */
+  sujetOptions?: readonly { id: number; label: string }[];
   equipeOptions: readonly { id: number; label: string }[];
   intervenants: readonly {
     id: number;
@@ -66,6 +69,7 @@ export function WeeklyActionFormDrawer({
   mode,
   action,
   missionOptions,
+  sujetOptions = [],
   equipeOptions,
   intervenants,
   sessionEmail,
@@ -83,15 +87,19 @@ export function WeeklyActionFormDrawer({
   const titreFieldId = useId();
   const porteurFieldId = useId();
   const missionFieldId = useId();
+  const sujetFieldId = useId();
   const statutFieldId = useId();
   const dateFinFieldId = useId();
   const weeklyDuFieldId = useId();
   const notesFieldId = useId();
   const faitFieldId = useId();
 
+  const showSujetField = WEEKLY_ACTION_SUJET_COLUMN_READY;
+
   const [draftTitre, setDraftTitre] = useState("");
   const [draftPorteurId, setDraftPorteurId] = useState("");
   const [draftMissionId, setDraftMissionId] = useState("");
+  const [draftSujetId, setDraftSujetId] = useState("");
   const [draftStatut, setDraftStatut] = useState<WeeklyActionStatut>(
     WEEKLY_ACTION_STATUT.A_FAIRE,
   );
@@ -119,6 +127,11 @@ export function WeeklyActionFormDrawer({
           ? String(defaultMissionId)
           : "",
       );
+      setDraftSujetId(
+        showSujetField && defaultSujetId != null && defaultSujetId > 0
+          ? String(defaultSujetId)
+          : "",
+      );
       setDraftStatut(WEEKLY_ACTION_STATUT.A_FAIRE);
       setDraftDateFin(toLocalDateInputValue(defaultWeeklyActionDateFin(now)));
       setDraftWeeklyDu(toLocalDateInputValue(now));
@@ -131,6 +144,10 @@ export function WeeklyActionFormDrawer({
       setDraftPorteurId(pid != null && pid > 0 ? String(pid) : "");
       const mid = extractGristReferenceId(action.Mission);
       setDraftMissionId(mid != null && mid > 0 ? String(mid) : "");
+      const sid = extractGristReferenceId(action.Sujet);
+      setDraftSujetId(
+        showSujetField && sid != null && sid > 0 ? String(sid) : "",
+      );
       setDraftStatut(normalizeWeeklyActionStatut(action.Statut));
       const dateFin = parseWeeklyActionDate(action.Date_fin);
       setDraftDateFin(dateFin ? toLocalDateInputValue(dateFin) : "");
@@ -152,6 +169,7 @@ export function WeeklyActionFormDrawer({
     action?.Titre,
     action?.Porteur,
     action?.Mission,
+    action?.Sujet,
     action?.Statut,
     action?.Date_fin,
     action?.Weekly_du,
@@ -160,6 +178,8 @@ export function WeeklyActionFormDrawer({
     intervenants,
     sessionEmail,
     defaultMissionId,
+    defaultSujetId,
+    showSujetField,
   ]);
 
   useEffect(() => {
@@ -210,6 +230,7 @@ export function WeeklyActionFormDrawer({
     try {
       const porteurId = parseOptionalId(draftPorteurId);
       const missionId = parseOptionalId(draftMissionId);
+      const sujetId = showSujetField ? parseOptionalId(draftSujetId) : null;
       const dateFin = draftDateFin
         ? parseLocalDateInputValue(draftDateFin)
         : null;
@@ -220,10 +241,7 @@ export function WeeklyActionFormDrawer({
           titre,
           porteurId,
           missionId,
-          sujetId:
-            defaultSujetId != null && defaultSujetId > 0
-              ? defaultSujetId
-              : null,
+          sujetId,
           dateFin,
           weeklyDu,
           notes,
@@ -237,6 +255,7 @@ export function WeeklyActionFormDrawer({
           statut: draftStatut,
           porteurId,
           missionId,
+          sujetId: showSujetField ? sujetId : undefined,
           dateFin,
           weeklyDu,
           notes,
@@ -283,6 +302,24 @@ export function WeeklyActionFormDrawer({
       if (mid != null && mid > 0 && !rows.some((r) => r.id === mid)) {
         rows.push({ id: mid, label: `Mission #${mid}` });
       }
+    }
+    return rows;
+  })();
+
+  const sujetSelectOptions = (() => {
+    const rows = [...sujetOptions];
+    if (mode === "edit" && action) {
+      const sid = extractGristReferenceId(action.Sujet);
+      if (sid != null && sid > 0 && !rows.some((r) => r.id === sid)) {
+        rows.push({ id: sid, label: `Sujet #${sid}` });
+      }
+    } else if (
+      mode === "create" &&
+      defaultSujetId != null &&
+      defaultSujetId > 0 &&
+      !rows.some((r) => r.id === defaultSujetId)
+    ) {
+      rows.push({ id: defaultSujetId, label: `Sujet #${defaultSujetId}` });
     }
     return rows;
   })();
@@ -375,26 +412,6 @@ export function WeeklyActionFormDrawer({
                   </div>
                   <div className="fr-col-12 pilotage-drawer-form-col-half">
                     <Select
-                      label="Mission liée"
-                      nativeSelectProps={{
-                        id: missionFieldId,
-                        value: draftMissionId,
-                        onChange: (e) =>
-                          setDraftMissionId(e.currentTarget.value),
-                        disabled:
-                          formBusy || (mode === "create" && lockMission),
-                      }}
-                    >
-                      <option value="">Sans mission liée</option>
-                      {missionSelectOptions.map((o) => (
-                        <option key={o.id} value={String(o.id)}>
-                          {o.label}
-                        </option>
-                      ))}
-                    </Select>
-                  </div>
-                  <div className="fr-col-12 pilotage-drawer-form-col-half">
-                    <Select
                       label="Statut"
                       nativeSelectProps={{
                         id: statutFieldId,
@@ -414,6 +431,47 @@ export function WeeklyActionFormDrawer({
                       </option>
                     </Select>
                   </div>
+                  <div className="fr-col-12 pilotage-drawer-form-col-half">
+                    <Select
+                      label="Mission liée"
+                      nativeSelectProps={{
+                        id: missionFieldId,
+                        value: draftMissionId,
+                        onChange: (e) =>
+                          setDraftMissionId(e.currentTarget.value),
+                        disabled:
+                          formBusy || (mode === "create" && lockMission),
+                      }}
+                    >
+                      <option value="">Sans mission</option>
+                      {missionSelectOptions.map((o) => (
+                        <option key={o.id} value={String(o.id)}>
+                          {o.label}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                  {showSujetField ? (
+                    <div className="fr-col-12 pilotage-drawer-form-col-half">
+                      <Select
+                        label="Sujet lié"
+                        nativeSelectProps={{
+                          id: sujetFieldId,
+                          value: draftSujetId,
+                          onChange: (e) =>
+                            setDraftSujetId(e.currentTarget.value),
+                          disabled: formBusy,
+                        }}
+                      >
+                        <option value="">Sans sujet</option>
+                        {sujetSelectOptions.map((o) => (
+                          <option key={o.id} value={String(o.id)}>
+                            {o.label}
+                          </option>
+                        ))}
+                      </Select>
+                    </div>
+                  ) : null}
                   <div className="fr-col-12 pilotage-drawer-form-col-half">
                     <Input
                       label="Date de fin"
