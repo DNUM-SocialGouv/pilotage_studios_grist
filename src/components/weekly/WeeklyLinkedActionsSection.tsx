@@ -155,12 +155,12 @@ export function WeeklyLinkedActionsSection({
                     type="button"
                     priority="tertiary no outline"
                     size="small"
-                    iconId="fr-icon-edit-line"
+                    iconId="fr-icon-eye-line"
                     disabled={locked}
                     onClick={() => onViewAction(action)}
-                    title={`Modifier l’action : ${titre}`}
+                    title={`Voir l’action : ${titre}`}
                   >
-                    Modifier
+                    Voir
                   </Button>
                 ) : null}
               </li>

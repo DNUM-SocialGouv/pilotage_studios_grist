@@ -822,7 +822,9 @@ export function WeeklyCoachPage() {
   );
   /** Drawer create / édition action hors onglet Actions (lien depuis carte / sujet). */
   const [linkFormOpen, setLinkFormOpen] = useState(false);
-  const [linkFormMode, setLinkFormMode] = useState<"create" | "edit">("create");
+  const [linkFormMode, setLinkFormMode] = useState<
+    "create" | "edit" | "view"
+  >("create");
   const [linkFormAction, setLinkFormAction] = useState<WeeklyActionRow | null>(
     null,
   );
@@ -1019,8 +1021,9 @@ export function WeeklyCoachPage() {
     setLinkFormOpen(true);
   };
 
-  const openLinkEditForm = (action: WeeklyActionRow) => {
-    setLinkFormMode("edit");
+  /** Clic action liée → fiche lecture (pas le formulaire). */
+  const openLinkViewForm = (action: WeeklyActionRow) => {
+    setLinkFormMode("view");
     setLinkFormAction(action);
     setLinkFormDefaults({
       missionId: null,
@@ -1691,7 +1694,7 @@ export function WeeklyCoachPage() {
             onLierAction={openLinkActionForSujet}
             onViewAction={(action) => {
               closeAgendaDialog();
-              openLinkEditForm(action);
+              openLinkViewForm(action);
             }}
           />
 
@@ -1713,7 +1716,7 @@ export function WeeklyCoachPage() {
             onLierAction={openLinkActionForMission}
             onViewAction={(action) => {
               closeSuivi();
-              openLinkEditForm(action);
+              openLinkViewForm(action);
             }}
           />
 
@@ -1743,6 +1746,8 @@ export function WeeklyCoachPage() {
             defaultSujetId={linkFormDefaults.sujetId}
             lockMission={linkFormDefaults.lockMission}
             onClose={closeLinkForm}
+            onSwitchToEdit={() => setLinkFormMode("edit")}
+            onSwitchToView={() => setLinkFormMode("view")}
             onSaved={reloadActions}
           />
         </>
