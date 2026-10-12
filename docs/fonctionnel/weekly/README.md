@@ -83,7 +83,7 @@ Shell UI commun avec la liste Missions (`KanbanBoard` / `KanbanCardShell` : colo
 | Ouverture | **Lecture** par défaut |
 | Météo + Membres | Lecture ; bouton **Modifier** → édition (3 boutons météo · select **multi** porteurs Ops = `Equipe` ∩ e-mails `Weekly_coachs`, + orphelins déjà assignés) puis Enregistrer / Annuler |
 | Note ops | Lecture `MissionProse` ; **Modifier** / **Ajouter** → textarea Markdown (pattern contexte mission / note studio) ; icônes Enregistrer / Annuler — **pas** de fermeture auto du drawer |
-| Actions liées | Liste visible des `Weekly_action` filtrées `Mission` = carte (titre / **Voir** → fiche lecture puis **Modifier**) + **Lier une action** (Créer \| Rattacher) ; état vide + CTA |
+| Actions liées | Liste visible des `Weekly_action` filtrées `Mission` = carte (titre / icône **Voir** → fiche lecture puis **Modifier**) + **un seul** CTA **Lier une action** (Créer \| Rattacher — en-tête si liens, sinon sous état vide) |
 | Derniers échanges | `Weekly_agenda` filtrés par mission + Voir / Nouveau sujet |
 | Lien fiche | Navigation `/missions/:id` (secondaire) — **pas** de sync note/météo |
 
@@ -121,8 +121,8 @@ Flag `WEEKLY_PHASE_OPS_COLUMNS_READY = true`. **Aucune** colonne / écriture sur
 
 #### Liste & drawer
 
-- Liste compacte : **titre** + méta `Prénom · date relative` (+ lien mission éventuel + compteur « N action(s) liée(s) » si `Weekly_action.Sujet`) + **Voir** / **Modifier** / **Action** (lier) — pas le détail.
-- Drawer lecture : titre, détail (`MissionProse` — markdown léger + liens internes), mission (lien fiche), méta date / auteur, section **Actions liées** (liste filtrée `Sujet` = id, titre / **Voir** → fiche lecture action puis **Modifier**, CTA Lier / état vide).
+- Liste compacte : **titre** + méta `Prénom · date relative` (+ lien mission éventuel + compteur « N action(s) liée(s) » si `Weekly_action.Sujet`) + boutons **icône seule** **Voir** / **Modifier** (`aria-label` / `title` = « Voir » / « Modifier ») — **pas** de bouton « Action » / « Lier une action » sur la ligne ; pas le détail.
+- Drawer lecture : titre, méta `auteur · date · mission` (lien fiche), détail si présent (`MissionProse` — markdown léger + liens internes), section **Actions liées** (liste filtrée `Sujet` = id ; **un seul** CTA « Lier une action » — en-tête si déjà des liens, sinon sous l’état vide ; titre cliquable / icône **Voir** → fiche lecture action puis **Modifier**).
 - Drawer édition : titre, détail optionnel (textarea markdown), select mission → **Enregistrer**.
 - Drawer **create** (même tiroir) : titre, détail, mission, prénom auteur → **Ajouter** ; focus titre à l’ouverture ; focus retour au CTA après fermeture create.
 - État vide À faire : « Aucun sujet à aborder… » ; Historique vide : message d’aide.
@@ -176,7 +176,7 @@ Même dialogue **Créer \| Rattacher** depuis :
 | Entrée | Persistance |
 |--------|-------------|
 | Menu ⋮ carte Kanban · bouton drawer suivi « Lier une action » | `Weekly_action.Mission` = mission de la carte |
-| Bouton « Action » / CTA drawer sujet « Lier une action » | `Sujet` = id agenda + `Mission` = mission du sujet si présente |
+| CTA drawer sujet (lecture) « Lier une action » uniquement — **pas** sur la ligne liste | `Sujet` = id agenda + `Mission` = mission du sujet si présente |
 
 - **Créer** → drawer action avec Mission (et Sujet) préremplis.
 - **Rattacher** → update des liens sur une action ouverte non déjà liée à ce contexte.

@@ -1,6 +1,9 @@
 /**
  * Liste des actions Weekly liées à une mission ou un sujet.
  * Réutilisée dans le drawer suivi mission et le drawer sujet.
+ *
+ * Un seul CTA « Lier une action » : dans l’en-tête s’il y a déjà des liens,
+ * sinon sous l’état vide (évite le doublon header + bouton).
  */
 
 import { Button } from "@codegouvfr/react-dsfr/Button";
@@ -30,9 +33,17 @@ export function WeeklyLinkedActionsSection({
   onViewAction,
 }: WeeklyLinkedActionsSectionProps) {
   const headingId = `${titleId}-actions-liees`;
+  const hasActions = actions.length > 0;
 
   return (
-    <section className="fr-mt-4w" aria-labelledby={headingId}>
+    <section
+      className="fr-mt-3w"
+      aria-labelledby={headingId}
+      style={{
+        paddingTop: "1rem",
+        borderTop: "1px solid var(--border-default-grey)",
+      }}
+    >
       <div
         className="fr-mb-1w"
         style={{
@@ -45,14 +56,14 @@ export function WeeklyLinkedActionsSection({
       >
         <h3 id={headingId} className="fr-h6 fr-mb-0">
           Actions liées
-          {actions.length > 0 ? (
+          {hasActions ? (
             <span className="fr-hint-text" style={{ fontWeight: 400 }}>
               {" "}
               ({actions.length})
             </span>
           ) : null}
         </h3>
-        {onLier ? (
+        {onLier && hasActions ? (
           <Button
             type="button"
             priority="tertiary no outline"
@@ -66,11 +77,17 @@ export function WeeklyLinkedActionsSection({
         ) : null}
       </div>
       <p className="fr-hint-text fr-mb-2w">{hint}</p>
-      {actions.length === 0 ? (
-        <div>
+      {!hasActions ? (
+        <div
+          style={{
+            padding: "0.75rem 1rem",
+            background: "var(--background-alt-grey)",
+            boxShadow: "inset 0 0 0 1px var(--border-default-grey)",
+          }}
+        >
           <p
             className="fr-text--sm fr-mb-2w"
-            style={{ color: "var(--text-mention-grey)" }}
+            style={{ color: "var(--text-mention-grey)", marginTop: 0 }}
           >
             {emptyLabel}
           </p>
@@ -95,7 +112,7 @@ export function WeeklyLinkedActionsSection({
             padding: 0,
             display: "flex",
             flexDirection: "column",
-            gap: "0.25rem",
+            gap: 0,
           }}
         >
           {actions.map((action) => {
@@ -111,9 +128,9 @@ export function WeeklyLinkedActionsSection({
                   display: "flex",
                   flexWrap: "wrap",
                   gap: "0.35rem 0.75rem",
-                  alignItems: "baseline",
+                  alignItems: "center",
                   justifyContent: "space-between",
-                  padding: "0.45rem 0",
+                  padding: "0.5rem 0",
                   borderTop: "1px solid var(--border-default-grey)",
                 }}
               >
@@ -158,10 +175,11 @@ export function WeeklyLinkedActionsSection({
                     iconId="fr-icon-eye-line"
                     disabled={locked}
                     onClick={() => onViewAction(action)}
-                    title={`Voir l’action : ${titre}`}
-                  >
-                    Voir
-                  </Button>
+                    title="Voir"
+                    nativeButtonProps={{
+                      "aria-label": "Voir",
+                    }}
+                  />
                 ) : null}
               </li>
             );
