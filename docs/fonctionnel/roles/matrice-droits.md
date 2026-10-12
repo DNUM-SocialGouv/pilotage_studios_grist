@@ -86,7 +86,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | `Realise.Calcul_TTC` | R ; U Owner | R | R | R | **Appliqué** | `+R -U` si non-Owner |
 | `Missions` / `Missions_enfants` | CRUD | R/U dép. | R ses missions | R / — | Non (rôle) | |
 | `Weekly_phase` | CRUD* | —† | —† | — | **Appliqué** ACL + widget (allowlist) | *Owner document ; †si `user.Email == user.Weekly_coach.E_mail` |
-| `Weekly_agenda` | CRUD* | —† | —† | — | **Appliqué** ACL + widget (allowlist) | Idem |
+| `Weekly_agenda` | CRUD* | —† | —† | — | **Appliqué** ACL + widget (allowlist create/update/**delete**) | Idem ; delete widget = une ligne après confirm UI ; détache `Weekly_action.Sujet` avant destroy |
 | `Weekly_action` | CRUD* | —† | —† | — | **Appliqué** ACL + widget (allowlist create/update/**delete**) | Idem ; delete widget = une ligne après confirm UI ; lien carte/sujet via `Mission` (+ `Sujet` Ref→agenda **HITL Owner**, flag code) |
 | `Weekly_coachs` | CRUD | — | R soi | — | **Appliqué** ACL ; widget lecture | Allowlist e-mails — **pas** dans git ; pas d’écriture widget |
 | `Kanban` (feedback + produit) | CRU (liste + colonne + corps Admin) | C (+ R) | C (+ R) | C (+ R) | **Appliqué** (ACL) + widget | Owner/Admin `+CRUD` (colonne + `Resume`/`Message`) ; `True` → `+CR-UD` |
@@ -110,6 +110,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-10-12 | Weekly Ops sujets : **delete** widget `Weekly_agenda` (exception allowlist `destroy`, une ligne) + confirmation accessible (drawer lecture / édition) ; détache `Weekly_action.Sujet` avant destroy ; **pas** de masse ; **N/A `Page_*`** | 5, 6 | PR delete sujets · kanban HITL `weekly-sujet-delete` |
 | 2026-10-12 | Weekly Ops sujets : liste **icônes seules** Voir / Modifier ; **Lier une action** uniquement dans le drawer lecture (plus sur la ligne) ; section Actions liées **un seul** CTA ; **N/A `Page_*`** (même écran `/weekly`) | 5 | [#130](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/pull/130) · kanban HITL `weekly-sujets-ux-polish` |
 | 2026-10-10 | Weekly Ops **lier action** depuis carte Kanban mission + sujet agenda (dialogue Créer \| Rattacher) ; persist `Mission` + `Sujet` (colonne Owner vérifiée MCP, `WEEKLY_ACTION_SUJET_COLUMN_READY=true`) ; **N/A `Page_*`** | 5, 6 (doc colonne) | [#128](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/pull/128) · kanban `weekly-card-lier-action` (HITL create) |
 | 2026-10-09 | Weekly Ops **actions** : delete widget `Weekly_action` (exception allowlist `destroy`, une ligne) + confirmation accessible (menu ⋮ carte + drawer édition) ; **pas** de masse ; **N/A `Page_*`** | 5, 6 | [#127](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/pull/127) · kanban `weekly-op-actions` |

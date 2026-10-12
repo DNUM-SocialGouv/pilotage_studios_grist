@@ -55,7 +55,7 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 | `Equipe` | Lecture — noms / avatars ; `E_mail` pour jointure porteurs Ops ↔ `Weekly_coachs` (si Access Rules le livrent) |
 | Produits SDPC | Lecture — libellé produit |
 | **`Weekly_phase`** | Create + update — 1 ligne / mission : `Mission` (Ref) · `Phase` (`prochainement` \| `cadrage` \| `actif` \| `autonomie`) · `Meteo` · `Note_ops` · `Membre_equipe` (RefList → `Equipe`) |
-| **`Weekly_agenda`** | Create + update `Traite` / `Traite_le` / `Texte` (titre) / `Detail` / `Mission` — sujets : `Texte` (titre) · `Detail` (opt., drawer) · `Auteur` · `Email` · `Mission` (opt.) · `Traite` · `Traite_le` (Date, jour du coche) · `Cree_le` |
+| **`Weekly_agenda`** | Create + update + **delete** (exception widget) — sujets : `Texte` (titre) · `Detail` (opt., drawer) · `Auteur` · `Email` · `Mission` (opt.) · `Traite` · `Traite_le` (Date, jour du coche) · `Cree_le` ; delete **une** ligne après confirmation (drawer lecture / édition) — **pas** de masse ; avant destroy, détache `Weekly_action.Sujet` (actions conservées) |
 | **`Weekly_action`** | Create + update + **delete** (exception widget) — actions Ops (kanban + drawer SM lecture → édition / create) : `Titre` · `Statut` (`A faire` \| `En cours`) · `Porteur` (Ref→Equipe) · `Mission` (opt.) · **`Sujet`** (opt., Ref→`Weekly_agenda` — colonne Owner **présente**, flag `WEEKLY_ACTION_SUJET_COLUMN_READY=true`) · `Date_fin` · `Weekly_du` · `Notes` · `Fait` · `Fait_le` · `Cree_le` · `Email` ; delete **une** ligne après confirmation (menu ⋮ carte + bouton drawer lecture / édition) — **pas** de delete en masse ; **Lier** depuis carte Kanban / sujet (Créer pré-lié ou Rattacher) |
 | **`Weekly_coachs`** | Lecture widget (allowlist) — `E_mail` ; écriture **hors widget** (Owner / Admin UI) |
 
@@ -122,9 +122,11 @@ Flag `WEEKLY_PHASE_OPS_COLUMNS_READY = true`. **Aucune** colonne / écriture sur
 #### Liste & drawer
 
 - Liste compacte : **titre** + méta `Prénom · date relative` (+ lien mission éventuel + compteur « N action(s) liée(s) » si `Weekly_action.Sujet`) + boutons **icône seule** **Voir** / **Modifier** (`aria-label` / `title` = « Voir » / « Modifier ») — **pas** de bouton « Action » / « Lier une action » sur la ligne ; pas le détail.
-- Drawer lecture : titre, méta `auteur · date · mission` (lien fiche), détail si présent (`MissionProse` — markdown léger + liens internes), section **Actions liées** (liste filtrée `Sujet` = id ; **un seul** CTA « Lier une action » — en-tête si déjà des liens, sinon sous l’état vide ; titre cliquable / icône **Voir** → fiche lecture action puis **Modifier**).
-- Drawer édition : titre, détail optionnel (textarea markdown), select mission → **Enregistrer**.
-- Drawer **create** (même tiroir) : titre, détail, mission, prénom auteur → **Ajouter** ; focus titre à l’ouverture ; focus retour au CTA après fermeture create.
+- Drawer lecture : titre, méta `auteur · date · mission` (lien fiche), détail si présent (`MissionProse` — markdown léger + liens internes), section **Actions liées** (liste filtrée `Sujet` = id ; **un seul** CTA « Lier une action » — en-tête si déjà des liens, sinon sous l’état vide ; titre cliquable / icône **Voir** → fiche lecture action puis **Modifier**) ; bouton tertiaire **Supprimer** → dialogue de confirmation (hors drawer).
+- Drawer édition : titre, détail optionnel (textarea markdown), select mission → **Enregistrer** ; même **Supprimer** + confirm.
+- Suppression : une ligne `Weekly_agenda` après confirm accessible ; les actions liées restent dans le kanban Actions, lien `Sujet` remis à vide ; fermeture du drawer + rechargement liste. Pour archiver sans effacer → coche **Traité** (historique).
+- Drawer **create** (même tiroir) : titre, détail, mission, prénom auteur → **Ajouter** ; focus titre à l’ouverture ; focus retour au CTA après fermeture create. **Pas** de Supprimer en create.
+- **Pas** de bouton Supprimer sur la ligne liste (éviter le clutter).
 - État vide À faire : « Aucun sujet à aborder… » ; Historique vide : message d’aide.
 - Champ auteur « Votre prénom » (create) : prérempli avec le **prénom seul** —
   1. `Equipe.Prenom_Nom` de la session (`firstNameFromDisplayName`) ;

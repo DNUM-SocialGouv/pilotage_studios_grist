@@ -16,9 +16,10 @@
  *   `Phase` · `Meteo` · `Note_ops` · `Membre_equipe` RefList→Equipe
  *   — jamais `Missions` — pas de delete).
  * - `Weekly_agenda` : create + update `Traite` / `Traite_le` / `Texte` (titre) /
- *   `Detail` / `Mission` (sujets à aborder — pas de delete).
- * - `Weekly_action` : create + update + **delete** (actions Ops — seule table
- *   autorisée pour `getTable().destroy` ; confirmation UI obligatoire ; pas de masse).
+ *   `Detail` / `Mission` + **delete** (sujets à aborder — une ligne après confirm UI ;
+ *   détache `Weekly_action.Sujet` avant destroy si besoin).
+ * - `Weekly_action` : create + update + **delete** (actions Ops —
+ *   `getTable().destroy` ; confirmation UI obligatoire ; pas de masse).
  * - `BDC` : update only (drawer cadre fiche — pas de create/delete).
  */
 
@@ -76,9 +77,13 @@ export type WritableUpdateTableId = (typeof WRITE_TABLE_UPDATE_ALLOWLIST)[number
 
 /**
  * Tables autorisées pour `getTable().destroy` (sous-ensemble strict).
- * Exception produit : `Weekly_action` uniquement — une ligne à la fois, après confirm UI.
+ * Exceptions produit : `Weekly_action` · `Weekly_agenda` — une ligne à la fois,
+ * après confirm UI (pas de masse).
  */
-export const WRITE_TABLE_DELETE_ALLOWLIST = [WEEKLY_ACTION_TABLE_ID] as const;
+export const WRITE_TABLE_DELETE_ALLOWLIST = [
+  WEEKLY_ACTION_TABLE_ID,
+  WEEKLY_AGENDA_TABLE_ID,
+] as const;
 
 export type WritableDeleteTableId = (typeof WRITE_TABLE_DELETE_ALLOWLIST)[number];
 
