@@ -17,7 +17,17 @@ export type UoTarifGrilleMeta = {
   porteurId: string;
   labelCourt: string;
   source: string;
+  /**
+   * Indexation BPU (ex. 1,007) déjà intégrée dans les PU HT Excel.
+   * Ce n’est **pas** le markup porteur (ex. Inops 1,05263).
+   */
   actualisation: number;
+  /** Markup porteur HT → avant TVA (ex. Inops × 1,05263). */
+  markup?: number;
+  /** TVA (ex. × 1,20). */
+  tva?: number;
+  /** Coefficient TTC = markup × TVA (ex. Inops × 1,263156). */
+  coefficientTtc?: number;
 };
 
 /** Normalise un code UO (espaces / tirets) pour comparaison. */

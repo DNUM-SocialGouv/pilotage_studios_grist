@@ -37,6 +37,22 @@ Toujours **séquentiel** (pas de tiroir large ni d’aperçu côte à côte) :
 
 Aucune table « Devis », **aucune écriture** Grist pour ce parcours V1.
 
+## Coefficients IPPON / Inop’s (HT → TTC)
+
+Les prix unitaires **HT** viennent du BPU Excel (fichier « BPU Act » : l’**actualisation** marché ≈ × 1,007 est déjà dans ces HT).
+
+Ce n’est **pas** le markup porteur. Pour **IPPON / Inop’s**, le passage HT → TTC du devis utilise :
+
+| Grandeur | Valeur |
+|----------|--------|
+| Markup | × 1,05263 (5 % inclus) |
+| TVA | × 1,20 |
+| Coefficient TTC | × 1,263156 (= markup × TVA) |
+
+Formule : **TTC = HT × 1,05263 × 1,20 = HT × 1,263156**.
+
+Les autres porteurs (Octo/Malt, Hubvisory…) restent sur TTC = HT × TVA dans leur grille BPU (sans ce markup 5 %). L’estimation CRA indicative (`CRA_TTC_MARKUP_FACTOR` 15 %) est un autre parcours (fiche mission) — pas ce coefficient Inops.
+
 ## Hors scope V1
 
 - Export PDF / envoi mail

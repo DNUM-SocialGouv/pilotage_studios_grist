@@ -3,7 +3,10 @@
  * Aligné sur les montants Grist observés : jours × TJM × markup × TVA.
  */
 
-/** Coefficient plateforme / portage (ex. Malt ~15 %). */
+/**
+ * Coefficient plateforme / portage (ex. Malt ~15 %).
+ * Ne pas confondre avec le markup devis BPU IPPON/Inops (`IPPON_INOPS_MARKUP_FACTOR` = 1,05263).
+ */
 export const CRA_TTC_MARKUP_FACTOR = 1.15;
 
 /** TVA française standard. */
