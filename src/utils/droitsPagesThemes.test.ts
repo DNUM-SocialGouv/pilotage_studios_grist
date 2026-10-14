@@ -58,7 +58,14 @@ describe("droitsPagesThemes", () => {
   it("liste les écrans fixés par rôle (lecture seule Admin)", () => {
     assert.deepEqual(
       DROITS_PAGES_ROLE_FIXED.map((s) => s.id),
-      ["feuille_de_route", "mon_carnet", "revue_cra", "weekly", "droits_pages"],
+      [
+        "feuille_de_route",
+        "mon_carnet",
+        "revue_cra",
+        "weekly",
+        "droits_pages",
+        "generer_devis",
+      ],
     );
     const feuille = DROITS_PAGES_ROLE_FIXED.find(
       (s) => s.id === "feuille_de_route",
@@ -79,6 +86,10 @@ describe("droitsPagesThemes", () => {
     const droits = DROITS_PAGES_ROLE_FIXED.find((s) => s.id === "droits_pages");
     assert.equal(droits?.accessByRole.Admin, true);
     assert.equal(droits?.accessByRole.Freelance, false);
+    const devis = DROITS_PAGES_ROLE_FIXED.find((s) => s.id === "generer_devis");
+    assert.equal(devis?.accessByRole.Admin, true);
+    assert.equal(devis?.accessByRole.Freelance, false);
+    assert.equal(devis?.accessByRole["Responsable de département"], false);
   });
 
   it("détecte le rôle Admin", () => {
@@ -250,6 +261,10 @@ describe("feedbackPages droits-pages", () => {
 
   it("mappe le spike datatable", () => {
     assert.equal(pageOptionFromPathname("/outils/spike-datatable"), "Spike datatable");
+  });
+
+  it("mappe Générer un devis", () => {
+    assert.equal(pageOptionFromPathname("/outils/generer-devis"), "Générer un devis");
   });
 
   it("mappe le guide Documentation (règles métier)", () => {
