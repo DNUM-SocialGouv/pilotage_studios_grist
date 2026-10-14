@@ -89,7 +89,6 @@ function AgendaSujetRow({
   onToggle,
   onView,
   onEdit,
-  onLierAction,
 }: {
   sujet: WeeklyAgendaRow;
   missionLabel?: string;
@@ -100,7 +99,6 @@ function AgendaSujetRow({
   onToggle: (id: number, traite: boolean) => void;
   onView: (sujet: WeeklyAgendaRow) => void;
   onEdit: (sujet: WeeklyAgendaRow) => void;
-  onLierAction?: (sujet: WeeklyAgendaRow) => void;
 }) {
   const checkId = `weekly-agenda-${sujet.id}`;
   const titleId = `${checkId}-title`;
@@ -119,7 +117,7 @@ function AgendaSujetRow({
         display: "grid",
         gridTemplateColumns: "1.25rem minmax(0, 1fr) auto",
         gap: "0.75rem",
-        alignItems: "start",
+        alignItems: "center",
       }}
     >
       <div className="fr-checkbox-group fr-checkbox-group--sm" style={{ margin: 0 }}>
@@ -193,12 +191,8 @@ function AgendaSujetRow({
         </p>
       </div>
       <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "0.25rem",
-          justifyContent: "flex-end",
-        }}
+        className="fr-btns-group fr-btns-group--sm fr-btns-group--inline fr-btns-group--right fr-mb-0"
+        style={{ flexWrap: "nowrap" }}
       >
         <Button
           type="button"
@@ -207,10 +201,11 @@ function AgendaSujetRow({
           iconId="fr-icon-eye-line"
           disabled={busy}
           onClick={() => onView(sujet)}
-          title={`Voir le sujet : ${titre}`}
-        >
-          Voir
-        </Button>
+          title="Voir"
+          nativeButtonProps={{
+            "aria-label": "Voir",
+          }}
+        />
         <Button
           type="button"
           priority="tertiary no outline"
@@ -218,23 +213,11 @@ function AgendaSujetRow({
           iconId="fr-icon-edit-line"
           disabled={busy}
           onClick={() => onEdit(sujet)}
-          title={`Modifier le sujet : ${titre}`}
-        >
-          Modifier
-        </Button>
-        {onLierAction ? (
-          <Button
-            type="button"
-            priority="tertiary no outline"
-            size="small"
-            iconId="fr-icon-links-line"
-            disabled={busy}
-            onClick={() => onLierAction(sujet)}
-            title={`Lier une action : ${titre}`}
-          >
-            Action
-          </Button>
-        ) : null}
+          title="Modifier"
+          nativeButtonProps={{
+            "aria-label": "Modifier",
+          }}
+        />
       </div>
     </article>
   );
@@ -454,49 +437,59 @@ function AgendaSujetDialog({
             <div className="pilotage-drawer-dialog__body fr-px-3w fr-pb-3w fr-pt-0">
               {mode === "view" && sujet != null ? (
                 <>
-                  <h3 className="fr-h6 fr-mb-1w" style={{ marginTop: 0 }}>
+                  <h3 className="fr-h6 fr-mb-0" style={{ marginTop: 0 }}>
                     {titre || "—"}
                   </h3>
-                  {detail ? (
-                    <div className="fr-mb-2w">
-                      <MissionProse value={detail} onInternalLinkClick={close} />
-                    </div>
-                  ) : (
-                    <p
-                      className="fr-text--sm fr-mb-2w"
-                      style={{ color: "var(--text-mention-grey)" }}
-                    >
-                      Aucun détail.
-                    </p>
-                  )}
-                  <p className="fr-text--sm fr-mb-1w">
-                    <span className="fr-hint-text" style={{ display: "block" }}>
-                      Mission liée
+                  <p
+                    className="fr-text--xs fr-mb-2w"
+                    style={{
+                      marginTop: "0.25rem",
+                      color: "var(--text-mention-grey)",
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "0.25rem 0.5rem",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span>
+                      {auteur || "—"}
+                      {createdLabel && createdAt ? (
+                        <>
+                          {" "}
+                          <span aria-hidden="true">·</span>{" "}
+                          <time dateTime={createdAt.toISOString()}>
+                            {createdLabel}
+                          </time>
+                        </>
+                      ) : null}
                     </span>
                     {missionId != null && missionLabel ? (
-                      <Link className="fr-link" to={`/missions/${missionId}`}>
-                        {missionLabel}
-                      </Link>
+                      <>
+                        <span aria-hidden="true">·</span>
+                        <Link
+                          className="fr-link fr-link--sm fr-icon-team-line fr-link--icon-left"
+                          to={`/missions/${missionId}`}
+                          onClick={close}
+                        >
+                          {missionLabel}
+                        </Link>
+                      </>
                     ) : (
-                      <span style={{ color: "var(--text-mention-grey)" }}>
-                        Sans mission liée
-                      </span>
+                      <>
+                        <span aria-hidden="true">·</span>
+                        <span>Sans mission liée</span>
+                      </>
                     )}
                   </p>
-                  <p className="fr-text--xs" style={{ color: "var(--text-mention-grey)" }}>
-                    {auteur}
-                    {createdLabel && createdAt ? (
-                      <>
-                        {" "}
-                        <span aria-hidden="true">·</span>{" "}
-                        <time dateTime={createdAt.toISOString()}>{createdLabel}</time>
-                      </>
-                    ) : null}
-                  </p>
+                  {detail ? (
+                    <div className="fr-mb-3w">
+                      <MissionProse value={detail} onInternalLinkClick={close} />
+                    </div>
+                  ) : null}
                   <WeeklyLinkedActionsSection
                     titleId={titleId}
                     actions={actionsLies}
-                    hint="Actions Ops rattachées à ce sujet."
+                    hint="Actions Ops rattachées à ce sujet — créez ou rattachez depuis ici."
                     locked={busy}
                     onLier={
                       onLierAction && sujet != null
@@ -579,11 +572,16 @@ function AgendaSujetDialog({
                 </form>
               ) : null}
 
-              <ul className="fr-btns-group fr-btns-group--right fr-btns-group--inline-reverse fr-btns-group--inline-lg fr-mt-3w">
+              <ul className="fr-btns-group fr-btns-group--right fr-btns-group--inline-reverse fr-btns-group--inline-lg fr-mt-4w">
                 {mode === "view" ? (
                   <>
                     <li>
-                      <Button type="button" onClick={onSwitchToEdit} disabled={busy}>
+                      <Button
+                        type="button"
+                        iconId="fr-icon-edit-line"
+                        onClick={onSwitchToEdit}
+                        disabled={busy}
+                      >
                         Modifier
                       </Button>
                     </li>
@@ -1428,7 +1426,6 @@ export function WeeklyCoachPage() {
                                 }
                                 onView={(row) => openAgendaDialog(row, "view")}
                                 onEdit={(row) => openAgendaDialog(row, "edit")}
-                                onLierAction={openLinkActionForSujet}
                               />
                             </li>
                           );
@@ -1557,7 +1554,6 @@ export function WeeklyCoachPage() {
                                           onEdit={(row) =>
                                             openAgendaDialog(row, "edit")
                                           }
-                                          onLierAction={openLinkActionForSujet}
                                         />
                                       </li>
                                     );
