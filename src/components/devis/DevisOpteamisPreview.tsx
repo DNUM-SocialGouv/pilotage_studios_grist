@@ -98,8 +98,11 @@ export type DevisOpteamisPreviewProps = {
   copyOk?: boolean;
   copyError?: string;
   onDismissCopyOk?: () => void;
-  /** Widget V1 : toujours stack (pas de split drawer). */
-  layout?: "stack";
+  /**
+   * `stack` : aperçu pleine largeur (étape dédiée / mobile).
+   * `split` : colonne droite live (page formulaire LG+).
+   */
+  layout?: "stack" | "split";
   showActions?: boolean;
   footerActions?: ReactNode;
 };
@@ -134,9 +137,9 @@ export function DevisOpteamisPreview({
   }, [fields]);
 
   const rootClass =
-    layout === "stack"
-      ? "pilotage-devis-preview pilotage-devis-preview--stack"
-      : "pilotage-devis-preview";
+    layout === "split"
+      ? "pilotage-devis-preview pilotage-devis-preview--split"
+      : "pilotage-devis-preview pilotage-devis-preview--stack";
 
   return (
     <div className={rootClass} aria-label="Aperçu du devis">

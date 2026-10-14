@@ -44,7 +44,7 @@ import {
   type OpteamisDevisFields,
 } from "../utils/devisPorteurs/types";
 
-type PageStep = "porteur" | "formulaire" | "apercu";
+type PageStep = "porteur" | "formulaire";
 
 function buildUoOptions(porteurId: DevisPorteurId) {
   return UO_LOT4_PACKAGED.map((uo) => {
@@ -60,7 +60,7 @@ function buildUoOptions(porteurId: DevisPorteurId) {
 }
 
 /**
- * Outil Admin : assembler un texte de devis (porteur → formulaire → aperçu / copie).
+ * Outil Admin : assembler un texte de devis (porteur → formulaire + aperçu live).
  * Pas de PDF, pas d’IA, pas d’écriture Grist — lecture choix BDC uniquement.
  */
 export function GenererDevisPage() {
@@ -270,12 +270,10 @@ export function GenererDevisPage() {
   const stepHint =
     step === "porteur"
       ? "Choisissez le porteur et le schéma de rédaction."
-      : step === "formulaire"
-        ? `${porteurDef?.label ?? porteur} — complétez le contexte et les UO.`
-        : "Relisez le texte puis copiez-le pour envoi au porteur.";
+      : `${porteurDef?.label ?? porteur} — complétez à gauche ; l’aperçu se met à jour à droite (sous le formulaire sur petit écran).`;
 
   return (
-    <div className="fr-container fr-mt-2w fr-mb-4w">
+    <div className="fr-container fr-container--fluid fr-px-2w fr-mt-2w fr-mb-4w">
       <h1 className="fr-h3 fr-mb-1w">Générer un devis</h1>
       <p className="fr-text--sm fr-text-mention--grey fr-mb-3w">{stepHint}</p>
 
@@ -338,7 +336,10 @@ export function GenererDevisPage() {
             type="button"
             priority="primary"
             disabled={!porteurDef?.enabled}
-            onClick={() => setStep("formulaire")}
+            onClick={() => {
+              clearCopyFeedback();
+              setStep("formulaire");
+            }}
           >
             Continuer
           </Button>
@@ -346,321 +347,308 @@ export function GenererDevisPage() {
       ) : null}
 
       {step === "formulaire" ? (
-        <div className="pilotage-devis-layout fr-flow">
-          <section
-            className="pilotage-devis-form-section"
-            aria-labelledby="devis-section-infos"
-          >
-            <h2 id="devis-section-infos" className="pilotage-devis-form-section__title">
-              Infos
-            </h2>
-            <Input
-              label="Nom du projet"
-              nativeInputProps={{
-                value: fields.nomProjet,
-                onChange: (e) => patchField("nomProjet", e.currentTarget.value),
-              }}
-            />
-
-            <Select
-              label="Financeur"
-              nativeSelectProps={{
-                value: fields.financeur,
-                onChange: (e) => patchField("financeur", e.currentTarget.value),
-                disabled: formDisabled,
-              }}
+        <div className="pilotage-devis-split">
+          <div className="pilotage-devis-split__form fr-flow">
+            <section
+              className="pilotage-devis-form-section"
+              aria-labelledby="devis-section-infos"
             >
-              <option value="">— Choisir un financeur —</option>
-              {financeurOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </Select>
-
-            <DsfrSelectRichMulti
-              label="Équipe"
-              placeholderWhenEmpty="Aucune équipe"
-              pluralEntityLabel="équipes"
-              maxInlineSize="100%"
-              options={equipeOptions}
-              selectedValues={selectedEquipes}
-              onSelectedValuesChange={setSelectedEquipes}
-              disabled={formDisabled}
-            />
-
-            <div className="fr-grid-row fr-grid-row--gutters">
-              <div className="fr-col-12 fr-col-md-6">
-                <Input
-                  label="Date de début"
-                  nativeInputProps={{
-                    type: "date",
-                    value: fields.periodeDebut,
-                    onChange: (e) =>
-                      patchField("periodeDebut", e.currentTarget.value),
-                  }}
-                />
-              </div>
-              <div className="fr-col-12 fr-col-md-6">
-                <Input
-                  label="Date de fin"
-                  nativeInputProps={{
-                    type: "date",
-                    value: fields.periodeFin,
-                    onChange: (e) => patchField("periodeFin", e.currentTarget.value),
-                  }}
-                />
-              </div>
-            </div>
-          </section>
-
-          <section
-            className="pilotage-devis-form-section"
-            aria-labelledby="devis-section-generation"
-          >
-            <h2
-              id="devis-section-generation"
-              className="pilotage-devis-form-section__title"
-            >
-              Génération de la demande
-            </h2>
-            <DsfrSelectRichMulti
-              label="Type de prestation"
-              hintText="1 ou 2 profils — pré-remplit la demande, les livrables, l’équipe et les UO suggérées. Vous pouvez ensuite modifier les textes."
-              placeholderWhenEmpty="Aucun profil"
-              pluralEntityLabel="profils"
-              maxInlineSize="100%"
-              maxSelections={DEVIS_PROFIL_MAX_SELECTION}
-              showBulkActions={false}
-              options={DEVIS_PROFIL_TEMPLATES.map((t) => ({
-                value: t.id,
-                label: t.optionLabel,
-              }))}
-              selectedValues={profilIds}
-              onSelectedValuesChange={applyProfilTemplates}
-            />
-
-            <div className="fr-input-group">
-              <label className="fr-label" htmlFor="devis-demande">
-                Demande (contexte)
-                <span className="fr-hint-text">
-                  Texte pré-rempli selon le(s) type(s) de prestation — éditable
-                </span>
-              </label>
-              <textarea
-                id="devis-demande"
-                className="fr-input"
-                rows={6}
-                value={fields.demandeContexte}
-                onChange={(e) =>
-                  patchField("demandeContexte", e.currentTarget.value)
-                }
-              />
-            </div>
-
-            <div className="fr-input-group">
-              <label className="fr-label" htmlFor="devis-livrables">
-                Liste des livrables attendus
-                <span className="fr-hint-text">
-                  Texte pré-rempli selon le(s) type(s) de prestation — éditable
-                </span>
-              </label>
-              <textarea
-                id="devis-livrables"
-                className="fr-input"
-                rows={5}
-                value={fields.livrablesAttendus}
-                onChange={(e) =>
-                  patchField("livrablesAttendus", e.currentTarget.value)
-                }
-              />
-            </div>
-          </section>
-
-          <section
-            className="pilotage-devis-form-section"
-            aria-labelledby="devis-section-chiffrage"
-          >
-            <h2
-              id="devis-section-chiffrage"
-              className="pilotage-devis-form-section__title"
-            >
-              Informations de chiffrage
-            </h2>
-
-            <DsfrSelectRichMulti
-              label="Unités d'œuvre (CCTP Lot 4)"
-              hintText={
-                grilleMeta
-                  ? `Prix unitaires BPU ${grilleMeta.labelCourt}`
-                  : "Sélectionnez un porteur pour afficher les prix BPU."
-              }
-              placeholderWhenEmpty="Aucune UO"
-              pluralEntityLabel="UO"
-              maxInlineSize="100%"
-              options={uoOptions}
-              selectedValues={selectedUoCodes}
-              onSelectedValuesChange={onUoSelectionChange}
-              searchable
-            />
-
-            {selectedUoCodes.length === 0 ? (
-              <p className="fr-text--sm fr-mb-0 fr-mt-2w">
-                Sélectionnez au moins une unité d’œuvre pour saisir les quantités.
-              </p>
-            ) : (
-              <div className="pilotage-devis-uo-list fr-mt-2w">
-                {selectedUoCodes.map((code) => {
-                  const tarif = findUoTarifForPorteur(porteur, code);
-                  const ligne = chiffrageCalc.lignes.find((l) => l.code === tarif?.code);
-                  const inputId = `devis-qty-${code.replace(/\s+/g, "-")}`;
-                  const libelleUo = tarif
-                    ? tarif.label.replace(/^UO\s+/i, "").trim()
-                    : null;
-                  return (
-                    <div key={code} className="pilotage-devis-uo-row">
-                      <div className="pilotage-devis-uo-row__identity">
-                        <p className="fr-text--sm fr-mb-0">
-                          <strong>{code}</strong>
-                        </p>
-                        {libelleUo ? (
-                          <p className="fr-text--sm fr-mb-0">{libelleUo}</p>
-                        ) : null}
-                        {tarif ? (
-                          <p className="fr-hint-text fr-mb-0">
-                            {formatEuro(tarif.prixHt)} HT
-                          </p>
-                        ) : (
-                          <p className="fr-hint-text fr-mb-0">Tarif BPU indisponible</p>
-                        )}
-                      </div>
-                      <div className="pilotage-devis-uo-row__saisie">
-                        <div className="fr-input-group fr-mb-1w">
-                          <label className="fr-label" htmlFor={inputId}>
-                            Quantité
-                          </label>
-                          <input
-                            id={inputId}
-                            className="fr-input"
-                            type="number"
-                            min={0}
-                            step="1"
-                            inputMode="numeric"
-                            placeholder="ex. 18"
-                            value={uoQuantites[code] ?? ""}
-                            onChange={(e) =>
-                              setQuantiteForUo(code, e.currentTarget.value)
-                            }
-                          />
-                        </div>
-                        {ligne && ligne.quantite > 0 ? (
-                          <div className="pilotage-devis-uo-row__montants">
-                            <p className="fr-text--sm fr-mb-0">
-                              <strong>{formatEuro(ligne.totalHt)} HT</strong>
-                            </p>
-                            <p className="fr-hint-text fr-mb-0">
-                              {formatEuro(ligne.totalTtc)} TTC
-                            </p>
-                          </div>
-                        ) : (
-                          <p className="fr-hint-text fr-mb-0">
-                            Saisir une quantité pour afficher le montant.
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-                {chiffrageCalc.lignes.some((l) => l.quantite > 0) ? (
-                  <p className="fr-text--sm fr-mb-0 fr-mt-2w">
-                    <strong>Total devis :</strong> {formatEuro(chiffrageCalc.totalHt)}{" "}
-                    HT · {formatEuro(chiffrageCalc.totalTtc)} TTC
-                  </p>
-                ) : null}
-              </div>
-            )}
-
-            <div className="pilotage-devis-pv fr-mt-3w">
-              <h3 className="fr-text--md fr-mb-1w">Découpe des PV</h3>
-              <p className="fr-hint-text fr-mb-2w">
-                Répartition en quantités entières aussi égale que possible (pas de
-                demi-UO). Les mois suivent la période du devis (à partir de la date de
-                début).
-              </p>
+              <h2 id="devis-section-infos" className="pilotage-devis-form-section__title">
+                Infos
+              </h2>
               <Input
-                label="Nombre de PV"
-                hintText={
-                  suggestedNbPv != null
-                    ? `Suggestion : ${suggestedNbPv} (mois de la période) — détail dans l’aperçu`
-                    : "Renseignez la période pour une suggestion automatique — détail dans l’aperçu"
-                }
+                label="Nom du projet"
                 nativeInputProps={{
-                  type: "number",
-                  min: 1,
-                  max: 36,
-                  step: 1,
-                  inputMode: "numeric",
-                  placeholder: suggestedNbPv != null ? String(suggestedNbPv) : "ex. 4",
-                  value: effectiveNbPvInput,
-                  onChange: (e) => {
-                    setNbPvTouched(true);
-                    setNbPvInput(e.currentTarget.value);
-                  },
+                  value: fields.nomProjet,
+                  onChange: (e) => patchField("nomProjet", e.currentTarget.value),
                 }}
               />
 
-              {decoupePvResult != null && !decoupePvResult.ok ? (
-                <p className="fr-text--sm fr-mb-0 fr-mt-1w">{decoupePvResult.reason}</p>
-              ) : null}
-            </div>
-          </section>
+              <Select
+                label="Financeur"
+                nativeSelectProps={{
+                  value: fields.financeur,
+                  onChange: (e) => patchField("financeur", e.currentTarget.value),
+                  disabled: formDisabled,
+                }}
+              >
+                <option value="">— Choisir un financeur —</option>
+                {financeurOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </Select>
 
-          <div className="fr-btns-group fr-btns-group--inline fr-btns-group--icon-left">
-            <Button
-              type="button"
-              priority="secondary"
-              onClick={() => setStep("porteur")}
-            >
-              Retour
-            </Button>
-            <Button
-              type="button"
-              priority="primary"
-              onClick={() => {
-                clearCopyFeedback();
-                setStep("apercu");
-              }}
-            >
-              Aperçu du devis
-            </Button>
-          </div>
-        </div>
-      ) : null}
+              <DsfrSelectRichMulti
+                label="Équipe"
+                placeholderWhenEmpty="Aucune équipe"
+                pluralEntityLabel="équipes"
+                maxInlineSize="100%"
+                options={equipeOptions}
+                selectedValues={selectedEquipes}
+                onSelectedValuesChange={setSelectedEquipes}
+                disabled={formDisabled}
+              />
 
-      {step === "apercu" ? (
-        <DevisOpteamisPreview
-          fields={exportFields}
-          copyFormat={copyFormat}
-          onCopyFormatChange={onCopyFormatChange}
-          onCopy={() => {
-            void onCopy();
-          }}
-          copyOk={copyOk}
-          copyError={copyError}
-          onDismissCopyOk={() => setCopyOk(false)}
-          layout="stack"
-          footerActions={
+              <div className="fr-grid-row fr-grid-row--gutters">
+                <div className="fr-col-12 fr-col-md-6">
+                  <Input
+                    label="Date de début"
+                    nativeInputProps={{
+                      type: "date",
+                      value: fields.periodeDebut,
+                      onChange: (e) =>
+                        patchField("periodeDebut", e.currentTarget.value),
+                    }}
+                  />
+                </div>
+                <div className="fr-col-12 fr-col-md-6">
+                  <Input
+                    label="Date de fin"
+                    nativeInputProps={{
+                      type: "date",
+                      value: fields.periodeFin,
+                      onChange: (e) => patchField("periodeFin", e.currentTarget.value),
+                    }}
+                  />
+                </div>
+              </div>
+            </section>
+
+            <section
+              className="pilotage-devis-form-section"
+              aria-labelledby="devis-section-generation"
+            >
+              <h2
+                id="devis-section-generation"
+                className="pilotage-devis-form-section__title"
+              >
+                Génération de la demande
+              </h2>
+              <DsfrSelectRichMulti
+                label="Type de prestation"
+                hintText="1 ou 2 profils — pré-remplit la demande, les livrables, l’équipe et les UO suggérées. Vous pouvez ensuite modifier les textes."
+                placeholderWhenEmpty="Aucun profil"
+                pluralEntityLabel="profils"
+                maxInlineSize="100%"
+                maxSelections={DEVIS_PROFIL_MAX_SELECTION}
+                showBulkActions={false}
+                options={DEVIS_PROFIL_TEMPLATES.map((t) => ({
+                  value: t.id,
+                  label: t.optionLabel,
+                }))}
+                selectedValues={profilIds}
+                onSelectedValuesChange={applyProfilTemplates}
+              />
+
+              <div className="fr-input-group">
+                <label className="fr-label" htmlFor="devis-demande">
+                  Demande (contexte)
+                  <span className="fr-hint-text">
+                    Texte pré-rempli selon le(s) type(s) de prestation — éditable
+                  </span>
+                </label>
+                <textarea
+                  id="devis-demande"
+                  className="fr-input"
+                  rows={6}
+                  value={fields.demandeContexte}
+                  onChange={(e) =>
+                    patchField("demandeContexte", e.currentTarget.value)
+                  }
+                />
+              </div>
+
+              <div className="fr-input-group">
+                <label className="fr-label" htmlFor="devis-livrables">
+                  Liste des livrables attendus
+                  <span className="fr-hint-text">
+                    Texte pré-rempli selon le(s) type(s) de prestation — éditable
+                  </span>
+                </label>
+                <textarea
+                  id="devis-livrables"
+                  className="fr-input"
+                  rows={5}
+                  value={fields.livrablesAttendus}
+                  onChange={(e) =>
+                    patchField("livrablesAttendus", e.currentTarget.value)
+                  }
+                />
+              </div>
+            </section>
+
+            <section
+              className="pilotage-devis-form-section"
+              aria-labelledby="devis-section-chiffrage"
+            >
+              <h2
+                id="devis-section-chiffrage"
+                className="pilotage-devis-form-section__title"
+              >
+                Informations de chiffrage
+              </h2>
+
+              <DsfrSelectRichMulti
+                label="Unités d'œuvre (CCTP Lot 4)"
+                hintText={
+                  grilleMeta
+                    ? `Prix unitaires BPU ${grilleMeta.labelCourt}`
+                    : "Sélectionnez un porteur pour afficher les prix BPU."
+                }
+                placeholderWhenEmpty="Aucune UO"
+                pluralEntityLabel="UO"
+                maxInlineSize="100%"
+                options={uoOptions}
+                selectedValues={selectedUoCodes}
+                onSelectedValuesChange={onUoSelectionChange}
+                searchable
+              />
+
+              {selectedUoCodes.length === 0 ? (
+                <p className="fr-text--sm fr-mb-0 fr-mt-2w">
+                  Sélectionnez au moins une unité d’œuvre pour saisir les quantités.
+                </p>
+              ) : (
+                <div className="pilotage-devis-uo-list fr-mt-2w">
+                  {selectedUoCodes.map((code) => {
+                    const tarif = findUoTarifForPorteur(porteur, code);
+                    const ligne = chiffrageCalc.lignes.find((l) => l.code === tarif?.code);
+                    const inputId = `devis-qty-${code.replace(/\s+/g, "-")}`;
+                    const libelleUo = tarif
+                      ? tarif.label.replace(/^UO\s+/i, "").trim()
+                      : null;
+                    return (
+                      <div key={code} className="pilotage-devis-uo-row">
+                        <div className="pilotage-devis-uo-row__identity">
+                          <p className="fr-text--sm fr-mb-0">
+                            <strong>{code}</strong>
+                          </p>
+                          {libelleUo ? (
+                            <p className="fr-text--sm fr-mb-0">{libelleUo}</p>
+                          ) : null}
+                          {tarif ? (
+                            <p className="fr-hint-text fr-mb-0">
+                              {formatEuro(tarif.prixHt)} HT
+                            </p>
+                          ) : (
+                            <p className="fr-hint-text fr-mb-0">Tarif BPU indisponible</p>
+                          )}
+                        </div>
+                        <div className="pilotage-devis-uo-row__saisie">
+                          <div className="fr-input-group fr-mb-1w">
+                            <label className="fr-label" htmlFor={inputId}>
+                              Quantité
+                            </label>
+                            <input
+                              id={inputId}
+                              className="fr-input"
+                              type="number"
+                              min={0}
+                              step="1"
+                              inputMode="numeric"
+                              placeholder="ex. 18"
+                              value={uoQuantites[code] ?? ""}
+                              onChange={(e) =>
+                                setQuantiteForUo(code, e.currentTarget.value)
+                              }
+                            />
+                          </div>
+                          {ligne && ligne.quantite > 0 ? (
+                            <div className="pilotage-devis-uo-row__montants">
+                              <p className="fr-text--sm fr-mb-0">
+                                <strong>{formatEuro(ligne.totalHt)} HT</strong>
+                              </p>
+                              <p className="fr-hint-text fr-mb-0">
+                                {formatEuro(ligne.totalTtc)} TTC
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="fr-hint-text fr-mb-0">
+                              Saisir une quantité pour afficher le montant.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {chiffrageCalc.lignes.some((l) => l.quantite > 0) ? (
+                    <p className="fr-text--sm fr-mb-0 fr-mt-2w">
+                      <strong>Total devis :</strong> {formatEuro(chiffrageCalc.totalHt)}{" "}
+                      HT · {formatEuro(chiffrageCalc.totalTtc)} TTC
+                    </p>
+                  ) : null}
+                </div>
+              )}
+
+              <div className="pilotage-devis-pv fr-mt-3w">
+                <h3 className="fr-text--md fr-mb-1w">Découpe des PV</h3>
+                <p className="fr-hint-text fr-mb-2w">
+                  Répartition en quantités entières aussi égale que possible (pas de
+                  demi-UO). Les mois suivent la période du devis (à partir de la date de
+                  début).
+                </p>
+                <Input
+                  label="Nombre de PV"
+                  hintText={
+                    suggestedNbPv != null
+                      ? `Suggestion : ${suggestedNbPv} (mois de la période) — détail dans l’aperçu`
+                      : "Renseignez la période pour une suggestion automatique — détail dans l’aperçu"
+                  }
+                  nativeInputProps={{
+                    type: "number",
+                    min: 1,
+                    max: 36,
+                    step: 1,
+                    inputMode: "numeric",
+                    placeholder: suggestedNbPv != null ? String(suggestedNbPv) : "ex. 4",
+                    value: effectiveNbPvInput,
+                    onChange: (e) => {
+                      setNbPvTouched(true);
+                      setNbPvInput(e.currentTarget.value);
+                    },
+                  }}
+                />
+
+                {decoupePvResult != null && !decoupePvResult.ok ? (
+                  <p className="fr-text--sm fr-mb-0 fr-mt-1w">{decoupePvResult.reason}</p>
+                ) : null}
+              </div>
+            </section>
+
             <div className="fr-btns-group fr-btns-group--inline">
               <Button
                 type="button"
                 priority="secondary"
-                onClick={() => setStep("formulaire")}
+                onClick={() => {
+                  clearCopyFeedback();
+                  setStep("porteur");
+                }}
               >
-                Modifier
+                Changer de porteur
               </Button>
             </div>
-          }
-        />
+          </div>
+
+          <aside
+            className="pilotage-devis-split__preview"
+            aria-label="Aperçu live du devis"
+          >
+            <DevisOpteamisPreview
+              fields={exportFields}
+              copyFormat={copyFormat}
+              onCopyFormatChange={onCopyFormatChange}
+              onCopy={() => {
+                void onCopy();
+              }}
+              copyOk={copyOk}
+              copyError={copyError}
+              onDismissCopyOk={() => setCopyOk(false)}
+              layout="split"
+            />
+          </aside>
+        </div>
       ) : null}
     </div>
   );
