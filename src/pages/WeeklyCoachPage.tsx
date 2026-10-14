@@ -25,6 +25,7 @@ import {
   type WeeklyLinkActionContext,
 } from "../components/weekly/WeeklyLinkActionDialog";
 import { WeeklyLinkedActionsSection } from "../components/weekly/WeeklyLinkedActionsSection";
+import { WeeklySujetDeleteConfirmDialog } from "../components/weekly/WeeklySujetDeleteConfirmDialog";
 import { WeeklySuiviDrawer } from "../components/weekly/WeeklySuiviDrawer";
 import { useAclProfil } from "../AclProfilContext";
 import { useGristPa } from "../GristPaContext";
@@ -48,6 +49,7 @@ import { weeklyOpsMembreOptions } from "../utils/weeklyCoachAccess";
 import {
   WEEKLY_ACTION_SUJET_COLUMN_READY,
   createWeeklyAgendaRecord,
+  deleteWeeklyAgendaSujet,
   updateWeeklyAgendaSujet,
   updateWeeklyAgendaTraite,
   upsertWeeklyPhase,
@@ -242,6 +244,7 @@ function AgendaSujetDialog({
   onSwitchToEdit,
   onLierAction,
   onViewAction,
+  onRequestDelete,
 }: {
   open: boolean;
   sujet: WeeklyAgendaRow | null;
@@ -269,6 +272,8 @@ function AgendaSujetDialog({
   onSwitchToEdit: () => void;
   onLierAction?: (sujet: WeeklyAgendaRow) => void;
   onViewAction?: (action: WeeklyActionRow) => void;
+  /** Demande de suppression (confirm hors drawer) — view / edit seulement. */
+  onRequestDelete?: (sujet: WeeklyAgendaRow) => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -590,6 +595,19 @@ function AgendaSujetDialog({
                         Fermer
                       </Button>
                     </li>
+                    {sujet != null && onRequestDelete ? (
+                      <li>
+                        <Button
+                          type="button"
+                          priority="tertiary"
+                          iconId="fr-icon-delete-line"
+                          onClick={() => onRequestDelete(sujet)}
+                          disabled={busy}
+                        >
+                          Supprimer
+                        </Button>
+                      </li>
+                    ) : null}
                   </>
                 ) : (
                   <>
@@ -607,6 +625,19 @@ function AgendaSujetDialog({
                         Annuler
                       </Button>
                     </li>
+                    {mode === "edit" && sujet != null && onRequestDelete ? (
+                      <li>
+                        <Button
+                          type="button"
+                          priority="tertiary"
+                          iconId="fr-icon-delete-line"
+                          onClick={() => onRequestDelete(sujet)}
+                          disabled={busy}
+                        >
+                          Supprimer
+                        </Button>
+                      </li>
+                    ) : null}
                   </>
                 )}
               </ul>
@@ -800,6 +831,10 @@ export function WeeklyCoachPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogSujet, setDialogSujet] = useState<WeeklyAgendaRow | null>(null);
   const [dialogMode, setDialogMode] = useState<AgendaDialogMode>("view");
+  /** Cible confirm delete sujet (hors drawer). */
+  const [deleteSujetTarget, setDeleteSujetTarget] =
+    useState<WeeklyAgendaRow | null>(null);
+  const [deletingSujet, setDeletingSujet] = useState(false);
   const [suiviOpen, setSuiviOpen] = useState(false);
   const [suiviMissionId, setSuiviMissionId] = useState<number | null>(null);
   const [suiviBusy, setSuiviBusy] = useState(false);
@@ -1225,6 +1260,49 @@ export function WeeklyCoachPage() {
       setAgendaBusy(false);
     }
   };
+
+  const requestDeleteAgendaSujet = (sujet: WeeklyAgendaRow) => {
+    setAgendaError(null);
+    setDeleteSujetTarget(sujet);
+  };
+
+  const cancelDeleteAgendaSujet = () => {
+    if (deletingSujet) return;
+    setDeleteSujetTarget(null);
+  };
+
+  const confirmDeleteAgendaSujet = async () => {
+    if (deleteSujetTarget == null) return;
+    const id = deleteSujetTarget.id;
+    const linkedIds = filterWeeklyActionsBySujet(
+      data.actions,
+      id,
+    ).map((a) => a.id);
+    setDeletingSujet(true);
+    setAgendaError(null);
+    try {
+      await deleteWeeklyAgendaSujet(id, {
+        clearSujetOnActionIds: linkedIds,
+      });
+      setDeleteSujetTarget(null);
+      closeAgendaDialog();
+      await data.reload();
+    } catch (err) {
+      setAgendaError(
+        err instanceof Error
+          ? err.message
+          : "Impossible de supprimer le sujet.",
+      );
+      setDeleteSujetTarget(null);
+    } finally {
+      setDeletingSujet(false);
+    }
+  };
+
+  const deleteSujetLinkedCount =
+    deleteSujetTarget != null
+      ? filterWeeklyActionsBySujet(data.actions, deleteSujetTarget.id).length
+      : 0;
 
   return (
     <div>
@@ -1682,7 +1760,7 @@ export function WeeklyCoachPage() {
             defaultAuteur={defaultAuteur}
             defaultCreateMissionId={createAgendaMissionId}
             actionsLies={actionsLiesSujetDialog}
-            busy={agendaBusy || data.isReloading}
+            busy={agendaBusy || deletingSujet || data.isReloading}
             onClose={closeAgendaDialog}
             onSave={onSaveAgendaSujet}
             onCreate={onCreateAgendaSujet}
@@ -1692,6 +1770,16 @@ export function WeeklyCoachPage() {
               closeAgendaDialog();
               openLinkViewForm(action);
             }}
+            onRequestDelete={requestDeleteAgendaSujet}
+          />
+
+          <WeeklySujetDeleteConfirmDialog
+            open={deleteSujetTarget != null}
+            sujetTitre={(deleteSujetTarget?.Texte ?? "").trim()}
+            linkedActionsCount={deleteSujetLinkedCount}
+            busy={deletingSujet}
+            onCancel={cancelDeleteAgendaSujet}
+            onConfirm={() => void confirmDeleteAgendaSujet()}
           />
 
           <WeeklySuiviDrawer

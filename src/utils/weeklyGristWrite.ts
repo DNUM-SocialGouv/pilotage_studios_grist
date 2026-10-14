@@ -305,6 +305,37 @@ export async function updateWeeklyActionLinks(
 }
 
 /**
+ * Supprime un sujet agenda (`Weekly_agenda.destroy`).
+ * Exception allowlist : une ligne à la fois (pas de masse), après confirm UI.
+ * Avant destroy : détache `Weekly_action.Sujet` sur les actions liées (si colonne prête)
+ * pour éviter des refs orphelines — les actions elles-mêmes restent.
+ */
+export async function deleteWeeklyAgendaSujet(
+  id: number,
+  options?: { clearSujetOnActionIds?: readonly number[] },
+): Promise<void> {
+  assertWritableDeleteTableId(WEEKLY_AGENDA_TABLE_ID);
+  if (!Number.isFinite(id) || id <= 0) {
+    throw new Error("Identifiant sujet invalide.");
+  }
+  const linkedIds = (options?.clearSujetOnActionIds ?? []).filter(
+    (actionId) => Number.isFinite(actionId) && actionId > 0,
+  );
+  if (WEEKLY_ACTION_SUJET_COLUMN_READY && linkedIds.length > 0) {
+    for (const actionId of linkedIds) {
+      await updateWeeklyActionLinks(actionId, { sujetId: null });
+    }
+  }
+  const table = getWritableTable(WEEKLY_AGENDA_TABLE_ID);
+  if (typeof table.destroy !== "function") {
+    throw new Error(
+      "Suppression Grist indisponible (hors iframe ou API trop ancienne).",
+    );
+  }
+  await table.destroy([id]);
+}
+
+/**
  * Coche / décoche `Fait` et synchronise `Fait_le` (jour du coche, ou null).
  */
 export async function updateWeeklyActionFait(

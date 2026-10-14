@@ -35,14 +35,14 @@ describe("writeTableAllowlist", () => {
     assert.throws(() => assertWritableUpdateTableId("Retours"), /non autorisée/);
   });
 
-  it("autorise delete uniquement pour Weekly_action", () => {
+  it("autorise delete pour Weekly_action et Weekly_agenda uniquement", () => {
     assert.equal(isWritableDeleteTableId("Weekly_action"), true);
-    assert.equal(isWritableDeleteTableId("Weekly_agenda"), false);
+    assert.equal(isWritableDeleteTableId("Weekly_agenda"), true);
     assert.equal(isWritableDeleteTableId("Weekly_phase"), false);
     assert.equal(isWritableDeleteTableId("Missions"), false);
     assert.equal(isWritableDeleteTableId("Kanban"), false);
     assert.throws(
-      () => assertWritableDeleteTableId("Weekly_agenda"),
+      () => assertWritableDeleteTableId("Weekly_phase"),
       /suppression widget/,
     );
   });
