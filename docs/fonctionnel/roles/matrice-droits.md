@@ -61,6 +61,7 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 | Créer fiche Équipe | `/equipe` (drawer) | **oui** | **non** | **non** | **non** | **Appliqué** UX + ACL | Bouton Admin ; `Equipe` create allowlisté |
 | Éditer fiche Équipe | `/equipe/:id` (drawer) | **oui** | **non** | **non** | **non** | **Appliqué** UX + ACL | Bouton Modifier Admin ; `Equipe` update allowlisté ([#63](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/63)) |
 | Droits des pages | `/outils/droits-pages` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Garde rôle Admin (pas de `Page_*`) ; édite `Droits_pages` ; rappel lecture seule dans section « Fixés par rôle » |
+| **Générer un devis** | `/outils/generer-devis` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Admin-only (`adminOnly` + `AdminRoleGuard`), hors `Page_*` ; rappel « Fixés par rôle » ; lecture choix BDC + copie locale (pas d’écriture) |
 | Produits | `/produits`, `/produits/:id` | oui | oui | oui | oui | **Appliqué** UX (liste + fiche lecture) | Flag `Page_produits` ; section Admin « Produits » (plus « À venir ») |
 
 ---
@@ -110,6 +111,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-10-14 | **Générer un devis** (`/outils/generer-devis`) : outil Admin-only (`adminOnly` + `AdminRoleGuard`), hors `Page_*` ; port logique UO / porteurs ; page 3 étapes (porteur → formulaire → aperçu) ; copie HTML/MD ; pas PDF/IA/écriture Grist | 5 | [#132](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/pull/132) · kanban HITL `generer-devis-outils` |
 | 2026-10-12 | Weekly Ops sujets : **delete** widget `Weekly_agenda` (exception allowlist `destroy`, une ligne) + confirmation accessible (drawer lecture / édition) ; détache `Weekly_action.Sujet` avant destroy ; **pas** de masse ; **N/A `Page_*`** | 5, 6 | [#131](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/pull/131) · kanban HITL `weekly-sujet-delete` |
 | 2026-10-12 | Weekly Ops sujets : liste **icônes seules** Voir / Modifier ; **Lier une action** uniquement dans le drawer lecture (plus sur la ligne) ; section Actions liées **un seul** CTA ; **N/A `Page_*`** (même écran `/weekly`) | 5 | [#130](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/pull/130) · kanban HITL `weekly-sujets-ux-polish` |
 | 2026-10-10 | Weekly Ops **lier action** depuis carte Kanban mission + sujet agenda (dialogue Créer \| Rattacher) ; persist `Mission` + `Sujet` (colonne Owner vérifiée MCP, `WEEKLY_ACTION_SUJET_COLUMN_READY=true`) ; **N/A `Page_*`** | 5, 6 (doc colonne) | [#128](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/pull/128) · kanban `weekly-card-lier-action` (HITL create) |

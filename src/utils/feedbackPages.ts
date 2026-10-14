@@ -14,6 +14,7 @@ export const FEEDBACK_PAGE_OPTIONS = [
   "Récap porteurs",
   "Droits des pages",
   "Spike datatable",
+  "Générer un devis",
   "Procès-verbaux",
   "Évaluations",
   "Analyse",
@@ -79,6 +80,12 @@ export function pageOptionFromPathname(pathname: string): FeedbackPageOption {
     pathname.startsWith("/outils/spike-datatable/")
   ) {
     return "Spike datatable";
+  }
+  if (
+    pathname === "/outils/generer-devis" ||
+    pathname.startsWith("/outils/generer-devis/")
+  ) {
+    return "Générer un devis";
   }
   if (pathname === "/pv" || pathname.startsWith("/pv/")) {
     return "Procès-verbaux";

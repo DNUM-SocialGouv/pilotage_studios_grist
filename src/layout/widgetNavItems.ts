@@ -86,6 +86,12 @@ export const WIDGET_NAV_ITEMS: WidgetNavItem[] = [
         status: "in_progress",
         adminOnly: true,
       },
+      {
+        text: "Générer un devis",
+        href: "/outils/generer-devis",
+        status: "in_progress",
+        adminOnly: true,
+      },
     ],
   },
 ];

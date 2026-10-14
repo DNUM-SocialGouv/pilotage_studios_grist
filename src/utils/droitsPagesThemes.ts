@@ -158,6 +158,17 @@ export const DROITS_PAGES_ROLE_FIXED: readonly DroitsPagesRoleFixedScreen[] = [
     },
     hint: "Réservé Admin — pas d’interrupteur (évite de se couper l’accès).",
   },
+  {
+    id: "generer_devis",
+    label: "Générer un devis",
+    accessByRole: {
+      Admin: true,
+      "Responsable de département": false,
+      Freelance: false,
+      Invité: false,
+    },
+    hint: "Réservé Admin (`adminOnly` + `AdminRoleGuard`) — hors `Page_*` ; copie locale, pas d’écriture Grist.",
+  },
 ] as const;
 
 export function isAdminRole(role: string | null | undefined): boolean {

@@ -62,6 +62,7 @@ describe("groupe Outils", () => {
     assert.equal(isGroupActive("/outils/recap-porteurs", outils), true);
     assert.equal(isGroupActive("/outils/droits-pages", outils), true);
     assert.equal(isGroupActive("/outils/spike-datatable", outils), true);
+    assert.equal(isGroupActive("/outils/generer-devis", outils), true);
   });
 
   it("n’est pas actif sur Documentation (menu compte) ni hors Outils", () => {
@@ -88,6 +89,7 @@ describe("flattenNavLinks", () => {
       "/outils/recap-porteurs",
       "/outils/droits-pages",
       "/outils/spike-datatable",
+      "/outils/generer-devis",
     ]);
   });
 });
@@ -109,6 +111,7 @@ describe("WIDGET_MODULE_LINKS", () => {
         { text: "Récap porteurs", href: "/outils/recap-porteurs", status: "in_progress" },
         { text: "Droits des pages", href: "/outils/droits-pages", status: "in_progress" },
         { text: "Spike datatable", href: "/outils/spike-datatable", status: "in_progress" },
+        { text: "Générer un devis", href: "/outils/generer-devis", status: "in_progress" },
       ],
     );
   });
