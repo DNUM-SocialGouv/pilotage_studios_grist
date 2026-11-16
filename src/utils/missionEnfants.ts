@@ -5,13 +5,13 @@ import { asGristChoice, extractGristReferenceId, extractGristReferenceIds } from
  * Colonnes Grist `Missions_enfants` → champs internes.
  * Canonique : `Mission_parent` / `Titre_de_la_prestation`.
  * Fallbacks lecture : `Libelle` (ancien id), texte `Mission_enfant`
- * (homonyme de `Realise.Mission_enfant` qui est une Ref).
+ * (le lien CRA est la ref `Realise.Prestation`, pas ce texte).
  */
 function textLibelleFromGrist(value: unknown): string | undefined {
   if (typeof value === "string") {
     return value;
   }
-  // Un id numérique n’est pas un libellé (homonyme `Realise.Mission_enfant`).
+  // Un id numérique n’est pas un libellé (une ref prestation vit dans `Realise.Prestation`).
   if (typeof value === "number") {
     return undefined;
   }
@@ -108,7 +108,7 @@ export function enfantExpandPrimary(
   return hint ? { primary, hint } : { primary };
 }
 
-/** Id master résolu depuis une ligne CRA : `Mission_enfant` prioritaire, sinon `Missions`. */
+/** Id master résolu depuis une ligne CRA : prestation mappée, sinon mission (formule ou ancienne colonne). */
 export function resolveSuiviMasterMissionId(
   row: SuiviMensuel,
   enfantsById: Map<number, MissionEnfant>,

@@ -59,7 +59,9 @@ export interface SuiviMensuel {
   Mois?: string;
   Periode?: string | number;
   Intervenants?: unknown;
+  /** Mission du lot. Lecture Grist : formule `Mission`, sinon ancienne colonne `Missions`. */
   Missions?: unknown;
+  /** Prestation. Lecture Grist : colonne `Prestation`, sinon ancienne colonne `Mission_enfant`. */
   Mission_enfant?: unknown;
   Nb_jours?: number;
   Equipe?: string;
@@ -170,7 +172,7 @@ export interface MissionEnfant {
   id: number;
   /** Ref → `Missions` — colonne Grist `Mission_parent` (legacy `Mission`). */
   Mission?: unknown;
-  /** Texte — colonne Grist `Titre_de_la_prestation` (fallbacks lecture : `Libelle`, texte `Mission_enfant`). Homonyme de `Realise.Mission_enfant` (ref). */
+  /** Texte — colonne Grist `Titre_de_la_prestation` (fallbacks lecture : `Libelle`, texte `Mission_enfant`). Le lien CRA est `Realise.Prestation` (ref), pas ce texte. */
   Libelle?: string;
   Intervenant?: unknown;
   Specialite?: string;

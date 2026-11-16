@@ -104,7 +104,7 @@ Composant : `src/components/missions/MissionFormDrawer.tsx` — écriture via `m
 
 ## Récap CRA
 
-Agrégats via `aggregateCraByEnfantId` / `totauxCraDuLot` : `Realise.Mission_enfant` (ref) → prestation. Équipe prestation = `Equipe` de l’intervenant, pas `Missions.Equipe2`.
+Agrégats via `aggregateCraByEnfantId` / `totauxCraDuLot` : `Realise.Prestation` (ref) → prestation. Équipe prestation = `Equipe` de l’intervenant, pas `Missions.Equipe2`.
 
 ## Droits / `Page_*`
 

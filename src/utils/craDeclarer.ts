@@ -210,11 +210,14 @@ export function periodeTimestampForMonthKey(monthKey: string): number {
   return ts;
 }
 
-/** Champs Realise pour create / update (sans Calcul_TTC, BDC, ni Equipe).
- * `Equipe` est une **formule** Grist (dérivée de l’intervenant) — ne pas écrire. */
+/**
+ * Champs Realise pour create / update (sans Calcul_TTC, BDC, ni Equipe).
+ * `Equipe` et `Mission` sont des formules Grist — ne pas les écrire.
+ * Le rattachement prestation s’écrit dans `Prestation` (ref → `Missions_enfants`).
+ * L’ancienne paire `Mission_enfant` + `Missions` n’existe plus dans le document.
+ */
 export function buildRealiseDeclarerFields(input: {
   intervenantId: number;
-  missionId: number;
   enfantId: number;
   nbJours: number;
   taches: string;
@@ -224,8 +227,7 @@ export function buildRealiseDeclarerFields(input: {
 }): Record<string, unknown> {
   return {
     Intervenants: input.intervenantId,
-    Missions: input.missionId,
-    Mission_enfant: input.enfantId,
+    Prestation: input.enfantId,
     Nb_jours: input.nbJours,
     Taches_realisees: input.taches,
     Periode: input.periodeTs,
