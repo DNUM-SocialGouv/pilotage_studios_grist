@@ -7,7 +7,7 @@
 
 ## Objet métier
 
-Une **mission master** (`Missions`) est un lot d’accompagnement (contexte, produit, statut). Les **enfants** (`Missions_enfants`) portent le staffing (`Mission_parent` → master, **`Titre_de_la_prestation`** — équivalent de `Nom_de_la_mission` sur le master ; fallbacks lecture : `Libelle`, colonne texte `Mission_enfant`). Les lignes CRA (`Realise`) se rattachent d’abord à l’enfant (`Realise.Mission_enfant`, **référence** — homonyme du texte `Missions_enfants.Mission_enfant`), sinon au master (`Realise.Missions`).
+Une **mission master** (`Missions`) est un lot d’accompagnement (contexte, produit, statut). Les **enfants** (`Missions_enfants`) portent le staffing (`Mission_parent` → master, **`Titre_de_la_prestation`** — équivalent de `Nom_de_la_mission` sur le master ; fallbacks lecture : `Libelle`, colonne texte `Mission_enfant`). Les lignes CRA (`Realise`) se rattachent à la prestation (`Realise.Prestation`, **référence**). La mission du lot est la formule `Realise.Mission` (= mission parente de la prestation). Lecture ancienne encore acceptée : `Mission_enfant` puis `Missions`.
 
 | Outil | Rôle |
 |-------|------|

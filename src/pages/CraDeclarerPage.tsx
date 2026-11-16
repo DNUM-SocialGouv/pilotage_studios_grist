@@ -224,7 +224,6 @@ export function CraDeclarerPage() {
           failedLabel = label;
           const fields = buildRealiseDeclarerFields({
             intervenantId: data.self.id,
-            missionId: row.missionId,
             enfantId: row.enfantId,
             nbJours: row.nbJours,
             taches: row.taches,

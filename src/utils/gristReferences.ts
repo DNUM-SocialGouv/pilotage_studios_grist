@@ -242,6 +242,23 @@ export function extractSuiviBdcRowRef(record: Record<string, unknown>): number |
   return undefined;
 }
 
+/**
+ * Première référence Grist renseignée (ignore null, vide et 0).
+ * Lecture `Realise` : `Prestation` avant l’ancienne `Mission_enfant`,
+ * formule `Mission` avant l’ancienne `Missions`.
+ */
+export function preferLinkedRef(primary: unknown, fallback: unknown): unknown {
+  const primaryId = extractGristReferenceId(primary);
+  if (primaryId != null && primaryId !== 0) {
+    return primary;
+  }
+  const fallbackId = extractGristReferenceId(fallback);
+  if (fallbackId != null && fallbackId !== 0) {
+    return fallback;
+  }
+  return undefined;
+}
+
 /** La ligne de suivi est rattachée à ce BDC (`BDC_cible` ou `Bdc_Chorus2`). */
 export function suiviRowLinksToBdc(record: Record<string, unknown>, bdcId: number): boolean {
   const cible = extractGristReferenceId(record[BDC_CIBLE_KEY]);

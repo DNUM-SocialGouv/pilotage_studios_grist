@@ -7,6 +7,8 @@
  * - `Missions` : create + update (drawer mission master — pas de delete).
  * - `Missions_enfants` : create + update (drawer prestation — pas de delete).
  * - `Realise` : create + update (déclaration CRA freelance + revue équipe manager — pas de delete).
+ *   Déclaration : `Prestation` (ref), jours, description, période, intervenant.
+ *   Pas d’écriture de `Mission` ni `Equipe` (formules).
  * - `Droits_pages` : update only (page Admin droits des écrans — pas de create/delete).
  * - `Acl_profil` : create only (fiche session auto si absente — pas d’update/delete).
  * - `Equipe` : create + update (drawer Admin nouvelle / modifier personne — pas de delete ;

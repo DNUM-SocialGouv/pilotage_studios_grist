@@ -14,7 +14,7 @@ import type {
   WeeklyAgendaRow,
   WeeklyPhaseRow,
 } from "./types";
-import { asGristChoice } from "./utils/gristReferences";
+import { asGristChoice, preferLinkedRef } from "./utils/gristReferences";
 import { missionEnfantFromGrist } from "./utils/missionEnfants";
 import { normalizeWeeklyActionStatut } from "./utils/weeklyAction";
 
@@ -130,8 +130,8 @@ export function toSuiviMensuel(record: GristRecord): SuiviMensuel {
         ? record.Periode
         : asNumber(record.Periode) ?? asString(record.Periode),
     Intervenants: record.Intervenants,
-    Missions: record.Missions,
-    Mission_enfant: record.Mission_enfant,
+    Missions: preferLinkedRef(record.Mission, record.Missions),
+    Mission_enfant: preferLinkedRef(record.Prestation, record.Mission_enfant),
     Nb_jours: asNumber(record.Nb_jours),
     Equipe: asGristChoice(record.Equipe) ?? asString(record.Equipe),
     Produit: record.Produit,

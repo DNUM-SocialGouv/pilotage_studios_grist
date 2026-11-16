@@ -8,7 +8,7 @@ import { type CraTotaux, montantTtcLigneSuivi } from "./suiviMensuel.ts";
 
 /**
  * Totaux jours + TTC + nb de lignes CRA agrégés par id de mission master
- * (`Mission_enfant` → parent, sinon `Missions`).
+ * (prestation mappée depuis `Realise.Prestation` → parent, sinon mission).
  */
 export function aggregateCraByMissionId(
   suiviRows: SuiviMensuel[],
@@ -35,7 +35,7 @@ export function aggregateCraByMissionId(
 
 /**
  * Totaux jours + TTC + nb de lignes CRA par id de prestation
- * (`Realise.Mission_enfant` = ref, pas le texte `Missions_enfants.Mission_enfant`).
+ * (`Realise.Prestation` = ref, pas le texte `Missions_enfants.Mission_enfant`).
  */
 export function aggregateCraByEnfantId(suiviRows: SuiviMensuel[]): Map<number, CraTotaux> {
   const map = new Map<number, CraTotaux>();

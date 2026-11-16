@@ -3,8 +3,24 @@ import { describe, it } from "node:test";
 import {
   asGristChoice,
   extractGristReferenceIds,
+  preferLinkedRef,
   suiviRowLinksToBdc,
 } from "./gristReferences.ts";
+
+describe("preferLinkedRef", () => {
+  it("garde la colonne nouvelle si elle pointe une ligne", () => {
+    assert.equal(preferLinkedRef(42, 9), 42);
+  });
+
+  it("retombe sur l’ancienne colonne si la nouvelle est vide", () => {
+    assert.equal(preferLinkedRef(0, 9), 9);
+    assert.equal(preferLinkedRef(null, 3), 3);
+  });
+
+  it("renvoie vide si les deux liens sont absents", () => {
+    assert.equal(preferLinkedRef(0, 0), undefined);
+  });
+});
 
 describe("suiviRowLinksToBdc", () => {
   it("matche BDC_cible", () => {

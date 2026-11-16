@@ -212,7 +212,6 @@ export const MissionCraDrawer = forwardRef<
       const fields = {
         ...buildRealiseDeclarerFields({
           intervenantId: ctx.intervenantId,
-          missionId: ctx.missionId,
           enfantId: ctx.enfantId,
           nbJours,
           taches,
