@@ -26,13 +26,15 @@ App sœur (hors iframe) : [pilotage_studios](https://github.com/DNUM-SocialGouv/
 | **Weekly Ops** | [fonctionnel/weekly/](fonctionnel/weekly/) | Documenté (kanban missions + agenda ; tables satellites) |
 | **Documentation** (guide règles métier) | [fonctionnel/regles-metier/](fonctionnel/regles-metier/) | Documenté V1 — menu compte « Documentation » ; route `/outils/regles-metier` ; distinct de la doc contributeurs |
 | **Générer un devis** (Outils Admin) | [fonctionnel/devis/](fonctionnel/devis/) | Documenté V1 — `/outils/generer-devis` ; Admin-only hors `Page_*` ; formulaire + aperçu live ; copie HTML/MD ; pas de PDF/IA/écriture Grist |
+| **Assistant** (questions sur les données) | [fonctionnel/assistant/](fonctionnel/assistant/) — [service d’essai](fonctionnel/assistant/service-essai.md) | Préparation — service `services/assistant-essai/` ; base test `iAEEspLuAiuP` ; issues [#137](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/137)–[#145](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/145) ; tiroir widget à venir |
 | **Affichage** (clair / sombre / système) | [fonctionnel/affichage/](fonctionnel/affichage/) | Documenté V1 — menu compte « Paramètres d’affichage » ; modale DSFR ; **N/A `Page_*`** ; préférence navigateur |
 | **Rôles & droits Grist** | [fonctionnel/roles/](fonctionnel/roles/) — **[matrice](fonctionnel/roles/matrice-droits.md)** (registre vivant) · [Droits des pages Admin](fonctionnel/roles/droits-pages-admin.md) · [Owner `Page_regles_metier`](fonctionnel/roles/page-regles-metier-owner.md) · [ACL](fonctionnel/roles/access-rules.md) · [inventaire](fonctionnel/roles/inventaire-partage.md) | 6 couches + tableaux écrans/données ; prep [#47](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/47) ; Admin [#54](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/54) |
 | **Issues publiques** | [issues-publiques.md](issues-publiques.md) | Template rédaction (repo public) |
 | **Recherche utilisateur (RU)** | [ru/](ru/) — [insights](ru/insights/) | Base d’enseignements (Design / Access.) ; distinct de `fonctionnel/` |
 | **Portage → app sœur** | [portage/](portage/) | Opt-in handoff agents |
 | PV | — | Stub « À venir » (nav) — ordre : voir AGENTS §2 |
-| Évaluations, Analyse | — | Stub hors nav |
+| Évaluations | — | Stub hors nav |
+| Analyse | — | Stub hors nav ; l’assistant V0 entre par un **tiroir global** (voir [assistant/](fonctionnel/assistant/)), pas uniquement `/analyse` |
 
 ## Organisation des fichiers
 
