@@ -172,7 +172,7 @@ export interface MissionEnfant {
   id: number;
   /** Ref → `Missions` — colonne Grist `Mission_parent` (legacy `Mission`). */
   Mission?: unknown;
-  /** Texte — colonne Grist `Titre_de_la_prestation` (fallbacks lecture : `Libelle`, texte `Mission_enfant`). Le lien CRA est `Realise.Prestation` (ref), pas ce texte. */
+  /** Texte — colonne Grist `Titre_de_la_prestation`. Le lien CRA est `Realise.Prestation` (ref), pas ce texte. */
   Libelle?: string;
   Intervenant?: unknown;
   Specialite?: string;

@@ -213,7 +213,7 @@ export function periodeTimestampForMonthKey(monthKey: string): number {
 /**
  * Champs Realise pour create / update (sans Calcul_TTC, BDC, ni Equipe).
  * `Equipe` et `Mission` sont des formules Grist — ne pas les écrire.
- * Le rattachement prestation s’écrit dans `Prestation` (ref → `Missions_enfants`).
+ * Le rattachement prestation s’écrit dans `Prestation` (ref → `Prestations`).
  * L’ancienne paire `Mission_enfant` + `Missions` n’existe plus dans le document.
  */
 export function buildRealiseDeclarerFields(input: {

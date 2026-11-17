@@ -79,10 +79,10 @@ async function loadReferentials(): Promise<{
   produits: ProduitSdpc[];
   refsError: string | null;
 }> {
-  const labels = ["Missions", "Missions_enfants", "Equipe", "produits"] as const;
+  const labels = ["Missions", "Prestations", "Equipe", "produits"] as const;
   const settled = await Promise.allSettled([
     fetchAllowlistedTable("Missions"),
-    fetchAllowlistedTable("Missions_enfants"),
+    fetchAllowlistedTable("Prestations"),
     fetchAllowlistedTable("Equipe"),
     fetchAllowlistedTable("Tableau_de_pilotage_SDPC_Produits_SDPC"),
   ]);

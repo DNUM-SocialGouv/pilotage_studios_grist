@@ -30,7 +30,7 @@ export type RelatedTableId = (typeof RELATED_TABLE_IDS)[number];
 export const BDC_DEPENSES_TABLE_IDS = [
   "Realise",
   "Missions",
-  "Missions_enfants",
+  "Prestations",
   "Equipe",
   EQUIPE_TJM_TABLE_ID,
   "Tableau_de_pilotage_SDPC_Produits_SDPC",

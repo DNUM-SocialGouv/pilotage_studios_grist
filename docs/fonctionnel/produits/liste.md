@@ -26,7 +26,7 @@ Parcourir le catalogue SDPC, filtrer, ouvrir une fiche.
 
 ## Données chargées
 
-Catalogue `Tableau_de_pilotage_SDPC_Produits_SDPC` **et**, pour le filtre investissement : `Missions`, `Missions_enfants`, `Realise` (pas `Equipe`).
+Catalogue `Tableau_de_pilotage_SDPC_Produits_SDPC` **et**, pour le filtre investissement : `Missions`, `Prestations`, `Realise` (pas `Equipe`).
 
 ## Filtres
 

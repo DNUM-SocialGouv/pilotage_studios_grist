@@ -50,7 +50,7 @@ Plus le bloc **Tarifs journaliers** (grille `Equipe_TJM`) : spécialité du tari
 
 ### Missions & prestations
 
-- Source : tables `Missions` + `Missions_enfants` (chargement lazy sur la fiche uniquement).
+- Source : tables `Missions` + `Prestations` (chargement lazy sur la fiche uniquement).
 - Colonnes : **Mission** (lien, regroupée si plusieurs prestations) · **Prestation** · **Statut**.
 - Une ligne = une **prestation** staffée ; les prestations d’une même mission sont regroupées (mission affichée une seule fois).
 - Filtre **En cours** : exclut Terminé / Clos / Archivé / Annulé (et variantes) ; conserve En cours, En pause, En projet, etc.

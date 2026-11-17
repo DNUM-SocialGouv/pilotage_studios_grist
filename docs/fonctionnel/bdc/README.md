@@ -25,7 +25,7 @@ Consultation des bons de commande Grist dans l’iframe : récap financier (KPI 
 | `Plan_activite` | Libellés PA + lien croisé |
 | `Constatations`, `Commandes_Sofiane` | Cascade PA affichée sur la fiche (reste à consommer du PA lié) |
 | `Realise` | Onglet Dépenses — lignes CRA du BDC (REST filtrée, fiche uniquement) |
-| `Missions`, `Missions_enfants` | Hiérarchie tableau Dépenses |
+| `Missions`, `Prestations` | Hiérarchie tableau Dépenses |
 | `Equipe` | Libellés intervenants |
 | `Tableau_de_pilotage_SDPC_Produits_SDPC` | Libellés / barre TTC par produit |
 

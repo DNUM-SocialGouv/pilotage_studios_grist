@@ -5,7 +5,8 @@
  * - `Kanban` : create (feedback) + update colonne / corps Resume+Message (Admin).
  * - `Kanban_commentaires` : create only (conversation tickets).
  * - `Missions` : create + update (drawer mission master — pas de delete).
- * - `Missions_enfants` : create + update (drawer prestation — pas de delete).
+ * - `Prestations` : create + update (drawer prestation — pas de delete).
+ *   (ex-`Missions_enfants` — tableId aligné sur le métier.)
  * - `Realise` : create + update (déclaration CRA freelance + revue équipe manager — pas de delete).
  *   Déclaration : `Prestation` (ref), jours, description, période, intervenant.
  *   Pas d’écriture de `Mission` ni `Equipe` (formules).
@@ -28,7 +29,8 @@
 export const KANBAN_TABLE_ID = "Kanban";
 export const KANBAN_COMMENTAIRES_TABLE_ID = "Kanban_commentaires";
 export const MISSIONS_TABLE_ID = "Missions";
-export const MISSIONS_ENFANTS_TABLE_ID = "Missions_enfants";
+/** Prestations (staffing) — tableId Grist `Prestations` (ex-`Missions_enfants`). */
+export const PRESTATIONS_TABLE_ID = "Prestations";
 export const REALISE_TABLE_ID = "Realise";
 export const DROITS_PAGES_TABLE_ID = "Droits_pages";
 export const ACL_PROFIL_TABLE_ID = "Acl_profil";
@@ -48,7 +50,7 @@ export const WRITE_TABLE_ALLOWLIST = [
   KANBAN_TABLE_ID,
   KANBAN_COMMENTAIRES_TABLE_ID,
   MISSIONS_TABLE_ID,
-  MISSIONS_ENFANTS_TABLE_ID,
+  PRESTATIONS_TABLE_ID,
   REALISE_TABLE_ID,
   ACL_PROFIL_TABLE_ID,
   EQUIPE_TABLE_ID,
@@ -64,7 +66,7 @@ export type WritableTableId = (typeof WRITE_TABLE_ALLOWLIST)[number];
 export const WRITE_TABLE_UPDATE_ALLOWLIST = [
   KANBAN_TABLE_ID,
   MISSIONS_TABLE_ID,
-  MISSIONS_ENFANTS_TABLE_ID,
+  PRESTATIONS_TABLE_ID,
   REALISE_TABLE_ID,
   DROITS_PAGES_TABLE_ID,
   EQUIPE_TABLE_ID,

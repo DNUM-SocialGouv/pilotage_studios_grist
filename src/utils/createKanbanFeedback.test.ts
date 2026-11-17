@@ -23,7 +23,7 @@ describe("writeTableAllowlist", () => {
     assert.equal(isWritableTableId("Kanban"), true);
     assert.equal(isWritableTableId("Kanban_commentaires"), true);
     assert.equal(isWritableTableId("Missions"), true);
-    assert.equal(isWritableTableId("Missions_enfants"), true);
+    assert.equal(isWritableTableId("Prestations"), true);
     assert.equal(isWritableTableId("Realise"), true);
     assert.equal(isWritableTableId("Acl_profil"), true);
     assert.equal(isWritableTableId("Droits_pages"), false);

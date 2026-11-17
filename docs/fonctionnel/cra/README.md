@@ -21,7 +21,7 @@ Une **réalisation** (ligne `Realise`) décrit le travail d’un intervenant sur
 |-------|--------|
 | `Realise` | Lignes CRA (lazy via `useMissionsData` sur `/cra` ; create/update sur `/cra/declarer`) |
 | `Equipe` | Libellés intervenants ; **`Portage`** pour le récap porteurs ; identité « moi » pour la déclaration |
-| `Missions` / `Missions_enfants` | Libellés + liens mission ; filtre prestations pour la déclaration |
+| `Missions` / `Prestations` | Libellés + liens mission ; filtre prestations pour la déclaration |
 | `Tableau_de_pilotage_SDPC_Produits_SDPC` | Libellés produit |
 | `BDC` | Libellés / liens BDC (déjà chargé au boot) |
 

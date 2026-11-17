@@ -64,7 +64,7 @@ export async function loadWeeklyCoachTables(): Promise<
 > {
   const labels = [
     "Missions",
-    "Missions_enfants",
+    "Prestations",
     "Equipe",
     "produits",
     "Weekly_phase",
@@ -73,7 +73,7 @@ export async function loadWeeklyCoachTables(): Promise<
   ] as const;
   const settled = await Promise.allSettled([
     fetchAllowlistedTable("Missions"),
-    fetchAllowlistedTable("Missions_enfants"),
+    fetchAllowlistedTable("Prestations"),
     fetchAllowlistedTable("Equipe"),
     fetchAllowlistedTable("Tableau_de_pilotage_SDPC_Produits_SDPC"),
     fetchAllowlistedTable("Weekly_phase"),

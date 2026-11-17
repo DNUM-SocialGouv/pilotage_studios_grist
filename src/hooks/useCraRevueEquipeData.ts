@@ -57,7 +57,7 @@ async function loadCraRevueEquipeBundle(
   const settled = await Promise.allSettled([
     fetchAllowlistedTable("Equipe"),
     fetchAllowlistedTable("Missions"),
-    fetchAllowlistedTable("Missions_enfants"),
+    fetchAllowlistedTable("Prestations"),
     fetchAllowlistedTable("Realise"),
   ]);
 
@@ -100,7 +100,7 @@ async function loadCraRevueEquipeBundle(
     throw reason instanceof Error ? reason : new Error("Lecture Missions impossible.");
   }
 
-  const missionEnfants = pick(2, "Missions_enfants", (raw) =>
+  const missionEnfants = pick(2, "Prestations", (raw) =>
     recordsFromFetchTable(raw).map(toMissionEnfant),
   );
   const suivi = pick(3, "Realise", (raw) =>

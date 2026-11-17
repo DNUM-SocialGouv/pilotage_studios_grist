@@ -35,7 +35,7 @@ export function aggregateCraByMissionId(
 
 /**
  * Totaux jours + TTC + nb de lignes CRA par id de prestation
- * (`Realise.Prestation` = ref, pas le texte `Missions_enfants.Mission_enfant`).
+ * (`Realise.Prestation` = ref → table `Prestations`).
  */
 export function aggregateCraByEnfantId(suiviRows: SuiviMensuel[]): Map<number, CraTotaux> {
   const map = new Map<number, CraTotaux>();

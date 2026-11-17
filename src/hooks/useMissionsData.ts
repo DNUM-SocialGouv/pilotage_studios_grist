@@ -43,14 +43,14 @@ const EMPTY: MissionsData = {
 export async function loadMissionsTables(): Promise<Omit<MissionsData, "status" | "error">> {
   const labels = [
     "Missions",
-    "Missions_enfants",
+    "Prestations",
     "Equipe",
     "produits",
     "Realise",
   ] as const;
   const settled = await Promise.allSettled([
     fetchAllowlistedTable("Missions"),
-    fetchAllowlistedTable("Missions_enfants"),
+    fetchAllowlistedTable("Prestations"),
     fetchAllowlistedTable("Equipe"),
     fetchAllowlistedTable("Tableau_de_pilotage_SDPC_Produits_SDPC"),
     fetchAllowlistedTable("Realise"),

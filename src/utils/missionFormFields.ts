@@ -9,7 +9,7 @@ export type MissionFormValues = {
   Statut: string;
   /** Id mission master source (réaffectation d’une prestation existante). */
   missionSource: string;
-  /** Id `Missions_enfants` à rattacher au nouveau lot. */
+  /** Id `Prestations` à rattacher au nouveau lot. */
   prestationExistante: string;
   prestationIntervenant: string;
   prestationLibelle: string;

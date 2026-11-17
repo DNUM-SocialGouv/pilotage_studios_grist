@@ -25,7 +25,7 @@ async function loadMissionsAndEnfants(): Promise<{
 }> {
   const settled = await Promise.allSettled([
     fetchAllowlistedTable("Missions"),
-    fetchAllowlistedTable("Missions_enfants"),
+    fetchAllowlistedTable("Prestations"),
   ]);
 
   const missionsResult = settled[0];
@@ -43,7 +43,7 @@ async function loadMissionsAndEnfants(): Promise<{
       enfantsResult?.status === "rejected" ? enfantsResult.reason : undefined;
     throw reason instanceof Error
       ? reason
-      : new Error("Lecture Missions_enfants impossible.");
+      : new Error("Lecture Prestations impossible.");
   }
 
   return {
