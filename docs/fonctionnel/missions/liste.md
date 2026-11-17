@@ -87,8 +87,8 @@ Champs : **Nom** (obligatoire) · **Produit (SDPC)** · **Statut**. Largeur fixe
 
 **Create** — section optionnelle **première prestation**, deux parcours **exclusifs** :
 
-1. **Réaffecter** (migration / découpage) : **Mission source** puis **Prestation existante** (enfants de cette mission uniquement) → après création du lot, `Missions_enfants.Mission_parent` pointe vers le nouveau lot.
-2. **Créer** : titre + intervenant + jours envisagés → nouvelle ligne `Missions_enfants` (`Mission_parent`, `Titre_de_la_prestation`, `Intervenant`, …).
+1. **Réaffecter** (migration / découpage) : **Mission source** puis **Prestation existante** (enfants de cette mission uniquement) → après création du lot, `Prestations.Mission_parent` pointe vers le nouveau lot.
+2. **Créer** : titre + intervenant + jours envisagés → nouvelle ligne `Prestations` (`Mission_parent`, `Titre_de_la_prestation`, `Intervenant`, …).
 
 Succès total → redirection `/missions/:id`. Mission créée mais prestation (create ou réaffectation) en échec → avertissement + lien fiche (pas de redirect).
 

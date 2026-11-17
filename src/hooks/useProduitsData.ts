@@ -40,11 +40,11 @@ const EMPTY: ProduitsData = {
 export async function loadProduitsListTables(): Promise<
   Omit<ProduitsData, "status" | "error">
 > {
-  const labels = ["produits", "Missions", "Missions_enfants", "Realise"] as const;
+  const labels = ["produits", "Missions", "Prestations", "Realise"] as const;
   const settled = await Promise.allSettled([
     fetchAllowlistedTable("Tableau_de_pilotage_SDPC_Produits_SDPC"),
     fetchAllowlistedTable("Missions"),
-    fetchAllowlistedTable("Missions_enfants"),
+    fetchAllowlistedTable("Prestations"),
     fetchAllowlistedTable("Realise"),
   ]);
 

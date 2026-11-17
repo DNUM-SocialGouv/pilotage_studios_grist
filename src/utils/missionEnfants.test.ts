@@ -19,29 +19,25 @@ describe("missionEnfantFromGrist", () => {
     assert.equal(mapped.Libelle, "Coaching Produit — David Koss");
   });
 
-  it("retombe sur Libelle puis Mission_enfant si Titre_de_la_prestation vide", () => {
+  it("n’utilise plus l’ancien texte Mission_enfant ni Libelle comme titre", () => {
     const mapped = missionEnfantFromGrist({
       Mission_parent: 51,
+      Mission_enfant: "Ancien texte",
       Libelle: "Ancien Libelle",
     });
-    assert.equal(mapped.Libelle, "Ancien Libelle");
-    const mappedLegacy = missionEnfantFromGrist({
-      Mission_parent: 51,
-      Mission_enfant: "Coaching Produit — David Koss",
-    });
-    assert.equal(mappedLegacy.Libelle, "Coaching Produit — David Koss");
+    assert.equal(mapped.Libelle, undefined);
   });
 
-  it("accepte le schéma legacy Mission / Libelle", () => {
+  it("accepte Mission legacy si Mission_parent absent (ref parent seulement)", () => {
     const mapped = missionEnfantFromGrist({
       Mission: 100,
-      Libelle: "Alice — Design",
+      Titre_de_la_prestation: "Alice — Design",
     });
     assert.equal(mapped.Mission, 100);
     assert.equal(mapped.Libelle, "Alice — Design");
   });
 
-  it("préfère Titre_de_la_prestation et Mission_parent si plusieurs schémas sont présents", () => {
+  it("préfère Mission_parent et Titre_de_la_prestation si plusieurs schémas sont présents", () => {
     const mapped = missionEnfantFromGrist({
       Mission_parent: 51,
       Mission: 99,
@@ -57,9 +53,10 @@ describe("missionEnfantFromGrist", () => {
     const ref = ["L", 51];
     const mapped = missionEnfantFromGrist({
       Mission_parent: ref,
-      Mission_enfant: "Prestation",
+      Titre_de_la_prestation: "Prestation",
     });
     assert.equal(mapped.Mission, ref);
+    assert.equal(mapped.Libelle, "Prestation");
   });
 
   it("laisse Mission et Libelle vides si les colonnes sont absentes", () => {
@@ -68,12 +65,11 @@ describe("missionEnfantFromGrist", () => {
     assert.equal(mapped.Libelle, undefined);
   });
 
-  it("n’utilise pas un id numérique comme libellé (retombe sur Titre)", () => {
+  it("n’utilise pas un id numérique comme libellé", () => {
     const mapped = missionEnfantFromGrist({
-      Mission_enfant: 12,
-      Titre_de_la_prestation: "Alice — Design",
+      Titre_de_la_prestation: 12,
     });
-    assert.equal(mapped.Libelle, "Alice — Design");
+    assert.equal(mapped.Libelle, undefined);
   });
 });
 
@@ -130,7 +126,7 @@ describe("enfantsOfMaster", () => {
   it("filtre via Mission déjà mappé (ingest Mission_parent)", () => {
     const fromLive = missionEnfantFromGrist({
       Mission_parent: 51,
-      Mission_enfant: "Coaching",
+      Titre_de_la_prestation: "Coaching",
     });
     const enfants: MissionEnfant[] = [
       { id: 10, ...fromLive, Intervenant: 201 },

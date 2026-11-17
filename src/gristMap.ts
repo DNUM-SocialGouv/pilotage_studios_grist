@@ -176,7 +176,7 @@ export function toMission(record: GristRecord): Mission {
   };
 }
 
-/** `Missions_enfants` : `missionEnfantFromGrist` priorise `Titre_de_la_prestation` puis legacy. */
+/** `Prestations` : `missionEnfantFromGrist` mappe via `Titre_de_la_prestation` uniquement. */
 export function toMissionEnfant(record: GristRecord): MissionEnfant {
   const { Mission, Libelle } = missionEnfantFromGrist(record);
   return {

@@ -2,10 +2,10 @@ import type { MissionEnfant, SuiviMensuel } from "../types.ts";
 import { asGristChoice, extractGristReferenceId, extractGristReferenceIds } from "./gristReferences.ts";
 
 /**
- * Colonnes Grist `Missions_enfants` → champs internes.
- * Canonique : `Mission_parent` / `Titre_de_la_prestation`.
- * Fallbacks lecture : `Libelle` (ancien id), texte `Mission_enfant`
+ * Colonnes Grist `Prestations` → champs internes.
+ * Canonique : `Mission_parent` / `Titre_de_la_prestation`
  * (le lien CRA est la ref `Realise.Prestation`, pas ce texte).
+ * Plus de fallback sur l’ancien texte `Mission_enfant` (colonne supprimée).
  */
 function textLibelleFromGrist(value: unknown): string | undefined {
   if (typeof value === "string") {
@@ -24,10 +24,7 @@ export function missionEnfantFromGrist(record: Record<string, unknown>): Pick<
 > {
   return {
     Mission: record.Mission_parent ?? record.Mission,
-    Libelle:
-      textLibelleFromGrist(record.Titre_de_la_prestation) ??
-      textLibelleFromGrist(record.Libelle) ??
-      textLibelleFromGrist(record.Mission_enfant),
+    Libelle: textLibelleFromGrist(record.Titre_de_la_prestation),
   };
 }
 
@@ -38,7 +35,7 @@ export function missionEnfantParentWriteField(masterId: number): {
   return { Mission_parent: masterId };
 }
 
-/** Écriture canonique `Titre_de_la_prestation` (plus `Libelle` / texte `Mission_enfant`). */
+/** Écriture canonique `Titre_de_la_prestation`. */
 export function missionEnfantLibelleWriteField(libelle: string): {
   Titre_de_la_prestation: string;
 } {

@@ -6,7 +6,7 @@
 import type { GristTableCreateResult } from "../gristTypes.ts";
 import type { Mission } from "../types.ts";
 import {
-  MISSIONS_ENFANTS_TABLE_ID,
+  PRESTATIONS_TABLE_ID,
   MISSIONS_TABLE_ID,
   assertWritableTableId,
   assertWritableUpdateTableId,
@@ -51,8 +51,8 @@ export async function updateMissionRecord(
 export async function createMissionEnfantRecord(
   fields: Record<string, unknown>,
 ): Promise<number> {
-  assertWritableTableId(MISSIONS_ENFANTS_TABLE_ID);
-  const result = await getWritableTable(MISSIONS_ENFANTS_TABLE_ID).create({ fields });
+  assertWritableTableId(PRESTATIONS_TABLE_ID);
+  const result = await getWritableTable(PRESTATIONS_TABLE_ID).create({ fields });
   return parseCreateId(result);
 }
 
@@ -60,9 +60,9 @@ export async function updateMissionEnfantRecord(
   id: number,
   fields: Record<string, unknown>,
 ): Promise<void> {
-  assertWritableUpdateTableId(MISSIONS_ENFANTS_TABLE_ID);
+  assertWritableUpdateTableId(PRESTATIONS_TABLE_ID);
   if (!Number.isFinite(id) || id <= 0) {
     throw new Error("Identifiant prestation invalide.");
   }
-  await getWritableTable(MISSIONS_ENFANTS_TABLE_ID).update({ id, fields });
+  await getWritableTable(PRESTATIONS_TABLE_ID).update({ id, fields });
 }

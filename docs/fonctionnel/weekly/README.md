@@ -7,7 +7,7 @@
 En cours / Done), et **Kanban** des missions. Un **clic sur une carte** du kanban ouvre un **tiroir** (météo,
 **un ou plusieurs** membres équipe Ops, note, échanges liés). La phase, le
 suivi ops, l’agenda et les actions vivent dans des **tables satellites Weekly**
-— on ne modifie **pas** les colonnes de `Missions` / `Missions_enfants`.
+— on ne modifie **pas** les colonnes de `Missions` / `Prestations`.
 Le lien CRA viendra plus tard.
 
 ## Route & accès
@@ -51,7 +51,7 @@ Pas de couleurs hex « papier » figées — le thème sombre reste lisible.
 | Table | Rôle |
 |-------|------|
 | `Missions` | Lecture seule — titre carte (`Nom_de_la_mission`), statut, département, produit (**pas** d’écriture suivi ops) |
-| `Missions_enfants` | Lecture — intervenants sur la carte |
+| `Prestations` | Lecture — intervenants sur la carte |
 | `Equipe` | Lecture — noms / avatars ; `E_mail` pour jointure porteurs Ops ↔ `Weekly_coachs` (si Access Rules le livrent) |
 | Produits SDPC | Lecture — libellé produit |
 | **`Weekly_phase`** | Create + update — 1 ligne / mission : `Mission` (Ref) · `Phase` (`prochainement` \| `cadrage` \| `actif` \| `autonomie`) · `Meteo` · `Note_ops` · `Membre_equipe` (RefList → `Equipe`) |

@@ -116,7 +116,7 @@ describe("missionMatchesFilters", () => {
   it("filtre par intervenant sur enfants mappés depuis Mission_parent", () => {
     const mapped = missionEnfantFromGrist({
       Mission_parent: 1,
-      Mission_enfant: "Coaching",
+      Titre_de_la_prestation: "Coaching",
     });
     const liveEnfants: MissionEnfant[] = [{ id: 30, ...mapped, Intervenant: 301 }];
     const liveMission: Mission = { id: 1, Nom_de_la_mission: "Lot VAO" };
@@ -204,7 +204,7 @@ describe("missionLibelle / options", () => {
   it("groupe les enfants via Mission déjà mappé (ingest Mission_parent)", () => {
     const mapped = missionEnfantFromGrist({
       Mission_parent: 1,
-      Mission_enfant: "Coaching",
+      Titre_de_la_prestation: "Coaching",
     });
     const liveEnfants: MissionEnfant[] = [
       { id: 30, ...mapped, Intervenant: 301 },

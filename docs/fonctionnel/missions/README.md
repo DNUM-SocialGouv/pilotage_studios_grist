@@ -7,11 +7,11 @@
 
 ## Objet métier
 
-Une **mission master** (`Missions`) est un lot d’accompagnement (contexte, produit, statut). Les **enfants** (`Missions_enfants`) portent le staffing (`Mission_parent` → master, **`Titre_de_la_prestation`** — équivalent de `Nom_de_la_mission` sur le master ; fallbacks lecture : `Libelle`, colonne texte `Mission_enfant`). Les lignes CRA (`Realise`) se rattachent à la prestation (`Realise.Prestation`, **référence**). La mission du lot est la formule `Realise.Mission` (= mission parente de la prestation). Lecture ancienne encore acceptée : `Mission_enfant` puis `Missions`.
+Une **mission master** (`Missions`) est un lot d’accompagnement (contexte, produit, statut). Les **enfants** (`Prestations`) portent le staffing (`Mission_parent` → master, **`Titre_de_la_prestation`** — équivalent de `Nom_de_la_mission` sur le master). Les lignes CRA (`Realise`) se rattachent à la prestation (`Realise.Prestation`, **référence**). La mission du lot est la formule `Realise.Mission` (= mission parente de la prestation).
 
 | Outil | Rôle |
 |-------|------|
-| **Grist** (`Missions`, `Missions_enfants`, `Realise`, `Equipe`, produits SDPC) | Référentiel |
+| **Grist** (`Missions`, `Prestations`, `Realise`, `Equipe`, produits SDPC) | Référentiel |
 | **Ce widget** | Liste / fiche + **drawer** create/edit master + **drawer** create/edit prestations + **drawer** Admin Modifier/Dupliquer CRA |
 | **App sœur** | Parité drawer + CSV, IA — [doc missions app](https://github.com/DNUM-SocialGouv/pilotage_studios/blob/main/docs/fonctionnel/missions/README.md) |
 
@@ -20,7 +20,7 @@ Une **mission master** (`Missions`) est un lot d’accompagnement (contexte, pro
 | Table | Usage |
 |-------|--------|
 | `Missions` | Lignes liste / fiche (masters) ; **écriture** create + update (drawer Nom / Produit / Statut ; Note studio `Suivi_resp_studio` ; Liens FIGMA/Notion `Liens_FIGMA_Notion` + Docs `Docs` via panneau Contexte) |
-| `Missions_enfants` | Prestations ; **écriture** create + update (drawer fiche ; 1ʳᵉ prestation optionnelle à la création mission) |
+| `Prestations` | Prestations ; **écriture** create + update (drawer fiche ; 1ʳᵉ prestation optionnelle à la création mission) |
 | `Equipe` | Libellés intervenants / équipe |
 | `Tableau_de_pilotage_SDPC_Produits_SDPC` | Libellés produit |
 | `Realise` | Agrégats jours / TTC + réalisations fiche |

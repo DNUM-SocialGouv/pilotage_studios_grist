@@ -37,7 +37,7 @@ Si le freelance n’a pas encore saisi : message d’info (la déclaration reste
 |-------|--------|
 | `Equipe` | Identité manager + liste du département (+ TJM si lisible pour HT) |
 | `Realise` | Lignes du mois / intervenant ; update jours, description, BDC |
-| `Missions` / `Missions_enfants` | Libellés |
+| `Missions` / `Prestations` | Libellés |
 | `BDC` | Options du sélecteur (déjà en contexte PA) |
 
 ## Limites V1

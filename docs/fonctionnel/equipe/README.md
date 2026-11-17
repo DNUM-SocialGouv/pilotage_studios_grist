@@ -22,7 +22,7 @@ Selon les **Access Rules** Grist, un **Freelance** ne voit que **nom**, **dépar
 | Table | Usage |
 |-------|--------|
 | `Equipe` | Liste et fiche (`fetchAllowlistedTable`) ; **create + update** Admin via drawer |
-| `Missions`, `Missions_enfants` | Fiche uniquement : section Missions & prestations (Intervenant → personne) |
+| `Missions`, `Prestations` | Fiche uniquement : section Missions & prestations (Intervenant → personne) |
 
 Colonnes widget (Admin / droits complets) : `Prenom_Nom`, `Equipe`, `Portage`, `Statut`, `Specialite`, `Role_ACL`, `Avatar` (seed image Glyphs), `TJM` / `Total_TTC` (fiche, si Access Rules). `E_mail` lu pour le drawer Admin uniquement.
 
