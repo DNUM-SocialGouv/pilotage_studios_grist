@@ -1,0 +1,17 @@
+.intro {
+  color: var(--text-mention-grey);
+}
+
+.error {
+  color: var(--text-default-error);
+  margin: 0 0 0.5rem;
+}
+
+.ok {
+  color: var(--text-default-success);
+  margin: 0 0 0.5rem;
+}
+
+.saved {
+  margin: 0 0 0.5rem;
+}

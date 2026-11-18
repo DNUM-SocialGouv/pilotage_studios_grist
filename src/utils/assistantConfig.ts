@@ -5,6 +5,12 @@
 
 const STORAGE_KEY = "pilotage.assistant.essai.v1";
 
+/** Événement fenêtre : la config a changé (menu compte → panneau chat). */
+export const ASSISTANT_CONFIG_CHANGED_EVENT = "pilotage:assistant-config-changed";
+
+/** Événement fenêtre : ouvrir la modale Connexion Assistant (ex. depuis le chat). */
+export const ASSISTANT_OPEN_CONNEXION_EVENT = "pilotage:assistant-open-connexion";
+
 export type AssistantEssaiConfig = {
   baseUrl: string;
   sharedSecret: string;
@@ -16,6 +22,16 @@ export function emptyAssistantConfig(): AssistantEssaiConfig {
 
 export function normalizeAssistantBaseUrl(raw: string): string {
   return raw.trim().replace(/\/+$/, "");
+}
+
+export function notifyAssistantConfigChanged(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(ASSISTANT_CONFIG_CHANGED_EVENT));
+}
+
+export function requestAssistantConnexionDialog(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(ASSISTANT_OPEN_CONNEXION_EVENT));
 }
 
 export function loadAssistantConfig(): AssistantEssaiConfig {
@@ -43,6 +59,7 @@ export function saveAssistantConfig(config: AssistantEssaiConfig): AssistantEssa
   if (typeof sessionStorage !== "undefined") {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   }
+  notifyAssistantConfigChanged();
   return next;
 }
 
@@ -50,6 +67,7 @@ export function clearAssistantConfig(): void {
   if (typeof sessionStorage !== "undefined") {
     sessionStorage.removeItem(STORAGE_KEY);
   }
+  notifyAssistantConfigChanged();
 }
 
 export function isAssistantConfigReady(config: AssistantEssaiConfig): boolean {
