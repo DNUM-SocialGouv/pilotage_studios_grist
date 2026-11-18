@@ -34,12 +34,6 @@ type ThreadItem = {
   text: string;
 };
 
-const WAIT_STAGES = [
-  "Lecture des missions et des CRA…",
-  "Calcul des totaux…",
-  "Rédaction de la réponse…",
-] as const;
-
 function newId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -83,26 +77,15 @@ export function AssistantChatPanel({ layout, onClose }: AssistantChatPanelProps)
   const [question, setQuestion] = useState("");
   const [thread, setThread] = useState<ThreadItem[]>([]);
   const [sending, setSending] = useState(false);
-  const [waitStage, setWaitStage] = useState(0);
+  /** Libellé d’attente aligné sur l’étape réelle (pas un timer décoratif). */
+  const [waitLabel, setWaitLabel] = useState("Préparation de la réponse…");
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [healthHint, setHealthHint] = useState<string | null>(null);
 
   useEffect(() => {
     threadEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [thread, sending, waitStage]);
-
-  useEffect(() => {
-    if (!sending) {
-      setWaitStage(0);
-      return;
-    }
-    setWaitStage(0);
-    const id = window.setInterval(() => {
-      setWaitStage((s) => (s + 1) % WAIT_STAGES.length);
-    }, 1600);
-    return () => window.clearInterval(id);
-  }, [sending]);
+  }, [thread, sending, waitLabel]);
 
   function persistConfig() {
     const next = saveAssistantConfig({
@@ -155,6 +138,7 @@ export function AssistantChatPanel({ layout, onClose }: AssistantChatPanelProps)
     }
 
     setSending(true);
+    setWaitLabel("Préparation de la réponse…");
     setError(null);
     setQuestion("");
     setThread((prev) => [...prev, { id: newId(), role: "user", text: q }]);
@@ -172,8 +156,10 @@ export function AssistantChatPanel({ layout, onClose }: AssistantChatPanelProps)
           hint: "Cette question semble porter sur un bon de commande ou un produit. Posez plutôt une question sur une mission par son nom (jours / TTC CRA).",
         });
       } else if (questionLooksLikeMissionCra(q)) {
+        setWaitLabel("Lecture des missions et des CRA…");
         try {
           const tables = await loadMissionsTables();
+          setWaitLabel("Calcul des totaux…");
           const resolved = resolveMissionAssistantFacts(
             q,
             tables.missions,
@@ -200,6 +186,7 @@ export function AssistantChatPanel({ layout, onClose }: AssistantChatPanelProps)
         }
       }
 
+      setWaitLabel("Rédaction de la réponse…");
       const result = await askAssistant(next, q, context);
       setThread((prev) => [
         ...prev,
@@ -353,7 +340,7 @@ export function AssistantChatPanel({ layout, onClose }: AssistantChatPanelProps)
                 <span />
                 <span />
               </span>
-              <span>{WAIT_STAGES[waitStage]}</span>
+              <span>{waitLabel}</span>
             </div>
           ) : null}
           <div ref={threadEndRef} />

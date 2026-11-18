@@ -10,24 +10,25 @@
 
 ## Objet
 
-Première page affichée à l’ouverture du Custom Widget dans Grist : un **accueil léger selon le rôle** (Freelance, Responsable de département, Admin, Invité) avec barre de recherche (sauf Invité), bloc **« Vos retours »** (mes cartes Feedback) et raccourcis utiles. Composition **Option 3** : bandeau recherche pleine largeur ; sur grand écran **raccourcis | Vos retours** côte à côte ; sur mobile empilement (retours puis raccourcis). La **feuille de route** (kanban Feedback · Backlog · En cours · Livré) s’ouvre depuis le **menu compte** ou le lien du bloc retours. La navigation complète reste dans la **nav** (`WidgetNav`).
+Première page affichée à l’ouverture du Custom Widget dans Grist : un **accueil léger selon le rôle** (Freelance, Responsable de département, Admin, Invité) avec barre de recherche (sauf Invité), **Assistant Pilotage** (chat lecture seule) et bloc **« Vos retours »**. Composition : bandeau recherche pleine largeur ; sur grand écran **assistant | Vos retours** ; sur mobile empilement (retours puis assistant). Les écrans métier restent dans la **nav** et le **menu compte** (plus de tuiles CTA sur `/`). La **feuille de route** s’ouvre depuis le menu compte ou le lien du bloc retours.
 
 ## Comportement
 
 | Élément | Détail |
 |---------|--------|
 | Entrée | `MemoryRouter` démarre sur `/` (`initialEntries`) |
-| Accueil par rôle | Salutation + (selon rôle) libellé / message court + **2–4 CTA** filtrés comme la nav (`Page_*` + flags rôle / département) |
-| Freelance | Titre **« Bonjour [Prénom] »** (`Equipe.Prenom_Nom`, même source que le menu compte ; fallback « Bonjour » si prénom absent) ; **pas** de libellé « Pilotage studios », ni sous-titre rôle, ni phrase d’intro ; **bandeau** (bonjour + barre de recherche produit / mission / personne) ; colonne raccourcis : Mon carnet · Missions · Documentation ; « À savoir » = rappel déclarer les jours (sans mention Budget) |
-| Responsable | Même épurage que Admin : titre **« Bonjour [Prénom] »** ; **pas** de « Pilotage studios », ni sous-titre « Responsable de département », ni phrase d’intro, ni bloc « À savoir » ; **bandeau** recherche ; raccourcis : Revue CRA équipe (si département) · Mon carnet · Missions ; pas de CTA Weekly générique |
-| Admin | Même épurage que Freelance : titre **« Bonjour [Prénom] »** ; **pas** de « Pilotage studios », ni sous-titre « Admin », ni phrase d’intro, ni bloc « À savoir » ; **bandeau** recherche ; raccourcis : Missions · Bons de commande · Droits des pages · **Feuille de route** |
-| Invité | « Pilotage studios » + « Bonjour » + libellé rôle ; CTA : Missions · Produits · Documentation (si `Page_regles_metier`) ; **pas** de bandeau ni de barre de recherche ; **oui** bloc « Vos retours » si e-mail session résolu ; pas de carnet / revue / droits |
-| Profil vide / erreur | Message explicite + CTA limités (Documentation / Missions si ouverts en fail-closed) — **pas** de 5ᵉ rôle inventé ; **pas** de barre de recherche ; **pas** de bloc « Vos retours » |
-| Recherche d’accueil | **Option A** : « Bonjour [Prénom] » **dans** un bandeau **pleine largeur** du contenu (fond DSFR `background-alt-grey` + filet bleu), puis la barre ; suggestions inline (≥ 2 lettres) → fiche `/produits/:id`, `/missions/:id` ou `/equipe/:id` ; résultats **Mission** : badge statut (`StatutBadge`) ; pas de page `/recherche` ; cibles masquées si `Page_produits` / `Page_missions` / `Page_equipe` fermés ; lazy fetch au premier focus ; pas de hero marketing (pas d’image, pas de slogan) |
-| **Vos retours** | Section sur `/` : cartes `Nature=Feedback` dont `Email` = e-mail de session ; filtre **Actifs / Archivés** (Option C) ; **Actifs** = Feedback · Backlog · En cours + Livré encore « nouveau » (badge) ; **Archivés** = Livré déjà lus (sans badge) ; **5** max par onglet ; badges « Nouvelle réponse » / « Mis à jour » (priorité réponse) via commentaires d’autrui / champ `Reponse` + changement de colonne ; « lu » = `localStorage` à l’ouverture du drawer (**pas** de colonne Grist) ; empty E1 = aucun retour + CTA « Un retour ? » ; empty E2 = tous Livré lus → message + onglet Archivés ; lien feuille de route ; clic → `TicketDrawer` |
+| Accueil par rôle | Salutation + (selon rôle) libellé / message court ; **pas** de colonne de raccourcis CTA (remplacée par l’assistant) |
+| Freelance | Titre **« Bonjour [Prénom] »** ; bandeau recherche ; « À savoir » = rappel déclarer les jours ; écrans via nav / menu compte |
+| Responsable | Titre **« Bonjour [Prénom] »** ; bandeau recherche ; écrans via nav / menu compte |
+| Admin | Titre **« Bonjour [Prénom] »** ; bandeau recherche ; Feuille de route via **menu compte** (plus de CTA accueil) |
+| Invité | « Pilotage studios » + « Bonjour » + libellé rôle ; **pas** de barre de recherche ; **oui** Vos retours si e-mail OK ; assistant visible |
+| Profil vide / erreur | Message explicite ; **pas** de barre de recherche ; **pas** de Vos retours |
+| **Assistant** | Panneau intégré (`AssistantChatPanel` embedded) : questions par **nom** de mission ; faits CRA côté widget ; config URL/jeton en session ; **N/A `Page_*`**. Hors `/` : FAB + tiroir |
+| Recherche d’accueil | Bandeau pleine largeur ; suggestions → fiches produit / mission / personne ; cibles filtrées par `Page_*` ; pas Invité |
+| **Vos retours** | Cartes Feedback de l’auteur session ; Actifs / Archivés ; lien feuille de route ; drawer ticket |
 | Kanban complet | **Absent** de `/` — voir [`feuille-de-route.md`](feuille-de-route.md) |
-| Nav | `WidgetNav` : chrome **Page précédente** · Accueil · modules · **menu compte** (Mon carnet · Feuille de route · Documentation) |
-| Layout | Panneau large (`welcome-page__panel--wide`) ; composition **Option 3** (split desktop) |
+| Nav | `WidgetNav` : chrome **Page précédente** · Accueil · modules · **menu compte** |
+| Layout | Panneau large ; split desktop assistant \| retours |
 | Fallback | Route `*` → redirection vers `/` |
 
 ### Droits / `Page_*`
@@ -35,10 +36,11 @@ Première page affichée à l’ouverture du Custom Widget dans Grist : un **acc
 | Sujet | Choix | Motif |
 |-------|-------|--------|
 | Route `/` | `Page_accueil` existante (non modifiable Admin) | Pas de nouvelle colonne |
-| Variante CTA par rôle | **N/A `Page_*`** — branchement sur `Role` (+ mêmes gardes que la nav) | Variante d’écran, pas nouvel interrupteur |
-| Barre de recherche sur `/` | **N/A `Page_*`** — variante selon `Role` (Admin / Resp. / Freelance) ; cibles filtrées par `Page_produits` / `Page_missions` / `Page_equipe` | Pas de nouvel écran ni route `/recherche` |
-| Bloc « Vos retours » | **N/A `Page_*`** — variante sur `/` (`Page_accueil`) ; visible tous rôles **y compris Invité** si e-mail session OK | Pas de nouvel écran / route `/mes-retours` |
-| Feuille de route dédiée | **Fixé ouvert** sans `Page_*` | Décision porteur — voir [`feuille-de-route.md`](feuille-de-route.md) |
+| Assistant sur `/` (+ FAB ailleurs) | **N/A `Page_*`** — comme le feedback flottant | Essai lecture seule ; restreindre plus tard (#145) |
+| Anciens CTA par rôle | **Non rendus** — catalogue encore calculé dans `welcomeHomeByRole` (tests) ; écrans via nav / menu compte | Simplification accueil (#140) |
+| Barre de recherche sur `/` | **N/A `Page_*`** — variante selon `Role` ; cibles filtrées par `Page_produits` / `Page_missions` / `Page_equipe` | Pas de route `/recherche` |
+| Bloc « Vos retours » | **N/A `Page_*`** — variante sur `/` ; Invité inclus si e-mail OK | Pas de route `/mes-retours` |
+| Feuille de route dédiée | **Fixé ouvert** sans `Page_*` | Voir [`feuille-de-route.md`](feuille-de-route.md) |
 
 ## Données Grist
 
@@ -60,5 +62,5 @@ Première page affichée à l’ouverture du Custom Widget dans Grist : un **acc
 - Personnalisation éditable dans Grist (CMS d’accueil)
 - Drag-and-drop des cartes ; édition commentaires (corps Résumé/Détail Admin = feuille de route)
 - Sync automatique GitHub ↔ Grist ; notifications mail
-- Features IA / analyse
+- Analyse page `/analyse` (l’assistant essai est sur `/` / FAB — hors scope marketing)
 - Recherche Invité ; cibles BDC / PA / CRA / kanban ; route `/recherche` ; recherche dans `WidgetNav`

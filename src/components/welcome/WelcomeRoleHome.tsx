@@ -37,8 +37,8 @@ type WelcomeRoleHomeProps = {
 };
 
 /**
- * Accueil Option 3 : bandeau recherche ; puis raccourcis | Vos retours (≥ md) ;
- * mobile = empilement retours puis raccourcis (esprit Option 1).
+ * Accueil : bandeau recherche ; puis assistant | Vos retours (≥ md) ;
+ * mobile = empilement retours puis assistant. Plus de tuiles CTA.
  */
 export function WelcomeRoleHome({
   content,

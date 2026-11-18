@@ -1,6 +1,8 @@
 /**
  * Contenu d’accueil par rôle (PR-A) — mapping pur, sans fetch.
  * Les CTA respectent les mêmes règles que la nav (Page_* + flags rôle).
+ * **Rendu** : depuis #140, `WelcomeRoleHome` n’affiche plus les tuiles CTA
+ * (remplacées par l’assistant) ; `ctas` reste calculé pour les tests / éventuel retour.
  */
 
 import type { PageAccessFlags } from "../security/pageAccess.ts";

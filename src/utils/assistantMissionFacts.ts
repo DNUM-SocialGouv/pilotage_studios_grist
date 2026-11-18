@@ -297,22 +297,6 @@ export function resolveMissionFromQuestion(
   return best.mission;
 }
 
-export function isAmbiguousMissionNameMatch(
-  question: string,
-  missions: readonly Mission[],
-): boolean {
-  if (extractMissionIdFromQuestion(question) != null) return false;
-  const q = normalizeLabel(question);
-  const scored: MissionScore[] = [];
-  for (const m of missions) {
-    const score = scoreMissionAgainstQuestion(q, m);
-    if (score > 0) scored.push({ mission: m, score });
-  }
-  if (scored.length < 2) return false;
-  scored.sort((a, b) => b.score - a.score);
-  return scored[0]!.score === scored[1]!.score;
-}
-
 export function questionLooksLikeMissionCra(question: string): boolean {
   if (questionLooksLikeCraPrestationRule(question)) return true;
   if (questionLooksLikeOtherDomain(question) && extractMissionIdFromQuestion(question) == null) {
