@@ -5,7 +5,7 @@ GET  /health
 POST /v1/ask  { question, context? } → { message, data }
 
 Secrets via env : LITELLM_* , ASSISTANT_SHARED_SECRET , CORS_ORIGINS , PORT.
-Idéal pour Onyxia « Vscode-python ». Compatible Python 3.9+.
+ASSISTANT_DEBUG=1 → détail d’erreur LiteLLM dans la réponse JSON (essai seulement).
 """
 
 from __future__ import annotations
@@ -19,19 +19,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-LITELLM_BASE_URL = (os.environ.get("LITELLM_BASE_URL") or "").rstrip("/")
-LITELLM_API_KEY = os.environ.get("LITELLM_API_KEY") or ""
-LITELLM_MODEL = os.environ.get("LITELLM_MODEL") or "mistral-small"
-SHARED_SECRET = os.environ.get("ASSISTANT_SHARED_SECRET") or ""
-CORS_ORIGINS = [
-    o.strip()
-    for o in (
-        os.environ.get("CORS_ORIGINS")
-        or "http://localhost:5175,https://dnum-socialgouv.github.io"
-    ).split(",")
-    if o.strip()
-]
-
 SYSTEM_PROMPT = (
     "Tu es l’assistant de lecture du Pilotage studios "
     "(missions, bons de commande, produits, CRA). "
@@ -41,10 +28,39 @@ SYSTEM_PROMPT = (
     "Tu ne proposes pas de modifier Grist."
 )
 
-app = FastAPI(title="pilotage-assistant-essai", version="0.1.0")
+
+def _env(name: str, default: str = "") -> str:
+    return (os.environ.get(name) or default).strip()
+
+
+def _litellm_config() -> Dict[str, str]:
+    return {
+        "base_url": _env("LITELLM_BASE_URL").rstrip("/"),
+        "api_key": _env("LITELLM_API_KEY"),
+        "model": _env("LITELLM_MODEL", "mistral-small"),
+    }
+
+
+def _shared_secret() -> str:
+    return _env("ASSISTANT_SHARED_SECRET")
+
+
+def _debug() -> bool:
+    return _env("ASSISTANT_DEBUG") in ("1", "true", "True", "yes")
+
+
+def _cors_origins() -> list:
+    raw = _env(
+        "CORS_ORIGINS",
+        "http://localhost:5175,https://dnum-socialgouv.github.io",
+    )
+    return [o.strip() for o in raw.split(",") if o.strip()]
+
+
+app = FastAPI(title="pilotage-assistant-essai", version="0.1.1")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=CORS_ORIGINS,
+    allow_origins=_cors_origins(),
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],
@@ -70,7 +86,8 @@ class AskResponse(BaseModel):
 
 
 def _authorize(authorization: Optional[str]) -> None:
-    if not SHARED_SECRET:
+    secret = _shared_secret()
+    if not secret:
         return
     if not authorization or not authorization.lower().startswith("bearer "):
         raise HTTPException(
@@ -78,7 +95,7 @@ def _authorize(authorization: Optional[str]) -> None:
             detail={"error": "unauthorized", "message": "Jeton manquant ou invalide."},
         )
     token = authorization.split(" ", 1)[1].strip()
-    if token != SHARED_SECRET:
+    if token != secret:
         raise HTTPException(
             status_code=401,
             detail={"error": "unauthorized", "message": "Jeton manquant ou invalide."},
@@ -108,8 +125,20 @@ def _format_context(context: Optional[AskContext]) -> str:
     return "\n\nContexte widget :\n- " + "\n- ".join(bits)
 
 
+def _upstream_detail(status: int, body: str) -> Dict[str, Any]:
+    detail = {
+        "error": "litellm_upstream",
+        "message": "Le service de modèles a renvoyé une erreur. Réessayez plus tard.",
+    }
+    if _debug():
+        detail["debugStatus"] = status
+        detail["debugBody"] = body[:500]
+    return detail
+
+
 async def _call_litellm(question: str, context: Optional[AskContext]) -> str:
-    if not LITELLM_BASE_URL or not LITELLM_API_KEY:
+    cfg = _litellm_config()
+    if not cfg["base_url"] or not cfg["api_key"]:
         raise HTTPException(
             status_code=503,
             detail={
@@ -121,9 +150,9 @@ async def _call_litellm(question: str, context: Optional[AskContext]) -> str:
             },
         )
     user_content = "{0}{1}".format(question.strip(), _format_context(context))
-    url = "{0}/chat/completions".format(LITELLM_BASE_URL)
+    url = "{0}/chat/completions".format(cfg["base_url"])
     payload = {
-        "model": LITELLM_MODEL,
+        "model": cfg["model"],
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_content},
@@ -132,45 +161,55 @@ async def _call_litellm(question: str, context: Optional[AskContext]) -> str:
     }
     headers = {
         "Content-Type": "application/json",
-        "Authorization": "Bearer {0}".format(LITELLM_API_KEY),
+        "Authorization": "Bearer {0}".format(cfg["api_key"]),
     }
     try:
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        async with httpx.AsyncClient(timeout=90.0) as client:
             res = await client.post(url, json=payload, headers=headers)
     except httpx.HTTPError as exc:
+        print("[ask] litellm HTTPError:", type(exc).__name__, exc)
         raise HTTPException(
             status_code=502,
-            detail={
-                "error": "litellm_upstream",
-                "message": "Le service de modèles a renvoyé une erreur. Réessayez plus tard.",
-            },
+            detail=_upstream_detail(0, str(exc)),
         ) from exc
 
+    body_text = res.text
     if res.status_code >= 400:
+        print(
+            "[ask] litellm upstream",
+            res.status_code,
+            "url=",
+            url,
+            "model=",
+            cfg["model"],
+            "body=",
+            body_text[:500],
+        )
         raise HTTPException(
             status_code=502,
-            detail={
-                "error": "litellm_upstream",
-                "message": "Le service de modèles a renvoyé une erreur. Réessayez plus tard.",
-            },
+            detail=_upstream_detail(res.status_code, body_text),
         )
     data = res.json()
     try:
-        message = data["choices"][0]["message"]["content"].strip()
+        raw = data["choices"][0]["message"].get("content")
+        message = (raw or "").strip()
     except (KeyError, IndexError, TypeError, AttributeError):
-        message = "Je n’ai pas pu formuler de réponse."
+        message = ""
     return message or "Je n’ai pas pu formuler de réponse."
 
 
 @app.get("/health")
 async def health() -> Dict[str, Any]:
+    cfg = _litellm_config()
     return {
         "ok": True,
         "service": "pilotage-assistant-essai",
         "runtime": "python",
-        "litellmConfigured": bool(LITELLM_BASE_URL and LITELLM_API_KEY),
-        "authRequired": bool(SHARED_SECRET),
-        "model": LITELLM_MODEL,
+        "litellmConfigured": bool(cfg["base_url"] and cfg["api_key"]),
+        "litellmBaseUrl": cfg["base_url"],
+        "authRequired": bool(_shared_secret()),
+        "model": cfg["model"],
+        "debug": _debug(),
     }
 
 
@@ -190,7 +229,6 @@ async def ask(
             },
         )
     message = await _call_litellm(question, body.context)
-    # `data` réservé aux tableaux / graphiques (#144) — null en V0 texte.
     return AskResponse(message=message, data=None)
 
 
