@@ -135,9 +135,8 @@ export function AssistantWidget() {
     const q = question.trim();
     if (!q || sending) return;
 
-    const next = isAssistantConfigReady(config)
-      ? config
-      : persistConfig();
+    // Toujours aligner brouillon → config sauvée (évite d’envoyer vers une ancienne URL).
+    const next = persistConfig();
     if (!isAssistantConfigReady(next)) {
       setShowConfig(true);
       setError("Indiquez d’abord l’URL du service d’essai (Onyxia).");
@@ -280,7 +279,8 @@ export function AssistantWidget() {
               {thread.length === 0 ? (
                 <p className="fr-text--sm fr-mb-0" style={{ color: "var(--text-mention-grey)" }}>
                   Exemples : « Quel reste sur un bon de commande ? », « Budget consommé sur
-                  une mission… ». Les chiffres métier fiables arriveront ensuite (#140–#142).
+                  une mission… ». Pour l’instant les réponses sont conversationnelles ; les
+                  chiffres lus dans Grist arriveront ensuite.
                 </p>
               ) : null}
               {thread.map((item) => (
