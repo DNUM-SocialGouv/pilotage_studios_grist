@@ -15,7 +15,7 @@ Issue : [#139](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/
    - **Tester la connexion** puis **Enregistrer**.
 3. Poser une question sur l’accueil ou via le bouton **Assistant** → réponse texte.
 
-La config est gardée dans **sessionStorage** de l’onglet (pas dans git, pas la clé LiteLLM). Fermer l’onglet = resaisir éventuellement. Si la connexion manque, l’Assistant rappelle le chemin menu compte.
+La config est gardée dans **sessionStorage** de l’onglet (pas dans git, pas la clé LiteLLM). Fermer l’onglet = resaisir éventuellement. Si la connexion manque, l’Assistant propose un bouton **Connexion Assistant** (même modale que le menu compte).
 
 ## CORS côté Onyxia
 

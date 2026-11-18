@@ -25,6 +25,7 @@ import { useAclProfil } from "../AclProfilContext";
 import { AssistantConnexionDialog } from "../components/assistant/AssistantConnexionDialog";
 import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
 import { canAccessHref } from "../security/pageAccess";
+import { ASSISTANT_OPEN_CONNEXION_EVENT } from "../utils/assistantConfig";
 import { isCraDeclarerRole } from "../utils/droitsPagesThemes";
 import { isNavActive } from "./widgetNavItems";
 
@@ -83,6 +84,18 @@ export function WidgetUserMenu() {
       document.removeEventListener("keydown", onKey);
     };
   }, [close, open]);
+
+  // Ouverture depuis le rappel chat Assistant (sans passer par le menu).
+  useEffect(() => {
+    const onOpenConnexion = () => {
+      close();
+      setConnexionOpen(true);
+    };
+    window.addEventListener(ASSISTANT_OPEN_CONNEXION_EVENT, onOpenConnexion);
+    return () => {
+      window.removeEventListener(ASSISTANT_OPEN_CONNEXION_EVENT, onOpenConnexion);
+    };
+  }, [close]);
 
   const { primary, secondary } = identityLines({
     displayName,
@@ -237,7 +250,12 @@ export function WidgetUserMenu() {
       ) : null}
       <AssistantConnexionDialog
         open={connexionOpen}
-        onClose={() => setConnexionOpen(false)}
+        onClose={() => {
+          setConnexionOpen(false);
+          window.requestAnimationFrame(() => {
+            triggerRef.current?.focus();
+          });
+        }}
       />
     </div>
   );

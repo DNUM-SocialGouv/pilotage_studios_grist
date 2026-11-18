@@ -14,6 +14,7 @@ import {
   ASSISTANT_CONFIG_CHANGED_EVENT,
   isAssistantConfigReady,
   loadAssistantConfig,
+  requestAssistantConnexionDialog,
   type AssistantEssaiConfig,
 } from "../../utils/assistantConfig.ts";
 import {
@@ -93,9 +94,8 @@ export function AssistantChatPanel({ layout, onClose }: AssistantChatPanelProps)
     const next = loadAssistantConfig();
     setConfig(next);
     if (!isAssistantConfigReady(next)) {
-      setError(
-        "Indiquez d’abord l’URL du service : Mon compte (avatar) → Connexion Assistant.",
-      );
+      setError("Indiquez d’abord l’URL du service via Connexion Assistant.");
+      requestAssistantConnexionDialog();
       return;
     }
 
@@ -206,11 +206,18 @@ export function AssistantChatPanel({ layout, onClose }: AssistantChatPanelProps)
 
       <div className={styles.body}>
         {!configReady ? (
-          <p className={`fr-text--sm fr-mb-0 ${styles.configHint}`} role="status">
-            Pour brancher l’essai : ouvrez <strong>Mon compte</strong> (avatar en haut à
-            droite) → <strong>Connexion Assistant</strong>, puis enregistrez l’URL et le
-            jeton.
-          </p>
+          <div className={styles.configHint} role="status">
+            <p className="fr-text--sm fr-mb-1w">
+              Pour brancher l’essai : renseignez l’URL et le jeton du service Onyxia.
+            </p>
+            <button
+              type="button"
+              className="fr-btn fr-btn--secondary fr-btn--sm"
+              onClick={() => requestAssistantConnexionDialog()}
+            >
+              Connexion Assistant
+            </button>
+          </div>
         ) : null}
 
         <div className={styles.thread} aria-live="polite">

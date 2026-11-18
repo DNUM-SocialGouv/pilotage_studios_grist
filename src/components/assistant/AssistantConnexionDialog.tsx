@@ -1,5 +1,5 @@
 /**
- * Modale « Connexion Assistant » — ouverte depuis le menu compte.
+ * Modale « Connexion Assistant » — ouverte depuis le menu compte (ou le rappel chat).
  * URL Onyxia + jeton partagé (sessionStorage), hors panneau de chat.
  */
 import { useEffect, useId, useRef, useState } from "react";
@@ -13,6 +13,7 @@ import {
   loadAssistantConfig,
   saveAssistantConfig,
 } from "../../utils/assistantConfig.ts";
+import styles from "./AssistantConnexionDialog.module.css";
 
 export type AssistantConnexionDialogProps = {
   open: boolean;
@@ -115,7 +116,7 @@ export function AssistantConnexionDialog({
         <h2 id={titleId} className="fr-h5 fr-mb-1w">
           Connexion Assistant
         </h2>
-        <p className="fr-text--sm fr-mb-3w" style={{ color: "var(--text-mention-grey)" }}>
+        <p className={`fr-text--sm fr-mb-3w ${styles.intro}`}>
           Essai : URL du service Onyxia (port 5000) et jeton partagé. Stockés seulement
           dans cet onglet — pas dans Grist.
         </p>
@@ -156,21 +157,17 @@ export function AssistantConnexionDialog({
         </div>
 
         {error ? (
-          <p className="fr-text--sm fr-mb-2w" role="alert" style={{ color: "var(--text-default-error)" }}>
+          <p className={`fr-text--sm ${styles.error}`} role="alert">
             {error}
           </p>
         ) : null}
         {healthHint ? (
-          <p
-            className="fr-text--sm fr-mb-2w"
-            role="status"
-            style={{ color: "var(--text-default-success)" }}
-          >
+          <p className={`fr-text--sm ${styles.ok}`} role="status">
             {healthHint}
           </p>
         ) : null}
         {savedHint ? (
-          <p className="fr-text--sm fr-mb-2w" role="status">
+          <p className={`fr-text--sm ${styles.saved}`} role="status">
             {savedHint}
           </p>
         ) : null}

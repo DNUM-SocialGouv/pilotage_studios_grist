@@ -8,6 +8,9 @@ const STORAGE_KEY = "pilotage.assistant.essai.v1";
 /** Événement fenêtre : la config a changé (menu compte → panneau chat). */
 export const ASSISTANT_CONFIG_CHANGED_EVENT = "pilotage:assistant-config-changed";
 
+/** Événement fenêtre : ouvrir la modale Connexion Assistant (ex. depuis le chat). */
+export const ASSISTANT_OPEN_CONNEXION_EVENT = "pilotage:assistant-open-connexion";
+
 export type AssistantEssaiConfig = {
   baseUrl: string;
   sharedSecret: string;
@@ -24,6 +27,11 @@ export function normalizeAssistantBaseUrl(raw: string): string {
 export function notifyAssistantConfigChanged(): void {
   if (typeof window === "undefined") return;
   window.dispatchEvent(new Event(ASSISTANT_CONFIG_CHANGED_EVENT));
+}
+
+export function requestAssistantConnexionDialog(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(ASSISTANT_OPEN_CONNEXION_EVENT));
 }
 
 export function loadAssistantConfig(): AssistantEssaiConfig {
