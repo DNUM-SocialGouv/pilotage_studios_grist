@@ -4,13 +4,13 @@
 
 > **Route** : `/feuille-de-route`  
 > **Page** : `src/pages/FeuilleDeRoutePage.tsx`  
-> **Entrée** : menu compte (avatar) → Mon carnet · **Feuille de route** · Documentation · CTA Admin sur l’accueil  
+> **Entrée** : menu compte (avatar) → Mon carnet · **Feuille de route** · Documentation (plus de CTA Feuille de route sur l’accueil)  
 > **Tickets** : table Grist `Kanban` (`Nature` = Feedback \| Produit)  
 > **Conversation** : table Grist `Kanban_commentaires` + drawer `TicketDrawer`
 
 ## Objet
 
-Page dédiée au **kanban partagé** (Feedback · Backlog · En cours · Livré). Elle remplace le kanban qui occupait l’accueil : l’accueil sert désormais aux raccourcis par rôle ; la feuille de route se retrouve depuis le **menu compte** (icône avatar en haut à droite).
+Page dédiée au **kanban partagé** (Feedback · Backlog · En cours · Livré). Elle remplace le kanban qui occupait l’accueil : l’accueil porte recherche, **assistant** et Vos retours ; la feuille de route se retrouve depuis le **menu compte** (icône avatar en haut à droite).
 
 ## Comportement
 
@@ -20,7 +20,7 @@ Page dédiée au **kanban partagé** (Feedback · Backlog · En cours · Livré)
 | Colonnes | Feedback · Backlog · En cours · Livré (inchangé) |
 | Drawer | En-tête : badges Nature / Type + méta texte **Auteur · Date** (pas de tuiles Thème / Page) ; conversation ; déplacement de colonne Admin ; édition Résumé / Détail Admin (`Resume` / `Message`) |
 | Feedback flottant | Bouton « Un retour ? » reste disponible sur cette page |
-| Nav | Pas d’entrée dans la nav principale — uniquement menu compte (+ CTA Admin accueil) |
+| Nav | Pas d’entrée dans la nav principale — uniquement menu compte |
 
 ### Droits / `Page_*`
 

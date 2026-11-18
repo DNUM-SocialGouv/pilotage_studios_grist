@@ -44,9 +44,9 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 
 | Écran / parcours | Route | Admin | Resp. | Freelance | Invité | Statut | Notes |
 |------------------|-------|-------|-------|-----------|--------|--------|-------|
-| Accueil | `/` | oui | oui | oui | oui | **Appliqué** (widget + `Droits_pages`) | `Page_accueil` inchangé ; **CTA par rôle** (N/A `Page_*`) ; **recherche** Admin/Resp./Freelance (N/A `Page_*`) — pas Invité ; **Vos retours** tous rôles y compris Invité si e-mail session (N/A `Page_*` — variante sur `/`) ; kanban complet sur `/feuille-de-route` |
+| Accueil | `/` | oui | oui | oui | oui | **Appliqué** (widget + `Droits_pages`) | `Page_accueil` inchangé ; **assistant embarqué** (N/A `Page_*`) à la place des CTA ; **recherche** Admin/Resp./Freelance (N/A `Page_*`) — pas Invité ; **Vos retours** tous rôles y compris Invité si e-mail session ; kanban complet sur `/feuille-de-route` |
 | Recherche d’accueil (suggestions) | `/` (inline) | **oui*** | **oui*** | **oui*** | **non** | **Appliqué** UX | *Si au moins une cible `Page_produits` / `Page_missions` / `Page_equipe` ouverte ; navigation fiches existantes ; **pas** de route `/recherche` ni nouvelle `Page_*` |
-| **Feuille de route** | `/feuille-de-route` | oui | oui | oui | oui | **Appliqué** UX (hors `Page_*`) | **Fixé ouvert** — menu compte + CTA Admin accueil ; rappel lecture seule Admin « Fixés par rôle » ; pas de nouvelle colonne `Page_*` |
+| **Feuille de route** | `/feuille-de-route` | oui | oui | oui | oui | **Appliqué** UX (hors `Page_*`) | **Fixé ouvert** — menu compte ; rappel lecture seule Admin « Fixés par rôle » ; pas de nouvelle colonne `Page_*` |
 | Plans d’activité | `/pa` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Couche 5 ; données encore ouvertes (couche 6 plus tard) |
 | Bons de commande | `/bdc` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Idem |
 | Prestation / CRA (liste) | `/cra` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Freelances : déclaration via `/cra/declarer` |
@@ -62,7 +62,7 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 | Éditer fiche Équipe | `/equipe/:id` (drawer) | **oui** | **non** | **non** | **non** | **Appliqué** UX + ACL | Bouton Modifier Admin ; `Equipe` update allowlisté ([#63](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/63)) |
 | Droits des pages | `/outils/droits-pages` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Garde rôle Admin (pas de `Page_*`) ; édite `Droits_pages` ; rappel lecture seule dans section « Fixés par rôle » |
 | **Générer un devis** | `/outils/generer-devis` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Admin-only (`adminOnly` + `AdminRoleGuard`), hors `Page_*` ; rappel « Fixés par rôle » ; formulaire + aperçu live (split LG+) ; lecture choix BDC + copie locale (pas d’écriture) |
-| **Assistant** (tiroir essai) | panneau flottant | oui* | oui* | oui* | oui* | **Essai** UX | *Si URL service renseignée en session ; **N/A `Page_*`** (comme feedback) ; lecture seule via Onyxia — pas de clé LLM dans le bundle ; restreindre plus tard (#145) |
+| **Assistant** (essai) | `/` embarqué + FAB ailleurs | oui* | oui* | oui* | oui* | **Essai** UX | *Si URL service renseignée en session ; **N/A `Page_*`** (comme feedback) ; outil mission (#140) faits CRA dans le widget ; lecture seule via Onyxia — pas de clé LLM dans le bundle ; restreindre plus tard (#145) |
 | Produits | `/produits`, `/produits/:id` | oui | oui | oui | oui | **Appliqué** UX (liste + fiche lecture) | Flag `Page_produits` ; section Admin « Produits » (plus « À venir ») |
 
 ---
@@ -112,6 +112,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-11-18 | **Assistant** #140 : faits mission (jours/TTC CRA, règle prestation) ; chat **embarqué sur `/`** (remplace CTA) + FAB ailleurs ; matching par nom ; **N/A `Page_*`** | 5 | [#140](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/140) · `feat/assistant-outil-mission` |
 | 2026-11-18 | **Assistant** tiroir flottant essai (`AssistantWidget`) : URL + jeton en sessionStorage → service Onyxia `/v1/ask` ; lecture seule ; **N/A `Page_*`** (comme feedback) ; pas de clé LiteLLM dans le bundle | 5 | [#139](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/139) · kanban `assistant-pilotage` |
 | 2026-10-14 | **Générer un devis** : UX formulaire + **aperçu live** côte à côte (LG+) / empilé (étroit) ; plus d’étape aperçu seule ; **N/A `Page_*`** (même écran Admin) | 5 | kanban HITL `generer-devis-outils` (split) |
 | 2026-11-17 | Renommage tableId Grist **`Missions_enfants` → `Prestations`** (unicité métier / menu) ; allowlists lecture/écriture + hooks + docs ; types TS `MissionEnfant` inchangés (hors scope) ; **N/A `Page_*`** | 5, 6 (doc) | suivi `docs/tmp-suivi-nettoyage-missions-prestations.md` § F |

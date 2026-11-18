@@ -4,11 +4,13 @@ import {
   resolveSuiviMasterMissionId,
   suiviBelongsToMasterMission,
 } from "./missionEnfants.ts";
+import { filterRealiseWithPrestation } from "./realisePrestation.ts";
 import { type CraTotaux, montantTtcLigneSuivi } from "./suiviMensuel.ts";
 
 /**
  * Totaux jours + TTC + nb de lignes CRA agrégés par id de mission master
- * (prestation mappée depuis `Realise.Prestation` → parent, sinon mission).
+ * (prestation mappée depuis `Realise.Prestation` → parent).
+ * Un CRA sans prestation est exclu (contrat assistant / règle métier).
  */
 export function aggregateCraByMissionId(
   suiviRows: SuiviMensuel[],
@@ -16,7 +18,7 @@ export function aggregateCraByMissionId(
 ): Map<number, CraTotaux> {
   const enfantsById = new Map(enfants.map((e) => [e.id, e]));
   const map = new Map<number, CraTotaux>();
-  for (const row of suiviRows) {
+  for (const row of filterRealiseWithPrestation(suiviRows)) {
     const mid = resolveSuiviMasterMissionId(row, enfantsById);
     if (mid == null || mid === 0) {
       continue;

@@ -25,7 +25,7 @@ Réduire la complexité ; pas d’ajout « au cas où ». Les agents **proposent
 | Exécution | `npm run dev` navigateur | iframe Grist (URL Pages ou localhost) |
 | Auth données | `VITE_GRIST_API_KEY` (REST) | `grist-plugin-api` (ACL utilisateur Grist) |
 | Chrome UI | Header Marianne + Footer | **Navigation seule** (`WidgetNav`) |
-| IA `/analyse` | Backend `/api/assistant/*` | Stub `/analyse` ; **essai** tiroir flottant + service Onyxia `services/assistant-essai/` (LiteLLM hors bundle) |
+| IA `/analyse` | Backend `/api/assistant/*` | Stub `/analyse` ; **essai** chat sur `/` + FAB ailleurs + service Onyxia `services/assistant-essai/` (LiteLLM hors bundle) |
 
 - **Document Grist** : `nei9DeARs5Eo` (pilotage V2).
 - **Installation Grist** : widget Custom → URL personnalisée → accès **full** → Select Data = `Plan_activite` (table ancre V1).
@@ -37,7 +37,7 @@ Réduire la complexité ; pas d’ajout « au cas où ». Les agents **proposent
 
 | Path | Statut V1 |
 |------|-----------|
-| `/` | Accueil par rôle (CTA selon Freelance / Resp. / Admin / Invité) — **sans** kanban |
+| `/` | Accueil par rôle (recherche + **assistant** + Vos retours) — **sans** kanban ni CTA tuiles |
 | `/feuille-de-route` | Feuille de route (kanban Feedback · Backlog · En cours · Livré) — ouvert à tous, hors `Page_*` ; entrée menu compte |
 | `/pa`, `/pa/:id` | Implémenté (liste + fiche) |
 | `/bdc`, `/bdc/:id` | Implémenté (liste + fiche) |
@@ -58,7 +58,7 @@ Réduire la complexité ; pas d’ajout « au cas où ». Les agents **proposent
 
 Nav principale : Accueil, **Weekly Ops** (e-mails listés dans `Weekly_coachs` uniquement, `/weekly`), **Budget** (sous-menu Bons de commande · Plans d’activité · Prestation / CRA · Revue CRA équipe · Procès-verbaux — masqué si aucun enfant accessible, typiquement côté Freelance), Produits, Missions, **Équipe**, **Outils** (Récap porteurs · Droits des pages · Spike datatable · Générer un devis — Admin). **Mon carnet** (`/cra/declarer`, Freelance/Admin/Resp.) et **Documentation** (`/outils/regles-metier`, si `Page_regles_metier`) sont dans le **menu compte**, pas en nav. Pas de route `/budget`. `/intervenants` redirige vers `/equipe`.
 
-Entrée MemoryRouter : `/` (`WelcomePage` — **accueil par rôle** via `welcomeHomeByRole` / `WelcomeRoleHome`). Kanban : route `/feuille-de-route` (`FeuilleDeRoutePage` — table Grist `Kanban` + `Kanban_commentaires`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
+Entrée MemoryRouter : `/` (`WelcomePage` — **accueil par rôle** via `welcomeHomeByRole` / `WelcomeRoleHome` : assistant embarqué + Vos retours). Kanban : route `/feuille-de-route` (`FeuilleDeRoutePage` — table Grist `Kanban` + `Kanban_commentaires`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
 
 **Chrome nav** (`WidgetNav`) : à gauche **Page précédente** (historique MemoryRouter uniquement — désactivé si pile vide ; jamais `window.history` / Grist) ; au centre la nav métier ; à droite **menu compte** (avatar Équipe `EquipeAvatar` / seed `Equipe.Avatar` — panneau type « En-tête connectée » DSFR : identité + liens **Mon carnet** · **Feuille de route** · **Documentation** selon gardes + **Paramètres d’affichage** pour tous — modale DSFR clair/sombre/système, préférence navigateur, hors `Page_*`). Le Retour n’est **pas** dans le menu compte.
 
@@ -73,7 +73,7 @@ Entrée MemoryRouter : `/` (`WelcomePage` — **accueil par rôle** via `welcome
 5. **Produits** ([#3](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3)) — **livré** (liste + fiche lecture) ; plus tard : forfait ([#36](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/36)), dates←CRA ([#37](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/37)), PV, Évaluations
 6. Analyse page `/analyse` : rester stub ; **Assistant essai** = FAB global (hors `/analyse`) + backend Onyxia — questions métier Grist ensuite
 
-Visibilité users : accueil par rôle sur `/` ; feuille de route via menu compte ; **Assistant** (FAB, au-dessus du feedback) ; issues rédigées selon [`docs/issues-publiques.md`](docs/issues-publiques.md).
+Visibilité users : accueil par rôle sur `/` (assistant intégré) ; feuille de route via menu compte ; **Assistant** aussi en FAB hors `/` (au-dessus du feedback) ; issues rédigées selon [`docs/issues-publiques.md`](docs/issues-publiques.md).
 
 ---
 
@@ -99,7 +99,7 @@ Visibilité users : accueil par rôle sur `/` ; feuille de route via menu compte
 | Équipe | `EquipeListView`, `EquipeDetailView`, `EquipeLayout`, `useEquipeData`, `useEquipeMemberMissionsData`, `useEquipeTjmData`, `EquipeFicheMissionsSection`, `EquipeTjmHistorySection`, `EquipeFormDrawer`, `equipeList.ts`, `equipeMemberPrestations.ts`, `equipeFormFields.ts`, `equipeGristWrite.ts`, `equipeTjm.ts`, `equipeTjmGristWrite.ts` |
 | CRA | `CraListView`, `CraDeclarerPage`, `CraRevueEquipePage`, `CraRecapPorteursPage`, `craList.ts`, `craDeclarer.ts`, `craRevueEquipe.ts`, `craExport.ts`, `realiseGristWrite.ts` |
 | Feedback | `FeedbackWidget`, `createKanbanFeedback`, `feedbackPages` (auto Theme/Page), `writeTableAllowlist` ; conversation : `feedbackEquipe` |
-| Assistant (essai) | `AssistantWidget` (FAB + panneau) ; `assistantAsk` / `assistantConfig` (sessionStorage URL+jeton) ; serveur `services/assistant-essai/` — doc [`docs/fonctionnel/assistant/`](docs/fonctionnel/assistant/) |
+| Assistant (essai) | `AssistantChatPanel` (accueil + tiroir) ; `AssistantWidget` (FAB hors `/`) ; `assistantMissionFacts` (#140) ; `assistantAsk` / `assistantConfig` ; serveur `services/assistant-essai/` — doc [`docs/fonctionnel/assistant/`](docs/fonctionnel/assistant/) |
 
 ---
 
