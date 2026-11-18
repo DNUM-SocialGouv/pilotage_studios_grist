@@ -7,7 +7,7 @@
 | | |
 |--|--|
 | **Statut global** | En cours |
-| **Dernière MAJ** | 2026-11-17 (F clos · smoke OK) |
+| **Dernière MAJ** | 2026-11-18 (B clos · orphelins Realise Plan A) |
 | **Kanban** | N/A (ménage schéma + dette technique) sauf si un item devient correctif visible widget |
 
 Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait · `[-]` reporté / abandonné
@@ -46,10 +46,10 @@ Objectif : une seule colonne titre = `Titre_de_la_prestation`.
 
 | # | Table | Colonne | Rempli (≈) | Statut | Notes |
 |---|-------|---------|------------|--------|-------|
-| B1 | `Missions` | `MAJ_ST` | 0/138 | [ ] | Choix formule vide |
-| B2 | `Missions` | `URL_espace_collaboratif` | 0/138 | [ ] | Jamais saisi / jamais lu widget |
-| B3 | `Prestations` | `UUID2` | 427 (doublon) | [ ] | Même trigger `UUID()` que `UUID` · même libellé |
-| B4 | `Prestations` | `UUID` | 427 | [ ] | À trancher : garder **un** UUID si outil externe, sinon supprimer les deux (B3+B4) |
+| B1 | `Missions` | `MAJ_ST` | 0/138 | [x] | Supprimée 2026-11-18 (MCP · Plan A) |
+| B2 | `Missions` | `URL_espace_collaboratif` | 0/138 | [x] | Supprimée 2026-11-18 (MCP · Plan A) |
+| B3 | `Prestations` | `UUID2` | 427 (doublon) | [x] | Supprimée 2026-11-18 (MCP · Plan A) |
+| B4 | `Prestations` | `UUID` | 427 | [x] | **Gardé volontairement** (Plan A) — un seul identifiant |
 
 ---
 
@@ -127,9 +127,26 @@ Objectif : même nom partout (menu Grist, tableId, widget, docs) pour éviter la
 | 2026-11-17 | **F lancé** : code widget → tableId `Prestations` ; **attente rename Owner Grist (F1)** |
 | 2026-11-17 | **F1–F2 faits** Owner : table `Prestations` · `Realise.Prestation` = `Ref:Prestations` · 427 lignes |
 | 2026-11-17 | **F6 smoke OK** · section F close |
+| 2026-11-18 | **B1–B3 faits** : `MAJ_ST`, `URL_espace_collaboratif`, `UUID2` supprimées (prod) · **B4** `UUID` gardé (Plan A) |
+| 2026-11-18 | **Orphelins Realise** : 3 CRA Charlotte rattaches (557→131, 589→56, 647→56) · **14** lignes ops (TTC 0, sans mission) **exclues du calcul** · helper `realisePrestation.ts` |
+
+---
+
+## G. Orphelins `Realise.Prestation` (Plan A)
+
+**Règle métier** : un CRA compte seulement s’il est lié à une prestation.
+
+Code : [`src/utils/realisePrestation.ts`](../src/utils/realisePrestation.ts) (`realiseHasPrestation` / `filterRealiseWithPrestation`).
+
+| Décision | Ids | Motif |
+|----------|-----|--------|
+| Rattachés 2026-11-18 | 557→presta 131 (transverses) ; 589 & 647→presta 56 (VAO) | Charlotte Tyrode · TTC + BDC renseignés |
+| **Exclus du calcul** (conservés en base) | 31, 32, 56, 57, 83, 84, 114, 115, 162, 209, 210, 244, 245, 272 | Ops Mathieu/Matthias · `Prestation=0` · `Mission=0` · `Calcul_TTC=0` · pas de BDC |
+
+Compteur restant (`Prestation` vide) : **14** — registre « exclues », pas de delete.
 
 ---
 
 ## Prochain item suggéré
 
-**B1 / B2 / B3** — suppressions Grist champs morts (`MAJ_ST`, `URL_espace_collaboratif`, `UUID2`), HITL Owner.
+**C / D** hors scope chat (Plan A) — ou alignement base test assistant.

@@ -30,7 +30,7 @@ Puis **relancer** uvicorn. Si vous servez le widget depuis une autre URL Pages /
 
 ## Hors scope V0 tiroir
 
-- Calculs budget / BDC fiables (#140–#142)
+- Calculs budget / BDC fiables (#140–#142) — contrat figé : [contrat-chiffres.md](contrat-chiffres.md)
 - Contexte « cette mission » (#143)
 - Tableaux / graphiques (#144)
 - Colonne `Page_*` (essai flottant, comme le feedback)

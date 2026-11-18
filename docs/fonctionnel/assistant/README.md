@@ -24,27 +24,31 @@ Un **tiroir** accessible depuis n’importe quel écran permettra de poser des q
 
 Le widget d’essai (URL localhost ou Pages de branche) doit être branché sur **ce** document dans Grist (Custom Widget → URL → Select Data = `Plan_activite`).
 
-### Alignement schéma (2026-11-17)
+### Alignement schéma (2026-11-18 — Plan A)
 
 | Contrôle | Résultat |
 |----------|----------|
-| Table `Prestations` (ex-`Missions_enfants`) | **OK** — ~427 lignes |
-| Table `Missions_enfants` | Absente (renommée) |
-| Jointure `Realise.Prestation` → `Prestations` | **OK** — titres trouvés sur échantillon |
-| « Orphelins » `Realise.Prestation` | 17 lignes avec `Prestation = 0` (ref vide) — **préexistant**, pas un effet du renommage |
+| Table `Prestations` (ex-`Missions_enfants`) | **OK** — 427 lignes |
+| Table `Missions_enfants` | Absente |
+| Jointure `Realise.Prestation` → `Prestations` | **OK** (`Ref:Prestations` · titres sur échantillon) |
+| Colonnes mortes B (`MAJ_ST`, `URL_espace_collaboratif`, `UUID2`) | **Absentes** (aligné prod) · `UUID` **conservé** |
+| Orphelins `Realise.Prestation` | **14** lignes ops (TTC 0) **exclues du calcul** · 3 CRA Charlotte rattachés (557→131, 589/647→56) |
 
-### Smoke données (MCP, 2026-11-17)
+### Smoke données (MCP, 2026-11-18)
 
-| Table | Lignes |
-|-------|--------|
-| `Plan_activite` | 13 |
-| `Missions` | 138 |
-| `Prestations` | 427 |
-| `BDC` | 98 |
-| `Realise` | 1119 |
-| `Equipe` | 89 |
+| Table | Lignes (test) | Prod (réf.) |
+|-------|---------------|-------------|
+| `Plan_activite` | 13 | 13 |
+| `Missions` | 138 | 138 |
+| `Prestations` | 427 | 427 |
+| `BDC` | 98 | 100 (dérive mineure) |
+| `Realise` | 1119 | 1121 (dérive mineure) |
+| `Equipe` | 89 | 89 |
+| Orphelins `Prestation` vide | 14 | 14 |
 
-Smoke **UI** (manuel) : widget → ce document → Missions + fiche + CRA.  
+Cœur mission / prestation / Realise / BDC : **aligné** (schéma B + orphelins traités).  
+Smoke **UI** (manuel) : widget → ce document → Missions + fiche + un CRA — à rejouer après merge branche essai.  
+Contrat de chiffres (prérequis #140–#142) : [contrat-chiffres.md](contrat-chiffres.md).  
 Service d’essai + **checklist de relance Onyxia** : [service-essai.md](service-essai.md) · tiroir widget : [tiroir.md](tiroir.md) · code serveur [`services/assistant-essai/`](../../../services/assistant-essai/).
 
 ## Périmètre V0 (rappel)
