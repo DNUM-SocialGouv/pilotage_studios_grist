@@ -31,7 +31,7 @@ Puis **relancer** uvicorn. Si vous servez le widget depuis une autre URL Pages /
 
 Si la question parle de jours / CRA / TTC / budget d’une **mission**, le widget charge Missions · Prestations · Realise, calcule les faits (`assistantMissionFacts`) et les envoie dans `context.facts` — le modèle ne recalcule pas. Contrat : [contrat-chiffres.md](contrat-chiffres.md).
 
-**Usage** : poser la question avec le **nom** de la mission (ex. VAO, JPME). L’id reste un secours technique, pas poussé dans les messages.
+**Usage** : poser la question avec le **nom** de la mission (ex. VAO, JPME, ou un extrait comme « Site Eaux » pour « Refonte sites eaux »). Le matching tolère le **singulier / pluriel** et plusieurs mots utiles ; si plusieurs missions restent possibles, l’assistant liste des candidats. L’id reste un secours technique, pas poussé dans les messages.
 
 ## Accueil
 
