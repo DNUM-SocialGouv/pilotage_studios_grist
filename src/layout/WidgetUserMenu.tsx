@@ -5,7 +5,8 @@
  * Pas de `role="menu"` incomplet — `aria-expanded` / Escape / clic extérieur.
  *
  * Ordre liens (perso → espace partagé → aide → confort) :
- * Mon carnet · Feuille de route · Documentation · Paramètres d’affichage
+ * Mon carnet · Feuille de route · Documentation · Connexion Assistant ·
+ * Paramètres d’affichage
  */
 import {
   useCallback,
@@ -21,6 +22,7 @@ import { headerFooterDisplayItem } from "@codegouvfr/react-dsfr/Display";
 import { fr } from "@codegouvfr/react-dsfr/fr";
 import { cx } from "@codegouvfr/react-dsfr/tools/cx";
 import { useAclProfil } from "../AclProfilContext";
+import { AssistantConnexionDialog } from "../components/assistant/AssistantConnexionDialog";
 import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
 import { canAccessHref } from "../security/pageAccess";
 import { isCraDeclarerRole } from "../utils/droitsPagesThemes";
@@ -46,6 +48,7 @@ export function WidgetUserMenu() {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const firstLinkRef = useRef<HTMLAnchorElement>(null);
   const [open, setOpen] = useState(false);
+  const [connexionOpen, setConnexionOpen] = useState(false);
 
   const close = useCallback((restoreFocus = false) => {
     setOpen(false);
@@ -112,6 +115,11 @@ export function WidgetUserMenu() {
     // Fermer le panneau après le clic DSFR (buttonProps ouvre la modale via aria-controls).
     // Fermeture synchrone démonterait ce bouton avant l’ouverture.
     window.setTimeout(() => close(), 0);
+  };
+
+  const onConnexionClick = () => {
+    close();
+    window.setTimeout(() => setConnexionOpen(true), 0);
   };
 
   return (
@@ -184,8 +192,24 @@ export function WidgetUserMenu() {
                 </li>
               );
             })}
-            {/* Sépare confort (thème) des liens métier du menu. */}
+            {/* Sépare confort / essai technique des liens métier du menu. */}
             <li className="widget-user-menu__separator" role="separator" />
+            <li>
+              <button
+                type="button"
+                className={cx(
+                  fr.cx(
+                    "fr-btn",
+                    "fr-btn--tertiary-no-outline",
+                    "fr-btn--sm",
+                  ),
+                  "widget-user-menu__item",
+                )}
+                onClick={onConnexionClick}
+              >
+                Connexion Assistant
+              </button>
+            </li>
             <li>
               {/*
                 Pattern DSFR officiel : `fr-btn--display` (icône thème + libellé visible).
@@ -211,6 +235,10 @@ export function WidgetUserMenu() {
           </ul>
         </div>
       ) : null}
+      <AssistantConnexionDialog
+        open={connexionOpen}
+        onClose={() => setConnexionOpen(false)}
+      />
     </div>
   );
 }

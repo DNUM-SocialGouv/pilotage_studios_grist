@@ -162,11 +162,13 @@
   gap: 0.75rem;
 }
 
-.configBox {
+.configHint {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
   border: 1px solid var(--border-default-grey);
   border-radius: 6px;
-  padding: 0.75rem 0.85rem;
   background: var(--background-alt-grey);
+  color: var(--text-default-grey);
 }
 
 .thread {

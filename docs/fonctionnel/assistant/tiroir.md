@@ -9,14 +9,13 @@ Issue : [#139](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/
 ## Comment l’utiliser (essai)
 
 1. Lancer le service Onyxia + `uvicorn` (voir [service-essai.md](service-essai.md)).
-2. Dans le widget : bouton **Assistant**.
-3. **Paramètres de connexion** :
+2. Dans le widget : **Mon compte** (avatar en haut à droite) → **Connexion Assistant** :
    - URL = lien « port personnalisé 5000 » Mes services ;
    - Jeton = `ASSISTANT_SHARED_SECRET` du `.env` serveur ;
    - **Tester la connexion** puis **Enregistrer**.
-4. Poser une question → réponse texte.
+3. Poser une question sur l’accueil ou via le bouton **Assistant** → réponse texte.
 
-La config est gardée dans **sessionStorage** de l’onglet (pas dans git, pas la clé LiteLLM). Fermer l’onglet = resaisir éventuellement.
+La config est gardée dans **sessionStorage** de l’onglet (pas dans git, pas la clé LiteLLM). Fermer l’onglet = resaisir éventuellement. Si la connexion manque, l’Assistant rappelle le chemin menu compte.
 
 ## CORS côté Onyxia
 

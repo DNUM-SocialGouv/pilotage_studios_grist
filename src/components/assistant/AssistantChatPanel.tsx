@@ -1,5 +1,6 @@
 /**
  * Panneau de conversation Assistant — tiroir flottant ou intégré à l’accueil.
+ * Connexion Onyxia : menu compte → « Connexion Assistant » (pas ici).
  */
 import { useEffect, useId, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
@@ -7,13 +8,12 @@ import { loadMissionsTables } from "../../hooks/useMissionsData.ts";
 import {
   askAssistant,
   AssistantAskError,
-  fetchAssistantHealth,
   type AssistantAskContext,
 } from "../../utils/assistantAsk.ts";
 import {
+  ASSISTANT_CONFIG_CHANGED_EVENT,
   isAssistantConfigReady,
   loadAssistantConfig,
-  saveAssistantConfig,
   type AssistantEssaiConfig,
 } from "../../utils/assistantConfig.ts";
 import {
@@ -65,75 +65,37 @@ export type AssistantChatPanelProps = {
 export function AssistantChatPanel({ layout, onClose }: AssistantChatPanelProps) {
   const location = useLocation();
   const baseId = useId();
-  const urlId = `${baseId}-url`;
-  const secretId = `${baseId}-secret`;
   const questionId = `${baseId}-question`;
   const threadEndRef = useRef<HTMLDivElement>(null);
 
   const [config, setConfig] = useState<AssistantEssaiConfig>(() => loadAssistantConfig());
-  const [draftUrl, setDraftUrl] = useState(config.baseUrl);
-  const [draftSecret, setDraftSecret] = useState(config.sharedSecret);
-  const [showConfig, setShowConfig] = useState(() => !isAssistantConfigReady(config));
   const [question, setQuestion] = useState("");
   const [thread, setThread] = useState<ThreadItem[]>([]);
   const [sending, setSending] = useState(false);
   /** Libellé d’attente aligné sur l’étape réelle (pas un timer décoratif). */
   const [waitLabel, setWaitLabel] = useState("Préparation de la réponse…");
-  const [checking, setChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [healthHint, setHealthHint] = useState<string | null>(null);
+
+  useEffect(() => {
+    const sync = () => setConfig(loadAssistantConfig());
+    window.addEventListener(ASSISTANT_CONFIG_CHANGED_EVENT, sync);
+    return () => window.removeEventListener(ASSISTANT_CONFIG_CHANGED_EVENT, sync);
+  }, []);
 
   useEffect(() => {
     threadEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [thread, sending, waitLabel]);
 
-  function persistConfig() {
-    const next = saveAssistantConfig({
-      baseUrl: draftUrl,
-      sharedSecret: draftSecret,
-    });
-    setConfig(next);
-    setDraftUrl(next.baseUrl);
-    setDraftSecret(next.sharedSecret);
-    setShowConfig(!isAssistantConfigReady(next));
-    setError(null);
-    setHealthHint(null);
-    return next;
-  }
-
-  async function checkHealth() {
-    const next = persistConfig();
-    setChecking(true);
-    setError(null);
-    setHealthHint(null);
-    try {
-      const health = await fetchAssistantHealth(next);
-      if (health.ok) {
-        const model = health.model ? ` · modèle ${health.model}` : "";
-        const litellm = health.litellmConfigured === false ? " · LiteLLM non configuré" : "";
-        setHealthHint(`Service joignable${model}${litellm}.`);
-      } else {
-        setHealthHint("Réponse inattendue du service.");
-      }
-    } catch (err) {
-      setError(
-        err instanceof AssistantAskError
-          ? err.message
-          : "Impossible de joindre le service. Vérifiez l’URL et qu’uvicorn tourne.",
-      );
-    } finally {
-      setChecking(false);
-    }
-  }
-
   async function sendQuestion() {
     const q = question.trim();
     if (!q || sending) return;
 
-    const next = persistConfig();
+    const next = loadAssistantConfig();
+    setConfig(next);
     if (!isAssistantConfigReady(next)) {
-      setShowConfig(true);
-      setError("Indiquez d’abord l’URL du service d’essai (Onyxia).");
+      setError(
+        "Indiquez d’abord l’URL du service : Mon compte (avatar) → Connexion Assistant.",
+      );
       return;
     }
 
@@ -212,6 +174,7 @@ export function AssistantChatPanel({ layout, onClose }: AssistantChatPanelProps)
   }
 
   const canSend = question.trim().length > 0 && !sending;
+  const configReady = isAssistantConfigReady(config);
   const shellClass =
     layout === "embedded" ? `${styles.panel} ${styles.panelEmbedded}` : styles.panel;
 
@@ -242,76 +205,13 @@ export function AssistantChatPanel({ layout, onClose }: AssistantChatPanelProps)
       </div>
 
       <div className={styles.body}>
-        <div className={styles.configBox}>
-          <button
-            type="button"
-            className="fr-btn fr-btn--tertiary-no-outline fr-btn--sm"
-            aria-expanded={showConfig}
-            onClick={() => setShowConfig((v) => !v)}
-          >
-            {showConfig ? "Masquer la connexion" : "Paramètres de connexion"}
-          </button>
-          {showConfig ? (
-            <div className="fr-mt-2w">
-              <div className="fr-input-group fr-mb-2w">
-                <label className="fr-label" htmlFor={urlId}>
-                  URL du service (port 5000)
-                  <span className="fr-hint-text">
-                    Ex. https://user-…-user.user.lab.sspcloud.fr
-                  </span>
-                </label>
-                <input
-                  id={urlId}
-                  className="fr-input"
-                  type="url"
-                  autoComplete="off"
-                  value={draftUrl}
-                  onChange={(e) => setDraftUrl(e.target.value)}
-                  placeholder="https://…"
-                />
-              </div>
-              <div className="fr-input-group fr-mb-2w">
-                <label className="fr-label" htmlFor={secretId}>
-                  Jeton partagé (Bearer)
-                  <span className="fr-hint-text">
-                    Même valeur que ASSISTANT_SHARED_SECRET — stocké seulement dans cet
-                    onglet (session).
-                  </span>
-                </label>
-                <input
-                  id={secretId}
-                  className="fr-input"
-                  type="password"
-                  autoComplete="off"
-                  value={draftSecret}
-                  onChange={(e) => setDraftSecret(e.target.value)}
-                />
-              </div>
-              <div className={styles.actions}>
-                <button
-                  type="button"
-                  className="fr-btn fr-btn--secondary fr-btn--sm"
-                  onClick={() => void checkHealth()}
-                  disabled={checking || draftUrl.trim().length === 0}
-                >
-                  {checking ? "Test…" : "Tester la connexion"}
-                </button>
-                <button
-                  type="button"
-                  className="fr-btn fr-btn--sm"
-                  onClick={() => persistConfig()}
-                >
-                  Enregistrer
-                </button>
-              </div>
-              {healthHint ? (
-                <p className={`fr-text--sm fr-mt-2w ${styles.statusOk}`} role="status">
-                  {healthHint}
-                </p>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
+        {!configReady ? (
+          <p className={`fr-text--sm fr-mb-0 ${styles.configHint}`} role="status">
+            Pour brancher l’essai : ouvrez <strong>Mon compte</strong> (avatar en haut à
+            droite) → <strong>Connexion Assistant</strong>, puis enregistrez l’URL et le
+            jeton.
+          </p>
+        ) : null}
 
         <div className={styles.thread} aria-live="polite">
           {thread.length === 0 ? (
