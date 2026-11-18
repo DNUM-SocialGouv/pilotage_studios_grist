@@ -5,12 +5,14 @@ import {
   buildMissionAssistantFacts,
   extractMissionIdFromQuestion,
   missionIdFromPath,
+  pluralFoldVariants,
   questionAllowsPathMissionFallback,
   questionLooksLikeCraPrestationRule,
   questionLooksLikeMissionCra,
   questionLooksLikeOtherDomain,
   resolveMissionAssistantFacts,
   resolveMissionFromQuestion,
+  topMissionMatches,
 } from "./assistantMissionFacts.ts";
 
 const missionVao: Mission = {
@@ -111,6 +113,45 @@ describe("resolveMissionFromQuestion — noms / acronymes", () => {
       )?.id,
       469,
     );
+  });
+
+  it("Site Eaux / Sites Eaux → Refonte sites eaux (pluriel + multi-mots)", () => {
+    const missions: Mission[] = [
+      { id: 10, Nom_de_la_mission: "[AC] HCE Audit initial du site web" },
+      { id: 11, Nom_de_la_mission: "[AC] Site ARS HDF Conseil en stratégie d'accessibilité" },
+      { id: 12, Nom_de_la_mission: "[AC] EFH Audit initial site web" },
+      { id: 13, Nom_de_la_mission: "[AC] Handicap - Audit du site et suivi mise en accessibilité à 100%" },
+      { id: 14, Nom_de_la_mission: "[AC] IGAS Audits du site institutionnel" },
+      { id: 420, Nom_de_la_mission: "Refonte sites eaux" },
+    ];
+    assert.equal(
+      resolveMissionFromQuestion("Quel TTC sur Site Eaux", missions)?.id,
+      420,
+    );
+    assert.equal(
+      resolveMissionFromQuestion("Quel TTC sur Sites Eaux", missions)?.id,
+      420,
+    );
+  });
+
+  it("un seul jeton « site » ne désigne pas Refonte sites eaux", () => {
+    const missions: Mission[] = [
+      { id: 10, Nom_de_la_mission: "[AC] HCE Audit initial du site web" },
+      { id: 11, Nom_de_la_mission: "[AC] Site ARS HDF Conseil" },
+      { id: 420, Nom_de_la_mission: "Refonte sites eaux" },
+    ];
+    assert.equal(resolveMissionFromQuestion("Quel TTC sur le site ?", missions), null);
+    const top = topMissionMatches("Quel TTC sur le site ?", missions, 5);
+    assert.ok(top.length >= 2);
+  });
+});
+
+describe("pluralFoldVariants", () => {
+  it("plie site↔sites et eau↔eaux", () => {
+    assert.deepEqual(new Set(pluralFoldVariants("site")), new Set(["site", "sites"]));
+    assert.deepEqual(new Set(pluralFoldVariants("sites")), new Set(["sites", "site"]));
+    assert.deepEqual(new Set(pluralFoldVariants("eaux")), new Set(["eau", "eaux"]));
+    assert.deepEqual(pluralFoldVariants("vao"), ["vao"]);
   });
 });
 

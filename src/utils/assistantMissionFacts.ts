@@ -117,6 +117,19 @@ const MISSION_TOKEN_STOPWORDS = new Set([
   "appui",
   "audit",
   "audits",
+  // Jetons question métier (évite de scorer « TTC » / « CRA » comme nom de mission).
+  "ttc",
+  "cra",
+  "jour",
+  "jours",
+  "budget",
+  "consomme",
+  "consommes",
+  "consommee",
+  "consommees",
+  "consommation",
+  "combien",
+  "reste",
 ]);
 
 /** Jetons utiles d’un libellé (acronymes ≥ 3, mots ≥ 4) hors stopwords. */
@@ -131,14 +144,52 @@ export function significantMissionTokens(label: string): string[] {
   return out;
 }
 
-/** Acronyme / code court distinctif (JPME, VAO, SIAM…). */
+/**
+ * Acronyme / code court distinctif (JPME, VAO, HCE…).
+ * Exclut les mots FR courants (site, eaux…) pour ne pas les booster comme un code.
+ */
 function isDistinctiveShortToken(token: string): boolean {
-  return token.length >= 3 && token.length <= 6 && /^[a-z0-9]+$/.test(token);
+  if (token.length < 3 || token.length > 6) return false;
+  if (!/^[a-z0-9]+$/.test(token)) return false;
+  if (token.length >= 4 && token.endsWith("s")) return false;
+  const vowelCount = (token.match(/[aeiouy]/g) ?? []).length;
+  if (token.length >= 4 && vowelCount >= 2) return false;
+  return true;
 }
 
-function tokenAsWordInQuestion(q: string, token: string): boolean {
-  const re = new RegExp(`(?:^|[^a-z0-9])${token}(?:[^a-z0-9]|$)`, "i");
-  return re.test(q);
+/**
+ * Variantes singulier / pluriel FR légères (site↔sites, eau↔eaux).
+ * Mots d’au moins 4 lettres ; cas irrégulier eau/eaux.
+ * Les acronymes courts (VAO) restent en match exact uniquement.
+ */
+export function pluralFoldVariants(token: string): string[] {
+  const t = token.toLowerCase();
+  const out = new Set<string>([t]);
+  if (t === "eau" || t === "eaux") {
+    out.add("eau");
+    out.add("eaux");
+    return [...out];
+  }
+  if (t.length < 4) return [...out];
+  if (t.endsWith("s") && !t.endsWith("ss")) {
+    out.add(t.slice(0, -1));
+  } else {
+    out.add(`${t}s`);
+  }
+  return [...out];
+}
+
+function tokenAsWordInText(text: string, token: string): boolean {
+  return matchedVariantLengthInText(text, token) != null;
+}
+
+/** Longueur de la variante réellement présente dans `text` (pluriel plié). */
+function matchedVariantLengthInText(text: string, token: string): number | null {
+  for (const variant of pluralFoldVariants(token)) {
+    const re = new RegExp(`(?:^|[^a-z0-9])${variant}(?:[^a-z0-9]|$)`, "i");
+    if (re.test(text)) return variant.length;
+  }
+  return null;
 }
 
 /**
@@ -230,29 +281,52 @@ function scoreMissionAgainstQuestion(questionNorm: string, m: Mission): number {
     return 1000 + label.length;
   }
 
-  // Jetons distinctifs présents comme mots dans la question.
-  const tokens = significantMissionTokens(label);
+  // Jetons du libellé présents (avec pluriel) dans la question.
+  // Score sur la longueur de la forme trouvée dans la question (site↔sites → même poids).
+  const labelTokens = significantMissionTokens(label);
   let score = 0;
   let hits = 0;
   let distinctiveHits = 0;
-  for (const t of tokens) {
-    if (!tokenAsWordInQuestion(questionNorm, t)) continue;
+  for (const t of labelTokens) {
+    const matchedLen = matchedVariantLengthInText(questionNorm, t);
+    if (matchedLen == null) continue;
     hits += 1;
-    if (isDistinctiveShortToken(t)) {
-      // JPME / VAO : fort signal, même seul.
+    if (isDistinctiveShortToken(t) && matchedLen === t.length) {
+      // JPME / VAO : fort signal, même seul (match exact du code).
       distinctiveHits += 1;
-      score += 200 + t.length * 10;
+      score += 200 + matchedLen * 10;
     } else {
-      score += t.length * 10;
+      score += matchedLen * 10;
     }
   }
-  if (hits === 0) return 0;
+
+  // Bonus multi-mots : jetons utiles de la question couverts par le libellé
+  // (ex. « Site Eaux » → site+eaux bat un simple « site » d’audit web).
+  const questionTokens = significantMissionTokens(questionNorm);
+  let questionHits = 0;
+  for (const qt of questionTokens) {
+    if (tokenAsWordInText(label, qt)) questionHits += 1;
+  }
+  if (questionHits >= 2) {
+    score += 80 + questionHits * 40;
+  }
+
+  if (hits === 0 && questionHits === 0) return 0;
+  // Un seul jeton question sans hit libellé côté tokens mission : garder le score
+  // déjà accumulé (ex. VAO). Si seulement questionHits sans hits, compter quand même.
+  if (hits === 0 && questionHits > 0) {
+    // Couverture question → libellé seule (pluriel déjà plié).
+    score += questionHits * 25;
+  }
   if (hits >= 2) score += 50;
   if (distinctiveHits > 0) score += 100;
   return score;
 }
 
-/** Meilleurs scores à égalité (pour message d’ambiguïté). */
+/**
+ * Meilleurs matchs pour message d’ambiguïté : top N par score (pas seulement
+ * le plateau d’ex-aequo), pour ne pas masquer la bonne mission.
+ */
 export function topMissionMatches(
   question: string,
   missions: readonly Mission[],
@@ -265,9 +339,7 @@ export function topMissionMatches(
     if (score > 0) scored.push({ mission: m, score });
   }
   scored.sort((a, b) => b.score - a.score || a.mission.id - b.mission.id);
-  if (scored.length === 0) return [];
-  const best = scored[0]!.score;
-  return scored.filter((s) => s.score === best).slice(0, limit).map((s) => s.mission);
+  return scored.slice(0, limit).map((s) => s.mission);
 }
 
 /**
