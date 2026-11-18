@@ -2,14 +2,56 @@
 
 ## En clair
 
-Petit serveur **à côté** du widget Grist : il reçoit une question, appelle le proxy de modèles (LiteLLM), et renvoie une réponse texte. Les **clés restent sur le serveur** (Onyxia ou machine locale), jamais dans le navigateur. Quand l’essai aura prouvé sa valeur, on pourra déplacer ce même contrat sur un serveur dédié.
+Petit serveur **à côté** du widget Grist : question → **votre LiteLLM** → réponse texte.  
+Clés sur le serveur uniquement. Sur Onyxia : **Vscode-python** + port **5000**.
 
+Guide métier / checklist relance : [`docs/fonctionnel/assistant/service-essai.md`](../../docs/fonctionnel/assistant/service-essai.md).  
 Issue : [#138](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/138).
 
-**Runtime recommandé sur Onyxia** : **Python / FastAPI** (`app.py`) via le catalogue **Vscode-python**.  
-Une variante Node (`server.mjs`) reste disponible en local si besoin.
+---
 
-## Contrat API (identique Python / Node)
+## Relancer vite (Onyxia)
+
+1. Catalogue → **Vscode-python** → formulaire → **Network access** ON → port **5000** → Lancer.  
+2. Noter l’URL `https://user-…-user.user.lab.sspcloud.fr` (Mes services).  
+3. Dans le terminal VS Code :
+
+```bash
+cd ~/work
+git clone -b feat/assistant-pilotage-essai https://github.com/DNUM-SocialGouv/pilotage_studios_grist.git
+cd pilotage_studios_grist/services/assistant-essai
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env && nano .env   # coller la sauvegarde privée des secrets
+set -a && source .env && set +a
+uvicorn app:app --host 0.0.0.0 --port 5000
+```
+
+4. Tests :
+
+```bash
+curl -s http://127.0.0.1:5000/health
+curl -s https://URL-PUBLIQUE-USER/health
+```
+
+**Important** : sauvegarder `.env` hors Onyxia avant tout delete du service. L’URL publique **change** à chaque nouveau déploiement.
+
+### `.env` attendu (LiteLLM Fabrique)
+
+```bash
+PORT=5000
+LITELLM_BASE_URL=https://litellm.pliage-prod.socle-ia.data-ia.prod.atlas.fabrique.social.gouv.fr/v1
+LITELLM_API_KEY=…
+LITELLM_MODEL=deepseek-v4.1-flash
+ASSISTANT_SHARED_SECRET=…
+# ASSISTANT_DEBUG=1
+```
+
+Ne pas utiliser `https://llm.lab.sspcloud.fr` pour cet essai.
+
+---
+
+## Contrat API
 
 ### `GET /health`
 
@@ -19,109 +61,53 @@ Une variante Node (`server.mjs`) reste disponible en local si besoin.
   "service": "pilotage-assistant-essai",
   "runtime": "python",
   "litellmConfigured": true,
+  "litellmBaseUrl": "https://…/v1",
   "authRequired": true,
-  "model": "mistral-small"
+  "model": "…",
+  "debug": false
 }
 ```
 
 ### `POST /v1/ask`
 
-En-tête optionnel : `Authorization: Bearer <ASSISTANT_SHARED_SECRET>`  
-(si `ASSISTANT_SHARED_SECRET` est défini).
-
-**Corps**
+```http
+Authorization: Bearer <ASSISTANT_SHARED_SECRET>
+Content-Type: application/json
+```
 
 ```json
-{
-  "question": "Quel reste à consommer sur le BDC Y ?",
-  "context": {
-    "screen": "/bdc/14",
-    "entityType": "bdc",
-    "entityId": 14,
-    "entityLabel": "2024-2210D17 …",
-    "facts": {}
-  }
-}
+{ "question": "…", "context": { } }
 ```
 
-**Réponse 200**
+→ `{ "message": "…", "data": null }`
 
-```json
-{
-  "message": "Texte pour l’humain…",
-  "data": null
-}
-```
-
-`data` est réservé aux affichages structurés (tableaux / graphiques, issue #144).
-
----
-
-## Onyxia — Vscode-python (chemin recommandé)
-
-1. Catalogue → **Vscode-python** → **Lancer** (pas besoin de GPU / TensorFlow / PyTorch).
-2. Dans le terminal du VS Code Onyxia :
-
-```bash
-git clone https://github.com/DNUM-SocialGouv/pilotage_studios_grist.git
-cd pilotage_studios_grist/services/assistant-essai
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-# Éditer .env : LITELLM_BASE_URL, LITELLM_API_KEY, LITELLM_MODEL, ASSISTANT_SHARED_SECRET
-```
-
-3. Charger les variables puis démarrer :
+Astuce bash (éviter que `!` dans le secret casse la commande) :
 
 ```bash
 set -a && source .env && set +a
-uvicorn app:app --host 0.0.0.0 --port ${PORT:-8080}
-```
-
-4. Ouvrir l’URL HTTPS du service (bouton / panneau Onyxia pour le port 8080).
-5. Tester :
-
-```bash
-curl -s https://VOTRE-URL-ONYXIA/health
-curl -s -X POST https://VOTRE-URL-ONYXIA/v1/ask \
+curl -s http://127.0.0.1:5000/v1/ask \
   -H 'Content-Type: application/json' \
-  -H "Authorization: Bearer $ASSISTANT_SHARED_SECRET" \
-  -d '{"question":"Bonjour, présente-toi en une phrase."}'
+  -H "Authorization: Bearer ${ASSISTANT_SHARED_SECRET}" \
+  -d '{"question":"Dis bonjour en une phrase."}'
 ```
-
-**Ne pas** committer `.env`. Préférer les secrets / variables d’environnement du service Onyxia si disponibles.
-
-**vLLM** : inutile pour cet essai si LiteLLM fournit déjà les modèles (vLLM = héberger un modèle soi-même, souvent GPU).
 
 ---
 
-## Lancer en local (Python)
+## Local (hors Onyxia)
 
 ```bash
 cd services/assistant-essai
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env   # puis éditer
+cp .env.example .env   # éditer
 set -a && source .env && set +a
 uvicorn app:app --host 127.0.0.1 --port 8080 --reload
 ```
 
-## Variante Node (optionnelle)
+Variante Node optionnelle : `npm start` (`server.mjs`).
 
-```bash
-cd services/assistant-essai
-cp .env.example .env
-npm start   # node server.mjs
-```
+---
 
 ## Bascule serveur dédié
 
-Conserver **les mêmes routes** `/health` et `/v1/ask` et le même JSON. Changer seulement l’URL, le stockage des secrets, et éventuellement CORS / auth.
-
-## Hors scope
-
-- Écriture Grist  
-- Clés dans le bundle widget  
-- Outils métier mission/BDC (issues #140–#142)  
-- vLLM / GPU sauf besoin explicite plus tard  
+Mêmes routes `/health` et `/v1/ask`. Changer URL + secrets + CORS / auth.

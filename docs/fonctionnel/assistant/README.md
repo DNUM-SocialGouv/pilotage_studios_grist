@@ -45,7 +45,7 @@ Le widget d’essai (URL localhost ou Pages de branche) doit être branché sur 
 | `Equipe` | 89 |
 
 Smoke **UI** (manuel) : widget → ce document → Missions + fiche + CRA.  
-Service d’essai : [service-essai.md](service-essai.md) · code [`services/assistant-essai/`](../../../services/assistant-essai/).
+Service d’essai + **checklist de relance Onyxia** : [service-essai.md](service-essai.md) · code [`services/assistant-essai/`](../../../services/assistant-essai/).
 
 ## Périmètre V0 (rappel)
 
