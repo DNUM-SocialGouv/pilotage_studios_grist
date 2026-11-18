@@ -151,8 +151,18 @@ Attendu : `{"message":"…","data":null}`.
 
 ---
 
+## CORS pour le widget
+
+Dans le `.env` Onyxia (puis relancer uvicorn) :
+
+```bash
+CORS_ORIGINS=http://localhost:5175,https://dnum-socialgouv.github.io
+```
+
+Sans cela, le navigateur bloque les appels depuis le widget vers l’URL `…-user…`.
+
 ## Suite produit
 
-- Tiroir widget partout → issue [#139](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/139)  
+- Tiroir widget → [tiroir.md](tiroir.md) · [#139](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/139)  
 - Questions métier mission / BDC / produit → [#140](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/140)–[#142](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/142)  
 - Serveur dédié plus tard : **mêmes** routes `/health` et `/v1/ask`
