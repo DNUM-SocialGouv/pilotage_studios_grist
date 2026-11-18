@@ -1500,17 +1500,21 @@ button.fr-link:disabled {
 @media (min-width: 48em) {
   .welcome-role-home__main--split {
     align-items: start;
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-    grid-template-areas: "shortcuts retours";
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    grid-template-areas: "assistant retours";
   }
 
-  .welcome-role-home__main--split .welcome-role-home__shortcuts {
-    grid-area: shortcuts;
+  .welcome-role-home__main--split .welcome-role-home__assistant {
+    grid-area: assistant;
   }
 
   .welcome-role-home__main--split .welcome-vos-retours {
     grid-area: retours;
   }
+}
+
+.welcome-role-home__assistant {
+  min-width: 0;
 }
 
 .welcome-role-home__ctas {

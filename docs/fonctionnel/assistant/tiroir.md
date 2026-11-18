@@ -28,12 +28,22 @@ CORS_ORIGINS=http://localhost:5175,https://dnum-socialgouv.github.io
 
 Puis **relancer** uvicorn. Si vous servez le widget depuis une autre URL Pages / preview, ajoutez-la.
 
+## Outil mission (#140)
+
+Si la question parle de jours / CRA / TTC / budget d’une **mission**, le widget charge Missions · Prestations · Realise, calcule les faits (`assistantMissionFacts`) et les envoie dans `context.facts` — le modèle ne recalcule pas. Contrat : [contrat-chiffres.md](contrat-chiffres.md).
+
+**Usage** : poser la question avec le **nom** de la mission (ex. VAO, JPME). L’id reste un secours technique, pas poussé dans les messages.
+
+## Accueil
+
+Sur `/`, le panneau remplace les anciens raccourcis CTA (colonne gauche) — plus grand. Sur les autres écrans : bouton flottant + tiroir.
+
 ## Hors scope V0 tiroir
 
-- Calculs budget / BDC fiables (#140–#142) — contrat figé : [contrat-chiffres.md](contrat-chiffres.md)
-- Contexte « cette mission » (#143)
+- Outils BDC / produit (#141–#142)
+- Contexte page générique hors `/missions/:id` (#143)
 - Tableaux / graphiques (#144)
-- Colonne `Page_*` (essai flottant, comme le feedback)
+- Colonne `Page_*` (essai flottant / accueil, comme le feedback)
 
 ## Droits
 

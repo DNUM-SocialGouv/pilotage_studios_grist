@@ -220,15 +220,15 @@ describe("missionLibelle / options", () => {
 describe("aggregateCraByMissionId", () => {
   const enfants: MissionEnfant[] = [{ id: 10, Mission: 1 }];
 
-  it("somme les CRA via enfant puis fallback master", () => {
+  it("somme les CRA liés à une prestation (exclut orphelins / fallback seul)", () => {
     const rows: SuiviMensuel[] = [
       { id: 1, Mission_enfant: 10, Nb_jours: 2, Calcul_TTC: 200 },
       { id: 2, Missions: 1, Nb_jours: 1, Calcul_TTC: 50 },
       { id: 3, Missions: 2, Nb_jours: 4, Calcul_TTC: 400 },
     ];
     const map = aggregateCraByMissionId(rows, enfants);
-    assert.deepEqual(map.get(1), { jours: 3, ttc: 250, count: 2 });
-    assert.deepEqual(map.get(2), { jours: 4, ttc: 400, count: 1 });
+    assert.deepEqual(map.get(1), { jours: 2, ttc: 200, count: 1 });
+    assert.equal(map.has(2), false);
   });
 });
 

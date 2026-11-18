@@ -8,10 +8,10 @@ Un **tiroir** accessible depuis n’importe quel écran permettra de poser des q
 
 | | |
 |--|--|
-| **État** | Essai — service Onyxia + **tiroir widget** (connexion URL/jeton en session) ; questions métier chiffrées à venir |
+| **État** | Essai — chat sur **l’accueil** (+ tiroir ailleurs) ; outil mission (#140) : faits jours/TTC par **nom** de mission (règle prestation) |
 | **Issues** | Cadre [#137](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/137) · Service essai [#138](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/138) · Tiroir [#139](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/139) · Mission [#140](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/140) · BDC [#141](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/141) · Produit [#142](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/142) · Contexte page [#143](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/143) · Affichages [#144](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/144) · Droits [#145](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/145) |
 | **Kanban** | Clé `assistant-pilotage` (feuille de route) |
-| **Branche** | `feat/assistant-pilotage-essai` |
+| **Branche** | `feat/assistant-outil-mission` |
 
 ## Base Grist de test
 

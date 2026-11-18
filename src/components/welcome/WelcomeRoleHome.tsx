@@ -1,7 +1,6 @@
-import type { MouseEvent, RefObject } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@codegouvfr/react-dsfr/Button";
+import type { RefObject } from "react";
 import { CallOut } from "@codegouvfr/react-dsfr/CallOut";
+import { AssistantChatPanel } from "../assistant/AssistantChatPanel";
 import type { VosRetoursStatus } from "../../hooks/useVosRetours";
 import type { KanbanTicket } from "../../utils/kanbanTickets";
 import type { VosRetourItem } from "../../utils/vosRetours";
@@ -47,7 +46,6 @@ export function WelcomeRoleHome({
   searchTargets,
   vosRetours,
 }: WelcomeRoleHomeProps) {
-  const navigate = useNavigate();
   const showProductLabel = content.showProductLabel !== false;
   const showSearch =
     !loading &&
@@ -55,11 +53,6 @@ export function WelcomeRoleHome({
     shouldShowWelcomeSearch(content.kind) &&
     hasWelcomeSearchTargets(searchTargets);
   const showVosRetours = Boolean(vosRetours?.visible);
-
-  const onCtaClick = (href: string) => (e: MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    navigate(href);
-  };
 
   if (loading) {
     return (
@@ -101,32 +94,11 @@ export function WelcomeRoleHome({
     </>
   );
 
-  const shortcutsNav =
-    content.ctas.length > 0 ? (
-      <nav
-        aria-label="Raccourcis selon votre rôle"
-        className="welcome-role-home__shortcuts"
-      >
-        <ul className="welcome-role-home__ctas fr-mb-0">
-          {content.ctas.map((cta) => (
-            <li key={cta.id} className="welcome-role-home__cta">
-              <Button
-                priority={cta.id === content.ctas[0]?.id ? "primary" : "secondary"}
-                linkProps={{
-                  href: cta.href,
-                  onClick: onCtaClick(cta.href),
-                }}
-              >
-                {cta.label}
-              </Button>
-              <p className="fr-text--sm fr-hint-text fr-mb-0 fr-mt-1w">
-                {cta.description}
-              </p>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    ) : null;
+  const assistantBlock = (
+    <div className="welcome-role-home__assistant">
+      <AssistantChatPanel layout="embedded" />
+    </div>
+  );
 
   const vosRetoursBlock =
     showVosRetours && vosRetours ? (
@@ -142,8 +114,6 @@ export function WelcomeRoleHome({
       />
     ) : null;
 
-  const mainTwoCol = showVosRetours || shortcutsNav;
-
   return (
     <section
       className="welcome-role-home fr-mb-3w"
@@ -158,19 +128,17 @@ export function WelcomeRoleHome({
         greetingBlock
       )}
 
-      {mainTwoCol ? (
-        <div
-          className={
-            showVosRetours && shortcutsNav
-              ? "welcome-role-home__main welcome-role-home__main--split"
-              : "welcome-role-home__main"
-          }
-        >
-          {/* DOM : retours puis raccourcis (mobile Option 1) ; desktop grid place raccourcis à gauche. */}
-          {vosRetoursBlock}
-          {shortcutsNav}
-        </div>
-      ) : null}
+      <div
+        className={
+          showVosRetours
+            ? "welcome-role-home__main welcome-role-home__main--split"
+            : "welcome-role-home__main"
+        }
+      >
+        {/* DOM : retours puis assistant (mobile) ; desktop = assistant | retours. */}
+        {vosRetoursBlock}
+        {assistantBlock}
+      </div>
 
       {content.hint ? (
         <CallOut
