@@ -1,0 +1,14 @@
+{
+  "name": "pilotage-assistant-essai",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Service d’essai Assistant Pilotage (Onyxia / LiteLLM) — hors bundle widget",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node --watch server.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

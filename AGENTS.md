@@ -25,7 +25,7 @@ Réduire la complexité ; pas d’ajout « au cas où ». Les agents **proposent
 | Exécution | `npm run dev` navigateur | iframe Grist (URL Pages ou localhost) |
 | Auth données | `VITE_GRIST_API_KEY` (REST) | `grist-plugin-api` (ACL utilisateur Grist) |
 | Chrome UI | Header Marianne + Footer | **Navigation seule** (`WidgetNav`) |
-| IA `/analyse` | Backend `/api/assistant/*` | **Hors scope** (stub) |
+| IA `/analyse` | Backend `/api/assistant/*` | Stub `/analyse` ; **essai** tiroir flottant + service Onyxia `services/assistant-essai/` (LiteLLM hors bundle) |
 
 - **Document Grist** : `nei9DeARs5Eo` (pilotage V2).
 - **Installation Grist** : widget Custom → URL personnalisée → accès **full** → Select Data = `Plan_activite` (table ancre V1).
@@ -71,9 +71,9 @@ Entrée MemoryRouter : `/` (`WelcomePage` — **accueil par rôle** via `welcome
 3. **CRA** en tranches : suivre ([#32](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/32)) — **livré (lecture)** → récap porteurs ([#48](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/48)) — **livré** (`/outils/recap-porteurs`) · déclarer ([#33](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/33)) — **livré V1** (`/cra/declarer`, saisie seule) → revue équipe + BDC ([#70](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/70), suite [#34](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/34)) — **livré V1** (`/cra/revue-equipe`) → Access Rules `Realise` (#47)
 4. **Droits Grist** : préparation ([#47](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/47)) en amont de l’écriture CRA ; Équipe liste/fiche ([#53](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/53)) — droits écran ([#54](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/54)) et Access Rules table ([#55](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/55)) ensuite ; UX « page freelance » **après** Access Rules serveur
 5. **Produits** ([#3](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/3)) — **livré** (liste + fiche lecture) ; plus tard : forfait ([#36](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/36)), dates←CRA ([#37](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/37)), PV, Évaluations
-6. Analyse : rester stub (hors scope widget)
+6. Analyse page `/analyse` : rester stub ; **Assistant essai** = FAB global (hors `/analyse`) + backend Onyxia — questions métier Grist ensuite
 
-Visibilité users : accueil par rôle sur `/` ; feuille de route via menu compte ; issues rédigées selon [`docs/issues-publiques.md`](docs/issues-publiques.md).
+Visibilité users : accueil par rôle sur `/` ; feuille de route via menu compte ; **Assistant** (FAB, au-dessus du feedback) ; issues rédigées selon [`docs/issues-publiques.md`](docs/issues-publiques.md).
 
 ---
 
@@ -99,6 +99,7 @@ Visibilité users : accueil par rôle sur `/` ; feuille de route via menu compte
 | Équipe | `EquipeListView`, `EquipeDetailView`, `EquipeLayout`, `useEquipeData`, `useEquipeMemberMissionsData`, `useEquipeTjmData`, `EquipeFicheMissionsSection`, `EquipeTjmHistorySection`, `EquipeFormDrawer`, `equipeList.ts`, `equipeMemberPrestations.ts`, `equipeFormFields.ts`, `equipeGristWrite.ts`, `equipeTjm.ts`, `equipeTjmGristWrite.ts` |
 | CRA | `CraListView`, `CraDeclarerPage`, `CraRevueEquipePage`, `CraRecapPorteursPage`, `craList.ts`, `craDeclarer.ts`, `craRevueEquipe.ts`, `craExport.ts`, `realiseGristWrite.ts` |
 | Feedback | `FeedbackWidget`, `createKanbanFeedback`, `feedbackPages` (auto Theme/Page), `writeTableAllowlist` ; conversation : `feedbackEquipe` |
+| Assistant (essai) | `AssistantWidget` (FAB + panneau) ; `assistantAsk` / `assistantConfig` (sessionStorage URL+jeton) ; serveur `services/assistant-essai/` — doc [`docs/fonctionnel/assistant/`](docs/fonctionnel/assistant/) |
 
 ---
 
@@ -215,6 +216,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 | Équipe | `docs/fonctionnel/equipe/`, `useEquipeData`, `useEquipeMemberMissionsData`, `EquipeLayout` / `EquipeListView` / `EquipeDetailView`, `EquipeAvatar` (seed `Equipe.Avatar` → DiceBear Glyphs) |
 | Produits | `docs/fonctionnel/produits/`, `useProduitsData`, `useProduitMissionsData`, `ProduitsLayout` / `ProduitsListView` / `ProduitsDetailView`, `produitsList` |
 | Feedback | `docs/fonctionnel/feedback/` (+ [`alertes.md`](docs/fonctionnel/feedback/alertes.md)), `FeedbackWidget`, `writeTableAllowlist` |
+| Assistant essai | `docs/fonctionnel/assistant/` (service-essai + tiroir) ; `AssistantWidget` ; pas de clé LLM dans le bundle |
 | Guide règles métier | `docs/fonctionnel/regles-metier/`, `src/pages/regles-metier/`, `Page_regles_metier` (+ Owner UI [`page-regles-metier-owner.md`](docs/fonctionnel/roles/page-regles-metier-owner.md)) |
 | Tableau DSFR | rule `dsfr-tableaux.mdc`, MCP `user-dsfr` |
 | Embed / secrets | `embedTrust.ts`, `NothingHerePage`, `ensureFreshBuild`, SECURITY |
@@ -244,7 +246,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 
 ## 10. Hors scope (ne pas recréer sans demande)
 
-- Features IA / assistant
+- Features IA « produit » hors essai (page `/analyse`, outils métier chiffrés Grist, serveur dédié prod) — l’essai tiroir + `services/assistant-essai/` est **livré** ; ne pas y coller de clés LiteLLM
 - Écriture Grist hors allowlist (`Kanban` create Feedback + update colonne / corps Resume+Message Admin, `Kanban_commentaires` create, drawer `Missions` / `Prestations` create+update, Contexte narratif mission `Demande` / `Enjeux` / `Historique` / profils & périmètre, Note studio `Suivi_resp_studio`, Liens FIGMA/Notion `Liens_FIGMA_Notion`, Docs mission upload/détachement, `Realise` create+update déclaration, `Acl_profil` create auto, `Droits_pages` update Admin, `Equipe` create+update Admin (sans `TJM` fiche), `Equipe_TJM` create+update grille Admin, `Weekly_phase` create+update, `Weekly_agenda` create+update+delete Traite/Traite_le/Texte/Detail/Mission (confirm UI, une ligne ; détache Sujet actions), `Weekly_action` create+update+delete (confirm UI, une ligne), `BDC` update cadre fiche Admin) — pas d’update/delete commentaires, pas d’édition autres champs tickets (Titre, guides…), pas de delete missions/prestations/CRA/équipe/Equipe_TJM/Weekly_phase/BDC, pas de create BDC, pas d’édition `Type_prestation` / `Date_de_fin` prestation, pas d’update/delete `Acl_profil`, pas de create/delete lignes `Droits_pages`, pas de delete `Equipe`, pas d’upload `Devis` BDC
 - Imports CSV Sofiane
 - Remplacer l’app `pilotage_studios`
