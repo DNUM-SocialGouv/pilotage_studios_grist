@@ -6,19 +6,12 @@ import { CallOut } from "@codegouvfr/react-dsfr/CallOut";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
-import { useAclProfil } from "../AclProfilContext";
-import {
-  countCarnetDepartementPrestations,
-  CraCarnetDepartementPanel,
-} from "../components/CraCarnetDepartementPanel";
 import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
 import { tdEquipeTag } from "../components/EquipeTags";
 import { StatutBadge } from "../components/StatutBadge";
 import { useGristPa } from "../GristPaContext";
 import { useCraDeclarerData } from "../hooks/useCraDeclarerData";
 import { NothingHerePage } from "../security/NothingHerePage";
-import { aggregateCraByEnfantId } from "../utils/craByMission";
-import { craCarnetDepartementGroups } from "../utils/craCarnetDepartement";
 import {
   buildCraDeclarerSaveRows,
   buildRealiseDeclarerFields,
@@ -33,7 +26,6 @@ import {
   periodeTimestampForMonthKey,
   type CraDeclarerDraft,
 } from "../utils/craDeclarer";
-import { isMonCarnetManagerRole } from "../utils/droitsPagesThemes";
 import { equipeMontantLisible } from "../utils/equipeList";
 import { formatMontantEur } from "../utils/formatMontant";
 import {
@@ -65,15 +57,15 @@ function formatJoursAffichage(n: number): string {
   return String(Math.round(n * 10) / 10).replace(".", ",");
 }
 
+/**
+ * Mon carnet — saisie Freelance uniquement.
+ * Admin / Resp. sont redirigés vers `/cra/revue-equipe` (garde + menu compte).
+ */
 export function CraDeclarerPage() {
   const pa = useGristPa();
-  const { role } = useAclProfil();
   const enabled =
     !pa.untrustedEmbed && !pa.outsideGrist && !pa.loading && !pa.error;
   const data = useCraDeclarerData(enabled);
-
-  // Standalone sans rôle : vue freelance (saisie) pour les previews locales.
-  const managerMode = isMonCarnetManagerRole(role);
 
   const [monthKey, setMonthKey] = useState(craDeclarerDefaultMonthKey);
   const [drafts, setDrafts] = useState<CraDeclarerDraft[]>([]);
@@ -85,7 +77,7 @@ export function CraDeclarerPage() {
   const monthOptions = useMemo(() => craDeclarerMonthOptions(), []);
 
   const freelanceGroups = useMemo(() => {
-    if (managerMode || !data.self) {
+    if (!data.self) {
       return [];
     }
     return craDeclarerPrestationGroups(
@@ -93,59 +85,12 @@ export function CraDeclarerPage() {
       data.missionEnfants,
       data.missions,
     );
-  }, [managerMode, data.self, data.missionEnfants, data.missions]);
+  }, [data.self, data.missionEnfants, data.missions]);
 
   const flatRows = useMemo(
     () => craDeclarerPrestationRowsFlat(freelanceGroups),
     [freelanceGroups],
   );
-
-  const managerGroupsEnCours = useMemo(() => {
-    if (!managerMode || !data.self) {
-      return [];
-    }
-    return craCarnetDepartementGroups(
-      data.self.equipeLabel,
-      data.missionEnfants,
-      data.missions,
-      data.intervenants,
-      "en-cours",
-    );
-  }, [
-    managerMode,
-    data.self,
-    data.missionEnfants,
-    data.missions,
-    data.intervenants,
-  ]);
-
-  const managerGroupsPassees = useMemo(() => {
-    if (!managerMode || !data.self) {
-      return [];
-    }
-    const all = craCarnetDepartementGroups(
-      data.self.equipeLabel,
-      data.missionEnfants,
-      data.missions,
-      data.intervenants,
-      "toutes",
-    );
-    return all
-      .map((g) => ({
-        ...g,
-        prestations: g.prestations.filter((p) => !p.enCours),
-      }))
-      .filter((g) => g.prestations.length > 0);
-  }, [
-    managerMode,
-    data.self,
-    data.missionEnfants,
-    data.missions,
-    data.intervenants,
-  ]);
-
-  const managerActiveGroups =
-    tabId === "en-cours" ? managerGroupsEnCours : managerGroupsPassees;
 
   const bdcLabelMaps = useMemo(() => {
     const bdcById = new Map<number, string>();
@@ -167,11 +112,6 @@ export function CraDeclarerPage() {
     }
     return map;
   }, [data.suivi]);
-
-  const craByEnfantId = useMemo(
-    () => aggregateCraByEnfantId(data.suivi),
-    [data.suivi],
-  );
 
   const rowsByEnfantId = useMemo(
     () => new Map(flatRows.map((r) => [r.enfantId, r] as const)),
@@ -205,14 +145,14 @@ export function CraDeclarerPage() {
   ];
 
   useEffect(() => {
-    if (managerMode || !data.self || data.status !== "ok") {
+    if (!data.self || data.status !== "ok") {
       setDrafts([]);
       return;
     }
     setDrafts(initCraDeclarerDrafts(flatRows, data.suivi, data.self.id, monthKey));
     setSaveOk(null);
     setSaveError(null);
-  }, [managerMode, data.self, data.status, data.suivi, flatRows, monthKey]);
+  }, [data.self, data.status, data.suivi, flatRows, monthKey]);
 
   const updateDraft = (enfantId: number, patch: Partial<CraDeclarerDraft>) => {
     setDrafts((prev) =>
@@ -223,7 +163,7 @@ export function CraDeclarerPage() {
   };
 
   const onSave = async () => {
-    if (!data.self || managerMode) {
+    if (!data.self) {
       return;
     }
     setSaving(true);
@@ -325,23 +265,6 @@ export function CraDeclarerPage() {
     );
   }
 
-  if (managerMode && !data.self.equipeLabel.trim()) {
-    return (
-      <div className="fr-container fr-container--fluid fr-px-0">
-        <Alert
-          className="fr-mt-2w"
-          severity="warning"
-          title="Pas de département sur votre fiche"
-          description="Cette vue liste les missions du département (colonne Équipe). Demandez à un Owner de renseigner votre département si vous devez suivre le staffing Product, Design, etc."
-        />
-      </div>
-    );
-  }
-
-  const calloutTitle = managerMode
-    ? `Mon carnet — ${data.self.equipeLabel}`
-    : "Mon carnet";
-
   return (
     <div className="fr-container fr-container--fluid fr-px-0 cra-carnet">
       <header className="cra-carnet__hero fr-mb-3w">
@@ -349,7 +272,7 @@ export function CraDeclarerPage() {
           className="cra-carnet__callout"
           colorVariant="blue-cumulus"
           titleAs="h2"
-          title={calloutTitle}
+          title="Mon carnet"
           bodyAs="div"
         >
           <div className="cra-carnet__hero-grid">
@@ -371,23 +294,21 @@ export function CraDeclarerPage() {
               </div>
             </div>
 
-            {!managerMode ? (
-              <div className="cra-carnet__hero-aside">
-                <Select
-                  label="Mois du carnet"
-                  nativeSelectProps={{
-                    value: monthKey,
-                    onChange: (e) => setMonthKey(e.target.value),
-                  }}
-                >
-                  {monthOptions.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-            ) : null}
+            <div className="cra-carnet__hero-aside">
+              <Select
+                label="Mois du carnet"
+                nativeSelectProps={{
+                  value: monthKey,
+                  onChange: (e) => setMonthKey(e.target.value),
+                }}
+              >
+                {monthOptions.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </Select>
+            </div>
           </div>
         </CallOut>
       </header>
@@ -413,38 +334,18 @@ export function CraDeclarerPage() {
             setTabId("en-cours");
           }
         }}
-        tabs={
-          managerMode
-            ? [
-                {
-                  tabId: "en-cours",
-                  label: `En cours (${countCarnetDepartementPrestations(managerGroupsEnCours)})`,
-                },
-                {
-                  tabId: "passees",
-                  label: `Passées (${countCarnetDepartementPrestations(managerGroupsPassees)})`,
-                },
-              ]
-            : [
-                {
-                  tabId: "en-cours",
-                  label: `En cours (${flatRows.length})`,
-                },
-                {
-                  tabId: "passees",
-                  label: "Passées",
-                },
-              ]
-        }
+        tabs={[
+          {
+            tabId: "en-cours",
+            label: `En cours (${flatRows.length})`,
+          },
+          {
+            tabId: "passees",
+            label: "Passées",
+          },
+        ]}
       >
-        {managerMode ? (
-          <CraCarnetDepartementPanel
-            equipeLabel={data.self.equipeLabel}
-            tabId={tabId}
-            groups={managerActiveGroups}
-            craByEnfantId={craByEnfantId}
-          />
-        ) : tabId === "en-cours" ? (
+        {tabId === "en-cours" ? (
           <>
             <div
               className="fr-grid-row equipe-fiche-meta-bandeau cra-carnet__meta fr-mb-3w"

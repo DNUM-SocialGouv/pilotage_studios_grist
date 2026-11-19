@@ -125,7 +125,11 @@ describe("buildWelcomeHome", () => {
     assert.equal(withDept.showProductLabel, false);
     assert.deepEqual(
       withDept.ctas.map((c) => c.id),
-      ["revue_cra", "mon_carnet", "missions"],
+      ["mon_carnet", "missions"],
+    );
+    assert.equal(
+      withDept.ctas.find((c) => c.id === "mon_carnet")?.href,
+      "/cra/revue-equipe",
     );
 
     const noDept = buildWelcomeHome({
@@ -145,6 +149,10 @@ describe("buildWelcomeHome", () => {
     assert.deepEqual(
       noDept.ctas.map((c) => c.id),
       ["mon_carnet", "missions"],
+    );
+    assert.equal(
+      noDept.ctas.find((c) => c.id === "mon_carnet")?.href,
+      "/cra/revue-equipe",
     );
   });
 
@@ -187,7 +195,11 @@ describe("buildWelcomeHome", () => {
     assert.equal(withoutRoadmap.showProductLabel, false);
     assert.deepEqual(
       withoutRoadmap.ctas.map((c) => c.id),
-      ["missions", "bdc", "droits_pages"],
+      ["mon_carnet", "missions", "bdc", "droits_pages"],
+    );
+    assert.equal(
+      withoutRoadmap.ctas.find((c) => c.id === "mon_carnet")?.href,
+      "/cra/revue-equipe",
     );
 
     const withRoadmap = buildWelcomeHome({
@@ -205,7 +217,7 @@ describe("buildWelcomeHome", () => {
     assert.equal(withRoadmap.hint, null);
     assert.deepEqual(
       withRoadmap.ctas.map((c) => c.id),
-      ["missions", "bdc", "droits_pages", "feuille_de_route"],
+      ["mon_carnet", "missions", "bdc", "droits_pages", "feuille_de_route"],
     );
   });
 
@@ -254,6 +266,7 @@ describe("buildWelcomeHome", () => {
         flags: PAGE_ACCESS_FAIL_CLOSED,
         canDeclareCra: false,
         canRevueCraEquipe: false,
+        monCarnetHref: "/cra/declarer",
         isAdmin: false,
       },
     });

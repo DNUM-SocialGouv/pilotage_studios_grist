@@ -26,10 +26,12 @@ import { AssistantConnexionDialog } from "../components/assistant/AssistantConne
 import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
 import { canAccessHref } from "../security/pageAccess";
 import { ASSISTANT_OPEN_CONNEXION_EVENT } from "../utils/assistantConfig";
-import { isCraDeclarerRole } from "../utils/droitsPagesThemes";
+import {
+  isCraDeclarerRole,
+  monCarnetHrefForRole,
+} from "../utils/droitsPagesThemes";
 import { isNavActive } from "./widgetNavItems";
 
-const MON_CARNET_HREF = "/cra/declarer";
 const FEUILLE_DE_ROUTE_HREF = "/feuille-de-route";
 const DOCUMENTATION_HREF = "/outils/regles-metier";
 
@@ -106,11 +108,13 @@ export function WidgetUserMenu() {
   });
   const hasAvatar = equipeId != null && equipeId > 0;
   const canDeclareCra = status === "standalone" || isCraDeclarerRole(role);
+  const monCarnetHref =
+    status === "standalone" ? "/cra/declarer" : monCarnetHrefForRole(role);
   const showDocumentation = canAccessHref(DOCUMENTATION_HREF, flags);
 
   const links: UserMenuLink[] = [];
   if (canDeclareCra) {
-    links.push({ href: MON_CARNET_HREF, label: "Mon carnet" });
+    links.push({ href: monCarnetHref, label: "Mon carnet" });
   }
   // Feuille de route : fixé ouvert (hors Page_*) — toujours proposée.
   links.push({ href: FEUILLE_DE_ROUTE_HREF, label: "Feuille de route" });

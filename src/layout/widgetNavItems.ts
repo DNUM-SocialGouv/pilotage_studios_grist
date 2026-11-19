@@ -58,12 +58,6 @@ export const WIDGET_NAV_ITEMS: WidgetNavItem[] = [
       { text: "Bons de commande", href: "/bdc", status: "in_progress" },
       { text: "Plans d’activité", href: "/pa", status: "in_progress" },
       { text: "Prestation / CRA", href: "/cra", status: "in_progress" },
-      {
-        text: "Revue CRA équipe",
-        href: "/cra/revue-equipe",
-        status: "in_progress",
-        craRevueEquipeOnly: true,
-      },
       { text: "Procès-verbaux", href: "/pv", status: "coming" },
     ],
   },

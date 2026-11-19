@@ -2,15 +2,19 @@ import type { ReactNode } from "react";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Navigate } from "react-router-dom";
 import { useAclProfil } from "../AclProfilContext";
-import { isCraDeclarerRole } from "../utils/droitsPagesThemes";
+import {
+  isCraDeclarerRole,
+  isMonCarnetManagerRole,
+} from "../utils/droitsPagesThemes";
 
 type CraDeclarerRoleGuardProps = {
   children: ReactNode;
 };
 
 /**
- * Garde Mon carnet : Freelance (saisie) / Admin & Resp. (liste dép.) (hors `Page_*`).
- * Standalone / preview locale : accès ouvert. Invité → redirection.
+ * Garde Mon carnet saisie (`/cra/declarer`) : Freelance (+ standalone).
+ * Admin / Resp. → redirection vers la revue équipe (entrée « Mon carnet »).
+ * Invité → Accueil.
  */
 export function CraDeclarerRoleGuard({ children }: CraDeclarerRoleGuardProps) {
   const { status, role, error } = useAclProfil();
@@ -48,7 +52,15 @@ export function CraDeclarerRoleGuard({ children }: CraDeclarerRoleGuardProps) {
     );
   }
 
-  if (status === "standalone" || isCraDeclarerRole(role)) {
+  if (status === "standalone") {
+    return <>{children}</>;
+  }
+
+  if (isMonCarnetManagerRole(role)) {
+    return <Navigate to="/cra/revue-equipe" replace />;
+  }
+
+  if (isCraDeclarerRole(role)) {
     return <>{children}</>;
   }
 
