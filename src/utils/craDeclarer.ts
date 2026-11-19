@@ -10,7 +10,10 @@ import {
   type EquipePrestationMissionGroup,
   type EquipePrestationRow,
 } from "./equipeMemberPrestations.ts";
-import { extractGristReferenceId } from "./gristReferences.ts";
+import {
+  extractGristReferenceId,
+  extractSuiviBdcRowRef,
+} from "./gristReferences.ts";
 import {
   formatGristPeriodeMonthKeyLabel,
   gristPeriodeFilterKey,
@@ -232,4 +235,34 @@ export function buildRealiseDeclarerFields(input: {
     Taches_realisees: input.taches,
     Periode: input.periodeTs,
   };
+}
+
+/** Libellés BDC déjà chargés (boot PA) pour l’affichage lecture seule du carnet. */
+export type CraCarnetBdcLabelMaps = {
+  bdcById: Map<number, string>;
+  bdcChorusById: Map<number, string>;
+};
+
+/**
+ * Libellé BDC sous une prestation déjà saisie ce mois (lecture seule).
+ * « Sans BDC » si la ligne Realise n’a pas de rattachement.
+ * Sinon : nom du BDC, éventuellement suivi du n° Chorus (`Nom · Chorus`).
+ */
+export function formatCraCarnetBdcLabel(
+  s: SuiviMensuel,
+  maps: CraCarnetBdcLabelMaps,
+): string {
+  const bid = extractSuiviBdcRowRef(s as unknown as Record<string, unknown>);
+  if (bid === undefined) {
+    return "Sans BDC";
+  }
+  const nom =
+    maps.bdcById.get(bid)?.trim() ||
+    s.Nom_BdC?.trim() ||
+    `BDC #${bid}`;
+  const chorus = maps.bdcChorusById.get(bid)?.trim();
+  if (chorus) {
+    return `${nom} · ${chorus}`;
+  }
+  return nom;
 }

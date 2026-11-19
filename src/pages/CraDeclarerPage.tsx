@@ -27,6 +27,7 @@ import {
   craDeclarerPrestationGroups,
   craDeclarerPrestationRowsFlat,
   craDeclarerTotalHt,
+  formatCraCarnetBdcLabel,
   initCraDeclarerDrafts,
   parseCraDeclarerJours,
   periodeTimestampForMonthKey,
@@ -145,6 +146,27 @@ export function CraDeclarerPage() {
 
   const managerActiveGroups =
     tabId === "en-cours" ? managerGroupsEnCours : managerGroupsPassees;
+
+  const bdcLabelMaps = useMemo(() => {
+    const bdcById = new Map<number, string>();
+    const bdcChorusById = new Map<number, string>();
+    for (const b of pa.bdcList) {
+      bdcById.set(b.id, b.Nom_BdC?.trim() || `BDC #${b.id}`);
+      const chorus = b.BdC_Chorus?.trim();
+      if (chorus) {
+        bdcChorusById.set(b.id, chorus);
+      }
+    }
+    return { bdcById, bdcChorusById };
+  }, [pa.bdcList]);
+
+  const suiviById = useMemo(() => {
+    const map = new Map<number, (typeof data.suivi)[number]>();
+    for (const s of data.suivi) {
+      map.set(s.id, s);
+    }
+    return map;
+  }, [data.suivi]);
 
   const craByEnfantId = useMemo(
     () => aggregateCraByEnfantId(data.suivi),
@@ -472,6 +494,14 @@ export function CraDeclarerPage() {
                         }
                         const joursInputId = `cra-jours-${presta.enfantId}`;
                         const joursValue = draft.nbJours.trim().replace(",", ".");
+                        const existingSuivi =
+                          draft.existingRealiseId != null
+                            ? suiviById.get(draft.existingRealiseId)
+                            : undefined;
+                        const bdcMeta =
+                          existingSuivi != null
+                            ? formatCraCarnetBdcLabel(existingSuivi, bdcLabelMaps)
+                            : null;
                         return (
                           <li key={presta.enfantId} className="cra-carnet__entry fr-mb-2w">
                             <div className="cra-carnet__entry-jours">
@@ -509,6 +539,7 @@ export function CraDeclarerPage() {
                                   <div className="cra-carnet__entry-meta">
                                     <span className="fr-text--xs fr-hint-text">
                                       Déjà saisi ce mois
+                                      {bdcMeta != null ? ` · ${bdcMeta}` : null}
                                     </span>
                                   </div>
                                 ) : null}
