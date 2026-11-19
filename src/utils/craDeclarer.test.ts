@@ -10,6 +10,7 @@ import {
   craDeclarerPrestationGroups,
   craDeclarerTotalHt,
   findExistingRealiseId,
+  formatCraCarnetBdcLabel,
   initCraDeclarerDrafts,
   parseCraDeclarerJours,
 } from "./craDeclarer.ts";
@@ -263,5 +264,59 @@ describe("craDeclarerTotalHt", () => {
 
   it("retourne undefined sans TJM lisible", () => {
     assert.equal(craDeclarerTotalHt(3, undefined), undefined);
+  });
+});
+
+describe("formatCraCarnetBdcLabel", () => {
+  const maps = {
+    bdcById: new Map<number, string>([[10, "BDC Design"]]),
+    bdcChorusById: new Map<number, string>([[10, "CH-001"], [11, ""]]),
+  };
+
+  it("indique Sans BDC sans rattachement", () => {
+    assert.equal(
+      formatCraCarnetBdcLabel({ id: 1 } as SuiviMensuel, maps),
+      "Sans BDC",
+    );
+  });
+
+  it("affiche nom · Chorus quand les deux existent", () => {
+    assert.equal(
+      formatCraCarnetBdcLabel(
+        { id: 2, BDC_cible: 10 } as SuiviMensuel,
+        maps,
+      ),
+      "BDC Design · CH-001",
+    );
+  });
+
+  it("affiche le nom seul sans Chorus", () => {
+    assert.equal(
+      formatCraCarnetBdcLabel(
+        { id: 3, BDC_cible: 11 } as SuiviMensuel,
+        {
+          bdcById: new Map([[11, "BDC Produit"]]),
+          bdcChorusById: new Map(),
+        },
+      ),
+      "BDC Produit",
+    );
+  });
+
+  it("retombe sur Nom_BdC / BDC #id si hors map", () => {
+    assert.equal(
+      formatCraCarnetBdcLabel(
+        { id: 4, BDC_cible: 99, Nom_BdC: "Legacy" } as SuiviMensuel,
+        maps,
+      ),
+      "Legacy",
+    );
+    assert.equal(
+      formatCraCarnetBdcLabel(
+        { id: 5, BDC_cible: 98 } as SuiviMensuel,
+        maps,
+      ),
+      "BDC #98",
+    );
   });
 });

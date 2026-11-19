@@ -35,7 +35,7 @@ Pas de drapeau `Page_*` dédié : l’accès repose sur `Acl_profil.Role`.
 2. Onglet **En cours** : pour chaque **mission**, renseigner les **jours** et une **description** par prestation.
 3. **Publier le carnet** → crée ou met à jour les lignes `Realise` du mois.
 
-Si une saisie existe déjà pour le mois / la prestation, le formulaire la préremplit.
+Si une saisie existe déjà pour le mois / la prestation, le formulaire la préremplit. Sous le titre de la prestation, le carnet affiche alors en **lecture seule** le bon de commande déjà rattaché à la ligne du mois (nom du BDC, et n° Chorus s’il existe) — ou « Sans BDC » s’il n’y a pas encore de rattachement. Le rattachement lui-même se fait toujours via **Revue CRA équipe**, pas depuis Mon carnet.
 
 Le **Total HT** du cadre est un calcul d’affichage (jours saisis × TJM) : il n’écrit pas `Calcul_TTC` dans Grist.
 
