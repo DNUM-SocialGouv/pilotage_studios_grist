@@ -50,6 +50,28 @@ describe("filterEquipeMembersByDepartement", () => {
     );
   });
 
+  it("exclut les membres Inactif", () => {
+    const list = filterEquipeMembersByDepartement(
+      [
+        member({ id: 1, Prenom_Nom: "Manager", Equipe: "Design" }),
+        member({ id: 2, Prenom_Nom: "Louis", Equipe: "Design", Statut: "Actif" }),
+        member({
+          id: 3,
+          Prenom_Nom: "Inactif",
+          Equipe: "Design",
+          Statut: "Inactif",
+        }),
+        member({ id: 4, Prenom_Nom: "Anna", Equipe: "Design", Statut: "actif" }),
+      ],
+      "Design",
+      1,
+    );
+    assert.deepEqual(
+      list.map((m) => m.id),
+      [4, 2],
+    );
+  });
+
   it("département vide → liste vide", () => {
     assert.deepEqual(
       filterEquipeMembersByDepartement([member({ id: 2 })], "", 1),

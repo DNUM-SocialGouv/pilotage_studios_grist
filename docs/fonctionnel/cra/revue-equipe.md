@@ -8,7 +8,7 @@
 
 ## En clair
 
-En fin de mois, le **manager d’un département** (Design, Product, Tech…) ouvre **Mon carnet** (qui affiche **Revue CRA équipe**), choisit le mois, passe en revue les freelances de **son** département, peut ajuster jours et description, et surtout **rattache chaque ligne au bon de commande**. Pas d’étape « valider / rejeter » : on enregistre les modifications comme dans Grist, avec un parcours lisible.
+En fin de mois, le **manager d’un département** (Design, Product, Tech…) ouvre **Mon carnet**, choisit le mois, passe en revue les freelances **actifs** de **son** département, peut ajuster jours et description, et surtout **rattache chaque ligne au bon de commande**. Pas d’étape « valider / rejeter » : on enregistre les modifications comme dans Grist, avec un parcours lisible.
 
 ## Qui y accède
 
@@ -20,7 +20,7 @@ En fin de mois, le **manager d’un département** (Design, Product, Tech…) ou
 
 Pas de drapeau `Page_*` dédié : accès par rôle (comme la déclaration).
 
-**Périmètre** : collègues dont `Equipe.Equipe` = même valeur que le manager (hors soi).
+**Périmètre** : collègues **actifs** (`Equipe.Statut` = Actif, ou vide = Actif par défaut) dont `Equipe.Equipe` = même valeur que le manager (hors soi).
 
 ## Parcours
 
