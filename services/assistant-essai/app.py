@@ -19,6 +19,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
+from parc_facts import PARC_SYSTEM_PROMPT, parc_configured, resolve_parc_facts
+
 SYSTEM_PROMPT = (
     "Tu es l’assistant de lecture du Pilotage studios "
     "(missions, bons de commande, produits, CRA). "
@@ -88,6 +90,15 @@ class AskResponse(BaseModel):
     data: Optional[Any] = None
 
 
+def _is_parc_context(context: Optional[AskContext]) -> bool:
+    if context is None:
+        return False
+    if (context.entityType or "").strip() == "parc_produit":
+        return True
+    screen = (context.screen or "").strip()
+    return screen == "/assistant-parc" or screen.startswith("/assistant-parc/")
+
+
 def _authorize(authorization: Optional[str]) -> None:
     secret = _shared_secret()
     if not secret:
@@ -139,7 +150,12 @@ def _upstream_detail(status: int, body: str) -> Dict[str, Any]:
     return detail
 
 
-async def _call_litellm(question: str, context: Optional[AskContext]) -> str:
+async def _call_litellm(
+    question: str,
+    context: Optional[AskContext],
+    *,
+    system_prompt: str = SYSTEM_PROMPT,
+) -> str:
     cfg = _litellm_config()
     if not cfg["base_url"] or not cfg["api_key"]:
         raise HTTPException(
@@ -157,7 +173,7 @@ async def _call_litellm(question: str, context: Optional[AskContext]) -> str:
     payload = {
         "model": cfg["model"],
         "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_content},
         ],
         "temperature": 0.2,
@@ -213,6 +229,8 @@ async def health() -> Dict[str, Any]:
         "authRequired": bool(_shared_secret()),
         "model": cfg["model"],
         "debug": _debug(),
+        "parcConfigured": parc_configured(),
+        "parcDocId": _env("GRIST_DOC_ID_PARC", "vjbmAgqvttQH") if parc_configured() else "",
     }
 
 
@@ -231,7 +249,49 @@ async def ask(
                 "message": "Le champ « question » est obligatoire.",
             },
         )
-    message = await _call_litellm(question, body.context)
+
+    context = body.context
+    system_prompt = SYSTEM_PROMPT
+    if _is_parc_context(context):
+        system_prompt = PARC_SYSTEM_PROMPT
+        parc_facts = await resolve_parc_facts(question)
+        # Message direct si le serveur n’a pas les clés Grist PARC / lecture impossible
+        # (évite le blabla « tarif / jours » du prompt Pilotage générique).
+        if parc_facts.get("unresolved") and parc_facts.get("reason") in (
+            "not_configured",
+            "load_error",
+        ):
+            hint = str(parc_facts.get("hint") or "").strip()
+            if parc_facts.get("reason") == "not_configured":
+                message = (
+                    "L’Assistant PARC ne peut pas lire le référentiel pour l’instant : "
+                    "le service Onyxia n’a pas la configuration Grist (variables "
+                    "GRIST_BASE_URL, GRIST_API_KEY, GRIST_DOC_ID_PARC dans le `.env`, "
+                    "puis relancer `uvicorn app:app`). "
+                    "Vérifiez aussi `GET /health` → `parcConfigured: true`."
+                )
+            else:
+                message = (
+                    "Impossible de lire Le PARC pour le moment"
+                    + (" — {0}".format(hint) if hint else ".")
+                    + " Réessayez après avoir vérifié la clé Viewer et le document."
+                )
+            return AskResponse(message=message, data={"parc": parc_facts})
+        # Fusionner / remplacer les faits : le serveur est source de vérité PARC
+        merged = AskContext(
+            screen=context.screen if context else "/assistant-parc",
+            entityType="parc_produit",
+            entityId=context.entityId if context else None,
+            entityLabel=(
+                parc_facts.get("entityLabel")
+                or parc_facts.get("produit")
+                or (context.entityLabel if context else None)
+            ),
+            facts=parc_facts,
+        )
+        context = merged
+
+    message = await _call_litellm(question, context, system_prompt=system_prompt)
     return AskResponse(message=message, data=None)
 
 

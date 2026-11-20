@@ -64,9 +64,23 @@ Ne pas utiliser `https://llm.lab.sspcloud.fr` pour cet essai.
   "litellmBaseUrl": "https://…/v1",
   "authRequired": true,
   "model": "…",
-  "debug": false
+  "debug": false,
+  "parcConfigured": true,
+  "parcDocId": "vjbmAgqvttQH"
 }
 ```
+
+### Assistant PARC
+
+Si `context.entityType` = `parc_produit` (ou écran `/assistant-parc`), le serveur lit Le PARC (`Produits_DNUM` + glossaire + `Base_RH`) et injecte les **faits** avant LiteLLM. Config :
+
+```bash
+GRIST_BASE_URL=https://grist.numerique.gouv.fr/api
+GRIST_API_KEY=…   # Viewer suffit
+GRIST_DOC_ID_PARC=vjbmAgqvttQH
+```
+
+Doc métier : [`docs/fonctionnel/assistant/parc-essai.md`](../../docs/fonctionnel/assistant/parc-essai.md).
 
 ### `POST /v1/ask`
 

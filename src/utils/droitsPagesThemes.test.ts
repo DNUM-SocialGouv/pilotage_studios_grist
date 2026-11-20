@@ -61,6 +61,7 @@ describe("droitsPagesThemes", () => {
       DROITS_PAGES_ROLE_FIXED.map((s) => s.id),
       [
         "feuille_de_route",
+        "assistant_parc",
         "mon_carnet",
         "revue_cra",
         "weekly",
@@ -75,6 +76,10 @@ describe("droitsPagesThemes", () => {
     assert.equal(feuille?.accessByRole.Admin, true);
     assert.equal(feuille?.accessByRole.Freelance, true);
     assert.equal(feuille?.accessByRole.Invité, true);
+    const parc = DROITS_PAGES_ROLE_FIXED.find((s) => s.id === "assistant_parc");
+    assert.equal(parc?.accessByRole.Admin, true);
+    assert.equal(parc?.accessByRole.Freelance, true);
+    assert.equal(parc?.accessByRole.Invité, true);
     const carnet = DROITS_PAGES_ROLE_FIXED.find((s) => s.id === "mon_carnet");
     assert.equal(carnet?.accessByRole.Freelance, true);
     assert.equal(carnet?.accessByRole.Invité, false);
@@ -280,6 +285,7 @@ describe("feedbackPages droits-pages", () => {
   it("mappe Générer un devis", () => {
     assert.equal(pageOptionFromPathname("/outils/generer-devis"), "Générer un devis");
     assert.equal(pageOptionFromPathname("/outils/portage-projet"), "Portage");
+    assert.equal(pageOptionFromPathname("/assistant-parc"), "Assistant PARC");
   });
 
   it("mappe le guide Documentation (règles métier)", () => {

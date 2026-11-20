@@ -33,10 +33,19 @@ export class AssistantAskError extends Error {
   }
 }
 
+export type AssistantHealth = {
+  ok: boolean;
+  litellmConfigured?: boolean;
+  model?: string;
+  runtime?: string;
+  /** True seulement si le service Python a GRIST_* pour Le PARC. */
+  parcConfigured?: boolean;
+};
+
 export async function fetchAssistantHealth(
   config: AssistantEssaiConfig,
   signal?: AbortSignal,
-): Promise<{ ok: boolean; litellmConfigured?: boolean; model?: string }> {
+): Promise<AssistantHealth> {
   if (!isAssistantConfigReady(config)) {
     throw new AssistantAskError(
       "not_configured",
@@ -52,11 +61,7 @@ export async function fetchAssistantHealth(
       res.status,
     );
   }
-  return (await res.json()) as {
-    ok: boolean;
-    litellmConfigured?: boolean;
-    model?: string;
-  };
+  return (await res.json()) as AssistantHealth;
 }
 
 export async function askAssistant(

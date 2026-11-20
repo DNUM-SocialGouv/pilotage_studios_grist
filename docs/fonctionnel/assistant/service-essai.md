@@ -73,9 +73,18 @@ LITELLM_MODEL=…            # ex. deepseek-v4.1-flash ou scaleway/deepseek-v4.1
 ASSISTANT_SHARED_SECRET=…  # jeton widget ↔ serveur (différent de la clé LiteLLM)
 
 # Optionnel pour diagnostiquer : ASSISTANT_DEBUG=1
+
+# Obligatoire pour l’Assistant PARC (lecture Le PARC — clé Viewer suffit)
+GRIST_BASE_URL=https://grist.numerique.gouv.fr/api
+GRIST_API_KEY=…            # Viewer sur le document Le PARC
+GRIST_DOC_ID_PARC=vjbmAgqvttQH
 ```
 
 Sauver nano : `Ctrl+O`, Entrée, `Ctrl+X`.
+
+**Important** : l’Assistant PARC ne marche **pas** avec `node server.mjs`. Il faut **Python** (`uvicorn app:app`) + les trois variables `GRIST_*` ci-dessus. Sans ça, le widget reçoit seulement « écran /assistant-parc » et le modèle invente des questions sur tarif / jours.
+
+Avant de relancer : `git pull` sur la branche qui contient `parc_facts.py`.
 
 ### C. Démarrer le serveur
 
@@ -102,7 +111,8 @@ curl -s http://127.0.0.1:5000/health
 curl -s https://user-XXXX-user.user.lab.sspcloud.fr/health
 ```
 
-Attendu : `"ok":true`, `"litellmConfigured":true`.
+Attendu : `"ok":true`, `"litellmConfigured":true`, `"runtime":"python"`, `"parcConfigured":true`  
+(si `parcConfigured` est absent ou `false` : variables `GRIST_*` manquantes, ou mauvais runtime Node).
 
 Puis question (avec le secret du `.env`) :
 
