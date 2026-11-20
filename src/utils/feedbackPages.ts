@@ -28,7 +28,12 @@ export function pageOptionFromPathname(pathname: string): FeedbackPageOption {
   if (pathname === "/" || pathname === "") {
     return "Accueil";
   }
-  if (pathname === "/cra/declarer" || pathname.startsWith("/cra/declarer/")) {
+  if (
+    pathname === "/cra/declarer" ||
+    pathname.startsWith("/cra/declarer/") ||
+    pathname === "/cra/revue-equipe" ||
+    pathname.startsWith("/cra/revue-equipe/")
+  ) {
     return "Mon carnet";
   }
   if (pathname === "/weekly" || pathname.startsWith("/weekly/")) {

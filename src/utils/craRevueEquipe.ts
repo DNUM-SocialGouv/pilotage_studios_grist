@@ -3,6 +3,7 @@
  */
 
 import type { EquipeMember, SuiviMensuel } from "../types.ts";
+import { DEFAULT_EQUIPE_STATUT } from "./equipeFormFields.ts";
 import { extractGristReferenceId, extractSuiviBdcRowRef } from "./gristReferences.ts";
 import { gristPeriodeFilterKey } from "./gristPeriode.ts";
 import { parseCraDeclarerJours } from "./craDeclarer.ts";
@@ -29,7 +30,24 @@ export function normalizeEquipeLabel(label: string | null | undefined): string {
 }
 
 /**
- * Membres du même département que le manager (hors soi).
+ * Statut Équipe « Actif » (défaut métier si la colonne est vide).
+ * Compare en ignorant casse / accents (`Actif`, `actif`).
+ * Autres libellés (`Inactif`, « En activité », etc.) → non actif.
+ */
+export function isEquipeMemberActif(
+  statut: string | null | undefined,
+): boolean {
+  const t = (statut ?? "").trim();
+  if (!t) {
+    return true;
+  }
+  return (
+    t.localeCompare(DEFAULT_EQUIPE_STATUT, "fr", { sensitivity: "base" }) === 0
+  );
+}
+
+/**
+ * Membres du même département que le manager (hors soi), statut Actif uniquement.
  * Département vide → liste vide (pas de périmètre).
  */
 export function filterEquipeMembersByDepartement(
@@ -44,6 +62,9 @@ export function filterEquipeMembersByDepartement(
   return members
     .filter((m) => {
       if (m.id === managerId) {
+        return false;
+      }
+      if (!isEquipeMemberActif(m.Statut)) {
         return false;
       }
       return normalizeEquipeLabel(m.Equipe) === dept;

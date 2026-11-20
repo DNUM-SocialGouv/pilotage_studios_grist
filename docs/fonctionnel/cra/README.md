@@ -12,7 +12,7 @@ Une **réalisation** (ligne `Realise`) décrit le travail d’un intervenant sur
 | Outil | Rôle |
 |-------|------|
 | **Grist** (`Realise` + référentiels) | Référentiel |
-| **Ce widget** | Liste transversale **lecture** (`/cra`) ; **déclaration** freelance (`/cra/declarer`) ; **revue équipe** + rattachement BDC (`/cra/revue-equipe`) ; **récap porteurs** (`/outils/recap-porteurs`) ; CRA aussi visibles en dépliable sur fiche mission / dépenses BDC |
+| **Ce widget** | Liste transversale **lecture** (`/cra`) ; **déclaration** freelance (`/cra/declarer` via Mon carnet) ; **revue équipe** + rattachement BDC (`/cra/revue-equipe` via Mon carnet Admin/Resp., plus dans Budget) ; **récap porteurs** (`/outils/recap-porteurs`) ; CRA aussi visibles en dépliable sur fiche mission / dépenses BDC |
 | **App sœur** | Liste + create/edit + récap porteurs (drawer) + Malt |
 
 ## Données Grist

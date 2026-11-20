@@ -15,6 +15,7 @@ import {
   isCraDeclarerRole,
   isCraRevueEquipeRole,
   isMonCarnetManagerRole,
+  monCarnetHrefForRole,
 } from "./droitsPagesThemes.ts";
 import { pageOptionFromPathname } from "./feedbackPages.ts";
 import {
@@ -106,7 +107,7 @@ describe("droitsPagesThemes", () => {
     assert.equal(isCraDeclarerRole(null), false);
   });
 
-  it("détecte le mode manager Mon carnet (liste département)", () => {
+  it("détecte le mode manager Mon carnet (→ revue équipe)", () => {
     assert.equal(isMonCarnetManagerRole("Admin"), true);
     assert.equal(isMonCarnetManagerRole("Responsable de département"), true);
     assert.equal(isMonCarnetManagerRole("Freelance"), false);
@@ -119,6 +120,15 @@ describe("droitsPagesThemes", () => {
     assert.equal(isCraRevueEquipeRole("Responsable de département"), true);
     assert.equal(isCraRevueEquipeRole("Freelance"), false);
     assert.equal(isCraRevueEquipeRole(null), false);
+  });
+
+  it("cible Mon carnet selon le rôle", () => {
+    assert.equal(monCarnetHrefForRole("Freelance"), "/cra/declarer");
+    assert.equal(monCarnetHrefForRole("Admin"), "/cra/revue-equipe");
+    assert.equal(
+      monCarnetHrefForRole("Responsable de département"),
+      "/cra/revue-equipe",
+    );
   });
 });
 
@@ -175,7 +185,7 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
     const filtered = filterNavItemsByPageAccess(
       WIDGET_NAV_ITEMS,
       (href) => canAccessHref(href, PAGE_ACCESS_FAIL_CLOSED),
-      { isAdmin: false, canDeclareCra: true, canWeekly: true, canRevueCraEquipe: false },
+      { isAdmin: false, canDeclareCra: true, canWeekly: true },
     );
     assert.equal(
       filtered.some((item) => isWidgetNavGroup(item) && item.text === "Budget"),
@@ -193,27 +203,23 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
     );
   });
 
-  it("montre Revue CRA équipe pour Resp. même sans Page_cra", () => {
+  it("Resp. sans Page_cra : Budget masqué (revue hors nav, via Mon carnet)", () => {
     const filtered = filterNavItemsByPageAccess(
       WIDGET_NAV_ITEMS,
       (href) => canAccessHref(href, PAGE_ACCESS_FAIL_CLOSED),
-      { isAdmin: false, canDeclareCra: false, canRevueCraEquipe: true },
+      { isAdmin: false, canDeclareCra: false },
     );
-    const budget = filtered.find(
-      (item) => isWidgetNavGroup(item) && item.text === "Budget",
-    );
-    assert.ok(budget && isWidgetNavGroup(budget));
-    assert.deepEqual(
-      budget.children.map((c) => c.href),
-      ["/cra/revue-equipe"],
+    assert.equal(
+      filtered.some((item) => isWidgetNavGroup(item) && item.text === "Budget"),
+      false,
     );
   });
 
-  it("Resp. : pas de Mon carnet en nav ; Revue CRA dans Budget", () => {
+  it("Resp. : pas de Mon carnet ni Revue CRA en nav principale", () => {
     const filtered = filterNavItemsByPageAccess(
       WIDGET_NAV_ITEMS,
       (href) => canAccessHref(href, PAGE_ACCESS_FAIL_CLOSED),
-      { isAdmin: false, canDeclareCra: true, canRevueCraEquipe: true },
+      { isAdmin: false, canDeclareCra: true },
     );
     assert.equal(
       filtered.some(
@@ -224,25 +230,19 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
     const budget = filtered.find(
       (item) => isWidgetNavGroup(item) && item.text === "Budget",
     );
-    assert.ok(budget && isWidgetNavGroup(budget));
-    assert.equal(
-      budget.children.some((c) => c.href === "/cra/revue-equipe"),
-      true,
-    );
+    if (budget && isWidgetNavGroup(budget)) {
+      assert.equal(
+        budget.children.some((c) => c.href === "/cra/revue-equipe"),
+        false,
+      );
+    }
   });
 
-  it("masque Revue CRA si rôle non autorisé (Mon carnet hors nav)", () => {
+  it("Budget n’expose plus Revue CRA (entrée via Mon carnet)", () => {
     const filtered = filterNavItemsByPageAccess(WIDGET_NAV_ITEMS, () => true, {
       isAdmin: false,
       canDeclareCra: false,
-      canRevueCraEquipe: false,
     });
-    assert.equal(
-      filtered.some(
-        (item) => !isWidgetNavGroup(item) && item.href === "/cra/declarer",
-      ),
-      false,
-    );
     const budget = filtered.find(
       (item) => isWidgetNavGroup(item) && item.text === "Budget",
     );

@@ -288,7 +288,7 @@ export function CraRevueEquipePage() {
           className="cra-carnet__callout"
           colorVariant="blue-cumulus"
           titleAs="h2"
-          title="Revue CRA équipe"
+          title="Mon carnet"
           bodyAs="div"
         >
           <div className="cra-carnet__hero-grid">
@@ -343,7 +343,7 @@ export function CraRevueEquipePage() {
         className="fr-mb-2w"
         severity="info"
         title="Périmètre département"
-        description="Les Access Rules Grist limitent déjà qui lit ou modifie quelles lignes Realise. Cette page affiche en plus uniquement les collègues du même département que vous."
+        description="Seuls les collègues actifs de votre département apparaissent ici (statut « Actif » dans l’annuaire Équipe). Les droits Grist limitent déjà qui peut lire ou modifier les lignes CRA."
         small
       />
 

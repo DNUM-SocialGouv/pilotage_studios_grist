@@ -10,6 +10,7 @@ import {
   isAdminRole,
   isCraDeclarerRole,
   isCraRevueEquipeRole,
+  monCarnetHrefForRole,
 } from "./droitsPagesThemes.ts";
 
 export type WelcomeCtaId =
@@ -57,8 +58,10 @@ export type WelcomeHomeAccess = {
   flags: PageAccessFlags;
   /** Freelance / Admin / Resp. — même règle que Mon carnet. */
   canDeclareCra: boolean;
-  /** Admin / Resp. + département renseigné — même règle que la nav Revue. */
+  /** Admin / Resp. + département renseigné — garde revue. */
   canRevueCraEquipe: boolean;
+  /** Cible de Mon carnet (saisie vs revue). */
+  monCarnetHref: "/cra/declarer" | "/cra/revue-equipe";
   isAdmin: boolean;
   /**
    * Lien Feuille de route (`/feuille-de-route`) — CTA Admin vers la page dédiée.
@@ -71,7 +74,7 @@ const CTA_CATALOG: Record<WelcomeCtaId, WelcomeCta> = {
     id: "mon_carnet",
     label: "Mon carnet",
     href: "/cra/declarer",
-    description: "Saisir ou consulter les jours du mois",
+    description: "Saisir les jours du mois (freelance) ou relire l’équipe (Admin / Resp.)",
   },
   missions: {
     id: "missions",
@@ -120,8 +123,9 @@ const CTA_CATALOG: Record<WelcomeCtaId, WelcomeCta> = {
 /** Ordre des CTA candidats par rôle (avant filtre d’accès). */
 const ROLE_CTA_IDS: Record<Exclude<WelcomeRoleKind, "unknown">, WelcomeCtaId[]> = {
   freelance: ["mon_carnet", "missions", "regles_metier"],
-  responsable: ["revue_cra", "mon_carnet", "missions"],
-  admin: ["missions", "bdc", "droits_pages", "feuille_de_route"],
+  /** Mon carnet = revue équipe (plus de doublon « Revue CRA »). */
+  responsable: ["mon_carnet", "missions"],
+  admin: ["mon_carnet", "missions", "bdc", "droits_pages", "feuille_de_route"],
   invite: ["missions", "produits", "regles_metier"],
 };
 
@@ -171,7 +175,20 @@ function filterCtas(
 ): WelcomeCta[] {
   return ids
     .filter((id) => canShowCta(id, access))
-    .map((id) => CTA_CATALOG[id]);
+    .map((id) => {
+      const base = CTA_CATALOG[id];
+      if (id !== "mon_carnet") {
+        return base;
+      }
+      const asRevue = access.monCarnetHref === "/cra/revue-equipe";
+      return {
+        ...base,
+        href: access.monCarnetHref,
+        description: asRevue
+          ? "Relire les jours et BdC de votre département"
+          : "Saisir les jours du mois",
+      };
+    });
 }
 
 export type BuildWelcomeHomeParams = {
@@ -311,10 +328,13 @@ export function welcomeAccessFromSession(params: {
   const canRevueCraEquipe =
     status === "standalone" ||
     (isCraRevueEquipeRole(role) && Boolean(equipeLabel?.trim()));
+  const monCarnetHref =
+    status === "standalone" ? "/cra/declarer" : monCarnetHrefForRole(role);
   return {
     flags,
     canDeclareCra,
     canRevueCraEquipe,
+    monCarnetHref,
     isAdmin,
     includeFeuilleDeRoute: includeFeuilleDeRoute === true,
   };

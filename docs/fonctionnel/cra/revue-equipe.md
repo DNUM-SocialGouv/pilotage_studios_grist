@@ -3,24 +3,24 @@
 [← CRA](README.md) › **Revue équipe**
 
 > **Route** : `/cra/revue-equipe`  
-> **Nav** : Budget → Revue CRA équipe (Admin ou Responsable de département)  
+> **Entrée** : menu compte → **Mon carnet** (Admin ou Responsable de département) — plus dans Budget  
 > **Issue** : [#70](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/70) (suite qualification [#34](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/34))
 
 ## En clair
 
-En fin de mois, le **manager d’un département** (Design, Product, Tech…) ouvre **Revue CRA équipe**, choisit le mois, passe en revue les freelances de **son** département, peut ajuster jours et description, et surtout **rattache chaque ligne au bon de commande**. Pas d’étape « valider / rejeter » : on enregistre les modifications comme dans Grist, avec un parcours lisible.
+En fin de mois, le **manager d’un département** (Design, Product, Tech…) ouvre **Mon carnet**, choisit le mois, passe en revue les freelances **actifs** de **son** département, peut ajuster jours et description, et surtout **rattache chaque ligne au bon de commande**. Pas d’étape « valider / rejeter » : on enregistre les modifications comme dans Grist, avec un parcours lisible.
 
 ## Qui y accède
 
 | Condition | Accès |
 |-----------|--------|
-| `Role_ACL` = Admin **ou** Responsable de département | Nav + garde de rôle |
+| `Role_ACL` = Admin **ou** Responsable de département | Menu compte **Mon carnet** + garde de rôle |
 | **et** `Equipe.Equipe` (département) renseigné sur sa fiche | Sinon message « pas de département » (cas admin transverse) |
-| Freelance / Invité / Resp. sans département | Non |
+| Freelance / Invité | Non (Freelance : saisie sur `/cra/declarer`) |
 
 Pas de drapeau `Page_*` dédié : accès par rôle (comme la déclaration).
 
-**Périmètre** : collègues dont `Equipe.Equipe` = même valeur que le manager (hors soi).
+**Périmètre** : collègues **actifs** (`Equipe.Statut` = Actif, ou vide = Actif par défaut) dont `Equipe.Equipe` = même valeur que le manager (hors soi). Les fiches **Inactif** (et autres statuts) n’apparaissent pas dans les onglets ni dans les indicateurs d’équipe.
 
 ## Parcours
 

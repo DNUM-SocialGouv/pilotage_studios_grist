@@ -39,13 +39,13 @@ describe("isGroupActive", () => {
     assert.equal(isGroupActive("/pa", budget), true);
     assert.equal(isGroupActive("/pa/1", budget), true);
     assert.equal(isGroupActive("/cra", budget), true);
-    assert.equal(isGroupActive("/cra/revue-equipe", budget), true);
     assert.equal(isGroupActive("/pv", budget), true);
   });
 
-  it("n’est pas actif hors Budget", () => {
+  it("n’est pas actif hors Budget (dont Mon carnet / revue)", () => {
     assert.equal(isGroupActive("/", budget), false);
     assert.equal(isGroupActive("/cra/declarer", budget), false);
+    assert.equal(isGroupActive("/cra/revue-equipe", budget), false);
     assert.equal(isGroupActive("/produits", budget), false);
     assert.equal(isGroupActive("/missions", budget), false);
     assert.equal(isGroupActive("/outils/recap-porteurs", budget), false);
@@ -81,7 +81,6 @@ describe("flattenNavLinks", () => {
       "/bdc",
       "/pa",
       "/cra",
-      "/cra/revue-equipe",
       "/pv",
       "/produits",
       "/missions",
@@ -95,7 +94,7 @@ describe("flattenNavLinks", () => {
 });
 
 describe("WIDGET_MODULE_LINKS", () => {
-  it("liste les modules welcome (hors Accueil ; carnet / Documentation hors nav)", () => {
+  it("liste les modules welcome (hors Accueil ; carnet / Documentation / revue hors nav)", () => {
     assert.deepEqual(
       WIDGET_MODULE_LINKS.map(({ text, href, status }) => ({ text, href, status })),
       [
@@ -103,7 +102,6 @@ describe("WIDGET_MODULE_LINKS", () => {
         { text: "Bons de commande", href: "/bdc", status: "in_progress" },
         { text: "Plans d’activité", href: "/pa", status: "in_progress" },
         { text: "Prestation / CRA", href: "/cra", status: "in_progress" },
-        { text: "Revue CRA équipe", href: "/cra/revue-equipe", status: "in_progress" },
         { text: "Procès-verbaux", href: "/pv", status: "coming" },
         { text: "Produits", href: "/produits", status: "in_progress" },
         { text: "Missions", href: "/missions", status: "in_progress" },

@@ -8,6 +8,7 @@ import {
   filterEquipeMembersByDepartement,
   filterSuiviForIntervenantMonth,
   initCraRevueEquipeDrafts,
+  isEquipeMemberActif,
   suiviSansBdc,
 } from "./craRevueEquipe.ts";
 
@@ -32,6 +33,17 @@ function suivi(partial: Partial<SuiviMensuel> & { id: number }): SuiviMensuel {
   };
 }
 
+describe("isEquipeMemberActif", () => {
+  it("accepte Actif / casse / vide ; refuse Inactif et libellés autres", () => {
+    assert.equal(isEquipeMemberActif(undefined), true);
+    assert.equal(isEquipeMemberActif(""), true);
+    assert.equal(isEquipeMemberActif("Actif"), true);
+    assert.equal(isEquipeMemberActif("actif"), true);
+    assert.equal(isEquipeMemberActif("Inactif"), false);
+    assert.equal(isEquipeMemberActif("En activité"), false);
+  });
+});
+
 describe("filterEquipeMembersByDepartement", () => {
   it("filtre même département hors soi", () => {
     const list = filterEquipeMembersByDepartement(
@@ -40,6 +52,28 @@ describe("filterEquipeMembersByDepartement", () => {
         member({ id: 2, Prenom_Nom: "Louis", Equipe: "Design" }),
         member({ id: 3, Prenom_Nom: "Zoe", Equipe: "Tech" }),
         member({ id: 4, Prenom_Nom: "Anna", Equipe: "Design" }),
+      ],
+      "Design",
+      1,
+    );
+    assert.deepEqual(
+      list.map((m) => m.id),
+      [4, 2],
+    );
+  });
+
+  it("exclut les membres Inactif", () => {
+    const list = filterEquipeMembersByDepartement(
+      [
+        member({ id: 1, Prenom_Nom: "Manager", Equipe: "Design" }),
+        member({ id: 2, Prenom_Nom: "Louis", Equipe: "Design", Statut: "Actif" }),
+        member({
+          id: 3,
+          Prenom_Nom: "Inactif",
+          Equipe: "Design",
+          Statut: "Inactif",
+        }),
+        member({ id: 4, Prenom_Nom: "Anna", Equipe: "Design", Statut: "actif" }),
       ],
       "Design",
       1,

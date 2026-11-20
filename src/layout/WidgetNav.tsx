@@ -5,7 +5,7 @@ import { MainNavigation } from "@codegouvfr/react-dsfr/MainNavigation";
 import type { MainNavigationProps } from "@codegouvfr/react-dsfr/MainNavigation";
 import { useAclProfil } from "../AclProfilContext";
 import { canAccessHref } from "../security/pageAccess";
-import { isAdminRole, isCraDeclarerRole, isCraRevueEquipeRole } from "../utils/droitsPagesThemes";
+import { isAdminRole, isCraDeclarerRole } from "../utils/droitsPagesThemes";
 import { canAccessWeeklyCoach } from "../utils/weeklyCoachAccess";
 import { useWeeklyCoachAllowlist } from "../hooks/useWeeklyCoachAllowlist";
 import {
@@ -46,9 +46,9 @@ function navItemText(link: WidgetNavLink): ReactNode {
 export function WidgetNav() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { status, flags, error, role, email, equipeLabel } = useAclProfil();
+  const { status, flags, error, role, email } = useAclProfil();
 
-  // Pendant le chargement : nav complète hors liens adminOnly / craDeclarerOnly / weeklyOnly / craRevueEquipeOnly (évite flash).
+  // Pendant le chargement : nav complète hors liens adminOnly / craDeclarerOnly / weeklyOnly (évite flash).
   // Après résolution : filtre selon `Page_*` (fail-closed si empty/error) + rôles.
   const isAdmin = status === "standalone" || isAdminRole(role);
   const canDeclareCra = status === "standalone" || isCraDeclarerRole(role);
@@ -61,22 +61,17 @@ export function WidgetNav() {
         email,
         coachEmails: weeklyAllowlist.emails,
       }));
-  // Revue : rôle manager + département renseigné (masque le cas Admin transverse sans équipe).
-  const canRevueCraEquipe =
-    status === "standalone" ||
-    (isCraRevueEquipeRole(role) && Boolean(equipeLabel?.trim()));
   const navTree =
     status === "loading"
       ? filterNavItemsByPageAccess(WIDGET_NAV_ITEMS, () => true, {
           isAdmin: false,
           canDeclareCra: false,
           canWeekly: false,
-          canRevueCraEquipe: false,
         })
       : filterNavItemsByPageAccess(
           WIDGET_NAV_ITEMS,
           (href) => canAccessHref(href, flags),
-          { isAdmin, canDeclareCra, canWeekly, canRevueCraEquipe },
+          { isAdmin, canDeclareCra, canWeekly },
         );
 
   const onNavClick = (href: string) => (e: MouseEvent<HTMLAnchorElement>) => {

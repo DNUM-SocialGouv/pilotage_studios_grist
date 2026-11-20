@@ -123,7 +123,7 @@ export const DROITS_PAGES_ROLE_FIXED: readonly DroitsPagesRoleFixedScreen[] = [
       Freelance: true,
       Invité: false,
     },
-    hint: "Menu compte — Admin / Resp. : lecture missions du département ; Freelance : saisie CRA.",
+    hint: "Menu compte — Freelance : saisie CRA (`/cra/declarer`) ; Admin / Resp. : ouvre Revue CRA équipe (`/cra/revue-equipe`).",
   },
   {
     id: "revue_cra",
@@ -134,7 +134,7 @@ export const DROITS_PAGES_ROLE_FIXED: readonly DroitsPagesRoleFixedScreen[] = [
       Freelance: false,
       Invité: false,
     },
-    hint: "Uniquement si le département (`Equipe.Equipe`) est renseigné.",
+    hint: "Plus dans Budget : entrée via Mon carnet (menu compte). Uniquement si le département (`Equipe.Equipe`) est renseigné.",
   },
   {
     id: "weekly",
@@ -192,7 +192,7 @@ export function isCraDeclarerRole(role: string | null | undefined): boolean {
 export const isMonCarnetRole = isCraDeclarerRole;
 
 /**
- * Admin / Resp. : vue lecture des missions du département (pas la saisie CRA).
+ * Admin / Resp. : Mon carnet ouvre la revue équipe (pas la saisie CRA freelance).
  */
 export function isMonCarnetManagerRole(
   role: string | null | undefined,
@@ -206,8 +206,17 @@ export function isMonCarnetManagerRole(
  * Le département (`Equipe.Equipe`) est contrôlé dans la page.
  */
 export function isCraRevueEquipeRole(role: string | null | undefined): boolean {
-  const t = role?.trim() ?? "";
-  return t === "Admin" || t === "Responsable de département";
+  return isMonCarnetManagerRole(role);
+}
+
+/**
+ * Cible MemoryRouter de « Mon carnet » selon le rôle :
+ * Freelance → déclaration ; Admin / Resp. → revue équipe.
+ */
+export function monCarnetHrefForRole(
+  role: string | null | undefined,
+): "/cra/declarer" | "/cra/revue-equipe" {
+  return isMonCarnetManagerRole(role) ? "/cra/revue-equipe" : "/cra/declarer";
 }
 
 /** Clés éditables (tout sauf Accueil). */
