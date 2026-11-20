@@ -65,13 +65,30 @@ def _llm_config(*, require_litellm: bool = False) -> Dict[str, str]:
     }
 
 
+def _facts_for_llm(facts: Any) -> Any:
+    """Retire les clés « source » pour éviter le copier-coller en bas de réponse."""
+    if isinstance(facts, list):
+        return [_facts_for_llm(x) for x in facts]
+    if not isinstance(facts, dict):
+        return facts
+    out: Dict[str, Any] = {}
+    for key, val in facts.items():
+        if key == "source":
+            continue
+        if key == "products" and isinstance(val, list):
+            out[key] = [_facts_for_llm(p) for p in val]
+        else:
+            out[key] = _facts_for_llm(val) if isinstance(val, (dict, list)) else val
+    return out
+
+
 async def ask_llm(question: str, facts: Dict[str, Any], cfg: Dict[str, str]) -> str:
     user = (
         "{0}\n\nContexte widget :\n"
         "- Écran : /assistant-parc\n"
         "- Type d’élément : parc_produit\n"
         "- Faits fournis (ne pas inventer ailleurs) : {1}"
-    ).format(question, json.dumps(facts, ensure_ascii=False, default=str))
+    ).format(question, json.dumps(_facts_for_llm(facts), ensure_ascii=False, default=str))
     url = "{0}/chat/completions".format(cfg["base_url"])
     payload = {
         "model": cfg["model"],
@@ -160,7 +177,9 @@ async def run_case(case: Dict[str, Any], cfg: Dict[str, str]) -> Dict[str, Any]:
     facts = await resolve_parc_facts(case["question"])
     answer = await ask_llm(case["question"], facts, cfg)
     scored = score_answer(case, answer)
-    if facts.get("multi"):
+    if facts.get("tool") == "parc_agregat":
+        facts_status = "agregat:" + str(facts.get("metric") or "")
+    elif facts.get("multi"):
         labels = [
             str(p.get("produit") or p.get("entityLabel") or "")
             for p in (facts.get("products") or [])
@@ -173,14 +192,31 @@ async def run_case(case: Dict[str, Any], cfg: Dict[str, str]) -> Dict[str, Any]:
             facts.get("produit") or facts.get("entityLabel") or ""
         )
 
+    expect_tool = case.get("expect_facts_tool")
+    if expect_tool and facts.get("tool") != expect_tool:
+        scored["ok"] = False
+        scored["missing"] = list(scored.get("missing") or []) + [
+            "outil faits (attendu {0}, obtenu {1})".format(
+                expect_tool, facts.get("tool")
+            )
+        ]
+
     expect_product = case.get("expect_product")
     if expect_product and not facts.get("unresolved") and not facts.get("multi"):
-        got = str(facts.get("produit") or "")
-        if _norm(got) != _norm(expect_product):
+        if facts.get("tool") == "parc_agregat":
             scored["ok"] = False
             scored["missing"] = list(scored.get("missing") or []) + [
-                "mauvais produit (attendu {0}, obtenu {1})".format(expect_product, got)
+                "agrégat au lieu du produit " + expect_product
             ]
+        else:
+            got = str(facts.get("produit") or "")
+            if _norm(got) != _norm(expect_product):
+                scored["ok"] = False
+                scored["missing"] = list(scored.get("missing") or []) + [
+                    "mauvais produit (attendu {0}, obtenu {1})".format(
+                        expect_product, got
+                    )
+                ]
 
     expect_products = case.get("expect_products") or []
     if expect_products:
@@ -232,6 +268,18 @@ def render_markdown(
         title = "Évaluation Assistant PARC — batterie complexe"
     elif suite == "basic":
         title = "Évaluation Assistant PARC — batterie de base"
+    elif suite in ("aggregate", "agregat", "agg"):
+        title = "Évaluation Assistant PARC — agrégats (ensemble du parc)"
+    elif suite in ("explore", "dict", "dat"):
+        title = "Évaluation Assistant PARC — explore DAT / DICT"
+    elif suite in ("role-cdp", "cdp", "chef-projet"):
+        title = "Évaluation Assistant PARC — rôle chef de projet"
+    elif suite in ("role-manager", "manager", "responsable"):
+        title = "Évaluation Assistant PARC — rôle responsable de département"
+    elif suite in ("role-direction", "direction", "dir"):
+        title = "Évaluation Assistant PARC — rôle direction"
+    elif suite in ("roles", "role"):
+        title = "Évaluation Assistant PARC — batteries par rôle"
     lines.append("# {0}".format(title))
     lines.append("")
     lines.append("## En clair")
@@ -392,9 +440,30 @@ async def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--suite",
-        choices=["basic", "complex", "explore", "dict", "dat", "all"],
+        choices=[
+            "basic",
+            "complex",
+            "explore",
+            "dict",
+            "dat",
+            "aggregate",
+            "agregat",
+            "agg",
+            "role-cdp",
+            "cdp",
+            "chef-projet",
+            "role-manager",
+            "manager",
+            "responsable",
+            "role-direction",
+            "direction",
+            "dir",
+            "roles",
+            "role",
+            "all",
+        ],
         default="complex",
-        help="Batterie de questions (explore/dict/dat = DICT·DAT + zones peu testées)",
+        help="Batterie (roles = CDP + manager + direction)",
     )
     parser.add_argument(
         "--out",
@@ -418,13 +487,42 @@ async def main() -> int:
             args.out = docs / "eval-parc-resultats.md"
         elif args.suite in ("explore", "dict", "dat"):
             args.out = docs / "eval-parc-explore-dat-resultats.md"
+        elif args.suite in ("aggregate", "agregat", "agg"):
+            args.out = docs / "eval-parc-agregats-resultats.md"
+        elif args.suite in ("role-cdp", "cdp", "chef-projet"):
+            args.out = docs / "eval-parc-role-cdp-resultats.md"
+        elif args.suite in ("role-manager", "manager", "responsable"):
+            args.out = docs / "eval-parc-role-manager-resultats.md"
+        elif args.suite in ("role-direction", "direction", "dir"):
+            args.out = docs / "eval-parc-role-direction-resultats.md"
+        elif args.suite in ("roles", "role"):
+            args.out = docs / "eval-parc-roles-resultats.md"
         else:
             args.out = docs / "eval-parc-all-resultats.md"
 
+    _litellm_suites = {
+        "complex",
+        "explore",
+        "dict",
+        "dat",
+        "aggregate",
+        "agregat",
+        "agg",
+        "role-cdp",
+        "cdp",
+        "chef-projet",
+        "role-manager",
+        "manager",
+        "responsable",
+        "role-direction",
+        "direction",
+        "dir",
+        "roles",
+        "role",
+    }
     try:
         cfg = _llm_config(
-            require_litellm=args.require_litellm
-            or args.suite in ("complex", "explore", "dict", "dat")
+            require_litellm=args.require_litellm or args.suite in _litellm_suites
         )
     except RuntimeError as exc:
         print(str(exc), file=sys.stderr)

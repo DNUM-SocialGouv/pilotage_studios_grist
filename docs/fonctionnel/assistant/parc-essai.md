@@ -63,13 +63,17 @@ Colonnes présentes hors glossaire (`code`, `ProConnect`, `MFA`, `HDS`, cibles R
 À rejouer avec le service Onyxia + `.env` PARC configuré. Attendu = valeur dans Le PARC (MCP / fiche), ou « non renseigné ».
 
 Script local : [`services/assistant-essai/run_parc_eval.py`](../../../services/assistant-essai/run_parc_eval.py)  
-(`--suite basic|complex|explore|all` — `explore` / `dict` / `dat` = DAT·DICT + zones peu testées)
+(`--suite basic|complex|explore|aggregate|all`)
 
 | Batterie | Résultats |
 |----------|-----------|
 | Base | [eval-parc-resultats.md](eval-parc-resultats.md) |
 | Complexe (LiteLLM) | [eval-parc-complexe-resultats.md](eval-parc-complexe-resultats.md) |
 | Explore DAT / DICT (LiteLLM) | [eval-parc-explore-dat-resultats.md](eval-parc-explore-dat-resultats.md) |
+| Agrégats parc (LiteLLM) | [eval-parc-agregats-resultats.md](eval-parc-agregats-resultats.md) |
+| Rôle chef de projet | [eval-parc-role-cdp-resultats.md](eval-parc-role-cdp-resultats.md) |
+| Rôle responsable de département | [eval-parc-role-manager-resultats.md](eval-parc-role-manager-resultats.md) |
+| Rôle direction | [eval-parc-role-direction-resultats.md](eval-parc-role-direction-resultats.md) |
 
 1. Hébergeur d’**Accolade** → `Hebergement` / Infogérant  
 2. Département SDPC d’**Accolade** → `Departement_SDPC`  
@@ -80,7 +84,8 @@ Script local : [`services/assistant-essai/run_parc_eval.py`](../../../services/a
 7. Produit multi-mots (**DSN BDD** vs **DSN**) → matching du libellé le plus long  
 8. Besoins **DAT** (= **DICT** : disponibilité, intégrité, confidentialité, traçabilité)  
 9. Produits **DATIA** (ex. DATIA TBD, TDB IA DAT'IA)  
-10. Taux RGAA renseigné → affichage en **pourcentage** dans les faits (`81 %`) 
+10. Taux RGAA renseigné → affichage en **pourcentage** dans les faits (`81 %`)  
+11. Questions sur **l’ensemble du parc** (moyenne RGAA, comptages) → agrégat serveur, pas « produit ambigu » 
 
 ---
 

@@ -699,6 +699,795 @@ def find_explicit_product_records(
     return out
 
 
+def _as_rgaa_ratio(value: Any) -> Optional[float]:
+    """Normalise un taux RGAA stocké en ratio (0–1) ou en pourcentage (0–100)."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    v = float(value)
+    if 0.0 <= v <= 1.0:
+        return v
+    if 1.0 < v <= 100.0:
+        return v / 100.0
+    return None
+
+
+# Alias normalisés → valeur exacte Departement_SDPC
+_DEPARTMENT_ALIASES: List[Tuple[str, str]] = [
+    ("sdcid/dia", "SDCID/DIA"),
+    ("sdcid dia", "SDCID/DIA"),
+    ("sdcid/ma", "SDCID/MA"),
+    ("sante", "SANTE"),
+    ("gps", "GPS"),
+    ("idn", "IDN"),
+    ("spot", "SPOT"),
+    ("spc", "SPC"),
+]
+
+
+def detect_departments(question: str) -> List[str]:
+    """Tous les départements SDPC cités (ordre de mention)."""
+    q = _normalize(question)
+    has_dept_word = "departement" in q or "dept" in q
+    found: List[str] = []
+    for alias, canon in _DEPARTMENT_ALIASES:
+        if alias not in q:
+            continue
+        if len(alias) <= 4 and not has_dept_word:
+            if not re.search(
+                r"(?:^|[^a-z0-9])" + re.escape(alias) + r"(?:[^a-z0-9]|$)", q
+            ):
+                continue
+            if alias in ("idn", "spot", "spc", "gps") and not has_dept_word:
+                # Autoriser les codes courts s’ils sont clairement listés à plusieurs
+                if q.count("departement") == 0 and not any(
+                    a in q for a in ("compare", "effectifs", "face a", "plus gros")
+                ):
+                    continue
+        if canon not in found:
+            found.append(canon)
+    return found
+
+
+def detect_department(question: str) -> Optional[str]:
+    """Repère un département SDPC cité (ex. GPS, SANTE, SDCID/DIA)."""
+    found = detect_departments(question)
+    return found[0] if found else None
+
+
+def detect_aggregate_intent(question: str) -> Optional[str]:
+    """
+    Questions sur l’ensemble du parc (moyenne, comptages) — pas une fiche produit.
+    Si un nom de produit est clairement cité, on laisse le matching produit gagner.
+    """
+    q = _normalize(question)
+    if not q:
+        return None
+
+    dept = detect_department(question)
+    wide = any(
+        h in q
+        for h in (
+            "ensemble du parc",
+            "tout le parc",
+            "tous les produits",
+            "toutes les applications",
+            "sur le parc",
+            "du parc",
+            "au total",
+            "globalement",
+            "en moyenne",
+            "la moyenne",
+            "moyenne des",
+            "moyenne du",
+            "combien de produits",
+            "nombre de produits",
+            "combien y a",
+            "part des produits",
+            "pourcentage de produits",
+            "quel pourcentage",
+        )
+    ) or bool(dept)
+    statistical = any(
+        h in q
+        for h in (
+            "moyenne",
+            "moyen ",
+            "combien",
+            "nombre de",
+            "pourcentage",
+            "part des",
+            "taux moyen",
+        )
+    )
+    list_ask = any(
+        h in q
+        for h in (
+            "liste",
+            "lister",
+            "quels sont les produits",
+            "quelles sont les",
+            "quels produits",
+            "quelles applications",
+            "produits qui",
+            "produits ayant",
+            "produits avec",
+            "produits du departement",
+            "produits de mon departement",
+        )
+    )
+    list_ask = list_ask or any(
+        h in q
+        for h in (
+            "parmi",
+            "lesquels",
+            "lesquelles",
+            "a la fois",
+            "qui sont aussi",
+            "aussi marques",
+            "aussi marqués",
+        )
+    )
+    if not (wide or statistical or list_ask):
+        return None
+
+    jdma = any(h in q for h in ("jdma", "je donne mon avis", "jedonnemonavis"))
+    obsolete = any(h in q for h in ("obsolete", "obsolètes", "obsolète", "obsolescence"))
+    crit1 = any(
+        h in q
+        for h in (
+            "criticite 1",
+            "criticité 1",
+            "service critique",
+            "services critiques",
+        )
+    )
+    cross_cue = any(
+        h in q
+        for h in (
+            "parmi",
+            "a la fois",
+            "aussi",
+            "croisement",
+            "et aussi",
+            "qui sont aussi",
+        )
+    )
+
+    depts = detect_departments(question)
+    if len(depts) >= 2 and any(
+        h in q
+        for h in (
+            "compare",
+            "comparer",
+            "effectifs",
+            "face a",
+            "plus gros",
+            "le plus gros",
+            "versus",
+            " vs ",
+        )
+    ):
+        return "departments_compare"
+
+    risk_hits = sum(
+        [
+            1 if obsolete else 0,
+            1 if crit1 else 0,
+            1 if "hds" in q else 0,
+            1 if ("pca" in q or "continuite" in q) else 0,
+        ]
+    )
+    if risk_hits >= 3 and (
+        "combien" in q or "pilotage" in q or "risque" in q or "quatre" in q
+    ):
+        return "parc_risk_snapshot"
+
+    if dept and any(
+        h in q
+        for h in (
+            "synthese",
+            "vue d ensemble",
+            "etat des lieux",
+            "tableau de bord",
+            "en un coup d oeil",
+            "chiffres cles",
+            "chiffres clés",
+        )
+    ):
+        return "department_snapshot"
+
+    # Croisements explicites (évite de confondre avec une synthèse multi-sujets)
+    if "hds" in q and obsolete and cross_cue:
+        return (
+            "hds_obsolete_list"
+            if (list_ask or "quels" in q or "lesquels" in q)
+            else "hds_obsolete_count"
+        )
+    if "hds" in q and crit1 and cross_cue:
+        return (
+            "hds_criticite1_list"
+            if (list_ask or "quels" in q or "lesquels" in q)
+            else "hds_criticite1_count"
+        )
+    if jdma and "rgaa" in q and (
+        list_ask
+        or "lesquels" in q
+        or "parmi" in q
+        or "a la fois" in q
+        or "qui ont" in q
+        or "inferieur" in q
+        or "superieur" in q
+        or "y en a" in q
+    ):
+        return "jdma_rgaa_list"
+
+    if "rgaa" in q and ("moyenne" in q or "moyen" in q or "average" in q):
+        return "rgaa_mean"
+    if "rgaa" in q and any(
+        h in q for h in ("combien", "nombre", "part", "pourcentage", "renseign")
+    ):
+        if any(h in q for h in ("produit", "parc", "renseign", "avec un taux", "ont un")):
+            return "rgaa_count"
+    if jdma and list_ask:
+        return "jdma_list"
+    if jdma and (
+        wide or "combien" in q or "nombre" in q or "part" in q or "pourcentage" in q
+    ):
+        return "jdma_count"
+    if "hds" in q and list_ask:
+        return "hds_list"
+    if "hds" in q and (wide or "combien" in q or "nombre" in q or "part" in q):
+        return "hds_count"
+    if ("pca" in q or "continuite" in q or "continuité" in q) and (
+        wide or "combien" in q or "nombre" in q or "inscrit" in q or list_ask
+    ):
+        if list_ask or "quels" in q or "lesquels" in q:
+            return "pca_list"
+        return "pca_count"
+    if obsolete:
+        if list_ask:
+            return "obsolescence_list"
+        return "obsolescence_count"
+    if crit1 or ("critiques" in q and ("combien" in q or list_ask or "quels" in q)):
+        if list_ask or "quels" in q:
+            return "criticite1_list"
+        return "criticite1_count"
+    if any(
+        h in q
+        for h in (
+            "combien de produits",
+            "nombre de produits",
+            "combien y a-t-il de produits",
+            "combien y a t il de produits",
+            "taille du parc",
+        )
+    ):
+        return "count_products"
+    if dept and list_ask:
+        return "department_list"
+    if dept and ("combien" in q or "nombre" in q):
+        return "count_products"
+    if wide and "rgaa" in q:
+        return "rgaa_mean"
+    return None
+
+
+def _filter_produits_by_department(
+    produits: List[Dict[str, Any]], department: Optional[str]
+) -> List[Dict[str, Any]]:
+    if not department:
+        return produits
+    out: List[Dict[str, Any]] = []
+    for rec in produits:
+        fields = rec.get("fields") or {}
+        if str(fields.get("Departement_SDPC") or "").strip() == department:
+            out.append(rec)
+    return out
+
+
+def build_aggregate_facts(
+    metric: str,
+    produits: List[Dict[str, Any]],
+    *,
+    department: Optional[str] = None,
+    departments: Optional[List[str]] = None,
+) -> Dict[str, Any]:
+    total = len(produits)
+    fields_list = [(rec.get("fields") or {}) for rec in produits]
+
+    def _product_name(fields: Dict[str, Any]) -> str:
+        return str(fields.get("Produit") or fields.get("code") or "").strip()
+
+    def _pct(n: int, d: int) -> Optional[float]:
+        if d <= 0:
+            return None
+        return round(100.0 * n / d, 2)
+
+    if metric == "departments_compare":
+        targets = departments or ([] if not department else [department])
+        rows = []
+        for dep in targets:
+            subset = [
+                f
+                for f in fields_list
+                if str(f.get("Departement_SDPC") or "").strip() == dep
+            ]
+            rows.append({"departement": dep, "n_produits": len(subset)})
+        rows_sorted = sorted(rows, key=lambda r: (-r["n_produits"], r["departement"]))
+        return {
+            "tool": "parc_agregat",
+            "metric": "departments_compare",
+            "label": "Comparaison d’effectifs par département",
+            "departements": rows,
+            "plus_gros": rows_sorted[0]["departement"] if rows_sorted else None,
+            "rule": (
+                "Compare les n_produits. Indique clairement le plus gros. "
+                "Ne liste pas les produits."
+            ),
+            "source": "Le PARC — comparatif Departement_SDPC",
+        }
+
+    if metric == "count_products":
+        return {
+            "tool": "parc_agregat",
+            "metric": "count_products",
+            "label": "Nombre de produits dans Le PARC",
+            "total_produits": total,
+            "rule": (
+                "Annonce uniquement ce total. Ne liste pas les produits. "
+                "Précise que c’est le nombre de fiches Produits_DNUM visibles."
+            ),
+            "source": "Le PARC — agrégat Produits_DNUM (lecture)",
+        }
+
+    if metric == "rgaa_mean":
+        ratios: List[float] = []
+        for fields in fields_list:
+            ratio = _as_rgaa_ratio(fields.get("RGAA_Taux_de_conformite"))
+            if ratio is not None:
+                ratios.append(ratio)
+        n = len(ratios)
+        mean = (sum(ratios) / n) if n else None
+        mean_pct = round(mean * 100, 2) if mean is not None else None
+        return {
+            "tool": "parc_agregat",
+            "metric": "rgaa_mean",
+            "label": "Moyenne des taux RGAA renseignés",
+            "total_produits": total,
+            "n_renseignes": n,
+            "n_non_renseignes": total - n,
+            "moyenne_ratio": round(mean, 4) if mean is not None else None,
+            "moyenne_pourcent": (
+                "{0} %".format(
+                    int(mean_pct) if mean_pct == int(mean_pct) else mean_pct
+                )
+                if mean_pct is not None
+                else None
+            ),
+            "rule": (
+                "La moyenne porte uniquement sur les fiches avec un taux RGAA renseigné "
+                "(dénominateur = n_renseignes, pas total_produits). "
+                "Annonce la moyenne en % et rappelle n_renseignes / total_produits. "
+                "Ne liste pas les produits. N’invente pas d’autre moyenne."
+            ),
+            "source": "Le PARC — agrégat RGAA_Taux_de_conformite (lecture)",
+        }
+
+    if metric == "rgaa_count":
+        n = sum(
+            1
+            for fields in fields_list
+            if _as_rgaa_ratio(fields.get("RGAA_Taux_de_conformite")) is not None
+        )
+        return {
+            "tool": "parc_agregat",
+            "metric": "rgaa_count",
+            "label": "Produits avec un taux RGAA renseigné",
+            "total_produits": total,
+            "n_renseignes": n,
+            "n_non_renseignes": total - n,
+            "part_pourcent": _pct(n, total),
+            "rule": (
+                "Donne n_renseignes sur total_produits (et la part en % si utile). "
+                "Ne liste pas les produits."
+            ),
+            "source": "Le PARC — agrégat RGAA (lecture)",
+        }
+
+    if metric == "jdma_count":
+        n = sum(1 for fields in fields_list if fields.get("Je_Donne_Mon_Avis") is True)
+        return {
+            "tool": "parc_agregat",
+            "metric": "jdma_count",
+            "label": "Produits sur Je Donne Mon Avis",
+            "total_produits": total,
+            "n_oui": n,
+            "n_non_ou_vide": total - n,
+            "part_pourcent": _pct(n, total),
+            "rule": (
+                "Compte uniquement Je_Donne_Mon_Avis = oui. "
+                "Donne n_oui / total_produits. Ne liste pas les produits."
+            ),
+            "source": "Le PARC — agrégat Je_Donne_Mon_Avis (lecture)",
+        }
+
+    if metric == "jdma_list":
+        names: List[str] = []
+        for fields in fields_list:
+            if fields.get("Je_Donne_Mon_Avis") is True:
+                name = str(fields.get("Produit") or fields.get("code") or "").strip()
+                if name:
+                    names.append(name)
+        names = sorted(set(names), key=lambda s: _normalize(s))
+        return {
+            "tool": "parc_agregat",
+            "metric": "jdma_list",
+            "label": "Liste des produits sur Je Donne Mon Avis",
+            "total_produits": total,
+            "n_oui": len(names),
+            "produits": names,
+            "rule": (
+                "Liste **tous** les noms fournis dans produits (Je Donne Mon Avis = oui). "
+                "Annonce aussi n_oui. N’ajoute aucun autre produit. "
+                "Ne confonds pas avec une fiche produit isolée."
+            ),
+            "source": "Le PARC — liste Je_Donne_Mon_Avis (lecture)",
+        }
+
+    if metric == "hds_count":
+        n = sum(1 for fields in fields_list if fields.get("HDS") is True)
+        return {
+            "tool": "parc_agregat",
+            "metric": "hds_count",
+            "label": "Produits marqués HDS",
+            "total_produits": total,
+            "n_oui": n,
+            "part_pourcent": _pct(n, total),
+            "rule": "Compte HDS = oui. Donne n_oui / total. Ne liste pas les produits.",
+            "source": "Le PARC — agrégat HDS (lecture)",
+        }
+
+    if metric == "hds_list":
+        names: List[str] = []
+        for fields in fields_list:
+            if fields.get("HDS") is True:
+                name = str(fields.get("Produit") or fields.get("code") or "").strip()
+                if name:
+                    names.append(name)
+        names = sorted(set(names), key=lambda s: _normalize(s))
+        return {
+            "tool": "parc_agregat",
+            "metric": "hds_list",
+            "label": "Liste des produits marqués HDS",
+            "total_produits": total,
+            "n_oui": len(names),
+            "produits": names,
+            "rule": (
+                "Liste **tous** les noms fournis dans produits (HDS = oui). "
+                "Annonce aussi n_oui. N’ajoute aucun autre produit. "
+                "HDS = hébergement de données de santé."
+            ),
+            "source": "Le PARC — liste HDS (lecture)",
+        }
+
+    if metric == "pca_count":
+        n = 0
+        for fields in fields_list:
+            raw = fields.get("Inscription_au_PCA")
+            if isinstance(raw, str) and _normalize(raw).startswith("oui"):
+                n += 1
+            elif raw is True:
+                n += 1
+        return {
+            "tool": "parc_agregat",
+            "metric": "pca_count",
+            "label": "Produits inscrits au PCA",
+            "total_produits": total,
+            "n_oui": n,
+            "part_pourcent": _pct(n, total),
+            "rule": (
+                "Compte les fiches dont Inscription_au_PCA indique oui. "
+                "Donne n_oui / total. Ne liste pas les produits."
+            ),
+            "source": "Le PARC — agrégat Inscription_au_PCA (lecture)",
+        }
+
+    if metric == "obsolescence_count":
+        n = sum(1 for fields in fields_list if fields.get("Obsolescence") is True)
+        return {
+            "tool": "parc_agregat",
+            "metric": "obsolescence_count",
+            "label": "Produits marqués obsolètes",
+            "total_produits": total,
+            "n_oui": n,
+            "part_pourcent": _pct(n, total),
+            "rule": "Compte Obsolescence = oui. Donne n_oui / total. Ne liste pas les produits.",
+            "source": "Le PARC — agrégat Obsolescence (lecture)",
+        }
+
+    if metric == "obsolescence_list":
+        names = []
+        for fields in fields_list:
+            if fields.get("Obsolescence") is True:
+                name = str(fields.get("Produit") or fields.get("code") or "").strip()
+                if name:
+                    names.append(name)
+        names = sorted(set(names), key=lambda s: _normalize(s))
+        return {
+            "tool": "parc_agregat",
+            "metric": "obsolescence_list",
+            "label": "Liste des produits obsolètes",
+            "total_produits": total,
+            "n_oui": len(names),
+            "produits": names,
+            "rule": (
+                "Liste tous les noms fournis (Obsolescence = oui). Annonce n_oui. "
+                "N’ajoute aucun autre produit."
+            ),
+            "source": "Le PARC — liste Obsolescence (lecture)",
+        }
+
+    if metric == "criticite1_count":
+        n = sum(
+            1
+            for fields in fields_list
+            if str(fields.get("Criticite") or "").strip().startswith("1")
+        )
+        return {
+            "tool": "parc_agregat",
+            "metric": "criticite1_count",
+            "label": "Produits en criticité 1 (service critique)",
+            "total_produits": total,
+            "n_oui": n,
+            "part_pourcent": _pct(n, total),
+            "rule": (
+                "Compte les fiches dont Criticite commence par « 1 ». "
+                "Donne n_oui / total. Ne liste pas les produits."
+            ),
+            "source": "Le PARC — agrégat Criticite (lecture)",
+        }
+
+    if metric == "criticite1_list":
+        names = []
+        for fields in fields_list:
+            if str(fields.get("Criticite") or "").strip().startswith("1"):
+                name = str(fields.get("Produit") or fields.get("code") or "").strip()
+                if name:
+                    names.append(name)
+        names = sorted(set(names), key=lambda s: _normalize(s))
+        return {
+            "tool": "parc_agregat",
+            "metric": "criticite1_list",
+            "label": "Liste des produits en criticité 1",
+            "total_produits": total,
+            "n_oui": len(names),
+            "produits": names,
+            "rule": (
+                "Liste tous les noms fournis (criticité 1). Annonce n_oui. "
+                "N’ajoute aucun autre produit."
+            ),
+            "source": "Le PARC — liste Criticite 1 (lecture)",
+        }
+
+    if metric == "department_list":
+        names = []
+        for fields in fields_list:
+            name = str(fields.get("Produit") or fields.get("code") or "").strip()
+            if name:
+                names.append(name)
+        names = sorted(set(names), key=lambda s: _normalize(s))
+        return {
+            "tool": "parc_agregat",
+            "metric": "department_list",
+            "label": "Liste des produits du département",
+            "total_produits": total,
+            "n_oui": len(names),
+            "produits": names,
+            "rule": (
+                "Liste tous les noms fournis pour ce département. "
+                "Annonce le nombre. N’ajoute aucun produit hors liste."
+            ),
+            "source": "Le PARC — liste par Departement_SDPC (lecture)",
+        }
+
+    if metric in ("hds_obsolete_list", "hds_obsolete_count"):
+        names = [
+            _product_name(f)
+            for f in fields_list
+            if f.get("HDS") is True and f.get("Obsolescence") is True and _product_name(f)
+        ]
+        names = sorted(set(names), key=lambda s: _normalize(s))
+        base = {
+            "tool": "parc_agregat",
+            "metric": metric,
+            "label": "Produits HDS et obsolètes",
+            "total_produits": total,
+            "n_oui": len(names),
+            "rule": (
+                "Croisement HDS = oui ET Obsolescence = oui. "
+                "Annonce n_oui. N’invente aucun autre produit."
+            ),
+            "source": "Le PARC — croisement HDS × Obsolescence",
+        }
+        if metric.endswith("_list"):
+            base["produits"] = names
+        return base
+
+    if metric in ("hds_criticite1_list", "hds_criticite1_count"):
+        names = [
+            _product_name(f)
+            for f in fields_list
+            if f.get("HDS") is True
+            and str(f.get("Criticite") or "").strip().startswith("1")
+            and _product_name(f)
+        ]
+        names = sorted(set(names), key=lambda s: _normalize(s))
+        base = {
+            "tool": "parc_agregat",
+            "metric": metric,
+            "label": "Produits HDS en criticité 1",
+            "total_produits": total,
+            "n_oui": len(names),
+            "rule": (
+                "Croisement HDS = oui ET criticité 1. Annonce n_oui. "
+                "N’invente aucun autre produit."
+            ),
+            "source": "Le PARC — croisement HDS × Criticite",
+        }
+        if metric.endswith("_list"):
+            base["produits"] = names
+        return base
+
+    if metric == "jdma_rgaa_list":
+        rows = []
+        for fields in fields_list:
+            if fields.get("Je_Donne_Mon_Avis") is not True:
+                continue
+            ratio = _as_rgaa_ratio(fields.get("RGAA_Taux_de_conformite"))
+            if ratio is None:
+                continue
+            name = _product_name(fields)
+            if not name:
+                continue
+            pct = round(ratio * 100, 2)
+            pct_s = str(int(pct)) if pct == int(pct) else str(pct)
+            rows.append(
+                {
+                    "produit": name,
+                    "rgaa_pourcent": "{0} %".format(pct_s),
+                    "rgaa_ratio": round(ratio, 4),
+                }
+            )
+        rows.sort(key=lambda r: _normalize(r["produit"]))
+        return {
+            "tool": "parc_agregat",
+            "metric": "jdma_rgaa_list",
+            "label": "Produits JDMA avec taux RGAA renseigné",
+            "total_produits": total,
+            "n_oui": len(rows),
+            "produits_detail": rows,
+            "produits": [r["produit"] for r in rows],
+            "rule": (
+                "Liste chaque produit avec son rgaa_pourcent. "
+                "Uniquement JDMA = oui ET taux RGAA renseigné."
+            ),
+            "source": "Le PARC — croisement JDMA × RGAA",
+        }
+
+    if metric == "department_snapshot":
+        n_obs = sum(1 for f in fields_list if f.get("Obsolescence") is True)
+        n_jdma = sum(1 for f in fields_list if f.get("Je_Donne_Mon_Avis") is True)
+        n_hds = sum(1 for f in fields_list if f.get("HDS") is True)
+        n_pca = 0
+        for f in fields_list:
+            raw = f.get("Inscription_au_PCA")
+            if isinstance(raw, str) and _normalize(raw).startswith("oui"):
+                n_pca += 1
+            elif raw is True:
+                n_pca += 1
+        ratios = [
+            r
+            for r in (_as_rgaa_ratio(f.get("RGAA_Taux_de_conformite")) for f in fields_list)
+            if r is not None
+        ]
+        n_crit1 = sum(
+            1 for f in fields_list if str(f.get("Criticite") or "").strip().startswith("1")
+        )
+        mean = (sum(ratios) / len(ratios)) if ratios else None
+        mean_pct = round(mean * 100, 2) if mean is not None else None
+        return {
+            "tool": "parc_agregat",
+            "metric": "department_snapshot",
+            "label": "Synthèse département",
+            "total_produits": total,
+            "n_obsoletes": n_obs,
+            "n_jdma": n_jdma,
+            "n_hds": n_hds,
+            "n_pca": n_pca,
+            "n_rgaa_renseignes": len(ratios),
+            "moyenne_rgaa_pourcent": (
+                "{0} %".format(
+                    int(mean_pct) if mean_pct == int(mean_pct) else mean_pct
+                )
+                if mean_pct is not None
+                else None
+            ),
+            "n_criticite_1": n_crit1,
+            "hds_produits": sorted(
+                {
+                    _product_name(f)
+                    for f in fields_list
+                    if f.get("HDS") is True and _product_name(f)
+                },
+                key=lambda s: _normalize(s),
+            ),
+            "rule": (
+                "Présente ces chiffres clés en tableau ou liste courte. "
+                "Tu peux citer hds_produits s’ils sont peu nombreux. "
+                "Ne liste pas tous les produits du département."
+            ),
+            "source": "Le PARC — synthèse département",
+        }
+
+    if metric == "pca_list":
+        names = []
+        for fields in fields_list:
+            raw = fields.get("Inscription_au_PCA")
+            ok = (isinstance(raw, str) and _normalize(raw).startswith("oui")) or raw is True
+            if ok:
+                name = _product_name(fields)
+                if name:
+                    names.append(name)
+        names = sorted(set(names), key=lambda s: _normalize(s))
+        return {
+            "tool": "parc_agregat",
+            "metric": "pca_list",
+            "label": "Produits inscrits au PCA",
+            "total_produits": total,
+            "n_oui": len(names),
+            "produits": names,
+            "rule": "Liste les noms (Inscription_au_PCA = oui). Annonce n_oui.",
+            "source": "Le PARC — liste PCA",
+        }
+
+    if metric == "parc_risk_snapshot":
+        n_obs = sum(1 for f in fields_list if f.get("Obsolescence") is True)
+        n_crit1 = sum(
+            1 for f in fields_list if str(f.get("Criticite") or "").strip().startswith("1")
+        )
+        n_hds = sum(1 for f in fields_list if f.get("HDS") is True)
+        n_pca = 0
+        for f in fields_list:
+            raw = f.get("Inscription_au_PCA")
+            if isinstance(raw, str) and _normalize(raw).startswith("oui"):
+                n_pca += 1
+            elif raw is True:
+                n_pca += 1
+        return {
+            "tool": "parc_agregat",
+            "metric": "parc_risk_snapshot",
+            "label": "Chiffres risques / conformité (parc)",
+            "total_produits": total,
+            "n_obsoletes": n_obs,
+            "n_criticite_1": n_crit1,
+            "n_hds": n_hds,
+            "n_pca": n_pca,
+            "rule": (
+                "Donne clairement les quatre chiffres demandés. "
+                "Pas de liste exhaustive de produits."
+            ),
+            "source": "Le PARC — synthèse risques",
+        }
+
+    return {
+        "tool": "parc_agregat",
+        "unresolved": True,
+        "reason": "unknown_metric",
+        "hint": "Agrégat non pris en charge pour cette question.",
+        "metric": metric,
+    }
+
+
 async def resolve_parc_facts(question: str) -> Dict[str, Any]:
     if not parc_configured():
         return {
@@ -720,7 +1509,37 @@ async def resolve_parc_facts(question: str) -> Dict[str, Any]:
             "hint": "Impossible de lire Le PARC pour le moment ({0}).".format(type(exc).__name__),
         }
 
+    # Agrégats « ensemble du parc » / département avant le matching produit.
     explicit = find_explicit_product_records(question, _cache["produits"])
+    aggregate = detect_aggregate_intent(question)
+    if aggregate and len(explicit) == 0:
+        departments = detect_departments(question)
+        department = departments[0] if len(departments) == 1 else None
+        if aggregate == "departments_compare":
+            pool = _cache["produits"]
+            facts = build_aggregate_facts(
+                aggregate,
+                pool,
+                departments=departments or None,
+            )
+            return facts
+        pool = _filter_produits_by_department(_cache["produits"], department)
+        facts = build_aggregate_facts(
+            aggregate, pool, department=department
+        )
+        if department:
+            facts["departement"] = department
+            facts["filtre"] = "Departement_SDPC = {0}".format(department)
+            label = str(facts.get("label") or "")
+            if label and department not in label:
+                facts["label"] = "{0} — {1}".format(label, department)
+            facts["rule"] = (
+                str(facts.get("rule") or "")
+                + " Précise que le calcul porte sur le département {0} "
+                "({1} fiche(s) dans ce périmètre).".format(department, len(pool))
+            ).strip()
+        return facts
+
     if len(explicit) >= 2:
         products = []
         for rec, label in explicit[:4]:
@@ -782,6 +1601,13 @@ PARC_SYSTEM_PROMPT = (
     "pour un produit bien identifié, dis clairement « non renseigné dans Le PARC ». "
     "Si plusieurs produits sont fournis (multi), compare-les champ par champ "
     "sans inventer de valeurs. "
+    "Si les faits sont un **agrégat** (tool parc_agregat : moyenne, comptages, listes "
+    "filtrées, croisements), utilise uniquement ces chiffres (moyenne_pourcent, "
+    "n_renseignes, total_produits, produits[], produits_detail[], departement, etc.). "
+    "Rappelle le dénominateur et le filtre département s’il est fourni. "
+    "Pour une liste fournie dans produits[] ou produits_detail[], énumère ces noms "
+    "(avec le détail demandé : RGAA, etc.). "
+    "Sinon ne liste pas les produits un par un. Ne demande pas de coller une fiche. "
     "Quand on parle de besoins **DAT** ou **DICT**, ce sont les besoins "
     "Disponibilité, Intégrité, Confidentialité et Traçabilité "
     "(champs « Besoin DICT - … »). "
@@ -789,5 +1615,6 @@ PARC_SYSTEM_PROMPT = (
     "(ex. 81 %), tu peux rappeler le ratio si utile. "
     "Cite les **libellés** métier, jamais les noms techniques de colonnes. "
     "Tu ne proposes pas de modifier Grist. "
-    "Indique brièvement que la source est Le PARC (lecture)."
+    "Ne termine **pas** ta réponse par « Source : Le PARC » ni une formule du même "
+    "genre : l’interface l’indique déjà au-dessus de la conversation."
 )

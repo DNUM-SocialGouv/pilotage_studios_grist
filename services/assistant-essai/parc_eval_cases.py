@@ -1,8 +1,14 @@
-"""Batteries de questions Assistant PARC (basic + complexe)."""
+"""Batteries de questions Assistant PARC (basic + complexe + rôles)."""
 
 from __future__ import annotations
 
 from typing import Any, Dict, List
+
+from parc_eval_cases_roles import (
+    CASES_ROLE_CDP,
+    CASES_ROLE_DIRECTION,
+    CASES_ROLE_MANAGER,
+)
 
 CASES_BASIC: List[Dict[str, Any]] = [
     {
@@ -403,6 +409,128 @@ CASES_EXPLORE: List[Dict[str, Any]] = [
 ]
 
 
+CASES_AGGREGATE: List[Dict[str, Any]] = [
+    {
+        "id": "A1",
+        "theme": "rgaa-moyenne-parc",
+        "question": (
+            "Donne moi la moyenne des taux de RGAA renseigné sur l’ensemble du parc"
+        ),
+        "expect_facts_tool": "parc_agregat",
+        "expect_any": ["48", "%"],
+        "expect_all_soft": ["110", "416"],
+        "expect_none": [
+            "ambigu",
+            "plusieurs produits possibles",
+            "base de donnees publique",
+            "base de données publique",
+            "collez",
+            "tarif",
+        ],
+        "oracle": "Agrégat · moyenne ≈ 48,72 % sur 110 / 416 fiches avec taux renseigné",
+    },
+    {
+        "id": "A2",
+        "theme": "rgaa-moyenne-reformulation",
+        "question": (
+            "Quelle est la moyenne du taux de conformité RGAA pour tous les produits "
+            "qui l’ont renseigné ?"
+        ),
+        "expect_facts_tool": "parc_agregat",
+        "expect_any": ["48", "%"],
+        "expect_none": ["ambigu", "plusieurs produits possibles"],
+        "oracle": "Même agrégat rgaa_mean · ~48,72 %",
+    },
+    {
+        "id": "A3",
+        "theme": "count-produits",
+        "question": "Combien de produits y a-t-il dans Le PARC ?",
+        "expect_facts_tool": "parc_agregat",
+        "expect_any": ["416"],
+        "expect_none": ["ambigu"],
+        "oracle": "416 fiches Produits_DNUM",
+    },
+    {
+        "id": "A4",
+        "theme": "rgaa-count",
+        "question": "Combien de produits ont un taux RGAA renseigné ?",
+        "expect_facts_tool": "parc_agregat",
+        "expect_any": ["110"],
+        "expect_all_soft": ["416", "%"],
+        "expect_none": ["ambigu", "plusieurs produits possibles"],
+        "oracle": "110 / 416 (~26 %)",
+    },
+    {
+        "id": "A5",
+        "theme": "jdma-count",
+        "question": (
+            "Sur l’ensemble du parc, combien de produits sont sur Je Donne Mon Avis ?"
+        ),
+        "expect_facts_tool": "parc_agregat",
+        "expect_any": ["20"],
+        "expect_none": ["ambigu"],
+        "oracle": "20 produits JDMA = oui",
+    },
+    {
+        "id": "A6",
+        "theme": "hds-count",
+        "question": "Combien de produits sont HDS sur le parc ?",
+        "expect_facts_tool": "parc_agregat",
+        "expect_any": ["5"],
+        "expect_none": ["ambigu"],
+        "oracle": "5 produits HDS = oui",
+    },
+    {
+        "id": "A7",
+        "theme": "pca-count",
+        "question": "Combien de produits sont inscrits au PCA dans Le PARC ?",
+        "expect_facts_tool": "parc_agregat",
+        "expect_any": ["59"],
+        "expect_none": ["ambigu"],
+        "oracle": "59 inscriptions PCA « oui »",
+    },
+    {
+        "id": "A8",
+        "theme": "non-agregat-produit",
+        "question": "Quel est le taux RGAA de C2S ? Réponds en pourcentage.",
+        "expect_facts_tool": "parc_produit",
+        "expect_product": "C2S",
+        "expect_any": ["81 %", "81%"],
+        "expect_none": ["moyenne", "416"],
+        "oracle": "Fiche C2S · 81 % — ne doit PAS basculer en agrégat",
+    },
+    {
+        "id": "A9",
+        "theme": "jdma-liste",
+        "question": 'liste moi les produits qui ont "Je Donne Mon Avis"',
+        "expect_facts_tool": "parc_agregat",
+        "expect_any": ["20", "accolade", "mandoline"],
+        "expect_all_soft": ["1j1s", "egapro"],
+        "expect_none": [
+            "ambigu",
+            "plusieurs produits possibles",
+            "une seule fiche",
+            "filtre sur le champ",
+        ],
+        "oracle": "Liste des 20 produits JDMA=oui (pas une fiche isolée « LISTE »)",
+    },
+    {
+        "id": "A10",
+        "theme": "hds-liste",
+        "question": "Quels sont les produits avec un environnement HDS ?",
+        "expect_facts_tool": "parc_agregat",
+        "expect_any": ["5", "hds"],
+        "expect_none": [
+            "not_found",
+            "aucun produit visible",
+            "ambigu",
+            "orthographe",
+        ],
+        "oracle": "Liste des 5 produits HDS=oui",
+    },
+]
+
+
 def cases_for_suite(suite: str) -> List[Dict[str, Any]]:
     s = (suite or "complex").strip().lower()
     if s == "basic":
@@ -411,6 +539,28 @@ def cases_for_suite(suite: str) -> List[Dict[str, Any]]:
         return list(CASES_COMPLEX)
     if s in ("explore", "dict", "dat"):
         return list(CASES_EXPLORE)
+    if s in ("aggregate", "agregat", "agg"):
+        return list(CASES_AGGREGATE)
+    if s in ("role-cdp", "cdp", "chef-projet"):
+        return list(CASES_ROLE_CDP)
+    if s in ("role-manager", "manager", "responsable"):
+        return list(CASES_ROLE_MANAGER)
+    if s in ("role-direction", "direction", "dir"):
+        return list(CASES_ROLE_DIRECTION)
+    if s in ("roles", "role"):
+        return (
+            list(CASES_ROLE_CDP)
+            + list(CASES_ROLE_MANAGER)
+            + list(CASES_ROLE_DIRECTION)
+        )
     if s == "all":
-        return list(CASES_BASIC) + list(CASES_COMPLEX) + list(CASES_EXPLORE)
+        return (
+            list(CASES_BASIC)
+            + list(CASES_COMPLEX)
+            + list(CASES_EXPLORE)
+            + list(CASES_AGGREGATE)
+            + list(CASES_ROLE_CDP)
+            + list(CASES_ROLE_MANAGER)
+            + list(CASES_ROLE_DIRECTION)
+        )
     return list(CASES_COMPLEX)
