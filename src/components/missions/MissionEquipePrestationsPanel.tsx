@@ -515,10 +515,7 @@ export function MissionEquipePrestationsPanel({
                 const libelle = missionEnfantLibelle(e, intervenantLabel);
                 const portageId = extractGristReferenceId(e.Portage_Projet);
                 const portageDisplay =
-                  portageId != null &&
-                  portageId !== 0 &&
-                  portageProjetsById &&
-                  bdcById
+                  portageId != null && portageId !== 0 && portageProjetsById
                     ? resolvePortageProjetDisplay(
                         portageProjetsById.get(portageId),
                         bdcById,

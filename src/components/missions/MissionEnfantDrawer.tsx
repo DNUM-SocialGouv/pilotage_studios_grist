@@ -30,6 +30,7 @@ import {
 } from "../../utils/missionGristWrite.ts";
 import {
   bdcDisplayLabel,
+  isMaltPortageValidForFreelance,
   maltPortageOptionsForFreelance,
 } from "../../utils/portageProjet.ts";
 import { DsfrSelectRichMulti } from "../dsfr/DsfrSelectRichMulti.tsx";
@@ -71,8 +72,11 @@ export const MissionEnfantDrawer = forwardRef<
 ) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
+  const maltHintId = useId();
   const initialFormRef = useRef<MissionEnfantFormValues>(emptyMissionEnfantForm());
   const masterIdRef = useRef<number | undefined>(undefined);
+  /** `undefined` = premier cycle après open (ne pas vider une sélection orpheline). */
+  const prevFreelanceForPortageRef = useRef<number | null | undefined>(undefined);
 
   const [mode, setMode] = useState<DrawerMode>("create");
   const [editing, setEditing] = useState<MissionEnfant | null>(null);
@@ -154,20 +158,40 @@ export const MissionEnfantDrawer = forwardRef<
     return bdcDisplayLabel(undefined, opt.bdcId);
   }, [maltOptions, selectedPortageId, bdcLabelById]);
 
-  /** Changement d’intervenant : vider la mission Malt si elle ne correspond plus. */
+  /**
+   * Changement d’intervenant : vider la mission Malt si elle n’appartient plus
+   * au freelance. Ne pas vider au premier rendu (sélection orpheline affichable).
+   */
   useEffect(() => {
+    const prev = prevFreelanceForPortageRef.current;
+    prevFreelanceForPortageRef.current = freelanceIdForPortage;
+    if (prev === undefined || prev === freelanceIdForPortage) {
+      return;
+    }
     if (!portageWatch.trim()) {
       return;
     }
-    const stillValid = maltOptions.some((o) => String(o.id) === portageWatch.trim());
-    if (!stillValid) {
+    if (
+      !isMaltPortageValidForFreelance(
+        portageProjets,
+        selectedPortageId,
+        freelanceIdForPortage,
+      )
+    ) {
       setValue("Portage_Projet", "");
     }
-  }, [maltOptions, portageWatch, setValue]);
+  }, [
+    portageProjets,
+    selectedPortageId,
+    freelanceIdForPortage,
+    portageWatch,
+    setValue,
+  ]);
 
   const openCreate = useCallback(
     (masterId: number) => {
       masterIdRef.current = masterId;
+      prevFreelanceForPortageRef.current = undefined;
       setMode("create");
       setEditing(null);
       setSubmitError(undefined);
@@ -184,6 +208,7 @@ export const MissionEnfantDrawer = forwardRef<
   const openEdit = useCallback(
     (enfant: MissionEnfant) => {
       masterIdRef.current = undefined;
+      prevFreelanceForPortageRef.current = undefined;
       setMode("edit");
       setEditing(enfant);
       setSubmitError(undefined);
@@ -410,7 +435,7 @@ export const MissionEnfantDrawer = forwardRef<
                         nativeSelectProps={{
                           ...register("Portage_Projet"),
                           disabled: savePending || !intervenantOk,
-                          "aria-describedby": "mission-enfant-malt-hint",
+                          "aria-describedby": maltHintId,
                         }}
                       >
                         <option value="">— Aucune —</option>
@@ -420,10 +445,7 @@ export const MissionEnfantDrawer = forwardRef<
                           </option>
                         ))}
                       </Select>
-                      <p
-                        id="mission-enfant-malt-hint"
-                        className="fr-hint-text fr-mt-1v fr-mb-0"
-                      >
+                      <p id={maltHintId} className="fr-hint-text fr-mt-1v fr-mb-0">
                         {!intervenantOk
                           ? "Choisissez d’abord un intervenant."
                           : maltOptions.length === 0

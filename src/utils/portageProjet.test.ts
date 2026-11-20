@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import type { PortageProjet } from "../types.ts";
 import {
   bdcDisplayLabel,
+  isMaltPortageValidForFreelance,
   maltPortageOptionsForFreelance,
   resolvePortageProjetDisplay,
 } from "./portageProjet.ts";
@@ -58,6 +59,16 @@ describe("maltPortageOptionsForFreelance", () => {
   });
 });
 
+describe("isMaltPortageValidForFreelance", () => {
+  it("refuse l’orphelin / autre freelance", () => {
+    assert.equal(isMaltPortageValidForFreelance(rows, 4, 10), false);
+    assert.equal(isMaltPortageValidForFreelance(rows, 3, 10), false);
+    assert.equal(isMaltPortageValidForFreelance(rows, 1, 10), true);
+    assert.equal(isMaltPortageValidForFreelance(rows, 1, 20), false);
+    assert.equal(isMaltPortageValidForFreelance(rows, 1, null), false);
+  });
+});
+
 describe("bdcDisplayLabel / resolvePortageProjetDisplay", () => {
   it("préfère Nom_BdC", () => {
     assert.equal(
@@ -75,5 +86,11 @@ describe("bdcDisplayLabel / resolvePortageProjetDisplay", () => {
       titreMalt: "Mission A Malt",
       bdcLabel: "Studio SPC",
     });
+  });
+
+  it("affiche le titre même sans map BDC", () => {
+    const display = resolvePortageProjetDisplay(rows[0]);
+    assert.equal(display?.titreMalt, "Mission A Malt");
+    assert.equal(display?.bdcLabel, "BDC #100");
   });
 });

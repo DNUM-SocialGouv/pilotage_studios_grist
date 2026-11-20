@@ -90,10 +90,27 @@ export function bdcDisplayLabel(
   return `BDC #${bdcId}`;
 }
 
-/** Affichage fiche : intitulé Malt + BDC dérivé. */
+/**
+ * True si la ligne est une option Malt valide pour ce freelance
+ * (sans tenir compte d’une sélection orpheline).
+ */
+export function isMaltPortageValidForFreelance(
+  rows: readonly PortageProjet[],
+  portageId: number | null | undefined,
+  freelanceId: number | null | undefined,
+): boolean {
+  if (portageId == null || portageId === 0) {
+    return false;
+  }
+  return maltPortageOptionsForFreelance(rows, freelanceId).some(
+    (o) => o.id === portageId,
+  );
+}
+
+/** Affichage fiche : intitulé Malt + BDC dérivé (BDC optionnel). */
 export function resolvePortageProjetDisplay(
   row: PortageProjet | undefined,
-  bdcById: Map<number, Pick<BDC, "id" | "Nom_BdC" | "BdC_Chorus">>,
+  bdcById?: Map<number, Pick<BDC, "id" | "Nom_BdC" | "BdC_Chorus">>,
 ): PortageProjetDisplay | null {
   if (!row) {
     return null;
@@ -101,7 +118,7 @@ export function resolvePortageProjetDisplay(
   const titreMalt = row.Nom_du_projet?.trim() || `Mission Malt #${row.id}`;
   const bdcId = extractGristReferenceId(row.Bon_de_commande);
   const bdc =
-    bdcId != null && bdcId !== 0 ? bdcById.get(bdcId) : undefined;
+    bdcId != null && bdcId !== 0 ? bdcById?.get(bdcId) : undefined;
   return {
     titreMalt,
     bdcLabel: bdcDisplayLabel(bdc, bdcId),
