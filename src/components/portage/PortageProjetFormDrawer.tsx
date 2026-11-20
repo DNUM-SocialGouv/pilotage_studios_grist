@@ -76,6 +76,15 @@ export type PortageProjetFormDrawerProps = {
 const INVALID_HINT =
   "Valeur à corriger : elle n’est pas réécrite tant que vous n’en choisissez pas une nouvelle.";
 
+function textOptions(values: readonly string[], current: string): PortageOption[] {
+  const options = values.map((value) => ({ value, label: value }));
+  const extra = current.trim();
+  if (!extra || options.some((option) => option.value === extra)) {
+    return options;
+  }
+  return [{ value: extra, label: extra }, ...options];
+}
+
 function withCurrentOption(options: PortageOption[], current: string): PortageOption[] {
   const value = current.trim();
   if (!value || options.some((option) => option.value === value)) {
@@ -113,8 +122,6 @@ export const PortageProjetFormDrawer = forwardRef<
 ) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
-  const statutListId = useId();
-  const porteurListId = useId();
   const financeurListId = useId();
   const equipeListId = useId();
 
@@ -282,37 +289,25 @@ export const PortageProjetFormDrawer = forwardRef<
                       />
                     </div>
                     <div className="fr-col-12 fr-col-md-6">
-                      <Input
+                      <PersonOrBdcSelect
                         label="Statut"
-                        hintText={hintFor("Statut")}
-                        nativeInputProps={{
-                          ...register("Statut"),
-                          list: statutListId,
-                        }}
+                        hint={hintFor("Statut")}
+                        emptyLabel="Aucun statut"
+                        options={textOptions(statutChoices, editing?.values.Statut ?? "")}
+                        nativeSelectProps={register("Statut")}
                       />
-                      <datalist id={statutListId}>
-                        {statutChoices.map((value) => (
-                          <option key={value} value={value} />
-                        ))}
-                      </datalist>
                     </div>
                     <div className="fr-col-12 fr-col-md-6">
-                      <Input
+                      <PersonOrBdcSelect
                         label="Porteur"
-                        hintText={hintFor(
+                        hint={hintFor(
                           "Porteur",
                           `« ${PORTAGE_PORTEUR_MALT} » pour le choix Projet Malt.`,
                         )}
-                        nativeInputProps={{
-                          ...register("Porteur"),
-                          list: porteurListId,
-                        }}
+                        emptyLabel="Aucun porteur"
+                        options={textOptions(porteurChoices, editing?.values.Porteur ?? "")}
+                        nativeSelectProps={register("Porteur")}
                       />
-                      <datalist id={porteurListId}>
-                        {porteurChoices.map((value) => (
-                          <option key={value} value={value} />
-                        ))}
-                      </datalist>
                     </div>
                     <div className="fr-col-12 fr-col-md-6">
                       <Input
