@@ -50,7 +50,7 @@ const formSchema = z.object({
 export type MissionEnfantDrawerProps = {
   statutOptions: string[];
   intervenantOptions: { id: number; label: string }[];
-  /** Missions Malt (Portage_Projet) — lecture. */
+  /** Projets Malt (Portage_Projet) — lecture. */
   portageProjets?: PortageProjet[];
   /** Libellés BDC (id → nom / Chorus) pour l’aperçu. */
   bdcLabelById?: Map<number, string>;
@@ -159,7 +159,7 @@ export const MissionEnfantDrawer = forwardRef<
   }, [maltOptions, selectedPortageId, bdcLabelById]);
 
   /**
-   * Changement d’intervenant : vider la mission Malt si elle n’appartient plus
+   * Changement d’intervenant : vider le projet Malt s’il n’appartient plus
    * au freelance. Ne pas vider au premier rendu (sélection orpheline affichable).
    */
   useEffect(() => {
@@ -243,7 +243,7 @@ export const MissionEnfantDrawer = forwardRef<
   const title = mode === "edit" ? "Modifier la prestation" : "Nouvelle prestation";
   const description =
     mode === "edit"
-      ? "Met à jour le staffing de cette prestation (titre, intervenant, mission Malt, jours, statut, date de début)."
+      ? "Met à jour le staffing de cette prestation (titre, intervenant, projet Malt, jours, statut, date de début)."
       : "Ajoute une prestation rattachée à cette mission.";
   const primaryLabel =
     mode === "edit" ? "Enregistrer les modifications" : "Créer la prestation";
@@ -431,7 +431,7 @@ export const MissionEnfantDrawer = forwardRef<
                     </div>
                     <div className="fr-col-12">
                       <Select
-                        label="Mission Malt"
+                        label="Projet Malt"
                         nativeSelectProps={{
                           ...register("Portage_Projet"),
                           disabled: savePending || !intervenantOk,
@@ -449,7 +449,7 @@ export const MissionEnfantDrawer = forwardRef<
                         {!intervenantOk
                           ? "Choisissez d’abord un intervenant."
                           : maltOptions.length === 0
-                            ? "Aucune mission Malt pour cet intervenant dans Grist."
+                            ? "Aucun projet Malt pour cet intervenant dans Grist."
                             : "Intitulé tel qu’enregistré chez Malt. Le bon de commande est dérivé automatiquement."}
                       </p>
                       {selectedBdcPreview ? (

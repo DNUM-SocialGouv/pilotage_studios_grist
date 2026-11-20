@@ -81,6 +81,12 @@ export const WIDGET_NAV_ITEMS: WidgetNavItem[] = [
         status: "in_progress",
         adminOnly: true,
       },
+      {
+        text: "Projets de portage",
+        href: "/outils/portage-projet",
+        status: "in_progress",
+        adminOnly: true,
+      },
     ],
   },
 ];

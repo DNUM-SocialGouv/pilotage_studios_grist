@@ -39,7 +39,7 @@ Champs **Nom · Produit** (liste searchable) **· Statut** uniquement (pas les t
 
 | Mode | Champs |
 |------|--------|
-| **Ajouter** / **Modifier** | **Titre de la prestation** (fallback nom intervenant ; colonne Grist `Titre_de_la_prestation`) · Intervenant (obligatoire) · **Mission Malt** (optionnel — `Portage_Projet`, filtré Malt + freelance = intervenant ; aperçu BDC dérivé) · Jours envisagés (optionnel) · Statut (défaut « En cours ») · Date de début (optionnel) |
+| **Ajouter** / **Modifier** | **Titre de la prestation** (fallback nom intervenant ; colonne Grist `Titre_de_la_prestation`) · Intervenant (obligatoire) · **Projet Malt** (optionnel — `Portage_Projet`, filtré Malt + freelance = intervenant ; aperçu BDC dérivé) · Jours envisagés (optionnel) · Statut (défaut « En cours ») · Date de début (optionnel) |
 | Figé / hors formulaire | `Type_prestation` = `Freelance_jours` à la création seulement ; jamais édité ni affiché ; `Mission_parent` figé **dans ce drawer** (réaffectation possible uniquement à la création d’une mission — voir [liste](liste.md)) ; pas de date de fin ni suppression ; BDC non saisi à part (vient de `Portage_Projet.Bon_de_commande`) |
 
 Après succès : Alert in-drawer (edit) ou fermeture (create) + rechargement des données missions.

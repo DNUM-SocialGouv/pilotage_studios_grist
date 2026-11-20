@@ -15,7 +15,7 @@ export type MissionEnfantFormValues = {
   Statut: string;
   /** `YYYY-MM-DD` pour `<input type="date">`, ou vide. */
   Date_de_debut: string;
-  /** Id `Portage_Projet` (mission Malt), ou vide. */
+  /** Id `Portage_Projet` (projet Malt), ou vide. */
   Portage_Projet: string;
 };
 

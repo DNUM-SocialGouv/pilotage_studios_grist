@@ -9,6 +9,7 @@ import {
   WEEKLY_AGENDA_TABLE_ID,
   WEEKLY_COACHS_TABLE_ID,
   WEEKLY_PHASE_TABLE_ID,
+  PORTAGE_PROJET_TABLE_ID,
 } from "./writeTableAllowlist.ts";
 
 /**
@@ -24,11 +25,11 @@ export type RelatedTableId = (typeof RELATED_TABLE_IDS)[number];
 
 /**
  * Tables lazy (pas au boot PA) : onglet Dépenses fiche BDC, écrans `/missions`, `/cra`,
- * `/outils/recap-porteurs`, `/equipe`, `/produits`, `/weekly`, select auteur du widget feedback.
+ * `/outils/recap-porteurs`, `/outils/portage-projet`, `/equipe`, `/produits`, `/weekly`, select auteur du widget feedback.
  * Lecture seule ; jeton REST `readOnly: true` quand la table passe par REST.
  */
-/** Missions Malt / portage projet (lecture lazy — rattachement prestation). */
-export const PORTAGE_PROJET_TABLE_ID = "Portage_Projet";
+/** Réexport — projets de portage (lecture lazy + écran Admin). */
+export { PORTAGE_PROJET_TABLE_ID };
 
 export const BDC_DEPENSES_TABLE_IDS = [
   "Realise",

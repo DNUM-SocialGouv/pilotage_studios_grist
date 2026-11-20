@@ -26,6 +26,7 @@ import { ProduitsDetailView } from "./pages/ProduitsDetailView";
 import { ProduitsLayout } from "./pages/ProduitsLayout";
 import { ProduitsListView } from "./pages/ProduitsListView";
 import { GenererDevisPage } from "./pages/GenererDevisPage";
+import { PortageProjetAdminPage } from "./pages/PortageProjetAdminPage";
 import { SpikeDatatablePage } from "./pages/SpikeDatatablePage";
 import { ReglesMetierAccueilPage } from "./pages/regles-metier/ReglesMetierAccueilPage";
 import { ReglesMetierBdcPaPage } from "./pages/regles-metier/ReglesMetierBdcPaPage";
@@ -209,6 +210,14 @@ export default function App() {
                 element={
                   <AdminRoleGuard>
                     <GenererDevisPage />
+                  </AdminRoleGuard>
+                }
+              />
+              <Route
+                path="outils/portage-projet"
+                element={
+                  <AdminRoleGuard>
+                    <PortageProjetAdminPage />
                   </AdminRoleGuard>
                 }
               />

@@ -169,6 +169,17 @@ export const DROITS_PAGES_ROLE_FIXED: readonly DroitsPagesRoleFixedScreen[] = [
     },
     hint: "Réservé Admin (`adminOnly` + `AdminRoleGuard`) — hors `Page_*` ; copie locale, pas d’écriture Grist.",
   },
+  {
+    id: "portage_projet",
+    label: "Projets de portage",
+    accessByRole: {
+      Admin: true,
+      "Responsable de département": false,
+      Freelance: false,
+      Invité: false,
+    },
+    hint: "Réservé Admin (`adminOnly` + `AdminRoleGuard`) — hors `Page_*` ; création, correction et suppression d’un projet de portage.",
+  },
 ] as const;
 
 export function isAdminRole(role: string | null | undefined): boolean {

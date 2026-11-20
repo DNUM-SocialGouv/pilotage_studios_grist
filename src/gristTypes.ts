@@ -15,7 +15,7 @@ export interface GristTableOps {
   }) => Promise<void>;
   /**
    * Suppression de lignes — allowlist `WRITE_TABLE_DELETE_ALLOWLIST` uniquement
-   * (`Weekly_action`). `rowIds` = un ou plusieurs ids numériques.
+   * (`Weekly_action`, `Weekly_agenda`, `Portage_Projet`). `rowIds` = un ou plusieurs ids numériques.
    */
   destroy?: (rowIds: number[]) => Promise<void>;
 }
