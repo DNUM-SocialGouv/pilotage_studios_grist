@@ -15,7 +15,7 @@ export const FEEDBACK_PAGE_OPTIONS = [
   "Droits des pages",
   "Spike datatable",
   "Générer un devis",
-  "Projets de portage",
+  "Portage",
   "Procès-verbaux",
   "Évaluations",
   "Analyse",
@@ -97,7 +97,7 @@ export function pageOptionFromPathname(pathname: string): FeedbackPageOption {
     pathname === "/outils/portage-projet" ||
     pathname.startsWith("/outils/portage-projet/")
   ) {
-    return "Projets de portage";
+    return "Portage";
   }
   if (pathname === "/pv" || pathname.startsWith("/pv/")) {
     return "Procès-verbaux";

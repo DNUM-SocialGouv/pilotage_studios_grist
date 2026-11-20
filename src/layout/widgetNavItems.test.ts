@@ -112,7 +112,7 @@ describe("WIDGET_MODULE_LINKS", () => {
         { text: "Droits des pages", href: "/outils/droits-pages", status: "in_progress" },
         { text: "Spike datatable", href: "/outils/spike-datatable", status: "in_progress" },
         { text: "Générer un devis", href: "/outils/generer-devis", status: "in_progress" },
-        { text: "Projets de portage", href: "/outils/portage-projet", status: "in_progress" },
+        { text: "Portage", href: "/outils/portage-projet", status: "in_progress" },
       ],
     );
   });

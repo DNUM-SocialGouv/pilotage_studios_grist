@@ -82,7 +82,7 @@ export const WIDGET_NAV_ITEMS: WidgetNavItem[] = [
         adminOnly: true,
       },
       {
-        text: "Projets de portage",
+        text: "Portage",
         href: "/outils/portage-projet",
         status: "in_progress",
         adminOnly: true,

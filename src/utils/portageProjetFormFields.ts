@@ -1,5 +1,5 @@
 /**
- * Formulaire Admin « Projets de portage » — champs purs, sans appel Grist.
+ * Formulaire Admin « Portage » — champs purs, sans appel Grist.
  * Une ligne = un projet chez un porteur, avec une personne, un responsable,
  * et éventuellement un bon de commande.
  */
@@ -328,9 +328,9 @@ export function countPrestationsLinkedToPortage(
 
 export function portageDeleteBlockMessage(linkedPrestationCount: number): string {
   if (linkedPrestationCount <= 1) {
-    return "Une prestation est encore rattachée à ce projet. Retirez le rattachement avant de supprimer.";
+    return "Une prestation est encore rattachée à ce portage. Retirez le rattachement avant de supprimer.";
   }
-  return `${linkedPrestationCount} prestations sont encore rattachées à ce projet. Retirez les rattachements avant de supprimer.`;
+  return `${linkedPrestationCount} prestations sont encore rattachées à ce portage. Retirez les rattachements avant de supprimer.`;
 }
 
 /** Refuse la suppression tant qu’une prestation pointe vers le projet. */

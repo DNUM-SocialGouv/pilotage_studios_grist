@@ -220,7 +220,7 @@ export const PortageProjetFormDrawer = forwardRef<
   };
 
   const isEdit = mode === "edit";
-  const title = isEdit ? "Modifier le projet de portage" : "Nouveau projet de portage";
+  const title = isEdit ? "Modifier le portage" : "Nouveau portage";
 
   return (
     <dialog
@@ -243,7 +243,7 @@ export const PortageProjetFormDrawer = forwardRef<
                     {title}
                   </h2>
                   <p className="fr-text--sm fr-text-mention--grey fr-mb-0 fr-mt-1w">
-                    Un projet chez un porteur, relié à une personne et, si besoin, à un bon de
+                    Un portage chez un porteur, relié à une personne et, si besoin, à un bon de
                     commande. Le porteur « {PORTAGE_PORTEUR_MALT} » le propose dans le choix
                     Projet Malt d’une prestation.
                   </p>
@@ -422,7 +422,7 @@ export const PortageProjetFormDrawer = forwardRef<
                           ? "Enregistrement…"
                           : isEdit
                             ? "Enregistrer"
-                            : "Créer le projet"}
+                            : "Créer le portage"}
                       </button>
                     </div>
                   </div>

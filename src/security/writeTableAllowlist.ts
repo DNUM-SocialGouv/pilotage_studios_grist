@@ -48,7 +48,7 @@ export const WEEKLY_ACTION_TABLE_ID = "Weekly_action";
 export const WEEKLY_COACHS_TABLE_ID = "Weekly_coachs";
 /** Bons de commande — update cadre fiche uniquement (pas create/delete). */
 export const BDC_TABLE_ID = "BDC";
-/** Projets de portage — create + update + delete (écran Admin, une ligne). */
+/** Portage — create + update + delete (écran Admin, une ligne). */
 export const PORTAGE_PROJET_TABLE_ID = "Portage_Projet";
 
 export const WRITE_TABLE_ALLOWLIST = [
