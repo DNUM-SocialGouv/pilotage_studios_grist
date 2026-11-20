@@ -3335,8 +3335,13 @@ button.fr-link:disabled {
   line-height: inherit;
 }
 
-.pilotage-devis-preview__html th {
-  background: var(--background-contrast-grey);
-  font-weight: 700;
+.portage-admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.portage-admin-actions > .fr-btn {
+  width: auto;
 }
 

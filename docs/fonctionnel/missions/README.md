@@ -21,7 +21,7 @@ Une **mission master** (`Missions`) est un lot d’accompagnement (contexte, pro
 |-------|--------|
 | `Missions` | Lignes liste / fiche (masters) ; **écriture** create + update (drawer Nom / Produit / Statut ; Note studio `Suivi_resp_studio` ; Liens FIGMA/Notion `Liens_FIGMA_Notion` + Docs `Docs` via panneau Contexte) |
 | `Prestations` | Prestations ; **écriture** create + update (drawer fiche ; 1ʳᵉ prestation optionnelle à la création mission ; `Portage_Projet` Ref→projet Malt) |
-| `Portage_Projet` | Projets de portage — lecture (select prestation « Projet Malt ») ; **écriture Admin** sur `/outils/portage-projet` |
+| `Portage_Projet` | Portage — lecture (select prestation « Projet Malt ») ; **écriture Admin** sur `/outils/portage-projet` |
 | `Equipe` | Libellés intervenants / équipe |
 | `Tableau_de_pilotage_SDPC_Produits_SDPC` | Libellés produit |
 | `Realise` | Agrégats jours / TTC + réalisations fiche |

@@ -171,14 +171,14 @@ export const DROITS_PAGES_ROLE_FIXED: readonly DroitsPagesRoleFixedScreen[] = [
   },
   {
     id: "portage_projet",
-    label: "Projets de portage",
+    label: "Portage",
     accessByRole: {
       Admin: true,
       "Responsable de département": false,
       Freelance: false,
       Invité: false,
     },
-    hint: "Réservé Admin (`adminOnly` + `AdminRoleGuard`) — hors `Page_*` ; création, correction et suppression d’un projet de portage.",
+    hint: "Réservé Admin (`adminOnly` + `AdminRoleGuard`) — hors `Page_*` ; création, correction et suppression d’un portage.",
   },
 ] as const;
 

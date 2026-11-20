@@ -50,7 +50,7 @@ export async function updatePortageProjetRecord(
 ): Promise<void> {
   assertWritableUpdateTableId(PORTAGE_PROJET_TABLE_ID);
   if (!Number.isFinite(id) || id <= 0) {
-    throw new Error("Identifiant de projet de portage invalide.");
+    throw new Error("Identifiant de portage invalide.");
   }
   if (Object.keys(fields).length === 0) {
     return;
@@ -69,7 +69,7 @@ export async function deletePortageProjetRecord(
   assertWritableDeleteTableId(PORTAGE_PROJET_TABLE_ID);
   assertPortageProjetDeletable(linkedPrestationCount);
   if (!Number.isFinite(id) || id <= 0) {
-    throw new Error("Identifiant de projet de portage invalide.");
+    throw new Error("Identifiant de portage invalide.");
   }
   const table = getWritableTable(PORTAGE_PROJET_TABLE_ID);
   if (typeof table.destroy !== "function") {

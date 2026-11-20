@@ -194,7 +194,7 @@ describe("pageOptionFromPathname", () => {
     assert.equal(pageOptionFromPathname("/outils/droits-pages"), "Droits des pages");
     assert.equal(pageOptionFromPathname("/outils/spike-datatable"), "Spike datatable");
     assert.equal(pageOptionFromPathname("/outils/generer-devis"), "Générer un devis");
-    assert.equal(pageOptionFromPathname("/outils/portage-projet"), "Projets de portage");
+    assert.equal(pageOptionFromPathname("/outils/portage-projet"), "Portage");
     assert.equal(pageOptionFromPathname("/inconnu"), "Autre");
   });
 });

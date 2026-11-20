@@ -17,11 +17,17 @@ export type PortageProjetAdminData = {
   refsWarning: string | null;
   rows: PortageProjetAdminRow[];
   members: Intervenant[];
+  /** Faux si l’annuaire Équipe n’a pas pu être lu. */
+  membersReady: boolean;
   prestations: MissionEnfant[];
   /** Faux si la table Prestations n’a pas pu être lue — pas de suppression. */
   prestationsReady: boolean;
   isReloading: boolean;
-  reload: () => Promise<void>;
+  reload: () => Promise<{
+    rows: PortageProjetAdminRow[];
+    members: Intervenant[];
+    membersReady: boolean;
+  }>;
   /** Relit uniquement les prestations, juste avant une suppression. */
   reloadLinks: () => Promise<MissionEnfant[]>;
 };
@@ -29,6 +35,7 @@ export type PortageProjetAdminData = {
 type Loaded = {
   rows: PortageProjetAdminRow[];
   members: Intervenant[];
+  membersReady: boolean;
   prestations: MissionEnfant[];
   prestationsReady: boolean;
   refsWarning: string | null;
@@ -46,15 +53,17 @@ async function loadPortageProjetAdmin(): Promise<Loaded> {
     const reason = portage?.status === "rejected" ? portage.reason : null;
     throw reason instanceof Error
       ? reason
-      : new Error("La liste des projets de portage n’a pas pu être chargée.");
+      : new Error("La liste des portages n’a pas pu être chargée.");
   }
 
   const warnings: string[] = [];
   let members: Intervenant[] = [];
+  let membersReady = false;
   if (settled[1]?.status === "fulfilled") {
     members = recordsFromFetchTable(settled[1].value).map((row) =>
       toIntervenant(row as GristRecord),
     );
+    membersReady = true;
   } else {
     warnings.push("l’annuaire Équipe");
   }
@@ -75,6 +84,7 @@ async function loadPortageProjetAdmin(): Promise<Loaded> {
       portageProjetAdminFromRecord(row as GristRecord),
     ),
     members,
+    membersReady,
     prestations,
     prestationsReady,
     refsWarning:
@@ -94,6 +104,7 @@ export function usePortageProjetAdminData(): PortageProjetAdminData {
   const [refsWarning, setRefsWarning] = useState<string | null>(null);
   const [rows, setRows] = useState<PortageProjetAdminRow[]>([]);
   const [members, setMembers] = useState<Intervenant[]>([]);
+  const [membersReady, setMembersReady] = useState(false);
   const [prestations, setPrestations] = useState<MissionEnfant[]>([]);
   const [prestationsReady, setPrestationsReady] = useState(false);
   const [isReloading, setIsReloading] = useState(false);
@@ -102,6 +113,7 @@ export function usePortageProjetAdminData(): PortageProjetAdminData {
   const apply = (loaded: Loaded) => {
     setRows(loaded.rows);
     setMembers(loaded.members);
+    setMembersReady(loaded.membersReady);
     setPrestations(loaded.prestations);
     setPrestationsReady(loaded.prestationsReady);
     setRefsWarning(loaded.refsWarning);
@@ -128,14 +140,16 @@ export function usePortageProjetAdminData(): PortageProjetAdminData {
   const reload = useCallback(async () => {
     setIsReloading(true);
     try {
-      apply(await loadPortageProjetAdmin());
+      const loaded = await loadPortageProjetAdmin();
+      apply(loaded);
+      return loaded;
     } catch (err) {
       if (!hasLoadedRef.current) {
         setStatus("error");
         setError(
           err instanceof Error
             ? err.message
-            : "La liste des projets de portage n’a pas pu être chargée.",
+            : "La liste des portages n’a pas pu être chargée.",
         );
       }
       throw err;
@@ -155,6 +169,7 @@ export function usePortageProjetAdminData(): PortageProjetAdminData {
         }
         setRows(loaded.rows);
         setMembers(loaded.members);
+        setMembersReady(loaded.membersReady);
         setPrestations(loaded.prestations);
         setPrestationsReady(loaded.prestationsReady);
         setRefsWarning(loaded.refsWarning);
@@ -169,7 +184,7 @@ export function usePortageProjetAdminData(): PortageProjetAdminData {
         setError(
           err instanceof Error
             ? err.message
-            : "La liste des projets de portage n’a pas pu être chargée.",
+            : "La liste des portages n’a pas pu être chargée.",
         );
       }
     })();
@@ -184,6 +199,7 @@ export function usePortageProjetAdminData(): PortageProjetAdminData {
     refsWarning,
     rows,
     members,
+    membersReady,
     prestations,
     prestationsReady,
     isReloading,

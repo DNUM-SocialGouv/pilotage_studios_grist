@@ -35,10 +35,10 @@ export function PortageProjetDeleteConfirmDialog({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const cancelBtnId = useId();
-  const title = projectName.trim() || "ce projet";
+  const title = projectName.trim() || "ce portage";
   const blocked = checking || !prestationsReady || linkedCount > 0;
   const blockMessage = checking
-    ? "Vérification des prestations liées à ce projet…"
+    ? "Vérification des prestations liées à ce portage…"
     : !prestationsReady
       ? "Les prestations n’ont pas pu être lues. La suppression est indisponible tant que les rattachements ne sont pas vérifiés."
       : linkedCount > 0
@@ -86,7 +86,7 @@ export function PortageProjetDeleteConfirmDialog({
             ? "Vérification en cours"
             : blocked
               ? "Suppression impossible"
-              : "Supprimer ce projet de portage ?"}
+              : "Supprimer ce portage ?"}
         </h2>
         <p className="fr-mb-1w">«&nbsp;{title}&nbsp;»</p>
         {blockMessage ? (
@@ -95,7 +95,7 @@ export function PortageProjetDeleteConfirmDialog({
           </p>
         ) : (
           <p className="fr-text--sm fr-text-mention--grey fr-mb-3w">
-            Cette suppression est définitive. Un projet encore proposé sur une prestation
+            Cette suppression est définitive. Un portage encore proposé sur une prestation
             ne peut pas être retiré.
           </p>
         )}

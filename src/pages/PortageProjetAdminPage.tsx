@@ -8,11 +8,16 @@ import {
   type PortageProjetFormDrawerHandle,
 } from "../components/portage/PortageProjetFormDrawer";
 import { PortageProjetDeleteConfirmDialog } from "../components/portage/PortageProjetDeleteConfirmDialog";
+import {
+  PortageProjetImportDrawer,
+  type PortageProjetImportDrawerHandle,
+} from "../components/portage/PortageProjetImportDrawer";
 import { useGristPa } from "../GristPaContext";
 import { usePortageProjetAdminData } from "../hooks/usePortageProjetAdminData";
 import type { BDC, Intervenant } from "../types";
 import { uniqueSortedLabels } from "../utils/equipeList";
 import { bdcDisplayLabel } from "../utils/portageProjet";
+import { portageImportCatalogFromLists } from "../utils/portageProjetImport";
 import {
   countPrestationsLinkedToPortage,
   displayPortageField,
@@ -23,6 +28,31 @@ import {
 import { deletePortageProjetRecord } from "../utils/portageProjetGristWrite";
 
 const PAGE_SIZE = 10;
+
+function importCatalogFor(
+  rows: PortageProjetAdminRow[],
+  members: Intervenant[],
+  membersReady: boolean,
+  bdcs: BDC[],
+  bdcReady: boolean,
+) {
+  return portageImportCatalogFromLists({
+    names: rows
+      .filter((row) => !row.invalid.has("Nom_du_projet"))
+      .map((row) => row.values.Nom_du_projet),
+    people: members.flatMap((member) => {
+      const name = member.Prenom_Nom?.trim();
+      return name ? [{ id: member.id, name }] : [];
+    }),
+    peopleReady: membersReady,
+    bdcs: bdcs.map((bdc) => ({
+      id: bdc.id,
+      nom: bdc.Nom_BdC,
+      chorus: bdc.BdC_Chorus,
+    })),
+    bdcReady,
+  });
+}
 
 function personName(member: Intervenant | undefined, id: string): string {
   const name = member?.Prenom_Nom?.trim();
@@ -36,6 +66,7 @@ export function PortageProjetAdminPage() {
   const data = usePortageProjetAdminData();
   const pa = useGristPa();
   const drawerRef = useRef<PortageProjetFormDrawerHandle>(null);
+  const importRef = useRef<PortageProjetImportDrawerHandle>(null);
   const [search, setSearch] = useState("");
   const [searchKey, setSearchKey] = useState(0);
   const [page, setPage] = useState(1);
@@ -132,6 +163,25 @@ export function PortageProjetAdminPage() {
     }
   };
 
+  const importCatalog = importCatalogFor(
+    data.rows,
+    data.members,
+    data.membersReady,
+    pa.bdcList,
+    pa.relatedStatus === "ok",
+  );
+
+  const reloadImportCatalog = async () => {
+    const loaded = await data.reload();
+    return importCatalogFor(
+      loaded.rows,
+      loaded.members,
+      loaded.membersReady,
+      pa.bdcList,
+      pa.relatedStatus === "ok",
+    );
+  };
+
   const requestDelete = (row: PortageProjetAdminRow) => {
     const ticket = linkCheckTicket.current + 1;
     linkCheckTicket.current = ticket;
@@ -193,16 +243,16 @@ export function PortageProjetAdminPage() {
 
   return (
     <div className="fr-mt-2w fr-mb-4w">
-      <h1 className="fr-h3">Projets de portage</h1>
+      <h1 className="fr-h3">Portage</h1>
       <p className="fr-text--sm">
-        Un projet de portage relie une personne à un projet chez un porteur (souvent Malt)
+        Un portage relie une personne à un projet chez un porteur (souvent Malt)
         et, si besoin, à un bon de commande. Le porteur « Malt » le propose ensuite sur une
         prestation.
       </p>
 
       {data.status === "loading" || data.status === "idle" ? (
         <p className="fr-text--sm" role="status">
-          Chargement des projets de portage…
+          Chargement des portages…
         </p>
       ) : null}
 
@@ -213,7 +263,7 @@ export function PortageProjetAdminPage() {
           title="Lecture impossible"
           description={
             data.error ??
-            "Les projets de portage n’ont pas pu être lus. Ouvrez le widget dans Grist, puis réessayez."
+            "Les portages n’ont pas pu être lus. Ouvrez le widget dans Grist, puis réessayez."
           }
         />
       ) : null}
@@ -242,20 +292,27 @@ export function PortageProjetAdminPage() {
             </p>
           ) : null}
 
-          <div className="fr-mb-3w">
+          <div className="portage-admin-actions fr-mb-3w">
             <button
               type="button"
-              className="fr-btn fr-btn--primary fr-icon-add-line fr-btn--icon-left"
+              className="fr-btn fr-icon-add-line fr-btn--icon-left"
               onClick={() => drawerRef.current?.openCreate()}
             >
-              Nouveau projet
+              Nouveau
+            </button>
+            <button
+              type="button"
+              className="fr-btn fr-btn--secondary fr-icon-upload-line fr-btn--icon-left"
+              onClick={() => importRef.current?.open()}
+            >
+              Import
             </button>
           </div>
 
           <div className="fr-mb-2w">
             <SearchBar
               key={searchKey}
-              label="Rechercher un projet de portage"
+              label="Rechercher un portage"
               allowEmptySearch
               onButtonClick={(text) => {
                 setSearch(text);
@@ -283,16 +340,16 @@ export function PortageProjetAdminPage() {
           <p className="fr-text--sm fr-mb-2w">
             {rows.length === 0
               ? search.trim()
-                ? "Aucun projet ne correspond à la recherche."
-                : "Aucun projet de portage."
+                ? "Aucun portage ne correspond à la recherche."
+                : "Aucun portage."
               : search.trim()
-                ? `${rows.length} projet${rows.length > 1 ? "s" : ""} ${rows.length > 1 ? "correspondent" : "correspond"} à la recherche.`
-                : `${rows.length} projet${rows.length > 1 ? "s" : ""}.`}
+                ? `${rows.length} portage${rows.length > 1 ? "s" : ""} ${rows.length > 1 ? "correspondent" : "correspond"} à la recherche.`
+                : `${rows.length} portage${rows.length > 1 ? "s" : ""}.`}
           </p>
 
           <TableShell className="fr-mb-3w" multiline>
             <table>
-              <caption className="fr-sr-only">Liste des projets de portage</caption>
+              <caption className="fr-sr-only">Liste des portages</caption>
               <thead>
                 <tr>
                   <th scope="col">Nom du projet</th>
@@ -378,6 +435,25 @@ export function PortageProjetAdminPage() {
             equipeSuggestions={suggestion("Equipe")}
             onRecordsChanged={refresh}
             onRequestDelete={requestDelete}
+          />
+          <PortageProjetImportDrawer
+            ref={importRef}
+            catalog={importCatalog}
+            reloadCatalog={reloadImportCatalog}
+            onImported={async (created) => {
+              try {
+                await data.reload();
+                if (created > 0) {
+                  setListNotice(
+                    created > 1
+                      ? `${created} portages ont été créés.`
+                      : "1 portage a été créé.",
+                  );
+                }
+              } catch {
+                setListNotice("L’import a réussi, mais la liste n’a pas pu être rafraîchie.");
+              }
+            }}
           />
           <PortageProjetDeleteConfirmDialog
             open={deleteTarget != null}

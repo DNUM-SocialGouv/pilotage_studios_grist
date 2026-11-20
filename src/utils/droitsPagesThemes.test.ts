@@ -279,7 +279,7 @@ describe("feedbackPages droits-pages", () => {
 
   it("mappe Générer un devis", () => {
     assert.equal(pageOptionFromPathname("/outils/generer-devis"), "Générer un devis");
-    assert.equal(pageOptionFromPathname("/outils/portage-projet"), "Projets de portage");
+    assert.equal(pageOptionFromPathname("/outils/portage-projet"), "Portage");
   });
 
   it("mappe le guide Documentation (règles métier)", () => {

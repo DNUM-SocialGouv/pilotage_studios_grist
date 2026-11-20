@@ -174,7 +174,7 @@ describe("suppression liée aux prestations", () => {
   it("refuse la suppression s’il reste un rattachement", () => {
     assert.throws(
       () => assertPortageProjetDeletable(1),
-      /Une prestation est encore rattachée à ce projet/,
+      /Une prestation est encore rattachée à ce portage/,
     );
     assert.match(portageDeleteBlockMessage(3), /3 prestations/);
     assert.doesNotThrow(() => assertPortageProjetDeletable(0));
