@@ -37,6 +37,8 @@ référentiel SDPC (~37 champs sync) regroupé en page document, et missions rat
 | Type | `Type_de_produit` si renseigné |
 | Liens rapides | Site (`URLs_du_produit` ou FO) · espace collab. |
 
+Sous le bandeau, **au-dessus des onglets** (hors encadré, visible quel que soit l’onglet) : phrase discrète « Pour modifier les informations de ce produit (hors missions), ouvrez Le PARC. » Le lien ouvre le document Grist [Le PARC](https://grist.numerique.gouv.fr/o/sdpc/vjbmAgqvttQH/Le-PARC-Portail-des-Applications-Referentiels-et-Communs-Numeriques-de-la-DNUM) dans un nouvel onglet. Même adresse pour tous les produits.
+
 ### Onglets
 
 | Onglet | Contenu |

@@ -2959,6 +2959,10 @@ button.fr-link:disabled {
   }
 }
 
+.produit-fiche__parc-link {
+  white-space: nowrap;
+}
+
 .produit-fiche__hero-meta {
   display: flex;
   flex-wrap: wrap;
