@@ -19,7 +19,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from parc_facts import PARC_SYSTEM_PROMPT, parc_configured, resolve_parc_facts
+from parc_facts import (
+    PARC_SYSTEM_PROMPT,
+    facts_for_llm,
+    parc_configured,
+    resolve_parc_facts,
+)
 
 SYSTEM_PROMPT = (
     "Tu es l’assistant de lecture du Pilotage studios "
@@ -132,7 +137,9 @@ def _format_context(context: Optional[AskContext]) -> str:
         bits.append("Id : {0}".format(context.entityId))
     if context.facts:
         bits.append(
-            "Faits fournis (ne pas inventer ailleurs) : {0}".format(context.facts)
+            "Faits fournis (ne pas inventer ailleurs) : {0}".format(
+                facts_for_llm(context.facts)
+            )
         )
     if not bits:
         return ""
