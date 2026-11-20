@@ -185,7 +185,7 @@ export interface MissionEnfant {
   Portage_Projet?: unknown;
 }
 
-/** Mission côté plateforme / porteur (table Grist `Portage_Projet`). */
+/** Projet chez un porteur (table Grist `Portage_Projet`). */
 export interface PortageProjet {
   id: number;
   Nom_du_projet?: string;

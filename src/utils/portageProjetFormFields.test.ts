@@ -11,6 +11,7 @@ import {
   displayPortageField,
   emptyPortageProjetForm,
   filterPortageProjetAdminRows,
+  portageDateOrderMessage,
   portageDeleteBlockMessage,
   portageProjetAdminFromRecord,
 } from "./portageProjetFormFields.ts";
@@ -133,6 +134,26 @@ describe("buildPortageProjetPatch", () => {
       Freelance: 0,
       Date_de_fin: null,
     });
+  });
+
+  it("refuse une date de fin antérieure à la date de début", () => {
+    const values = {
+      ...emptyPortageProjetForm(),
+      Nom_du_projet: "Projet",
+      Date_de_debut: "2026-06-01",
+      Date_de_fin: "2026-05-01",
+    };
+    assert.equal(
+      portageDateOrderMessage("2026-06-01", "2026-05-01"),
+      "La date de fin ne peut pas être antérieure à la date de début.",
+    );
+    assert.equal(portageDateOrderMessage("2026-05-01", "2026-06-01"), undefined);
+    assert.equal(portageDateOrderMessage("2026-06-01", ""), undefined);
+    assert.throws(() => buildPortageProjetCreateFields(values), /date de fin/);
+    assert.throws(
+      () => buildPortageProjetPatch(values, { ...values, Date_de_fin: "2026-07-01" }),
+      /date de fin/,
+    );
   });
 });
 

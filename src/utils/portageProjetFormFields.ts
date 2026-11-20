@@ -165,6 +165,29 @@ function trimmed(value: string): string {
   return value.trim();
 }
 
+const PORTAGE_DATE_ORDER_MESSAGE =
+  "La date de fin ne peut pas être antérieure à la date de début.";
+
+/** Les deux dates vides ou une seule remplie : pas de contrainte. Comparaison sur `YYYY-MM-DD`. */
+export function portageDateOrderMessage(debut: string, fin: string): string | undefined {
+  const start = trimmed(debut);
+  const end = trimmed(fin);
+  if (!start || !end) {
+    return undefined;
+  }
+  if (end < start) {
+    return PORTAGE_DATE_ORDER_MESSAGE;
+  }
+  return undefined;
+}
+
+function assertPortageDateOrder(values: PortageProjetFormValues): void {
+  const message = portageDateOrderMessage(values.Date_de_debut, values.Date_de_fin);
+  if (message) {
+    throw new Error(message);
+  }
+}
+
 function refIdOrZero(raw: string): number | undefined {
   const t = trimmed(raw);
   if (t === "") {
@@ -198,6 +221,7 @@ export function buildPortageProjetCreateFields(
   if (!nom) {
     throw new Error("Le nom du projet est obligatoire.");
   }
+  assertPortageDateOrder(values);
   const out: PortageProjetWriteFields = { Nom_du_projet: nom };
 
   for (const field of TEXT_FIELDS) {
@@ -240,6 +264,7 @@ export function buildPortageProjetPatch(
   init: PortageProjetFormValues,
   invalid: ReadonlySet<PortageProjetFormField> = new Set(),
 ): PortageProjetWriteFields {
+  assertPortageDateOrder(values);
   const out: PortageProjetWriteFields = {};
 
   for (const field of TEXT_FIELDS) {
@@ -308,7 +333,7 @@ export function portageDeleteBlockMessage(linkedPrestationCount: number): string
   return `${linkedPrestationCount} prestations sont encore rattachées à ce projet. Retirez les rattachements avant de supprimer.`;
 }
 
-/** Refuse la suppression tant qu’une prestation pointe vers la mission. */
+/** Refuse la suppression tant qu’une prestation pointe vers le projet. */
 export function assertPortageProjetDeletable(linkedPrestationCount: number): void {
   if (!Number.isInteger(linkedPrestationCount) || linkedPrestationCount < 0) {
     throw new Error("Nombre de prestations liées invalide.");

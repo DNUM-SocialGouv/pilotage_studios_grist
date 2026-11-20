@@ -20,6 +20,7 @@ import {
   buildPortageProjetCreateFields,
   buildPortageProjetPatch,
   emptyPortageProjetForm,
+  portageDateOrderMessage,
   type PortageProjetAdminRow,
   type PortageProjetFormField,
   type PortageProjetFormValues,
@@ -29,18 +30,29 @@ import {
   updatePortageProjetRecord,
 } from "../../utils/portageProjetGristWrite.ts";
 
-const formSchema = z.object({
-  Nom_du_projet: z.string().trim().min(1, "Le nom du projet est obligatoire"),
-  Statut: z.string(),
-  Porteur: z.string(),
-  Financeur: z.string(),
-  Equipe: z.string(),
-  Freelance: z.string(),
-  Responsable_du_projet: z.string(),
-  Bon_de_commande: z.string(),
-  Date_de_debut: z.string(),
-  Date_de_fin: z.string(),
-});
+const formSchema = z
+  .object({
+    Nom_du_projet: z.string().trim().min(1, "Le nom du projet est obligatoire"),
+    Statut: z.string(),
+    Porteur: z.string(),
+    Financeur: z.string(),
+    Equipe: z.string(),
+    Freelance: z.string(),
+    Responsable_du_projet: z.string(),
+    Bon_de_commande: z.string(),
+    Date_de_debut: z.string(),
+    Date_de_fin: z.string(),
+  })
+  .superRefine((values, ctx) => {
+    const message = portageDateOrderMessage(values.Date_de_debut, values.Date_de_fin);
+    if (message) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["Date_de_fin"],
+        message,
+      });
+    }
+  });
 
 export type PortageProjetFormDrawerHandle = {
   openCreate: () => void;
@@ -380,6 +392,8 @@ export const PortageProjetFormDrawer = forwardRef<
                           type: "date",
                           ...register("Date_de_fin"),
                         }}
+                        state={formState.errors.Date_de_fin ? "error" : "default"}
+                        stateRelatedMessage={formState.errors.Date_de_fin?.message}
                       />
                     </div>
                   </div>

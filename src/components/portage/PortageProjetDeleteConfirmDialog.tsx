@@ -11,6 +11,8 @@ export type PortageProjetDeleteConfirmDialogProps = {
   open: boolean;
   projectName: string;
   linkedCount: number;
+  /** Vrai pendant la relecture des prestations, avant d’autoriser la suppression. */
+  checking: boolean;
   /** Faux si les prestations n’ont pas pu être lues. */
   prestationsReady: boolean;
   busy: boolean;
@@ -23,6 +25,7 @@ export function PortageProjetDeleteConfirmDialog({
   open,
   projectName,
   linkedCount,
+  checking,
   prestationsReady,
   busy,
   error,
@@ -33,12 +36,14 @@ export function PortageProjetDeleteConfirmDialog({
   const titleId = useId();
   const cancelBtnId = useId();
   const title = projectName.trim() || "ce projet";
-  const blocked = !prestationsReady || linkedCount > 0;
-  const blockMessage = !prestationsReady
-    ? "Les prestations n’ont pas pu être lues. La suppression est indisponible tant que les rattachements ne sont pas vérifiés."
-    : linkedCount > 0
-      ? portageDeleteBlockMessage(linkedCount)
-      : null;
+  const blocked = checking || !prestationsReady || linkedCount > 0;
+  const blockMessage = checking
+    ? "Vérification des prestations liées à ce projet…"
+    : !prestationsReady
+      ? "Les prestations n’ont pas pu être lues. La suppression est indisponible tant que les rattachements ne sont pas vérifiés."
+      : linkedCount > 0
+        ? portageDeleteBlockMessage(linkedCount)
+        : null;
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -77,11 +82,17 @@ export function PortageProjetDeleteConfirmDialog({
     >
       <div className="pilotage-confirm-dialog__panel fr-p-3w">
         <h2 id={titleId} className="fr-h5 fr-mb-2w">
-          {blocked ? "Suppression impossible" : "Supprimer ce projet de portage ?"}
+          {checking
+            ? "Vérification en cours"
+            : blocked
+              ? "Suppression impossible"
+              : "Supprimer ce projet de portage ?"}
         </h2>
         <p className="fr-mb-1w">«&nbsp;{title}&nbsp;»</p>
         {blockMessage ? (
-          <p className="fr-mb-3w">{blockMessage}</p>
+          <p className="fr-mb-3w" role={checking ? "status" : undefined}>
+            {blockMessage}
+          </p>
         ) : (
           <p className="fr-text--sm fr-text-mention--grey fr-mb-3w">
             Cette suppression est définitive. Un projet encore proposé sur une prestation

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination";
 import { SearchBar } from "@codegouvfr/react-dsfr/SearchBar";
@@ -42,6 +42,8 @@ export function PortageProjetAdminPage() {
   const [deleteTarget, setDeleteTarget] = useState<PortageProjetAdminRow | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [deleteError, setDeleteError] = useState<string>();
+  const [linkCheck, setLinkCheck] = useState<"idle" | "checking" | "ready" | "error">("idle");
+  const linkCheckTicket = useRef(0);
   const [listNotice, setListNotice] = useState<string>();
 
   const memberById = useMemo(() => {
@@ -106,6 +108,12 @@ export function PortageProjetAdminPage() {
   const safePage = Math.min(page, pageCount);
   const paginated = rows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
+  useEffect(() => {
+    if (page > pageCount) {
+      setPage(pageCount);
+    }
+  }, [page, pageCount]);
+
   const suggestion = (field: "Statut" | "Porteur" | "Financeur" | "Equipe") =>
     uniqueSortedLabels(
       data.rows.map((row) => (row.invalid.has(field) ? undefined : row.values[field])),
@@ -124,17 +132,58 @@ export function PortageProjetAdminPage() {
     }
   };
 
+  const requestDelete = (row: PortageProjetAdminRow) => {
+    const ticket = linkCheckTicket.current + 1;
+    linkCheckTicket.current = ticket;
+    setDeleteError(undefined);
+    setDeleteTarget(row);
+    setLinkCheck("checking");
+    void data.reloadLinks().then(
+      () => {
+        if (linkCheckTicket.current === ticket) {
+          setLinkCheck("ready");
+        }
+      },
+      (err: unknown) => {
+        if (linkCheckTicket.current !== ticket) {
+          return;
+        }
+        setLinkCheck("error");
+        setDeleteError(
+          err instanceof Error ? err.message : "Les prestations n’ont pas pu être lues.",
+        );
+      },
+    );
+  };
+
   const confirmDelete = async () => {
-    if (!deleteTarget || !data.prestationsReady || linkedCount > 0) {
+    if (!deleteTarget || linkCheck !== "ready") {
       return;
     }
     setDeleteBusy(true);
     setDeleteError(undefined);
     try {
-      await deletePortageProjetRecord(deleteTarget.id, linkedCount);
+      let prestations;
+      try {
+        prestations = await data.reloadLinks();
+      } catch (err) {
+        setLinkCheck("error");
+        setDeleteError(
+          err instanceof Error ? err.message : "Les prestations n’ont pas pu être lues.",
+        );
+        return;
+      }
+      const count = countPrestationsLinkedToPortage(prestations, deleteTarget.id);
+      setLinkCheck("ready");
+      if (count > 0) {
+        return;
+      }
+      await deletePortageProjetRecord(deleteTarget.id, count);
       await refresh();
       drawerRef.current?.close();
+      linkCheckTicket.current += 1;
       setDeleteTarget(null);
+      setLinkCheck("idle");
     } catch (err) {
       setDeleteError(err instanceof Error ? err.message : "Suppression impossible.");
     } finally {
@@ -305,6 +354,7 @@ export function PortageProjetAdminPage() {
 
           {pageCount > 1 ? (
             <Pagination
+              key={`${search}-${pageCount}`}
               id="widget-portage-projet-pagination"
               count={pageCount}
               defaultPage={safePage}
@@ -327,22 +377,22 @@ export function PortageProjetAdminPage() {
             financeurSuggestions={suggestion("Financeur")}
             equipeSuggestions={suggestion("Equipe")}
             onRecordsChanged={refresh}
-            onRequestDelete={(row) => {
-              setDeleteError(undefined);
-              setDeleteTarget(row);
-            }}
+            onRequestDelete={requestDelete}
           />
           <PortageProjetDeleteConfirmDialog
             open={deleteTarget != null}
             projectName={deleteTarget?.values.Nom_du_projet ?? ""}
-            linkedCount={linkedCount}
-            prestationsReady={data.prestationsReady}
+            linkedCount={linkCheck === "ready" ? linkedCount : 0}
+            checking={linkCheck === "checking"}
+            prestationsReady={linkCheck !== "error" && data.prestationsReady}
             busy={deleteBusy}
             error={deleteError}
             onCancel={() => {
               if (!deleteBusy) {
+                linkCheckTicket.current += 1;
                 setDeleteTarget(null);
                 setDeleteError(undefined);
+                setLinkCheck("idle");
               }
             }}
             onConfirm={() => {

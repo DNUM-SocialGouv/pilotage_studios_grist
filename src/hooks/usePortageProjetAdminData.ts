@@ -22,6 +22,8 @@ export type PortageProjetAdminData = {
   prestationsReady: boolean;
   isReloading: boolean;
   reload: () => Promise<void>;
+  /** Relit uniquement les prestations, juste avant une suppression. */
+  reloadLinks: () => Promise<MissionEnfant[]>;
 };
 
 type Loaded = {
@@ -108,6 +110,21 @@ export function usePortageProjetAdminData(): PortageProjetAdminData {
     hasLoadedRef.current = true;
   };
 
+  const reloadLinks = useCallback(async () => {
+    try {
+      const table = await fetchAllowlistedTable("Prestations");
+      const next = recordsFromFetchTable(table).map((row) => toMissionEnfant(row as GristRecord));
+      setPrestations(next);
+      setPrestationsReady(true);
+      return next;
+    } catch (err) {
+      setPrestationsReady(false);
+      throw err instanceof Error
+        ? err
+        : new Error("Les prestations n’ont pas pu être lues.");
+    }
+  }, []);
+
   const reload = useCallback(async () => {
     setIsReloading(true);
     try {
@@ -171,5 +188,6 @@ export function usePortageProjetAdminData(): PortageProjetAdminData {
     prestationsReady,
     isReloading,
     reload,
+    reloadLinks,
   };
 }
