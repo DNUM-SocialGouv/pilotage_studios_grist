@@ -7,7 +7,7 @@
 
 ## Objet métier
 
-Le **catalogue Produits** reprend le référentiel SDPC (table Grist `Tableau_de_pilotage_SDPC_Produits_SDPC`). Le widget affiche une **liste** et une **fiche** en consultation. Pas d’édition depuis le widget.
+Le **catalogue Produits** reprend le référentiel SDPC (table Grist `Tableau_de_pilotage_SDPC_Produits_SDPC`). Le widget affiche une **liste** et une **fiche** en consultation. Pas d’édition depuis le widget : pour modifier les informations d’un produit (hors missions), la fiche renvoie vers le document Grist [Le PARC](https://grist.numerique.gouv.fr/o/sdpc/vjbmAgqvttQH/Le-PARC-Portail-des-Applications-Referentiels-et-Communs-Numeriques-de-la-DNUM).
 
 Les missions pointent vers un produit (`Missions.Produit_SDPC`) : depuis la fiche produit,
 l’onglet Missions reprend le bloc « Équipe & prestations » de chaque mission (lecture seule).
@@ -46,7 +46,7 @@ Le drapeau de page Grist est `Page_produits` ([Droits des pages](../roles/droits
 
 ## Hors scope (widget)
 
-- Création / modification d’un produit
+- Création / modification d’un produit dans le widget (la fiche indique le document Le PARC)
 - Sync différentielle (côté app sœur)
 - Stack / SCORE hors champs sync affichés
 - Procès-verbaux et évaluations

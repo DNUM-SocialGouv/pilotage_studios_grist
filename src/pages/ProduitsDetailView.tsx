@@ -37,6 +37,10 @@ const PRODUITS_CRUMB = [{ label: "Produits", to: "/produits" }] as const;
 
 const TTC_BAR_TITLE_PRODUIT = "Répartition du TTC par équipe";
 
+/** Document source des informations produit (hors missions). Même lien pour toutes les fiches. */
+const PARC_PRODUIT_URL =
+  "https://grist.numerique.gouv.fr/o/sdpc/vjbmAgqvttQH/Le-PARC-Portail-des-Applications-Referentiels-et-Communs-Numeriques-de-la-DNUM";
+
 type ProduitFicheTabId = "missions" | "informations";
 
 function isProduitFicheTabId(id: string): id is ProduitFicheTabId {
@@ -393,7 +397,7 @@ export function ProduitsDetailView() {
 
   return (
     <div className="fr-container fr-container--fluid fr-px-0 produit-fiche cra-carnet">
-      <header className="cra-carnet__hero produit-fiche__hero fr-mb-3w">
+      <header className="cra-carnet__hero produit-fiche__hero fr-mb-1w">
         <WidgetBreadcrumb
           id="produit-fiche-breadcrumb"
           className="produit-fiche__breadcrumb"
@@ -483,6 +487,22 @@ export function ProduitsDetailView() {
         </CallOut>
       </header>
 
+      <p className="fr-text--sm fr-hint-text fr-mb-2w fr-px-2w fr-px-md-0">
+        Pour modifier les informations de ce produit (hors missions), ouvrez{" "}
+        <span className="produit-fiche__parc-link">
+          <a
+            className="fr-link fr-text--sm fr-icon-external-link-line fr-link--icon-right"
+            href={PARC_PRODUIT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Le PARC
+            <span className="fr-sr-only"> (nouvelle fenêtre)</span>
+          </a>
+          .
+        </span>
+      </p>
+
       <div className="fr-px-2w fr-px-md-0">
         <ProduitFicheTabs
           produit={produit}
@@ -492,3 +512,4 @@ export function ProduitsDetailView() {
     </div>
   );
 }
+
