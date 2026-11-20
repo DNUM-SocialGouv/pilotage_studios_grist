@@ -241,9 +241,12 @@ export function AssistantChatPanel({
     >
       <div className={styles.header}>
         <div>
-          <h2 className={`${styles.title} fr-mb-0`}>
-            {isParc ? "Assistant PARC" : "Assistant Pilotage"}
-          </h2>
+          {/* Page `/assistant-parc` a déjà le h1 — éviter le double titre en mode embarqué. */}
+          {!(isParc && layout === "embedded") ? (
+            <h2 className={`${styles.title} fr-mb-0`}>
+              {isParc ? "Assistant PARC" : "Assistant Pilotage"}
+            </h2>
+          ) : null}
           <p className={`fr-text--sm ${styles.subtitle}`}>
             {isParc ? (
               <>

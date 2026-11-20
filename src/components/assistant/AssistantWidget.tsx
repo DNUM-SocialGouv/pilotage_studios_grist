@@ -27,10 +27,13 @@ function SparkIcon() {
 export function AssistantWidget() {
   const location = useLocation();
   const [open, setOpen] = useState(false);
-  const onHome = location.pathname === "/";
+  const path = location.pathname;
+  const onHome = path === "/";
+  const onAssistantParc =
+    path === "/assistant-parc" || path.startsWith("/assistant-parc/");
 
-  // Sur l’accueil, le chat est dans la page (colonne gauche) — pas de FAB doublon.
-  if (onHome) {
+  // Accueil et Assistant PARC embarquent déjà le chat — pas de FAB Pilotage doublon.
+  if (onHome || onAssistantParc) {
     return null;
   }
 
