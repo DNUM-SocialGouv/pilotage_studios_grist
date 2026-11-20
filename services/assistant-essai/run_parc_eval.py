@@ -24,7 +24,12 @@ from typing import Any, Dict, List, Optional
 import httpx
 
 from parc_eval_cases import cases_for_suite
-from parc_facts import PARC_SYSTEM_PROMPT, parc_configured, resolve_parc_facts
+from parc_facts import (
+    PARC_SYSTEM_PROMPT,
+    facts_for_llm,
+    parc_configured,
+    resolve_parc_facts,
+)
 
 
 def _load_dotenv(path: Path) -> None:
@@ -65,30 +70,13 @@ def _llm_config(*, require_litellm: bool = False) -> Dict[str, str]:
     }
 
 
-def _facts_for_llm(facts: Any) -> Any:
-    """Retire les clés « source » pour éviter le copier-coller en bas de réponse."""
-    if isinstance(facts, list):
-        return [_facts_for_llm(x) for x in facts]
-    if not isinstance(facts, dict):
-        return facts
-    out: Dict[str, Any] = {}
-    for key, val in facts.items():
-        if key == "source":
-            continue
-        if key == "products" and isinstance(val, list):
-            out[key] = [_facts_for_llm(p) for p in val]
-        else:
-            out[key] = _facts_for_llm(val) if isinstance(val, (dict, list)) else val
-    return out
-
-
 async def ask_llm(question: str, facts: Dict[str, Any], cfg: Dict[str, str]) -> str:
     user = (
         "{0}\n\nContexte widget :\n"
         "- Écran : /assistant-parc\n"
         "- Type d’élément : parc_produit\n"
         "- Faits fournis (ne pas inventer ailleurs) : {1}"
-    ).format(question, json.dumps(_facts_for_llm(facts), ensure_ascii=False, default=str))
+    ).format(question, json.dumps(facts_for_llm(facts), ensure_ascii=False, default=str))
     url = "{0}/chat/completions".format(cfg["base_url"])
     payload = {
         "model": cfg["model"],

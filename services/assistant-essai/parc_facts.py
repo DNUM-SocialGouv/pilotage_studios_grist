@@ -15,6 +15,8 @@ import httpx
 
 CACHE_TTL_SEC = 600
 TEXT_MAX_CHARS = 4000
+# Plafond des listes de noms produits injectées dans le prompt LiteLLM
+AGGREGATE_LIST_CAP = 40
 
 # Glossaire → colonne réelle Produits_DNUM
 COLUMN_ALIASES: Dict[str, str] = {
@@ -208,6 +210,46 @@ def _normalize(s: str) -> str:
     text = "".join(c for c in text if unicodedata.category(c) != "Mn")
     text = text.lower().replace("'", " ").replace("’", " ").replace("`", " ")
     return re.sub(r"\s+", " ", text).strip()
+
+
+def facts_for_llm(facts: Any) -> Any:
+    """Retire les clés « source » pour éviter le copier-coller « Source : Le PARC »."""
+    if isinstance(facts, list):
+        return [facts_for_llm(x) for x in facts]
+    if not isinstance(facts, dict):
+        return facts
+    out: Dict[str, Any] = {}
+    for key, val in facts.items():
+        if key == "source":
+            continue
+        if key == "products" and isinstance(val, list):
+            out[key] = [facts_for_llm(p) for p in val]
+        else:
+            out[key] = facts_for_llm(val) if isinstance(val, (dict, list)) else val
+    return out
+
+
+def _capped_names(names: List[str]) -> Dict[str, Any]:
+    """Plafonne une liste de noms produits ; n_oui reste le total réel."""
+    n = len(names)
+    truncated = n > AGGREGATE_LIST_CAP
+    payload: Dict[str, Any] = {
+        "n_oui": n,
+        "produits": names[:AGGREGATE_LIST_CAP] if truncated else names,
+    }
+    if truncated:
+        payload["liste_tronquee"] = True
+        payload["n_affiches"] = AGGREGATE_LIST_CAP
+    return payload
+
+
+def _list_rule(intro: str) -> str:
+    return (
+        "{0} Annonce n_oui. "
+        "Si liste_tronquee=true, cite uniquement les n_affiches premiers noms fournis "
+        "et précise que la liste est tronquée (total = n_oui). "
+        "N’ajoute aucun autre produit."
+    ).format(intro)
 
 
 def _format_rgaa_ratio(value: Any) -> Any:
@@ -841,15 +883,17 @@ def detect_aggregate_intent(question: str) -> Optional[str]:
             "services critiques",
         )
     )
+    # Pas de « aussi » seul : « combien HDS et aussi combien d’obsolètes » ≠ intersection
     cross_cue = any(
         h in q
         for h in (
             "parmi",
             "a la fois",
-            "aussi",
-            "croisement",
-            "et aussi",
             "qui sont aussi",
+            "aussi marques",
+            "aussi marqués",
+            "croisement",
+            "intersection",
         )
     )
 
@@ -897,17 +941,20 @@ def detect_aggregate_intent(question: str) -> Optional[str]:
         return "department_snapshot"
 
     # Croisements explicites (évite de confondre avec une synthèse multi-sujets)
+    want_list = list_ask or "quels" in q or "lesquels" in q
+    want_count = "combien" in q or "nombre" in q
     if "hds" in q and obsolete and cross_cue:
+        # « combien … qui sont aussi » → count (pas liste)
         return (
-            "hds_obsolete_list"
-            if (list_ask or "quels" in q or "lesquels" in q)
-            else "hds_obsolete_count"
+            "hds_obsolete_count"
+            if want_count and not ("quels" in q or "lesquels" in q or "liste" in q)
+            else ("hds_obsolete_list" if want_list else "hds_obsolete_count")
         )
     if "hds" in q and crit1 and cross_cue:
         return (
-            "hds_criticite1_list"
-            if (list_ask or "quels" in q or "lesquels" in q)
-            else "hds_criticite1_count"
+            "hds_criticite1_count"
+            if want_count and not ("quels" in q or "lesquels" in q or "liste" in q)
+            else ("hds_criticite1_list" if want_list else "hds_criticite1_count")
         )
     if jdma and "rgaa" in q and (
         list_ask
@@ -1124,12 +1171,9 @@ def build_aggregate_facts(
             "metric": "jdma_list",
             "label": "Liste des produits sur Je Donne Mon Avis",
             "total_produits": total,
-            "n_oui": len(names),
-            "produits": names,
-            "rule": (
-                "Liste **tous** les noms fournis dans produits (Je Donne Mon Avis = oui). "
-                "Annonce aussi n_oui. N’ajoute aucun autre produit. "
-                "Ne confonds pas avec une fiche produit isolée."
+            **_capped_names(names),
+            "rule": _list_rule(
+                "Liste les noms fournis (Je Donne Mon Avis = oui)."
             ),
             "source": "Le PARC — liste Je_Donne_Mon_Avis (lecture)",
         }
@@ -1160,12 +1204,9 @@ def build_aggregate_facts(
             "metric": "hds_list",
             "label": "Liste des produits marqués HDS",
             "total_produits": total,
-            "n_oui": len(names),
-            "produits": names,
-            "rule": (
-                "Liste **tous** les noms fournis dans produits (HDS = oui). "
-                "Annonce aussi n_oui. N’ajoute aucun autre produit. "
-                "HDS = hébergement de données de santé."
+            **_capped_names(names),
+            "rule": _list_rule(
+                "Liste les noms fournis (HDS = oui). HDS = hébergement de données de santé."
             ),
             "source": "Le PARC — liste HDS (lecture)",
         }
@@ -1218,12 +1259,8 @@ def build_aggregate_facts(
             "metric": "obsolescence_list",
             "label": "Liste des produits obsolètes",
             "total_produits": total,
-            "n_oui": len(names),
-            "produits": names,
-            "rule": (
-                "Liste tous les noms fournis (Obsolescence = oui). Annonce n_oui. "
-                "N’ajoute aucun autre produit."
-            ),
+            **_capped_names(names),
+            "rule": _list_rule("Liste les noms fournis (Obsolescence = oui)."),
             "source": "Le PARC — liste Obsolescence (lecture)",
         }
 
@@ -1255,17 +1292,14 @@ def build_aggregate_facts(
                 if name:
                     names.append(name)
         names = sorted(set(names), key=lambda s: _normalize(s))
+        capped = _capped_names(names)
         return {
             "tool": "parc_agregat",
             "metric": "criticite1_list",
             "label": "Liste des produits en criticité 1",
             "total_produits": total,
-            "n_oui": len(names),
-            "produits": names,
-            "rule": (
-                "Liste tous les noms fournis (criticité 1). Annonce n_oui. "
-                "N’ajoute aucun autre produit."
-            ),
+            **capped,
+            "rule": _list_rule("Liste les noms fournis (criticité 1)."),
             "source": "Le PARC — liste Criticite 1 (lecture)",
         }
 
@@ -1281,12 +1315,8 @@ def build_aggregate_facts(
             "metric": "department_list",
             "label": "Liste des produits du département",
             "total_produits": total,
-            "n_oui": len(names),
-            "produits": names,
-            "rule": (
-                "Liste tous les noms fournis pour ce département. "
-                "Annonce le nombre. N’ajoute aucun produit hors liste."
-            ),
+            **_capped_names(names),
+            "rule": _list_rule("Liste les noms fournis pour ce département."),
             "source": "Le PARC — liste par Departement_SDPC (lecture)",
         }
 
@@ -1310,7 +1340,11 @@ def build_aggregate_facts(
             "source": "Le PARC — croisement HDS × Obsolescence",
         }
         if metric.endswith("_list"):
-            base["produits"] = names
+            capped = _capped_names(names)
+            base.update(capped)
+            base["rule"] = _list_rule(
+                "Croisement HDS = oui ET Obsolescence = oui. Liste les noms fournis."
+            )
         return base
 
     if metric in ("hds_criticite1_list", "hds_criticite1_count"):
@@ -1335,7 +1369,11 @@ def build_aggregate_facts(
             "source": "Le PARC — croisement HDS × Criticite",
         }
         if metric.endswith("_list"):
-            base["produits"] = names
+            capped = _capped_names(names)
+            base.update(capped)
+            base["rule"] = _list_rule(
+                "Croisement HDS = oui ET criticité 1. Liste les noms fournis."
+            )
         return base
 
     if metric == "jdma_rgaa_list":
@@ -1359,20 +1397,27 @@ def build_aggregate_facts(
                 }
             )
         rows.sort(key=lambda r: _normalize(r["produit"]))
-        return {
+        n = len(rows)
+        truncated = n > AGGREGATE_LIST_CAP
+        shown = rows[:AGGREGATE_LIST_CAP] if truncated else rows
+        out: Dict[str, Any] = {
             "tool": "parc_agregat",
             "metric": "jdma_rgaa_list",
             "label": "Produits JDMA avec taux RGAA renseigné",
             "total_produits": total,
-            "n_oui": len(rows),
-            "produits_detail": rows,
-            "produits": [r["produit"] for r in rows],
-            "rule": (
-                "Liste chaque produit avec son rgaa_pourcent. "
-                "Uniquement JDMA = oui ET taux RGAA renseigné."
+            "n_oui": n,
+            "produits_detail": shown,
+            "produits": [r["produit"] for r in shown],
+            "rule": _list_rule(
+                "Liste chaque produit fourni avec son rgaa_pourcent "
+                "(JDMA = oui ET taux RGAA renseigné)."
             ),
             "source": "Le PARC — croisement JDMA × RGAA",
         }
+        if truncated:
+            out["liste_tronquee"] = True
+            out["n_affiches"] = AGGREGATE_LIST_CAP
+        return out
 
     if metric == "department_snapshot":
         n_obs = sum(1 for f in fields_list if f.get("Obsolescence") is True)
@@ -1413,14 +1458,16 @@ def build_aggregate_facts(
                 else None
             ),
             "n_criticite_1": n_crit1,
-            "hds_produits": sorted(
-                {
-                    _product_name(f)
-                    for f in fields_list
-                    if f.get("HDS") is True and _product_name(f)
-                },
-                key=lambda s: _normalize(s),
-            ),
+            "hds_produits": _capped_names(
+                sorted(
+                    {
+                        _product_name(f)
+                        for f in fields_list
+                        if f.get("HDS") is True and _product_name(f)
+                    },
+                    key=lambda s: _normalize(s),
+                )
+            )["produits"],
             "rule": (
                 "Présente ces chiffres clés en tableau ou liste courte. "
                 "Tu peux citer hds_produits s’ils sont peu nombreux. "
@@ -1444,9 +1491,8 @@ def build_aggregate_facts(
             "metric": "pca_list",
             "label": "Produits inscrits au PCA",
             "total_produits": total,
-            "n_oui": len(names),
-            "produits": names,
-            "rule": "Liste les noms (Inscription_au_PCA = oui). Annonce n_oui.",
+            **_capped_names(names),
+            "rule": _list_rule("Liste les noms (Inscription_au_PCA = oui)."),
             "source": "Le PARC — liste PCA",
         }
 

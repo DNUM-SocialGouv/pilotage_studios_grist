@@ -5,6 +5,7 @@ from __future__ import annotations
 import unittest
 
 from parc_facts import (
+    AGGREGATE_LIST_CAP,
     _as_rgaa_ratio,
     _format_rgaa_ratio,
     _is_empty,
@@ -14,6 +15,7 @@ from parc_facts import (
     build_product_facts,
     detect_aggregate_intent,
     detect_department,
+    facts_for_llm,
     find_explicit_product_records,
     match_product,
 )
@@ -209,6 +211,83 @@ class ParcFactsTest(unittest.TestCase):
         self.assertEqual(facts["total_produits"], 4)
         self.assertEqual(facts["moyenne_ratio"], 0.7)
         self.assertEqual(facts["moyenne_pourcent"], "70 %")
+
+    def test_cross_cue_aussi_alone_not_intersection(self) -> None:
+        # Deux comptages séparés — ne doit pas devenir HDS ∩ obsolètes
+        self.assertEqual(
+            detect_aggregate_intent(
+                "Combien de produits HDS et aussi combien d’obsolètes ?"
+            ),
+            "hds_count",
+        )
+        self.assertEqual(
+            detect_aggregate_intent(
+                "Combien de produits HDS qui sont aussi obsolètes ?"
+            ),
+            "hds_obsolete_count",
+        )
+        self.assertEqual(
+            detect_aggregate_intent(
+                "Parmi les produits HDS, lesquels sont obsolètes ?"
+            ),
+            "hds_obsolete_list",
+        )
+
+    def test_detect_departments_compare(self) -> None:
+        self.assertEqual(
+            detect_aggregate_intent(
+                "Compare les effectifs GPS et SANTE : quel département a le plus gros parc ?"
+            ),
+            "departments_compare",
+        )
+
+    def test_detect_jdma_rgaa_list(self) -> None:
+        self.assertEqual(
+            detect_aggregate_intent(
+                "Parmi les produits JDMA, lesquels ont un taux RGAA renseigné ?"
+            ),
+            "jdma_rgaa_list",
+        )
+
+    def test_detect_parc_risk_snapshot(self) -> None:
+        self.assertEqual(
+            detect_aggregate_intent(
+                "Pour le pilotage : combien d’obsolètes, de criticité 1, HDS et PCA ?"
+            ),
+            "parc_risk_snapshot",
+        )
+
+    def test_build_hds_obsolete_count(self) -> None:
+        produits = [
+            {"fields": {"Produit": "A", "HDS": True, "Obsolescence": True}},
+            {"fields": {"Produit": "B", "HDS": True, "Obsolescence": False}},
+            {"fields": {"Produit": "C", "HDS": False, "Obsolescence": True}},
+        ]
+        facts = build_aggregate_facts("hds_obsolete_count", produits)
+        self.assertEqual(facts["n_oui"], 1)
+
+    def test_list_cap_criticite1(self) -> None:
+        produits = [
+            {"fields": {"Produit": "P{0:02d}".format(i), "Criticite": "1 - critique"}}
+            for i in range(AGGREGATE_LIST_CAP + 5)
+        ]
+        facts = build_aggregate_facts("criticite1_list", produits)
+        self.assertEqual(facts["n_oui"], AGGREGATE_LIST_CAP + 5)
+        self.assertEqual(len(facts["produits"]), AGGREGATE_LIST_CAP)
+        self.assertTrue(facts.get("liste_tronquee"))
+        self.assertEqual(facts.get("n_affiches"), AGGREGATE_LIST_CAP)
+
+    def test_facts_for_llm_strips_source(self) -> None:
+        raw = {
+            "tool": "parc_agregat",
+            "source": "Le PARC — agrégat",
+            "n_oui": 2,
+            "products": [{"name": "A", "source": "x"}],
+        }
+        cleaned = facts_for_llm(raw)
+        self.assertNotIn("source", cleaned)
+        self.assertEqual(cleaned["n_oui"], 2)
+        self.assertNotIn("source", cleaned["products"][0])
 
 
 if __name__ == "__main__":
