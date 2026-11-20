@@ -348,6 +348,7 @@ export const MissionFormDrawer = forwardRef<MissionFormDrawerHandle, MissionForm
                   Jours_envisages: values.prestationJoursEnvisages,
                   Statut: "En cours",
                   Date_de_debut: "",
+                  Portage_Projet: "",
                 },
                 intervenantLabel: ivLabel,
               }),

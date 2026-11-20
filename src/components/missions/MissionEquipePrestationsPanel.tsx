@@ -5,7 +5,7 @@ import { ExpandToggle, useExpandableRowIds } from "../expandable";
 import { tdEquipeTag } from "../EquipeTags";
 import { TableShell } from "../FinanceRecap";
 import { StatutBadge } from "../StatutBadge";
-import type { MissionEnfant, SuiviMensuel } from "../../types";
+import type { BDC, MissionEnfant, PortageProjet, SuiviMensuel } from "../../types";
 import {
   aggregateCraByEnfantId,
   groupSuiviRowsByEnfantId,
@@ -23,6 +23,7 @@ import {
 import { extractGristReferenceId } from "../../utils/gristReferences";
 import { missionEnfantLibelle } from "../../utils/missionEnfants";
 import { craRowsSorted, equipeLabelForEnfant } from "../../utils/missionsListeTotaux";
+import { resolvePortageProjetDisplay } from "../../utils/portageProjet";
 import { MissionsListeCraRows } from "./MissionsListeCraRows";
 
 const EQUIPE_SANS_LABEL = "Sans équipe";
@@ -79,6 +80,10 @@ export type MissionEquipePrestationsPanelProps = {
   realisations: SuiviMensuel[];
   intervenantsById: Map<number, string>;
   equipesByIntervenantId: Map<number, string>;
+  /** Missions Malt — affichage secondaire sous le titre prestation. */
+  portageProjetsById?: Map<number, PortageProjet>;
+  /** BDC pour libellé dérivé du Portage_Projet. */
+  bdcById?: Map<number, Pick<BDC, "id" | "Nom_BdC" | "BdC_Chorus">>;
   /** Si absents : mode consultation (pas de CTA ajouter / modifier). */
   onAddPrestation?: (missionId: number) => void;
   onEditPrestation?: (enfant: MissionEnfant) => void;
@@ -113,6 +118,8 @@ export function MissionEquipePrestationsPanel({
   realisations,
   intervenantsById,
   equipesByIntervenantId,
+  portageProjetsById,
+  bdcById,
   onAddPrestation,
   onEditPrestation,
   onEditCra,
@@ -506,6 +513,14 @@ export function MissionEquipePrestationsPanel({
                 const nbCra = craCountByEnfantId.get(e.id) ?? 0;
                 const joursRealises = joursByEnfantId.get(e.id) ?? 0;
                 const libelle = missionEnfantLibelle(e, intervenantLabel);
+                const portageId = extractGristReferenceId(e.Portage_Projet);
+                const portageDisplay =
+                  portageId != null && portageId !== 0 && portageProjetsById
+                    ? resolvePortageProjetDisplay(
+                        portageProjetsById.get(portageId),
+                        bdcById,
+                      )
+                    : null;
                 const craKey = `cra-${e.id}`;
                 const craRows = craRowsSorted(suiviByEnfantId.get(e.id) ?? []);
                 const hasCra = craRows.length > 0;
@@ -540,8 +555,19 @@ export function MissionEquipePrestationsPanel({
                               aria-hidden="true"
                             />
                           )}
-                          <span className="fr-text--bold pilotage-expandable-parent-label__title">
-                            {libelle}
+                          <span className="pilotage-expandable-parent-label__copy">
+                            <span className="fr-text--bold pilotage-expandable-parent-label__title">
+                              {libelle}
+                            </span>
+                            {portageDisplay ? (
+                              <span className="fr-text--xs fr-text-mention--grey fr-mb-0 fr-mt-0">
+                                <br />
+                                Malt : {portageDisplay.titreMalt}
+                                {portageDisplay.bdcLabel
+                                  ? ` · BDC ${portageDisplay.bdcLabel}`
+                                  : ""}
+                              </span>
+                            ) : null}
                           </span>
                         </div>
                       </th>

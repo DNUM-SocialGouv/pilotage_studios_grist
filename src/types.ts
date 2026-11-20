@@ -181,6 +181,23 @@ export interface MissionEnfant {
   Statut?: string;
   /** Timestamp Grist (secondes) — colonne `Date_de_debut`. */
   Date_de_debut?: number;
+  /** Ref → `Portage_Projet` (mission Malt + BDC dérivé). */
+  Portage_Projet?: unknown;
+}
+
+/** Mission côté plateforme / porteur (table Grist `Portage_Projet`) — lecture widget. */
+export interface PortageProjet {
+  id: number;
+  Nom_du_projet?: string;
+  Statut?: string;
+  /** Ref → `Equipe` (freelance). */
+  Freelance?: unknown;
+  /** Ref → `BDC`. */
+  Bon_de_commande?: unknown;
+  /** Plateforme (ex. Malt). */
+  Porteur?: string;
+  Financeur?: string;
+  Equipe?: string;
 }
 
 export interface Intervenant {

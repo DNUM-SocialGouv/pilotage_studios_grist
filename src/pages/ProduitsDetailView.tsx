@@ -10,6 +10,7 @@ import { ProduitReferentielInfosPanel } from "../components/ProduitReferentielIn
 import { WidgetBreadcrumb } from "../components/WidgetBreadcrumb";
 import { tdEquipeTag } from "../components/EquipeTags";
 import { StatutBadge } from "../components/StatutBadge";
+import { useGristPa } from "../GristPaContext";
 import {
   useProduitMissionsData,
   type ProduitMissionsData,
@@ -76,11 +77,15 @@ function ProduitMissionBlock({
   data,
   intervenantsById,
   equipesByIntervenantId,
+  portageProjetsById,
+  bdcById,
 }: {
   mission: Mission;
   data: ProduitMissionsData;
   intervenantsById: Map<number, string>;
   equipesByIntervenantId: Map<number, string>;
+  portageProjetsById: Map<number, ProduitMissionsData["portageProjets"][number]>;
+  bdcById: Map<number, { id: number; Nom_BdC?: string; BdC_Chorus?: string }>;
 }) {
   const titre = missionLibelle(mission);
   const enCours = isMissionEnCours(mission.Statut);
@@ -134,6 +139,8 @@ function ProduitMissionBlock({
           realisations={realisations}
           intervenantsById={intervenantsById}
           equipesByIntervenantId={equipesByIntervenantId}
+          portageProjetsById={portageProjetsById}
+          bdcById={bdcById}
           showFilters={false}
           columns="realise"
           ttcBarTitle={TTC_BAR_TITLE_PRODUIT}
@@ -151,6 +158,7 @@ function ProduitMissionsPanel({
   produitId: number;
   data: ProduitMissionsData;
 }) {
+  const pa = useGristPa();
   const linked = useMemo(
     () => missionsLieesAuProduit(data.missions, produitId),
     [data.missions, produitId],
@@ -174,6 +182,16 @@ function ProduitMissionsPanel({
     }
     return map;
   }, [data.intervenants]);
+
+  const portageProjetsById = useMemo(
+    () => new Map(data.portageProjets.map((p) => [p.id, p])),
+    [data.portageProjets],
+  );
+
+  const bdcById = useMemo(
+    () => new Map(pa.bdcList.map((b) => [b.id, b])),
+    [pa.bdcList],
+  );
 
   if (data.status === "loading" || data.status === "idle") {
     return (
@@ -219,6 +237,8 @@ function ProduitMissionsPanel({
               data={data}
               intervenantsById={intervenantsById}
               equipesByIntervenantId={equipesByIntervenantId}
+              portageProjetsById={portageProjetsById}
+              bdcById={bdcById}
             />
           ))}
         </div>

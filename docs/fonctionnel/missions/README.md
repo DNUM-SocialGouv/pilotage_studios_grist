@@ -7,7 +7,7 @@
 
 ## Objet métier
 
-Une **mission master** (`Missions`) est un lot d’accompagnement (contexte, produit, statut). Les **enfants** (`Prestations`) portent le staffing (`Mission_parent` → master, **`Titre_de_la_prestation`** — équivalent de `Nom_de_la_mission` sur le master). Les lignes CRA (`Realise`) se rattachent à la prestation (`Realise.Prestation`, **référence**). La mission du lot est la formule `Realise.Mission` (= mission parente de la prestation).
+Une **mission master** (`Missions`) est un lot d’accompagnement (contexte, produit, statut). Les **enfants** (`Prestations`) portent le staffing (`Mission_parent` → master, **`Titre_de_la_prestation`** — équivalent de `Nom_de_la_mission` sur le master). Une prestation peut pointer vers une **mission Malt** (`Portage_Projet`) : l’intitulé plateforme et le **bon de commande** dérivé s’affichent sur la fiche. Les lignes CRA (`Realise`) se rattachent à la prestation (`Realise.Prestation`, **référence**). La mission du lot est la formule `Realise.Mission` (= mission parente de la prestation).
 
 | Outil | Rôle |
 |-------|------|
@@ -20,7 +20,8 @@ Une **mission master** (`Missions`) est un lot d’accompagnement (contexte, pro
 | Table | Usage |
 |-------|--------|
 | `Missions` | Lignes liste / fiche (masters) ; **écriture** create + update (drawer Nom / Produit / Statut ; Note studio `Suivi_resp_studio` ; Liens FIGMA/Notion `Liens_FIGMA_Notion` + Docs `Docs` via panneau Contexte) |
-| `Prestations` | Prestations ; **écriture** create + update (drawer fiche ; 1ʳᵉ prestation optionnelle à la création mission) |
+| `Prestations` | Prestations ; **écriture** create + update (drawer fiche ; 1ʳᵉ prestation optionnelle à la création mission ; `Portage_Projet` Ref→mission Malt) |
+| `Portage_Projet` | Missions Malt / portage (lecture) — select drawer + affichage BDC dérivé |
 | `Equipe` | Libellés intervenants / équipe |
 | `Tableau_de_pilotage_SDPC_Produits_SDPC` | Libellés produit |
 | `Realise` | Agrégats jours / TTC + réalisations fiche |
@@ -39,7 +40,8 @@ Chargement **lazy** sur `/missions` uniquement (`useMissionsData`) — pas au bo
 
 ## Écarts vs l’app
 
-- Drawer master **slim** (Nom · Produit · Statut) ; drawer prestation **slim** (Titre · Intervenant · Jours · Statut · Date de début) — pas d’édition inline des champs **Contexte** ; **Note studio** éditable sur place (textarea Markdown) ; **Docs** ajout / détachement dans la colonne Contexte
+- Drawer master **slim** (Nom · Produit · Statut) ; drawer prestation **slim** (Titre · Intervenant · Mission Malt · Jours · Statut · Date de début) — pas d’édition inline des champs **Contexte** ; **Note studio** éditable sur place (textarea Markdown) ; **Docs** ajout / détachement dans la colonne Contexte
+- Mission Malt V1 : select filtré `Porteur=Malt` + freelance = intervenant ; autres porteurs hors scope
 - `Type_prestation` figé Freelance à la création, non éditable / non affiché (forfait = [#36](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/36))
 - Pas de `Date_de_fin` prestation (hypothèse CRA = [#37](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/37))
 - Pas d’IA (rapport d’investissement, CR, estimation)

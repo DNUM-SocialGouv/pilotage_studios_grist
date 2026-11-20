@@ -16,6 +16,7 @@ import { MissionNoteStudioEditor } from "../components/missions/MissionNoteStudi
 import { StatutBadge } from "../components/StatutBadge";
 import { WidgetBreadcrumb } from "../components/WidgetBreadcrumb";
 import type { MissionCraDrawerContext } from "../components/missions/missionCraDrawerTypes";
+import { useGristPa } from "../GristPaContext";
 import type { Mission, MissionEnfant, SuiviMensuel } from "../types";
 import { isAdminRole } from "../utils/droitsPagesThemes";
 import { equipeMontantLisible } from "../utils/equipeList";
@@ -107,6 +108,7 @@ export function MissionsDetailView() {
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data, isReloading, reloadMissions } = useMissionsOutlet();
+  const pa = useGristPa();
   const { status: aclStatus, role: sessionRole } = useAclProfil();
   const missionFormDrawerRef = useMissionFormDrawerRef();
   const enfantDrawerRef = useMissionEnfantDrawerRef();
@@ -159,6 +161,16 @@ export function MissionsDetailView() {
     }
     return map;
   }, [data.intervenants]);
+
+  const portageProjetsById = useMemo(() => {
+    const map = new Map(data.portageProjets.map((p) => [p.id, p]));
+    return map;
+  }, [data.portageProjets]);
+
+  const bdcById = useMemo(() => {
+    const map = new Map(pa.bdcList.map((b) => [b.id, b]));
+    return map;
+  }, [pa.bdcList]);
 
   const enfants = useMemo(
     () => (Number.isFinite(missionId) ? enfantsOfMaster(data.missionEnfants, missionId) : []),
@@ -431,6 +443,8 @@ export function MissionsDetailView() {
               realisations={realisations}
               intervenantsById={intervenantsById}
               equipesByIntervenantId={equipesByIntervenantId}
+              portageProjetsById={portageProjetsById}
+              bdcById={bdcById}
               onAddPrestation={(mid) => enfantDrawerRef.current?.openCreate(mid)}
               onEditPrestation={(enfant) => enfantDrawerRef.current?.openEdit(enfant)}
               onEditCra={canEditCra ? openEditCra : undefined}

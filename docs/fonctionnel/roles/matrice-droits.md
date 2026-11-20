@@ -112,6 +112,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-11-20 | **Mission Malt sur prestation** : colonne `Prestations.Portage_Projet` + lecture `Portage_Projet` ; select drawer + affichage intitulé / BDC ; **N/A `Page_*`** (écran Missions déjà listé) | 5, 6 (doc schéma) | feedback Norman id=49 · kanban HITL `mission-malt-prestation` |
 | 2026-11-18 | **Assistant** #140 : faits mission (jours/TTC CRA, règle prestation) ; chat **embarqué sur `/`** (remplace CTA) + FAB ailleurs ; matching par nom ; **N/A `Page_*`** | 5 | [#140](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/140) · `feat/assistant-outil-mission` |
 | 2026-11-18 | **Assistant** tiroir flottant essai (`AssistantWidget`) : URL + jeton en sessionStorage → service Onyxia `/v1/ask` ; lecture seule ; **N/A `Page_*`** (comme feedback) ; pas de clé LiteLLM dans le bundle | 5 | [#139](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/139) · kanban `assistant-pilotage` |
 | 2026-10-14 | **Générer un devis** : UX formulaire + **aperçu live** côte à côte (LG+) / empilé (étroit) ; plus d’étape aperçu seule ; **N/A `Page_*`** (même écran Admin) | 5 | kanban HITL `generer-devis-outils` (split) |

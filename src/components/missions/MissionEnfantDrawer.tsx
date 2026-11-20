@@ -1,6 +1,7 @@
 import {
   forwardRef,
   useCallback,
+  useEffect,
   useId,
   useImperativeHandle,
   useMemo,
@@ -13,7 +14,7 @@ import { z } from "zod";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { Select } from "@codegouvfr/react-dsfr/Select";
-import type { MissionEnfant } from "../../types.ts";
+import type { PortageProjet, MissionEnfant } from "../../types.ts";
 import { extractGristReferenceId } from "../../utils/gristReferences.ts";
 import {
   buildMissionEnfantCreateFields,
@@ -27,6 +28,11 @@ import {
   createMissionEnfantRecord,
   updateMissionEnfantRecord,
 } from "../../utils/missionGristWrite.ts";
+import {
+  bdcDisplayLabel,
+  isMaltPortageValidForFreelance,
+  maltPortageOptionsForFreelance,
+} from "../../utils/portageProjet.ts";
 import { DsfrSelectRichMulti } from "../dsfr/DsfrSelectRichMulti.tsx";
 import type { MissionEnfantDrawerHandle } from "./missionEnfantDrawerTypes.ts";
 
@@ -38,11 +44,16 @@ const formSchema = z.object({
   Jours_envisages: z.string(),
   Statut: z.string(),
   Date_de_debut: z.string(),
+  Portage_Projet: z.string(),
 });
 
 export type MissionEnfantDrawerProps = {
   statutOptions: string[];
   intervenantOptions: { id: number; label: string }[];
+  /** Missions Malt (Portage_Projet) — lecture. */
+  portageProjets?: PortageProjet[];
+  /** Libellés BDC (id → nom / Chorus) pour l’aperçu. */
+  bdcLabelById?: Map<number, string>;
   onRecordsChanged: () => Promise<void>;
 };
 
@@ -50,13 +61,22 @@ export const MissionEnfantDrawer = forwardRef<
   MissionEnfantDrawerHandle,
   MissionEnfantDrawerProps
 >(function MissionEnfantDrawer(
-  { statutOptions, intervenantOptions, onRecordsChanged },
+  {
+    statutOptions,
+    intervenantOptions,
+    portageProjets = [],
+    bdcLabelById,
+    onRecordsChanged,
+  },
   ref,
 ) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
+  const maltHintId = useId();
   const initialFormRef = useRef<MissionEnfantFormValues>(emptyMissionEnfantForm());
   const masterIdRef = useRef<number | undefined>(undefined);
+  /** `undefined` = premier cycle après open (ne pas vider une sélection orpheline). */
+  const prevFreelanceForPortageRef = useRef<number | null | undefined>(undefined);
 
   const [mode, setMode] = useState<DrawerMode>("create");
   const [editing, setEditing] = useState<MissionEnfant | null>(null);
@@ -65,13 +85,14 @@ export const MissionEnfantDrawer = forwardRef<
   const [isSuccess, setIsSuccess] = useState(false);
   const [savePending, setSavePending] = useState(false);
 
-  const { register, handleSubmit, reset, control, formState } =
+  const { register, handleSubmit, reset, control, formState, setValue } =
     useForm<MissionEnfantFormValues>({
       resolver: zodResolver(formSchema),
       defaultValues: emptyMissionEnfantForm(),
     });
 
   const intervenantWatch = useWatch({ control, name: "Intervenant" }) ?? "";
+  const portageWatch = useWatch({ control, name: "Portage_Projet" }) ?? "";
   const intervenantOk = intervenantWatch.trim().length > 0;
 
   const statutChoices = useMemo(() => {
@@ -105,9 +126,72 @@ export const MissionEnfantDrawer = forwardRef<
     [intervenantRows],
   );
 
+  const freelanceIdForPortage = useMemo(() => {
+    const n = Number.parseInt(intervenantWatch.trim(), 10);
+    return Number.isFinite(n) && n !== 0 ? n : null;
+  }, [intervenantWatch]);
+
+  const selectedPortageId = useMemo(() => {
+    const n = Number.parseInt(portageWatch.trim(), 10);
+    return Number.isFinite(n) && n !== 0 ? n : null;
+  }, [portageWatch]);
+
+  const maltOptions = useMemo(
+    () =>
+      maltPortageOptionsForFreelance(
+        portageProjets,
+        freelanceIdForPortage,
+        selectedPortageId,
+      ),
+    [portageProjets, freelanceIdForPortage, selectedPortageId],
+  );
+
+  const selectedBdcPreview = useMemo(() => {
+    const opt = maltOptions.find((o) => o.id === selectedPortageId);
+    if (!opt?.bdcId) {
+      return null;
+    }
+    const fromMap = bdcLabelById?.get(opt.bdcId);
+    if (fromMap?.trim()) {
+      return fromMap.trim();
+    }
+    return bdcDisplayLabel(undefined, opt.bdcId);
+  }, [maltOptions, selectedPortageId, bdcLabelById]);
+
+  /**
+   * Changement d’intervenant : vider la mission Malt si elle n’appartient plus
+   * au freelance. Ne pas vider au premier rendu (sélection orpheline affichable).
+   */
+  useEffect(() => {
+    const prev = prevFreelanceForPortageRef.current;
+    prevFreelanceForPortageRef.current = freelanceIdForPortage;
+    if (prev === undefined || prev === freelanceIdForPortage) {
+      return;
+    }
+    if (!portageWatch.trim()) {
+      return;
+    }
+    if (
+      !isMaltPortageValidForFreelance(
+        portageProjets,
+        selectedPortageId,
+        freelanceIdForPortage,
+      )
+    ) {
+      setValue("Portage_Projet", "");
+    }
+  }, [
+    portageProjets,
+    selectedPortageId,
+    freelanceIdForPortage,
+    portageWatch,
+    setValue,
+  ]);
+
   const openCreate = useCallback(
     (masterId: number) => {
       masterIdRef.current = masterId;
+      prevFreelanceForPortageRef.current = undefined;
       setMode("create");
       setEditing(null);
       setSubmitError(undefined);
@@ -124,6 +208,7 @@ export const MissionEnfantDrawer = forwardRef<
   const openEdit = useCallback(
     (enfant: MissionEnfant) => {
       masterIdRef.current = undefined;
+      prevFreelanceForPortageRef.current = undefined;
       setMode("edit");
       setEditing(enfant);
       setSubmitError(undefined);
@@ -158,7 +243,7 @@ export const MissionEnfantDrawer = forwardRef<
   const title = mode === "edit" ? "Modifier la prestation" : "Nouvelle prestation";
   const description =
     mode === "edit"
-      ? "Met à jour le staffing de cette prestation (titre, intervenant, jours, statut, date de début)."
+      ? "Met à jour le staffing de cette prestation (titre, intervenant, mission Malt, jours, statut, date de début)."
       : "Ajoute une prestation rattachée à cette mission.";
   const primaryLabel =
     mode === "edit" ? "Enregistrer les modifications" : "Créer la prestation";
@@ -341,6 +426,35 @@ export const MissionEnfantDrawer = forwardRef<
                       {formState.errors.Intervenant ? (
                         <p className="fr-error-text" role="alert">
                           {formState.errors.Intervenant.message}
+                        </p>
+                      ) : null}
+                    </div>
+                    <div className="fr-col-12">
+                      <Select
+                        label="Mission Malt"
+                        nativeSelectProps={{
+                          ...register("Portage_Projet"),
+                          disabled: savePending || !intervenantOk,
+                          "aria-describedby": maltHintId,
+                        }}
+                      >
+                        <option value="">— Aucune —</option>
+                        {maltOptions.map((o) => (
+                          <option key={o.id} value={String(o.id)}>
+                            {o.label}
+                          </option>
+                        ))}
+                      </Select>
+                      <p id={maltHintId} className="fr-hint-text fr-mt-1v fr-mb-0">
+                        {!intervenantOk
+                          ? "Choisissez d’abord un intervenant."
+                          : maltOptions.length === 0
+                            ? "Aucune mission Malt pour cet intervenant dans Grist."
+                            : "Intitulé tel qu’enregistré chez Malt. Le bon de commande est dérivé automatiquement."}
+                      </p>
+                      {selectedBdcPreview ? (
+                        <p className="fr-text--sm fr-mt-1w fr-mb-0" aria-live="polite">
+                          Bon de commande : <strong>{selectedBdcPreview}</strong>
                         </p>
                       ) : null}
                     </div>

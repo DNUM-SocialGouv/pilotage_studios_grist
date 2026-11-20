@@ -63,6 +63,19 @@ describe("buildMissionEnfantCreateFields", () => {
     assert.equal(fields.Statut, DEFAULT_MISSION_ENFANT_STATUT);
     assert.equal(fields.Jours_envisages, undefined);
     assert.equal(fields.Date_de_debut, undefined);
+    assert.equal(fields.Portage_Projet, undefined);
+  });
+
+  it("inclut Portage_Projet si renseigné", () => {
+    const fields = buildMissionEnfantCreateFields({
+      masterId: 1,
+      values: {
+        ...emptyMissionEnfantForm(),
+        Intervenant: "3",
+        Portage_Projet: "13",
+      },
+    });
+    assert.equal(fields.Portage_Projet, 13);
   });
 
   it("inclut jours et date de début optionnels", () => {
@@ -115,7 +128,15 @@ describe("buildMissionEnfantPatch", () => {
     assert.deepEqual(patch, { Jours_envisages: null, Date_de_debut: null });
   });
 
-  it("missionEnfantToFormValues mappe date et intervenant", () => {
+  it("peut vider Portage_Projet (0 Grist)", () => {
+    const init = emptyMissionEnfantForm();
+    init.Portage_Projet = "13";
+    const values = { ...init, Portage_Projet: "" };
+    const patch = buildMissionEnfantPatch(values, init);
+    assert.deepEqual(patch, { Portage_Projet: 0 });
+  });
+
+  it("missionEnfantToFormValues mappe date, intervenant et Portage_Projet", () => {
     const e: MissionEnfant = {
       id: 9,
       Libelle: "UX",
@@ -123,6 +144,7 @@ describe("buildMissionEnfantPatch", () => {
       Statut: "Terminé",
       Jours_envisages: 8,
       Date_de_debut: dateInputToGristTimestamp("2025-11-20") ?? undefined,
+      Portage_Projet: 13,
     };
     const v = missionEnfantToFormValues(e);
     assert.equal(v.Libelle, "UX");
@@ -130,5 +152,6 @@ describe("buildMissionEnfantPatch", () => {
     assert.equal(v.Statut, "Terminé");
     assert.equal(v.Jours_envisages, "8");
     assert.equal(v.Date_de_debut, "2025-11-20");
+    assert.equal(v.Portage_Projet, "13");
   });
 });
