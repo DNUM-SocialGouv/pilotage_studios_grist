@@ -15,6 +15,8 @@ export type MissionEnfantFormValues = {
   Statut: string;
   /** `YYYY-MM-DD` pour `<input type="date">`, ou vide. */
   Date_de_debut: string;
+  /** Id `Portage_Projet` (mission Malt), ou vide. */
+  Portage_Projet: string;
 };
 
 /** Timestamp Grist (secondes) → valeur input date locale. */
@@ -60,11 +62,13 @@ export function emptyMissionEnfantForm(): MissionEnfantFormValues {
     Jours_envisages: "",
     Statut: DEFAULT_MISSION_ENFANT_STATUT,
     Date_de_debut: "",
+    Portage_Projet: "",
   };
 }
 
 export function missionEnfantToFormValues(e: MissionEnfant): MissionEnfantFormValues {
   const iv = extractGristReferenceId(e.Intervenant);
+  const pp = extractGristReferenceId(e.Portage_Projet);
   return {
     Libelle: e.Libelle?.trim() ?? "",
     Intervenant: iv != null && iv !== 0 ? String(iv) : "",
@@ -74,6 +78,7 @@ export function missionEnfantToFormValues(e: MissionEnfant): MissionEnfantFormVa
         : "",
     Statut: e.Statut?.trim() || DEFAULT_MISSION_ENFANT_STATUT,
     Date_de_debut: gristTimestampToDateInput(e.Date_de_debut),
+    Portage_Projet: pp != null && pp !== 0 ? String(pp) : "",
   };
 }
 
@@ -125,6 +130,11 @@ export function buildMissionEnfantCreateFields(
   }
   if (dateDebut != null) {
     out.Date_de_debut = dateDebut;
+  }
+
+  const portageId = Number.parseInt(args.values.Portage_Projet.trim(), 10);
+  if (Number.isFinite(portageId) && portageId !== 0) {
+    out.Portage_Projet = portageId;
   }
 
   return out;
@@ -180,6 +190,18 @@ export function buildMissionEnfantPatch(
 
   if (values.Date_de_debut.trim() !== init.Date_de_debut.trim()) {
     out.Date_de_debut = dateInputToGristTimestamp(values.Date_de_debut);
+  }
+
+  if (values.Portage_Projet.trim() !== init.Portage_Projet.trim()) {
+    const t = values.Portage_Projet.trim();
+    if (t === "") {
+      out.Portage_Projet = 0;
+    } else {
+      const n = Number.parseInt(t, 10);
+      if (Number.isFinite(n)) {
+        out.Portage_Projet = n;
+      }
+    }
   }
 
   return out;

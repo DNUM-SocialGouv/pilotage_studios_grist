@@ -27,6 +27,9 @@ export type RelatedTableId = (typeof RELATED_TABLE_IDS)[number];
  * `/outils/recap-porteurs`, `/equipe`, `/produits`, `/weekly`, select auteur du widget feedback.
  * Lecture seule ; jeton REST `readOnly: true` quand la table passe par REST.
  */
+/** Missions Malt / portage projet (lecture lazy — rattachement prestation). */
+export const PORTAGE_PROJET_TABLE_ID = "Portage_Projet";
+
 export const BDC_DEPENSES_TABLE_IDS = [
   "Realise",
   "Missions",
@@ -34,6 +37,7 @@ export const BDC_DEPENSES_TABLE_IDS = [
   "Equipe",
   EQUIPE_TJM_TABLE_ID,
   "Tableau_de_pilotage_SDPC_Produits_SDPC",
+  PORTAGE_PROJET_TABLE_ID,
 ] as const;
 
 /** Réexport lecture grille tarifs (lazy `/equipe`). */

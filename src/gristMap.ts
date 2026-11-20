@@ -8,6 +8,7 @@ import type {
   Mission,
   MissionEnfant,
   PlanActivite,
+  PortageProjet,
   ProduitSdpc,
   SuiviMensuel,
   WeeklyActionRow,
@@ -189,6 +190,20 @@ export function toMissionEnfant(record: GristRecord): MissionEnfant {
     Jours_envisages: asNumber(record.Jours_envisages),
     Statut: asGristChoice(record.Statut) ?? asString(record.Statut),
     Date_de_debut: asNumber(record.Date_de_debut),
+    Portage_Projet: record.Portage_Projet,
+  };
+}
+
+export function toPortageProjet(record: GristRecord): PortageProjet {
+  return {
+    id: record.id,
+    Nom_du_projet: asString(record.Nom_du_projet),
+    Statut: asGristChoice(record.Statut) ?? asString(record.Statut),
+    Freelance: record.Freelance,
+    Bon_de_commande: record.Bon_de_commande,
+    Porteur: asGristChoice(record.Porteur) ?? asString(record.Porteur),
+    Financeur: asGristChoice(record.Financeur) ?? asString(record.Financeur),
+    Equipe: asGristChoice(record.Equipe) ?? asString(record.Equipe),
   };
 }
 

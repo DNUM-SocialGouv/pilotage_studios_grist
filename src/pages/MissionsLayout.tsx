@@ -107,6 +107,15 @@ function MissionDrawersHost({ missionsState }: { missionsState: MissionsDataStat
         })),
     [pa.bdcList],
   );
+  const bdcLabelById = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const b of pa.bdcList) {
+      const nom = b.Nom_BdC?.trim();
+      const chorus = b.BdC_Chorus?.trim();
+      map.set(b.id, nom || (chorus ? `Chorus ${chorus}` : `BDC #${b.id}`));
+    }
+    return map;
+  }, [pa.bdcList]);
 
   return (
     <>
@@ -123,6 +132,8 @@ function MissionDrawersHost({ missionsState }: { missionsState: MissionsDataStat
         ref={enfantDrawerRef}
         statutOptions={enfantStatutOptions}
         intervenantOptions={intervenantOptions}
+        portageProjets={missionsState.portageProjets}
+        bdcLabelById={bdcLabelById}
         onRecordsChanged={missionsState.reloadMissions}
       />
       <MissionCraDrawer

@@ -1,11 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
-import type { Intervenant, Mission, MissionEnfant, ProduitSdpc, SuiviMensuel } from "../types";
+import type {
+  Intervenant,
+  Mission,
+  MissionEnfant,
+  PortageProjet,
+  ProduitSdpc,
+  SuiviMensuel,
+} from "../types";
 import type { GristFetchTableResult, GristRecord } from "../gristTypes";
 import {
   recordsFromFetchTable,
   toIntervenant,
   toMission,
   toMissionEnfant,
+  toPortageProjet,
   toProduitSdpc,
   toSuiviMensuel,
 } from "../gristMap";
@@ -22,6 +30,8 @@ export type MissionsData = {
   intervenants: Intervenant[];
   produits: ProduitSdpc[];
   suivi: SuiviMensuel[];
+  /** Missions Malt / portage (lecture) — rattachement prestation. */
+  portageProjets: PortageProjet[];
 };
 
 export type MissionsDataState = MissionsData & {
@@ -38,6 +48,7 @@ const EMPTY: MissionsData = {
   intervenants: [],
   produits: [],
   suivi: [],
+  portageProjets: [],
 };
 
 export async function loadMissionsTables(): Promise<Omit<MissionsData, "status" | "error">> {
@@ -47,6 +58,7 @@ export async function loadMissionsTables(): Promise<Omit<MissionsData, "status" 
     "Equipe",
     "produits",
     "Realise",
+    "Portage_Projet",
   ] as const;
   const settled = await Promise.allSettled([
     fetchAllowlistedTable("Missions"),
@@ -54,6 +66,7 @@ export async function loadMissionsTables(): Promise<Omit<MissionsData, "status" 
     fetchAllowlistedTable("Equipe"),
     fetchAllowlistedTable("Tableau_de_pilotage_SDPC_Produits_SDPC"),
     fetchAllowlistedTable("Realise"),
+    fetchAllowlistedTable("Portage_Projet"),
   ]);
 
   const failed: string[] = [];
@@ -87,6 +100,7 @@ export async function loadMissionsTables(): Promise<Omit<MissionsData, "status" 
     suivi: pick(4, (raw) =>
       recordsFromFetchTable(raw).map((row) => toSuiviMensuel(row as GristRecord)),
     ),
+    portageProjets: pick(5, (raw) => recordsFromFetchTable(raw).map(toPortageProjet)),
   };
 }
 

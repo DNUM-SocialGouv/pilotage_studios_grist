@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import type { Intervenant, Mission, MissionEnfant, SuiviMensuel } from "../types";
+import type {
+  Intervenant,
+  Mission,
+  MissionEnfant,
+  PortageProjet,
+  SuiviMensuel,
+} from "../types";
 import { loadMissionsTables } from "./useMissionsData";
 
 export type ProduitMissionsStatus = "idle" | "loading" | "ok" | "error";
@@ -12,6 +18,7 @@ export type ProduitMissionsData = {
   missionEnfants: MissionEnfant[];
   intervenants: Intervenant[];
   suivi: SuiviMensuel[];
+  portageProjets: PortageProjet[];
 };
 
 const EMPTY: ProduitMissionsData = {
@@ -22,6 +29,7 @@ const EMPTY: ProduitMissionsData = {
   missionEnfants: [],
   intervenants: [],
   suivi: [],
+  portageProjets: [],
 };
 
 /**
@@ -54,6 +62,7 @@ export function useProduitMissionsData(enabled: boolean): ProduitMissionsData {
           missionEnfants: loaded.missionEnfants,
           intervenants: loaded.intervenants,
           suivi: loaded.suivi,
+          portageProjets: loaded.portageProjets,
         });
       } catch (err) {
         if (cancelled) {

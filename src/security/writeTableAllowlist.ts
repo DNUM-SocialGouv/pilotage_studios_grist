@@ -5,7 +5,8 @@
  * - `Kanban` : create (feedback) + update colonne / corps Resume+Message (Admin).
  * - `Kanban_commentaires` : create only (conversation tickets).
  * - `Missions` : create + update (drawer mission master — pas de delete).
- * - `Prestations` : create + update (drawer prestation — pas de delete).
+ * - `Prestations` : create + update (drawer prestation — pas de delete ;
+ *   champs : titre, intervenant, jours, statut, date début, `Portage_Projet`).
  *   (ex-`Missions_enfants` — tableId aligné sur le métier.)
  * - `Realise` : create + update (déclaration CRA freelance + revue équipe manager — pas de delete).
  *   Déclaration : `Prestation` (ref), jours, description, période, intervenant.
