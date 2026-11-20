@@ -3,7 +3,7 @@
 ## En clair
 
 Maquettes HTML du tiroir « Modifier la prestation » enrichi : champs actuels
-(titre, intervenant, jours, statut, date) + proposition **Mission Malt (URL)**,
+(titre, intervenant, jours, statut, date) + proposition **Projet Malt**,
 **bon de commande**, et **lien Sofiane en lecture seule** (récupéré depuis le
 BDC choisi — pas de champ Sofiane éditable), plus un bloc **Questions ouvertes**.
 Ce n’est **pas** encore le drawer React du widget — seulement un fichier à

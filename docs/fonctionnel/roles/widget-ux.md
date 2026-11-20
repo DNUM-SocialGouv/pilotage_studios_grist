@@ -36,7 +36,7 @@ Suivi des cellules : [`matrice-droits.md`](matrice-droits.md) tableau **A**.
 - Pendant `loading` profil : **nav complète hors liens Admin** (pas de flash fail-closed ni flash lien Droits) ; gardes affichent « Vérification… »
 - Si profil `empty` / `error` (create ou lecture en échec) : alerte sous la nav + fail-closed budget
 - Filtre `WIDGET_NAV_ITEMS` : `filterNavItemsByPageAccess` + `canAccessHref` + options `isAdmin` / `canDeclareCra` / `canWeekly` (Mon carnet / revue hors nav → menu compte)
-- Garde pages : `PageAccessGuard` sur les routes mappées (refus → `/`) ; `AdminRoleGuard` pour `/outils/droits-pages` ; `CraDeclarerRoleGuard` pour `/cra/declarer` ; `CraRevueEquipeRoleGuard` pour `/cra/revue-equipe`
+- Garde pages : `PageAccessGuard` sur les routes mappées (refus → `/`) ; `AdminRoleGuard` pour `/outils/droits-pages`, `/outils/spike-datatable`, `/outils/generer-devis` et `/outils/portage-projet` ; `CraDeclarerRoleGuard` pour `/cra/declarer` ; `CraRevueEquipeRoleGuard` pour `/cra/revue-equipe`
 - Helpers purs : `src/security/pageAccess.ts` ; thématiques Admin : `src/utils/droitsPagesThemes.ts`
 - `Droits_pages` : lecture + **update** allowlistés (Owner / `Role_ACL` Admin côté ACL Grist)
 - `useAclProfil` hors provider → **throw** (comme `useGristPa`)

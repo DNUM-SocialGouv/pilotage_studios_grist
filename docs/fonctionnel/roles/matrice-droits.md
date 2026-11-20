@@ -62,6 +62,7 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 | Éditer fiche Équipe | `/equipe/:id` (drawer) | **oui** | **non** | **non** | **non** | **Appliqué** UX + ACL | Bouton Modifier Admin ; `Equipe` update allowlisté ([#63](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/63)) |
 | Droits des pages | `/outils/droits-pages` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Garde rôle Admin (pas de `Page_*`) ; édite `Droits_pages` ; rappel lecture seule dans section « Fixés par rôle » |
 | **Générer un devis** | `/outils/generer-devis` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Admin-only (`adminOnly` + `AdminRoleGuard`), hors `Page_*` ; rappel « Fixés par rôle » ; formulaire + aperçu live (split LG+) ; lecture choix BDC + copie locale (pas d’écriture) |
+| **Projets de portage** | `/outils/portage-projet` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Admin-only (`adminOnly` + `AdminRoleGuard`), hors `Page_*` ; rappel « Fixés par rôle » ; create + update + delete une ligne (refus si une prestation est liée) |
 | **Assistant** (essai) | `/` embarqué + FAB ailleurs | oui* | oui* | oui* | oui* | **Essai** UX | *Si URL service renseignée en session ; **N/A `Page_*`** (comme feedback) ; outil mission (#140) faits CRA dans le widget ; lecture seule via Onyxia — pas de clé LLM dans le bundle ; restreindre plus tard (#145) |
 | Produits | `/produits`, `/produits/:id` | oui | oui | oui | oui | **Appliqué** UX (liste + fiche lecture) | Flag `Page_produits` ; section Admin « Produits » (plus « À venir ») |
 
@@ -87,6 +88,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | `Realise` (CRA) hors montants | CRUD | R/U département | **R/U + C** ses lignes | — | **Appliqué** (ACL) + widget | Déclaration `#33` ; revue `#70` ; mur `#47` HITL 2026-09-21 ; fiche mission Modifier/Dupliquer Admin (`cra-fiche-mission`) |
 | `Realise.Calcul_TTC` | R ; U Owner | R | R | R | **Appliqué** | `+R -U` si non-Owner |
 | `Missions` / `Prestations` | CRUD | R/U dép. | R ses missions | R / — | Non (rôle) | |
+| `Portage_Projet` | CRUD (widget Admin) | — (widget) | — (widget) | — (widget) | **Appliqué** UX widget | Pas de resource Access Rules dédiée (couche 6 inchangée : les éditeurs Grist peuvent encore modifier la grille). Widget : create + update + delete une ligne, refus si `Prestations.Portage_Projet` pointe encore la ligne |
 | `Weekly_phase` | CRUD* | —† | —† | — | **Appliqué** ACL + widget (allowlist) | *Owner document ; †si `user.Email == user.Weekly_coach.E_mail` |
 | `Weekly_agenda` | CRUD* | —† | —† | — | **Appliqué** ACL + widget (allowlist create/update/**delete**) | Idem ; delete widget = une ligne après confirm UI ; détache `Weekly_action.Sujet` avant destroy |
 | `Weekly_action` | CRUD* | —† | —† | — | **Appliqué** ACL + widget (allowlist create/update/**delete**) | Idem ; delete widget = une ligne après confirm UI ; lien carte/sujet via `Mission` (+ `Sujet` Ref→agenda **HITL Owner**, flag code) |
@@ -112,6 +114,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-11-20 | **Projets de portage** (`/outils/portage-projet`) : écran Outils Admin-only, hors `Page_*`. Libellé sans le mot « mission » (réservé aux lots d’accompagnement). Sur une prestation, le choix s’appelle **Projet Malt**. | 5 | kanban HITL `portage-projet-admin` |
 | 2026-11-20 | **Mission Malt sur prestation** : colonne `Prestations.Portage_Projet` + lecture `Portage_Projet` ; select drawer + affichage intitulé / BDC ; **N/A `Page_*`** (écran Missions déjà listé) | 5, 6 (doc schéma) | feedback Norman id=49 · kanban HITL `mission-malt-prestation` |
 | 2026-11-18 | **Assistant** #140 : faits mission (jours/TTC CRA, règle prestation) ; chat **embarqué sur `/`** (remplace CTA) + FAB ailleurs ; matching par nom ; **N/A `Page_*`** | 5 | [#140](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/140) · `feat/assistant-outil-mission` |
 | 2026-11-18 | **Assistant** tiroir flottant essai (`AssistantWidget`) : URL + jeton en sessionStorage → service Onyxia `/v1/ask` ; lecture seule ; **N/A `Page_*`** (comme feedback) ; pas de clé LiteLLM dans le bundle | 5 | [#139](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/139) · kanban `assistant-pilotage` |

@@ -15,13 +15,13 @@ export type PortageProjetDisplay = {
   bdcLabel: string | null;
 };
 
-/** True si la ligne est une mission Malt (porteur exact). */
+/** True si la ligne est un projet Malt (porteur exact). */
 export function isPortageProjetMalt(row: PortageProjet): boolean {
   return (row.Porteur?.trim() ?? "") === PORTAGE_PORTEUR_MALT;
 }
 
 /**
- * Options select « Mission Malt » pour un intervenant (= Freelance sur Portage_Projet).
+ * Options select « Projet Malt » pour un intervenant (= Freelance sur Portage_Projet).
  * Inclut `selectedId` même hors filtre (ligne orpheline / autre porteur) pour ne pas perdre l’édition.
  */
 export function maltPortageOptionsForFreelance(
@@ -37,7 +37,7 @@ export function maltPortageOptionsForFreelance(
       return;
     }
     seen.add(row.id);
-    const titre = row.Nom_du_projet?.trim() || `Mission Malt #${row.id}`;
+    const titre = row.Nom_du_projet?.trim() || `Projet Malt #${row.id}`;
     const bdcId = extractGristReferenceId(row.Bon_de_commande);
     out.push({
       id: row.id,
@@ -115,7 +115,7 @@ export function resolvePortageProjetDisplay(
   if (!row) {
     return null;
   }
-  const titreMalt = row.Nom_du_projet?.trim() || `Mission Malt #${row.id}`;
+  const titreMalt = row.Nom_du_projet?.trim() || `Projet Malt #${row.id}`;
   const bdcId = extractGristReferenceId(row.Bon_de_commande);
   const bdc =
     bdcId != null && bdcId !== 0 ? bdcById?.get(bdcId) : undefined;

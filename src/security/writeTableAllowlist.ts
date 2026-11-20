@@ -25,6 +25,8 @@
  * - `Weekly_action` : create + update + **delete** (actions Ops —
  *   `getTable().destroy` ; confirmation UI obligatoire ; pas de masse).
  * - `BDC` : update only (drawer cadre fiche — pas de create/delete).
+ * - `Portage_Projet` : create + update + **delete** (écran Admin Outils —
+ *   une ligne après confirm UI ; refus si une prestation est encore liée).
  */
 
 export const KANBAN_TABLE_ID = "Kanban";
@@ -46,6 +48,8 @@ export const WEEKLY_ACTION_TABLE_ID = "Weekly_action";
 export const WEEKLY_COACHS_TABLE_ID = "Weekly_coachs";
 /** Bons de commande — update cadre fiche uniquement (pas create/delete). */
 export const BDC_TABLE_ID = "BDC";
+/** Projets de portage — create + update + delete (écran Admin, une ligne). */
+export const PORTAGE_PROJET_TABLE_ID = "Portage_Projet";
 
 export const WRITE_TABLE_ALLOWLIST = [
   KANBAN_TABLE_ID,
@@ -59,6 +63,7 @@ export const WRITE_TABLE_ALLOWLIST = [
   WEEKLY_PHASE_TABLE_ID,
   WEEKLY_AGENDA_TABLE_ID,
   WEEKLY_ACTION_TABLE_ID,
+  PORTAGE_PROJET_TABLE_ID,
 ] as const;
 
 export type WritableTableId = (typeof WRITE_TABLE_ALLOWLIST)[number];
@@ -76,18 +81,20 @@ export const WRITE_TABLE_UPDATE_ALLOWLIST = [
   WEEKLY_AGENDA_TABLE_ID,
   WEEKLY_ACTION_TABLE_ID,
   BDC_TABLE_ID,
+  PORTAGE_PROJET_TABLE_ID,
 ] as const;
 
 export type WritableUpdateTableId = (typeof WRITE_TABLE_UPDATE_ALLOWLIST)[number];
 
 /**
  * Tables autorisées pour `getTable().destroy` (sous-ensemble strict).
- * Exceptions produit : `Weekly_action` · `Weekly_agenda` — une ligne à la fois,
- * après confirm UI (pas de masse).
+ * Exceptions produit : `Weekly_action` · `Weekly_agenda` · `Portage_Projet` —
+ * une ligne à la fois, après confirm UI (pas de masse).
  */
 export const WRITE_TABLE_DELETE_ALLOWLIST = [
   WEEKLY_ACTION_TABLE_ID,
   WEEKLY_AGENDA_TABLE_ID,
+  PORTAGE_PROJET_TABLE_ID,
 ] as const;
 
 export type WritableDeleteTableId = (typeof WRITE_TABLE_DELETE_ALLOWLIST)[number];

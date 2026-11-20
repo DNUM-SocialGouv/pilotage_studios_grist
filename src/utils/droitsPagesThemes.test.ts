@@ -66,6 +66,7 @@ describe("droitsPagesThemes", () => {
         "weekly",
         "droits_pages",
         "generer_devis",
+        "portage_projet",
       ],
     );
     const feuille = DROITS_PAGES_ROLE_FIXED.find(
@@ -91,6 +92,11 @@ describe("droitsPagesThemes", () => {
     assert.equal(devis?.accessByRole.Admin, true);
     assert.equal(devis?.accessByRole.Freelance, false);
     assert.equal(devis?.accessByRole["Responsable de département"], false);
+    const portage = DROITS_PAGES_ROLE_FIXED.find((s) => s.id === "portage_projet");
+    assert.equal(portage?.accessByRole.Admin, true);
+    assert.equal(portage?.accessByRole.Freelance, false);
+    assert.equal(portage?.accessByRole["Responsable de département"], false);
+    assert.equal(portage?.accessByRole.Invité, false);
   });
 
   it("détecte le rôle Admin", () => {
@@ -164,6 +170,10 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
       outils.children.some((c) => c.href === "/outils/droits-pages"),
       false,
     );
+    assert.equal(
+      outils.children.some((c) => c.href === "/outils/portage-projet"),
+      false,
+    );
   });
 
   it("montre Droits des pages si Admin", () => {
@@ -177,6 +187,10 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
     assert.ok(outils && isWidgetNavGroup(outils));
     assert.equal(
       outils.children.some((c) => c.href === "/outils/droits-pages"),
+      true,
+    );
+    assert.equal(
+      outils.children.some((c) => c.href === "/outils/portage-projet"),
       true,
     );
   });
@@ -265,6 +279,7 @@ describe("feedbackPages droits-pages", () => {
 
   it("mappe Générer un devis", () => {
     assert.equal(pageOptionFromPathname("/outils/generer-devis"), "Générer un devis");
+    assert.equal(pageOptionFromPathname("/outils/portage-projet"), "Projets de portage");
   });
 
   it("mappe le guide Documentation (règles métier)", () => {
