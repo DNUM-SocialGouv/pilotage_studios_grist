@@ -35,6 +35,7 @@ import { ReglesMetierLayout } from "./pages/regles-metier/ReglesMetierLayout";
 import { ReglesMetierMissionsPage } from "./pages/regles-metier/ReglesMetierMissionsPage";
 import { ReglesMetierRolesPage } from "./pages/regles-metier/ReglesMetierRolesPage";
 import { StubPage } from "./pages/StubPage";
+import { AssistantParcPage } from "./pages/AssistantParcPage";
 import { FeuilleDeRoutePage } from "./pages/FeuilleDeRoutePage";
 import { WelcomePage } from "./pages/WelcomePage";
 import { WeeklyCoachPage } from "./pages/WeeklyCoachPage";
@@ -68,6 +69,8 @@ export default function App() {
               <Route index element={<WelcomePage />} />
               {/* Feuille de route : ouvert à tous, hors Page_* (équivalent kanban d’accueil). */}
               <Route path="feuille-de-route" element={<FeuilleDeRoutePage />} />
+              {/* Assistant PARC : ouvert à tous, hors Page_* — faits produits côté serveur. */}
+              <Route path="assistant-parc" element={<AssistantParcPage />} />
               <Route
                 path="pa"
                 element={

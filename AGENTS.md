@@ -39,6 +39,7 @@ Réduire la complexité ; pas d’ajout « au cas où ». Les agents **proposent
 |------|-----------|
 | `/` | Accueil par rôle (recherche + **assistant** + Vos retours) — **sans** kanban ni CTA tuiles |
 | `/feuille-de-route` | Feuille de route (kanban Feedback · Backlog · En cours · Livré) — ouvert à tous, hors `Page_*` ; entrée menu compte |
+| `/assistant-parc` | Assistant PARC (chat produits Le PARC via service d’essai) — ouvert à tous, hors `Page_*` ; entrée menu compte |
 | `/pa`, `/pa/:id` | Implémenté (liste + fiche) |
 | `/bdc`, `/bdc/:id` | Implémenté (liste + fiche) |
 | `/missions`, `/missions/:id` | Implémenté (liste + fiche + drawer create/edit master) |
@@ -61,7 +62,7 @@ Nav principale : Accueil, **Weekly Ops** (e-mails listés dans `Weekly_coachs` u
 
 Entrée MemoryRouter : `/` (`WelcomePage` — **accueil par rôle** via `welcomeHomeByRole` / `WelcomeRoleHome` : assistant embarqué + Vos retours). Kanban : route `/feuille-de-route` (`FeuilleDeRoutePage` — table Grist `Kanban` + `Kanban_commentaires`). Pas de Header / Footer DSFR app. Pas de React Router `BrowserRouter` (polluerait l’URL Grist).
 
-**Chrome nav** (`WidgetNav`) : à gauche **Page précédente** (historique MemoryRouter uniquement — désactivé si pile vide ; jamais `window.history` / Grist) ; au centre la nav métier ; à droite **menu compte** (avatar Équipe `EquipeAvatar` / seed `Equipe.Avatar` — panneau type « En-tête connectée » DSFR : identité + liens **Mon carnet** · **Feuille de route** · **Documentation** selon gardes + **Connexion Assistant** (essai Onyxia, hors `Page_*`) + **Paramètres d’affichage** pour tous — modale DSFR clair/sombre/système, préférence navigateur, hors `Page_*`). Le Retour n’est **pas** dans le menu compte.
+**Chrome nav** (`WidgetNav`) : à gauche **Page précédente** (historique MemoryRouter uniquement — désactivé si pile vide ; jamais `window.history` / Grist) ; au centre la nav métier ; à droite **menu compte** (avatar Équipe `EquipeAvatar` / seed `Equipe.Avatar` — panneau type « En-tête connectée » DSFR : identité + liens **Mon carnet** · **Feuille de route** · **Assistant PARC** · **Documentation** selon gardes + **Connexion Assistant** (essai Onyxia, hors `Page_*`) + **Paramètres d’affichage** pour tous — modale DSFR clair/sombre/système, préférence navigateur, hors `Page_*`). Le Retour n’est **pas** dans le menu compte.
 
 ### Feuille de route (priorité métier)
 
@@ -89,7 +90,7 @@ Visibilité users : accueil par rôle sur `/` (assistant intégré) ; feuille de
 |------|----------|
 | Routes | `src/App.tsx` |
 | Nav | `src/layout/WidgetNav.tsx` + [`widgetNavItems.ts`](src/layout/widgetNavItems.ts) (`WIDGET_NAV_ITEMS`, groupe Budget) + `WidgetNavBackButton` / `WidgetUserMenu` (chrome Retour + menu user) |
-| Pages | `src/pages/WelcomePage.tsx`, `FeuilleDeRoutePage.tsx`, `Pa*.tsx`, `Bdc*.tsx`, `Missions*.tsx`, `Equipe*.tsx`, `Produits*.tsx`, `CraListView.tsx`, `CraDeclarerPage.tsx`, `CraRevueEquipePage.tsx`, `CraRecapPorteursPage.tsx`, `WeeklyCoachPage.tsx`, `regles-metier/*`, `DroitsPagesAdminPage.tsx`, `SpikeDatatablePage.tsx`, `GenererDevisPage.tsx`, `PortageProjetAdminPage.tsx`, `StubPage.tsx` |
+| Pages | `src/pages/WelcomePage.tsx`, `FeuilleDeRoutePage.tsx`, `AssistantParcPage.tsx`, `Pa*.tsx`, `Bdc*.tsx`, `Missions*.tsx`, `Equipe*.tsx`, `Produits*.tsx`, `CraListView.tsx`, `CraDeclarerPage.tsx`, `CraRevueEquipePage.tsx`, `CraRecapPorteursPage.tsx`, `WeeklyCoachPage.tsx`, `regles-metier/*`, `DroitsPagesAdminPage.tsx`, `SpikeDatatablePage.tsx`, `GenererDevisPage.tsx`, `PortageProjetAdminPage.tsx`, `StubPage.tsx` |
 | Accueil rôle | [`src/utils/welcomeHomeByRole.ts`](src/utils/welcomeHomeByRole.ts), [`WelcomeRoleHome`](src/components/welcome/WelcomeRoleHome.tsx), recherche [`WelcomeSearchBar`](src/components/welcome/WelcomeSearchBar.tsx) + [`welcomeSearch.ts`](src/utils/welcomeSearch.ts) (lazy Produit/Mission/Personne) |
 | Contenu public | Table Grist `Kanban` + `Kanban_commentaires` (`/feuille-de-route`) ; libellés / parse dans [`src/utils/kanbanTickets.ts`](src/utils/kanbanTickets.ts) |
 | Données | `src/hooks/useGristPaData.ts`, `useBdcDepensesData.ts`, `useMissionsData.ts`, `useEquipeData.ts`, `useEquipeMemberMissionsData.ts`, `GristPaContext.tsx`, `gristMap.ts`, `gristRest.ts`, `gristAccessToken.ts` |
@@ -217,7 +218,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 | Équipe | `docs/fonctionnel/equipe/`, `useEquipeData`, `useEquipeMemberMissionsData`, `EquipeLayout` / `EquipeListView` / `EquipeDetailView`, `EquipeAvatar` (seed `Equipe.Avatar` → DiceBear Glyphs) |
 | Produits | `docs/fonctionnel/produits/`, `useProduitsData`, `useProduitMissionsData`, `ProduitsLayout` / `ProduitsListView` / `ProduitsDetailView`, `produitsList` |
 | Feedback | `docs/fonctionnel/feedback/` (+ [`alertes.md`](docs/fonctionnel/feedback/alertes.md)), `FeedbackWidget`, `writeTableAllowlist` |
-| Assistant essai | `docs/fonctionnel/assistant/` (service-essai + tiroir) ; `AssistantWidget` ; pas de clé LLM dans le bundle |
+| Assistant essai | `docs/fonctionnel/assistant/` (service-essai + tiroir + parc-essai) ; `AssistantWidget` ; `/assistant-parc` ; pas de clé LLM / Grist PARC dans le bundle |
 | Guide règles métier | `docs/fonctionnel/regles-metier/`, `src/pages/regles-metier/`, `Page_regles_metier` (+ Owner UI [`page-regles-metier-owner.md`](docs/fonctionnel/roles/page-regles-metier-owner.md)) |
 | Tableau DSFR | rule `dsfr-tableaux.mdc`, MCP `user-dsfr` |
 | Embed / secrets | `embedTrust.ts`, `NothingHerePage`, `ensureFreshBuild`, SECURITY |

@@ -170,9 +170,12 @@ const server = http.createServer(async (req, res) => {
       {
         ok: true,
         service: "pilotage-assistant-essai",
+        runtime: "node",
         litellmConfigured: Boolean(LITELLM_BASE_URL && LITELLM_API_KEY),
         authRequired: Boolean(SHARED_SECRET),
         model: LITELLM_MODEL,
+        // Assistant PARC = Python (app.py) uniquement
+        parcConfigured: false,
       },
       origin,
     );
@@ -211,6 +214,30 @@ const server = http.createServer(async (req, res) => {
       );
       return;
     }
+    const ctx = body.context && typeof body.context === "object" ? body.context : null;
+    const entityType = ctx && typeof ctx.entityType === "string" ? ctx.entityType.trim() : "";
+    const screen = ctx && typeof ctx.screen === "string" ? ctx.screen.trim() : "";
+    const isParc =
+      entityType === "parc_produit" ||
+      screen === "/assistant-parc" ||
+      screen.startsWith("/assistant-parc/");
+    if (isParc) {
+      sendJson(
+        res,
+        200,
+        {
+          message:
+            "L’Assistant PARC n’est pas disponible sur ce service Node (`server.mjs`). " +
+            "Sur Onyxia, lancez le service Python : `uvicorn app:app --host 0.0.0.0 --port 5000`, " +
+            "avec GRIST_BASE_URL / GRIST_API_KEY / GRIST_DOC_ID_PARC dans le `.env`. " +
+            "Vérifiez `GET /health` → `runtime: \"python\"` et `parcConfigured: true`.",
+          data: { parc: { unresolved: true, reason: "node_runtime" } },
+        },
+        origin,
+      );
+      return;
+    }
+
     try {
       const message = await callLiteLlm(question, body.context);
       // `data` réservé aux tableaux / graphiques (#144) — null en V0 texte.

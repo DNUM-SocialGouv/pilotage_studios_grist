@@ -83,7 +83,14 @@ export function AssistantConnexionDialog({
         const model = health.model ? ` · modèle ${health.model}` : "";
         const litellm =
           health.litellmConfigured === false ? " · LiteLLM non configuré" : "";
-        setHealthHint(`Service joignable${model}${litellm}.`);
+        const runtime = health.runtime ? ` · ${health.runtime}` : "";
+        const parc =
+          health.parcConfigured === true
+            ? " · PARC prêt"
+            : health.parcConfigured === false
+              ? " · PARC non configuré (GRIST_* ou runtime Node)"
+              : "";
+        setHealthHint(`Service joignable${runtime}${model}${litellm}${parc}.`);
       } else {
         setHealthHint("Réponse inattendue du service.");
       }

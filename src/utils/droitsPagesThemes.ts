@@ -115,6 +115,17 @@ export const DROITS_PAGES_ROLE_FIXED: readonly DroitsPagesRoleFixedScreen[] = [
     hint: "Ouverte à tous — menu compte ; pas d’interrupteur Page_* (équivalent de l’ancien kanban d’accueil).",
   },
   {
+    id: "assistant_parc",
+    label: "Assistant PARC",
+    accessByRole: {
+      Admin: true,
+      "Responsable de département": true,
+      Freelance: true,
+      Invité: true,
+    },
+    hint: "Ouvert à tous — menu compte ; questions sur les produits Le PARC via le service d’essai (hors Page_*).",
+  },
+  {
     id: "mon_carnet",
     label: "Mon carnet",
     accessByRole: {

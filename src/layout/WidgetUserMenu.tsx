@@ -5,8 +5,8 @@
  * Pas de `role="menu"` incomplet — `aria-expanded` / Escape / clic extérieur.
  *
  * Ordre liens (perso → espace partagé → aide → confort) :
- * Mon carnet · Feuille de route · Documentation · Connexion Assistant ·
- * Paramètres d’affichage
+ * Mon carnet · Feuille de route · Assistant PARC · Documentation ·
+ * Connexion Assistant · Paramètres d’affichage
  */
 import {
   useCallback,
@@ -33,6 +33,7 @@ import {
 import { isNavActive } from "./widgetNavItems";
 
 const FEUILLE_DE_ROUTE_HREF = "/feuille-de-route";
+const ASSISTANT_PARC_HREF = "/assistant-parc";
 const DOCUMENTATION_HREF = "/outils/regles-metier";
 
 type UserMenuLink = {
@@ -116,8 +117,9 @@ export function WidgetUserMenu() {
   if (canDeclareCra) {
     links.push({ href: monCarnetHref, label: "Mon carnet" });
   }
-  // Feuille de route : fixé ouvert (hors Page_*) — toujours proposée.
+  // Feuille de route / Assistant PARC : fixés ouverts (hors Page_*) — toujours proposés.
   links.push({ href: FEUILLE_DE_ROUTE_HREF, label: "Feuille de route" });
+  links.push({ href: ASSISTANT_PARC_HREF, label: "Assistant PARC" });
   if (showDocumentation) {
     links.push({ href: DOCUMENTATION_HREF, label: "Documentation" });
   }

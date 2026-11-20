@@ -8,7 +8,7 @@ Un **tiroir** accessible depuis n’importe quel écran permettra de poser des q
 
 | | |
 |--|--|
-| **État** | Essai — chat sur **l’accueil** (+ tiroir ailleurs) ; outil mission (#140) : faits jours/TTC par **nom** de mission (règle prestation) |
+| **État** | Essai — chat sur **l’accueil** (+ tiroir ailleurs) ; outil mission (#140) : faits jours/TTC par **nom** de mission (règle prestation) ; **Assistant PARC** `/assistant-parc` (faits produits Le PARC côté serveur) |
 | **Issues** | Cadre [#137](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/137) · Service essai [#138](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/138) · Tiroir [#139](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/139) · Mission [#140](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/140) · BDC [#141](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/141) · Produit [#142](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/142) · Contexte page [#143](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/143) · Affichages [#144](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/144) · Droits [#145](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/145) |
 | **Kanban** | Clé `assistant-pilotage` (feuille de route) |
 | **Branche** | `feat/assistant-outil-mission` |
@@ -49,7 +49,7 @@ Le widget d’essai (URL localhost ou Pages de branche) doit être branché sur 
 Cœur mission / prestation / Realise / BDC : **aligné** (schéma B + orphelins traités).  
 Smoke **UI** (manuel) : widget → ce document → Missions + fiche + un CRA — à rejouer après merge branche essai.  
 Contrat de chiffres (prérequis #140–#142) : [contrat-chiffres.md](contrat-chiffres.md).  
-Service d’essai + **checklist de relance Onyxia** : [service-essai.md](service-essai.md) · tiroir widget : [tiroir.md](tiroir.md) · code serveur [`services/assistant-essai/`](../../../services/assistant-essai/).
+Service d’essai + **checklist de relance Onyxia** : [service-essai.md](service-essai.md) · tiroir widget : [tiroir.md](tiroir.md) · Assistant PARC : [parc-essai.md](parc-essai.md) · code serveur [`services/assistant-essai/`](../../../services/assistant-essai/).
 
 ## Périmètre V0 (rappel)
 
