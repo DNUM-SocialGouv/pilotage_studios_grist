@@ -104,12 +104,25 @@ export function portageImportReadyKey(preview: PortageImportPreview): string {
     .join("\n");
 }
 
-function parseCsv(text: string, delimiter: string): string[][] {
-  const rows: string[][] = [];
+type CsvRow = { line: number; cells: string[] };
+
+function parseCsv(text: string, delimiter: string): CsvRow[] {
+  const rows: CsvRow[] = [];
   let row: string[] = [];
   let cell = "";
   let inQuotes = false;
+  let line = 1;
+  let rowLine = 1;
   const source = text.replace(/^\uFEFF/, "");
+
+  const pushRow = () => {
+    if (row.some((value) => value.trim() !== "")) {
+      rows.push({ line: rowLine, cells: row });
+    }
+    row = [];
+    cell = "";
+  };
+
   for (let i = 0; i < source.length; i += 1) {
     const char = source[i]!;
     if (inQuotes) {
@@ -121,7 +134,12 @@ function parseCsv(text: string, delimiter: string): string[][] {
           inQuotes = false;
         }
       } else {
-        cell += char;
+        if (char === "\n") {
+          line += 1;
+        }
+        if (char !== "\r") {
+          cell += char;
+        }
       }
       continue;
     }
@@ -132,18 +150,18 @@ function parseCsv(text: string, delimiter: string): string[][] {
       cell = "";
     } else if (char === "\n") {
       row.push(cell);
-      rows.push(row);
-      row = [];
-      cell = "";
+      pushRow();
+      line += 1;
+      rowLine = line;
     } else if (char !== "\r") {
       cell += char;
     }
   }
   if (cell.length > 0 || row.length > 0) {
     row.push(cell);
-    rows.push(row);
+    pushRow();
   }
-  return rows.filter((cells) => cells.some((value) => value.trim() !== ""));
+  return rows;
 }
 
 function delimiterOf(text: string): string {
@@ -216,7 +234,7 @@ export function previewPortageImport(
     return { lines: [], readyCount: 0, blockedCount: 0, fileError: "Le fichier est vide." };
   }
   const columns = new Map<ImportField, number>();
-  header.forEach((label, index) => {
+  header.cells.forEach((label, index) => {
     const field = HEADER_FIELDS[normalizePortageKey(label) as keyof typeof HEADER_FIELDS];
     if (field && !columns.has(field)) {
       columns.set(field, index);
@@ -240,6 +258,15 @@ export function previewPortageImport(
     };
   }
 
+  if (dataRows.length === 0) {
+    return {
+      lines: [],
+      readyCount: 0,
+      blockedCount: 0,
+      fileError: "Le fichier ne contient aucune ligne à importer.",
+    };
+  }
+
   const cell = (row: string[], field: ImportField) => {
     const index = columns.get(field);
     return index == null ? "" : (row[index] ?? "").trim();
@@ -248,7 +275,7 @@ export function previewPortageImport(
   const existing = new Set(catalog.existingNames.map(normalizePortageKey).filter(Boolean));
   const seen = new Map<string, number>();
   for (const row of dataRows) {
-    const key = normalizePortageKey(cell(row, "Nom_du_projet"));
+    const key = normalizePortageKey(cell(row.cells, "Nom_du_projet"));
     if (key) {
       seen.set(key, (seen.get(key) ?? 0) + 1);
     }
@@ -258,15 +285,18 @@ export function previewPortageImport(
     id: person.id,
     keys: [normalizePortageKey(person.name)].filter(Boolean),
   }));
-  const bdcs = catalog.bdcs.map((bdc) => ({
-    id: bdc.id,
-    keys: [bdc.nom ?? "", bdc.chorus ?? "", `bdc #${bdc.id}`]
-      .map(normalizePortageKey)
-      .filter(Boolean),
-  }));
+  const bdcs = catalog.bdcs.map((bdc) => {
+    const chorus = (bdc.chorus ?? "").trim();
+    return {
+      id: bdc.id,
+      keys: [bdc.nom ?? "", chorus, chorus ? `Chorus ${chorus}` : "", `bdc #${bdc.id}`]
+        .map(normalizePortageKey)
+        .filter(Boolean),
+    };
+  });
 
-  const lines: PortageImportLine[] = dataRows.map((row, index) => {
-    const nom = cell(row, "Nom_du_projet");
+  const lines: PortageImportLine[] = dataRows.map((row) => {
+    const nom = cell(row.cells, "Nom_du_projet");
     const messages: string[] = [];
     const key = normalizePortageKey(nom);
     if (!nom) {
@@ -282,29 +312,29 @@ export function previewPortageImport(
 
     const person = matchByName(
       "Personne",
-      cell(row, "Freelance"),
+      cell(row.cells, "Freelance"),
       people,
       catalog.peopleReady,
       "L’annuaire n’a pas pu être lu. Retirez la personne ou réessayez.",
     );
     const responsable = matchByName(
       "Responsable",
-      cell(row, "Responsable_du_projet"),
+      cell(row.cells, "Responsable_du_projet"),
       people,
       catalog.peopleReady,
       "L’annuaire n’a pas pu être lu. Retirez le responsable ou réessayez.",
     );
     const bdc = matchByName(
       "Bon de commande",
-      cell(row, "Bon_de_commande"),
+      cell(row.cells, "Bon_de_commande"),
       bdcs,
       catalog.bdcReady,
       "Les bons de commande n’ont pas pu être lus. Retirez le bon ou réessayez.",
     );
     messages.push(...person.messages, ...responsable.messages, ...bdc.messages);
 
-    const debut = toIsoDate(cell(row, "Date_de_debut"));
-    const fin = toIsoDate(cell(row, "Date_de_fin"));
+    const debut = toIsoDate(cell(row.cells, "Date_de_debut"));
+    const fin = toIsoDate(cell(row.cells, "Date_de_fin"));
     if (debut.error) {
       messages.push(debut.error);
     }
@@ -319,10 +349,10 @@ export function previewPortageImport(
     const values: PortageProjetFormValues = {
       ...emptyPortageProjetForm(),
       Nom_du_projet: nom,
-      Statut: cell(row, "Statut"),
-      Porteur: cell(row, "Porteur"),
-      Financeur: cell(row, "Financeur"),
-      Equipe: cell(row, "Equipe"),
+      Statut: cell(row.cells, "Statut"),
+      Porteur: cell(row.cells, "Porteur"),
+      Financeur: cell(row.cells, "Financeur"),
+      Equipe: cell(row.cells, "Equipe"),
       Freelance: person.id,
       Responsable_du_projet: responsable.id,
       Bon_de_commande: bdc.id,
@@ -331,7 +361,7 @@ export function previewPortageImport(
     };
 
     return {
-      line: index + 2,
+      line: row.line,
       nom: nom || "—",
       status: messages.length > 0 ? "blocked" : "ready",
       messages,

@@ -32,6 +32,7 @@ export const PortageProjetImportDrawer = forwardRef<
   PortageProjetImportDrawerProps
 >(function PortageProjetImportDrawer({ catalog, reloadCatalog, onImported }, ref) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const runTicket = useRef(0);
   const titleId = useId();
   const fileId = useId();
   const [csvText, setCsvText] = useState("");
@@ -40,20 +41,26 @@ export const PortageProjetImportDrawer = forwardRef<
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
 
+  const stopRun = useCallback(() => {
+    runTicket.current += 1;
+  }, []);
+
   const close = useCallback(() => {
+    stopRun();
     dialogRef.current?.close();
     setBusy(false);
     setError(undefined);
-  }, []);
+  }, [stopRun]);
 
   const open = useCallback(() => {
+    stopRun();
     setCsvText("");
     setFileName("");
     setPreview(null);
     setError(undefined);
     setBusy(false);
     dialogRef.current?.showModal();
-  }, []);
+  }, [stopRun]);
 
   useImperativeHandle(ref, () => ({ open, close }), [open, close]);
 
@@ -84,19 +91,34 @@ export const PortageProjetImportDrawer = forwardRef<
     if (!preview || preview.readyCount === 0 || preview.fileError) {
       return;
     }
+    const ticket = runTicket.current;
     setBusy(true);
     setError(undefined);
+    let created = 0;
+    let refreshed = false;
+    const refreshCreated = async () => {
+      if (refreshed || created <= 0) {
+        return;
+      }
+      refreshed = true;
+      await onImported(created);
+    };
     try {
       const fresh = await reloadCatalog();
+      if (runTicket.current !== ticket) {
+        return;
+      }
       const again = previewPortageImport(csvText, fresh);
       if (again.fileError || portageImportReadyKey(again) !== portageImportReadyKey(preview)) {
         setPreview(again);
         setError("La vérification a changé. Relisez les lignes, puis importez de nouveau.");
         return;
       }
-      let created = 0;
       const failures: string[] = [];
       for (const line of again.lines) {
+        if (runTicket.current !== ticket) {
+          return;
+        }
         if (line.status !== "ready" || !line.values) {
           continue;
         }
@@ -109,18 +131,35 @@ export const PortageProjetImportDrawer = forwardRef<
           );
         }
       }
-      await onImported(created);
+      if (runTicket.current !== ticket) {
+        return;
+      }
+      await refreshCreated();
+      if (runTicket.current !== ticket) {
+        return;
+      }
       if (failures.length > 0) {
-        setError(
-          `${created} portage${created > 1 ? "s" : ""} créé${created > 1 ? "s" : ""}. ${failures.join(" ")}`,
-        );
+        const createdLabel =
+          created <= 0
+            ? "Aucun portage créé."
+            : created === 1
+              ? "1 portage créé."
+              : `${created} portages créés.`;
+        setError(`${createdLabel} ${failures.join(" ")}`);
         return;
       }
       close();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Import impossible.");
+      if (runTicket.current === ticket) {
+        setError(err instanceof Error ? err.message : "Import impossible.");
+      }
     } finally {
-      setBusy(false);
+      if (runTicket.current !== ticket) {
+        await refreshCreated();
+      }
+      if (runTicket.current === ticket) {
+        setBusy(false);
+      }
     }
   };
 
@@ -135,6 +174,7 @@ export const PortageProjetImportDrawer = forwardRef<
       className="pilotage-drawer-dialog pilotage-drawer-dialog--sm"
       aria-labelledby={titleId}
       onClose={() => {
+        stopRun();
         setBusy(false);
         setError(undefined);
       }}
@@ -176,8 +216,8 @@ export const PortageProjetImportDrawer = forwardRef<
                 <label className="fr-label" htmlFor={fileId}>
                   Tableau CSV
                   <span className="fr-hint-text">
-                    Séparateur point-virgule. La personne et le bon de commande se reconnaissent
-                    par leur nom.
+                    Séparateur point-virgule. La personne se reconnaît par son nom complet.
+                    Le bon de commande se reconnaît par son nom, ou par « Chorus » suivi du numéro.
                   </span>
                 </label>
                 <input
@@ -241,7 +281,7 @@ export const PortageProjetImportDrawer = forwardRef<
 
               <div className="fr-grid-row fr-grid-row--gutters fr-grid-row--right">
                 <div className="fr-col-auto">
-                  <button type="button" className="fr-btn fr-btn--secondary" onClick={close} disabled={busy}>
+                  <button type="button" className="fr-btn fr-btn--secondary" onClick={close}>
                     Annuler
                   </button>
                 </div>

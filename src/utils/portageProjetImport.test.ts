@@ -65,6 +65,19 @@ describe("previewPortageImport", () => {
     assert.match(broken.fileError ?? "", /Nom du projet/);
   });
 
+  it("garde le numéro de ligne du fichier, reconnaît « Chorus … » et refuse un tableau vide", () => {
+    const shifted = previewPortageImport(
+      csv("\nNouveau;En cours;Malt;;;;;Chorus 1407024492;\n"),
+      catalog,
+    );
+    assert.equal(shifted.readyCount, 1);
+    assert.equal(shifted.lines[0]?.line, 3);
+    assert.equal(shifted.lines[0]?.values?.Bon_de_commande, "4");
+
+    const empty = previewPortageImport(portageImportTemplateCsv(), catalog);
+    assert.match(empty.fileError ?? "", /aucune ligne/);
+  });
+
   it("refuse d’importer une personne si l’annuaire n’est pas lu", () => {
     const preview = previewPortageImport(csv("Nouveau;En cours;Malt;;;GIZARD Axelle;;;\n"), {
       ...catalog,

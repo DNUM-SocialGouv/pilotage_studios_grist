@@ -30,7 +30,7 @@ Les règles d’accès Grist de la table ne sont pas modifiées par cet écran :
 1. **Liste** — nom, personne, porteur, statut, bon de commande ; recherche ; pages de 10 lignes.
 2. **Panneau** — créer ou modifier les dix champs de la table (nom obligatoire).
 3. **Supprimer** — confirmation. Les prestations liées sont relues au clic, puis encore juste avant l’effacement. Refusée si une prestation pointe encore vers le portage, ou si cette relecture échoue.
-4. **Importer** — dépôt d’un tableau CSV. Chaque ligne est vérifiée (nom nouveau, personne et bon de commande reconnus ou vides, dates cohérentes). Seules les lignes prêtes sont créées, une par une. Un portage déjà présent n’est pas réécrit.
+4. **Importer** — dépôt d’un tableau CSV. Chaque ligne est vérifiée (nom nouveau, personne et bon de commande reconnus ou vides, dates cohérentes). Le numéro de ligne est celui du fichier. Le bon de commande est reconnu par son nom ou par « Chorus » suivi du numéro. Seules les lignes prêtes sont créées, une par une. Fermer le panneau arrête les créations qui n’ont pas encore commencé. Un portage déjà présent n’est pas réécrit. Un fichier sans ligne est refusé.
 
 Une cellule ancienne illisible s’affiche « valeur à corriger ». Elle n’est pas réécrite tant qu’une nouvelle valeur n’est pas choisie.
 
