@@ -31,7 +31,8 @@ export function normalizeEquipeLabel(label: string | null | undefined): string {
 
 /**
  * Statut Équipe « Actif » (défaut métier si la colonne est vide).
- * Insensible à la casse / accents (`Actif`, `actif`…).
+ * Compare en ignorant casse / accents (`Actif`, `actif`).
+ * Autres libellés (`Inactif`, « En activité », etc.) → non actif.
  */
 export function isEquipeMemberActif(
   statut: string | null | undefined,
@@ -41,7 +42,7 @@ export function isEquipeMemberActif(
     return true;
   }
   return (
-    t.localeCompare(DEFAULT_EQUIPE_STATUT, "fr", { sensitivity: "accent" }) === 0
+    t.localeCompare(DEFAULT_EQUIPE_STATUT, "fr", { sensitivity: "base" }) === 0
   );
 }
 

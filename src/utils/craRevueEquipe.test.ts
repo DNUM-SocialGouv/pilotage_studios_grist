@@ -8,6 +8,7 @@ import {
   filterEquipeMembersByDepartement,
   filterSuiviForIntervenantMonth,
   initCraRevueEquipeDrafts,
+  isEquipeMemberActif,
   suiviSansBdc,
 } from "./craRevueEquipe.ts";
 
@@ -31,6 +32,17 @@ function suivi(partial: Partial<SuiviMensuel> & { id: number }): SuiviMensuel {
     ...partial,
   };
 }
+
+describe("isEquipeMemberActif", () => {
+  it("accepte Actif / casse / vide ; refuse Inactif et libellés autres", () => {
+    assert.equal(isEquipeMemberActif(undefined), true);
+    assert.equal(isEquipeMemberActif(""), true);
+    assert.equal(isEquipeMemberActif("Actif"), true);
+    assert.equal(isEquipeMemberActif("actif"), true);
+    assert.equal(isEquipeMemberActif("Inactif"), false);
+    assert.equal(isEquipeMemberActif("En activité"), false);
+  });
+});
 
 describe("filterEquipeMembersByDepartement", () => {
   it("filtre même département hors soi", () => {

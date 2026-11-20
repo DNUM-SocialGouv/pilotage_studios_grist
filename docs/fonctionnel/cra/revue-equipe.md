@@ -20,7 +20,7 @@ En fin de mois, le **manager d’un département** (Design, Product, Tech…) ou
 
 Pas de drapeau `Page_*` dédié : accès par rôle (comme la déclaration).
 
-**Périmètre** : collègues **actifs** (`Equipe.Statut` = Actif, ou vide = Actif par défaut) dont `Equipe.Equipe` = même valeur que le manager (hors soi).
+**Périmètre** : collègues **actifs** (`Equipe.Statut` = Actif, ou vide = Actif par défaut) dont `Equipe.Equipe` = même valeur que le manager (hors soi). Les fiches **Inactif** (et autres statuts) n’apparaissent pas dans les onglets ni dans les indicateurs d’équipe.
 
 ## Parcours
 

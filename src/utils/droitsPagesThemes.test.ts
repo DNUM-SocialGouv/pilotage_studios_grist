@@ -185,7 +185,7 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
     const filtered = filterNavItemsByPageAccess(
       WIDGET_NAV_ITEMS,
       (href) => canAccessHref(href, PAGE_ACCESS_FAIL_CLOSED),
-      { isAdmin: false, canDeclareCra: true, canWeekly: true, canRevueCraEquipe: false },
+      { isAdmin: false, canDeclareCra: true, canWeekly: true },
     );
     assert.equal(
       filtered.some((item) => isWidgetNavGroup(item) && item.text === "Budget"),
@@ -207,7 +207,7 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
     const filtered = filterNavItemsByPageAccess(
       WIDGET_NAV_ITEMS,
       (href) => canAccessHref(href, PAGE_ACCESS_FAIL_CLOSED),
-      { isAdmin: false, canDeclareCra: false, canRevueCraEquipe: true },
+      { isAdmin: false, canDeclareCra: false },
     );
     assert.equal(
       filtered.some((item) => isWidgetNavGroup(item) && item.text === "Budget"),
@@ -219,7 +219,7 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
     const filtered = filterNavItemsByPageAccess(
       WIDGET_NAV_ITEMS,
       (href) => canAccessHref(href, PAGE_ACCESS_FAIL_CLOSED),
-      { isAdmin: false, canDeclareCra: true, canRevueCraEquipe: true },
+      { isAdmin: false, canDeclareCra: true },
     );
     assert.equal(
       filtered.some(
@@ -242,7 +242,6 @@ describe("filterNavItemsByPageAccess adminOnly", () => {
     const filtered = filterNavItemsByPageAccess(WIDGET_NAV_ITEMS, () => true, {
       isAdmin: false,
       canDeclareCra: false,
-      canRevueCraEquipe: true,
     });
     const budget = filtered.find(
       (item) => isWidgetNavGroup(item) && item.text === "Budget",

@@ -20,11 +20,6 @@ export type WidgetNavLink = {
    * (Weekly Ops). Indépendant des `Page_*`.
    */
   weeklyOnly?: boolean;
-  /**
-   * Visible seulement si rôle Admin ou Responsable de département
-   * (revue CRA équipe). Indépendant des `Page_*`.
-   */
-  craRevueEquipeOnly?: boolean;
 };
 
 export type WidgetNavGroup = {
@@ -122,7 +117,7 @@ export function isGroupActive(pathname: string, group: WidgetNavGroup): boolean 
  * `adminOnly` : lien réservé rôle Admin (indépendant de `Page_*`).
  * `craDeclarerOnly` : lien réservé Freelance / Admin / Resp. (indépendant de `Page_*`).
  * `weeklyOnly` : lien réservé aux e-mails de `Weekly_coachs` (hors `Page_*`, pas par rôle).
- * `craRevueEquipeOnly` : lien réservé Admin / Resp. (indépendant de `Page_*`).
+ * Revue CRA / Mon carnet managers : hors nav (menu compte) — pas de flag ici.
  */
 export function filterNavItemsByPageAccess(
   items: WidgetNavItem[],
@@ -131,13 +126,11 @@ export function filterNavItemsByPageAccess(
     isAdmin?: boolean;
     canDeclareCra?: boolean;
     canWeekly?: boolean;
-    canRevueCraEquipe?: boolean;
   },
 ): WidgetNavItem[] {
   const isAdmin = options?.isAdmin === true;
   const canDeclareCra = options?.canDeclareCra === true;
   const canWeekly = options?.canWeekly === true;
-  const canRevueCraEquipe = options?.canRevueCraEquipe === true;
   const out: WidgetNavItem[] = [];
   for (const item of items) {
     if (isWidgetNavGroup(item)) {
@@ -150,9 +143,6 @@ export function filterNavItemsByPageAccess(
         }
         if (child.weeklyOnly) {
           return canWeekly;
-        }
-        if (child.craRevueEquipeOnly) {
-          return canRevueCraEquipe;
         }
         return canAccess(child.href);
       });
@@ -172,12 +162,6 @@ export function filterNavItemsByPageAccess(
     }
     if (item.weeklyOnly) {
       if (canWeekly) {
-        out.push(item);
-      }
-      continue;
-    }
-    if (item.craRevueEquipeOnly) {
-      if (canRevueCraEquipe) {
         out.push(item);
       }
       continue;
