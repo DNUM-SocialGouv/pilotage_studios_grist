@@ -59,6 +59,26 @@ class ParcFactsTest(unittest.TestCase):
         q = _normalize("Donne moi la note RGAA sur le produit Honorabilité.")
         self.assertTrue(_has_phrase(q, "honorabilite"))
 
+    def test_match_si_honorabilite_from_short_name(self) -> None:
+        q = "Donne moi la note RGAA sur le produit Honorabilité"
+        produits = [
+            {"id": 1, "fields": {"Produit": "SI-Honorabilité", "code": ""}},
+            {
+                "id": 2,
+                "fields": {
+                    "Produit": "Base de données publique des médicaments",
+                    "code": "",
+                },
+            },
+        ]
+        matched = match_product(q, produits)
+        self.assertEqual(matched["status"], "matched")
+        self.assertEqual(matched["label"], "SI-Honorabilité")
+        self.assertGreaterEqual(
+            _score_product(_normalize(q), _tokens(q), "SI-Honorabilité", ""),
+            50.0,
+        )
+
     def test_score_donne_not_donnees(self) -> None:
         q = _normalize("Donne moi le nombre de produits ayant le champ RGAA renseigné.")
         toks = _tokens("Donne moi le nombre de produits ayant le champ RGAA renseigné.")

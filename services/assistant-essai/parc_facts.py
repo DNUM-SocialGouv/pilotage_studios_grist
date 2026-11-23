@@ -440,15 +440,21 @@ def _has_phrase(haystack: str, needle: str) -> bool:
         return False
     if haystack == needle:
         return True
-    # Frontière = début/fin OU caractère hors lettre/chiffre/+/_/-
-    # (le point final d’une phrase compte bien comme frontière)
+    # Frontière = début/fin OU hors lettre/chiffre/+/_
+    # Le tiret compte comme frontière (« Honorabilité » ⊂ « SI-Honorabilité »).
+    # Le point final d’une phrase aussi.
     return (
         re.search(
-            r"(?:^|[^a-z0-9+/_-])" + re.escape(needle) + r"(?:[^a-z0-9+/_-]|$)",
+            r"(?:^|[^a-z0-9+/_])" + re.escape(needle) + r"(?:[^a-z0-9+/_]|$)",
             haystack,
         )
         is not None
     )
+
+
+def _name_parts(name_n: str) -> List[str]:
+    """Découpe un libellé sur espaces / tirets (SI-Honorabilité → si, honorabilite)."""
+    return [p for p in re.split(r"[\s\-_+/]+", name_n) if p]
 
 
 def _score_product(question_norm: str, tokens: List[str], name: str, code: str) -> float:
@@ -465,12 +471,13 @@ def _score_product(question_norm: str, tokens: List[str], name: str, code: str) 
         score += 90.0 + min(len(code_n), 40) * 0.2
     if name_n and question_norm in name_n and len(question_norm) >= 3:
         score += 40.0
-    name_tokens = set(name_n.split())
+    name_tokens = set(_name_parts(name_n))
     for t in tokens:
         if t == code_n:
             score += 50.0
         elif t in name_tokens:
-            score += 12.0
+            # Segment exact du libellé (ex. honorabilite dans SI-Honorabilité)
+            score += 50.0 if len(t) >= 5 else 12.0
         elif len(t) >= 4 and _has_phrase(name_n, t):
             # Mot entier dans le libellé — pas de sous-chaîne (« donne » ⊂ « donnees »)
             score += 8.0
