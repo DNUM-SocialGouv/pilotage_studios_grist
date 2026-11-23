@@ -97,7 +97,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | `Kanban` (feedback + produit) | CRU (liste + colonne + corps Admin) | C (+ R) | C (+ R) | C (+ R) | **Appliqué** (ACL) + widget | Owner/Admin `+CRUD` (colonne + `Resume`/`Message`) ; `True` → `+CR-UD` |
 | `Kanban_commentaires` | CR | C (+ R) | C (+ R) | C (+ R) | **Appliqué** (ACL) + widget | Owner/Admin `+CRUD` ; `True` → `+CR-UD` |
 | `Retours` / `Roadmap` (legacy) | — | — | — | — | **Hors widget** (migrées → `Kanban`) | Archivables Owner |
-| `Acl_profil` | CRUD | CRUD | CR soi | CR soi | **Appliqué** | Owner/Admin `+CRUD` ; `user.Email == rec.E_mail` → `+CR` ; `True` → `-CRUD` |
+| `Acl_profil` | CRUD | CR soi | CR soi | CR soi | **Appliqué** | Owner seul `+CRUD` ; chacun `user.Email == rec.E_mail` → `+CR` ; `True` → `-CRUD`. Admin ne voit plus toutes les fiches (bonjour « Voir en tant que », 2026-11-23). |
 | `Droits_pages` | CRUD (Owner / Admin) | — | — | — | **Appliqué** | Owner **ou** `Role_ACL == Admin` → `+CRUD` ; `True` → `-CRUD` |
 | Structure (S) | Owner | — | — | — | **Appliqué** | `-S` si non-Owner |
 
@@ -115,6 +115,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-11-23 | Accueil « Voir en tant que » : règle `Acl_profil` **appliquée** (Owner UI). Owner seul `+CRUD` ; chacun lit sa fiche (`user.Email == rec.E_mail` → `+CR`). Un admin simulé ne voit plus toutes les fiches, le bonjour et « Vos retours » suivent sa fiche. **N/A `Page_*`**. | 4, 5, 6 | Owner UI 2026-11-23 |
 | 2026-11-23 | **Portage** : le champ s’appelle « Nom du portage ». Un admin peut créer un bon de commande court dans le panneau (nom, statut, montant TTC, numéro Chorus), écrit seulement à l’enregistrement du portage. **N/A `Page_*`** (même écran Admin). | 5 | kanban `portage-creer-bdc` |
 | 2026-11-20 | **Portage** : l’écran Outils s’appelle « Portage » (menu, titre, recherche). Les boutons **Nouveau** et **Import** affichent leur libellé. **N/A `Page_*`**. | 5 | même écran `/outils/portage-projet` |
 | 2026-11-20 | **Import projets de portage** : bouton Importer sur l’écran Admin existant. Vérification du CSV avant création ; pas d’écrasement. **N/A `Page_*`** (même écran). | 5 | kanban HITL `portage-projet-import` |

@@ -13,6 +13,7 @@ import { createOwnAclProfilRecord } from "../utils/aclProfilGristWrite";
 import {
   emailFromAclProfilFields,
   pickAclProfilRow,
+  preferEffectiveSessionEmail,
 } from "../utils/aclProfilPick";
 import { resolveGristUserEmail } from "../utils/gristUserEmail";
 import { findSelfEquipeFromTable } from "../utils/resolveSelfEquipeId";
@@ -208,7 +209,10 @@ export function useAclProfilData(): AclProfilData {
             return;
           }
           const rows = recordsFromFetchTable(raw);
-          const row = pickAclProfilRow(rows, sessionEmail);
+          // Formule `Email_session` = personne du bandeau « Voir en tant que ».
+          // Le jeton, lui, reste le compte qui a ouvert le navigateur.
+          const effectiveEmail = preferEffectiveSessionEmail(sessionEmail, rows);
+          const row = pickAclProfilRow(rows, effectiveEmail);
 
           if (!row) {
             if (!createdOnce) {
@@ -257,7 +261,8 @@ export function useAclProfilData(): AclProfilData {
 
           const fields: Record<string, unknown> = { ...row };
           delete fields.id;
-          const email = emailFromAclProfilFields(fields) ?? sessionEmail;
+          const email =
+            emailFromAclProfilFields(fields) ?? effectiveEmail ?? sessionEmail;
           const selfEquipe = await resolveSelfEquipeSnippet(email);
           if (cancelled) {
             return;
