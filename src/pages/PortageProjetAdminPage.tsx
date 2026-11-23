@@ -161,6 +161,11 @@ export function PortageProjetAdminPage() {
     } catch {
       setListNotice("L’enregistrement a réussi, mais la liste n’a pas pu être rafraîchie.");
     }
+    try {
+      await pa.reloadRelated();
+    } catch {
+      // Le libellé du bon de commande peut rester « BDC #… » jusqu’au prochain chargement.
+    }
   };
 
   const importCatalog = importCatalogFor(
@@ -352,7 +357,7 @@ export function PortageProjetAdminPage() {
               <caption className="fr-sr-only">Liste des portages</caption>
               <thead>
                 <tr>
-                  <th scope="col">Nom du projet</th>
+                  <th scope="col">Nom du portage</th>
                   <th scope="col">Personne</th>
                   <th scope="col">Porteur</th>
                   <th scope="col">Statut</th>
@@ -434,6 +439,7 @@ export function PortageProjetAdminPage() {
             financeurSuggestions={suggestion("Financeur")}
             equipeSuggestions={suggestion("Equipe")}
             onRecordsChanged={refresh}
+            onBdcCreated={() => pa.reloadRelated()}
             onRequestDelete={requestDelete}
           />
           <PortageProjetImportDrawer

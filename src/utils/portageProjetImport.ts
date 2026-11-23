@@ -14,7 +14,7 @@ import {
 export const PORTAGE_IMPORT_MAX_ROWS = 500;
 
 export const PORTAGE_IMPORT_HEADERS = [
-  "Nom du projet",
+  "Nom du portage",
   "Statut",
   "Porteur",
   "Financeur",
@@ -28,6 +28,7 @@ export const PORTAGE_IMPORT_HEADERS = [
 
 const HEADER_FIELDS = {
   "nom du projet": "Nom_du_projet",
+  "nom du portage": "Nom_du_projet",
   statut: "Statut",
   porteur: "Porteur",
   financeur: "Financeur",
@@ -245,7 +246,8 @@ export function previewPortageImport(
       lines: [],
       readyCount: 0,
       blockedCount: 0,
-      fileError: "La colonne « Nom du projet » est introuvable. Téléchargez le modèle.",
+      fileError:
+        "La colonne « Nom du portage » est introuvable. L’ancien intitulé « Nom du projet » est encore accepté. Téléchargez le modèle.",
     };
   }
   const dataRows = table.slice(1);
@@ -300,7 +302,7 @@ export function previewPortageImport(
     const messages: string[] = [];
     const key = normalizePortageKey(nom);
     if (!nom) {
-      messages.push("Le nom du projet est obligatoire.");
+      messages.push("Le nom du portage est obligatoire.");
     } else {
       if (existing.has(key)) {
         messages.push("Un portage porte déjà ce nom.");

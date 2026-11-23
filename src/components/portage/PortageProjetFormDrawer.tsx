@@ -1,6 +1,7 @@
 import {
   forwardRef,
   useCallback,
+  useEffect,
   useId,
   useImperativeHandle,
   useMemo,
@@ -14,6 +15,13 @@ import { z } from "zod";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { Select } from "@codegouvfr/react-dsfr/Select";
+import {
+  BDC_CREATE_FROM_PORTAGE_DEFAULT_STATUT,
+  BDC_STATUT_CHOICES,
+  buildBdcCreateFromPortage,
+  type BdcCreateFromPortageErrorField,
+} from "../../utils/bdcFormFields.ts";
+import { createBdcFromPortageRecord } from "../../utils/bdcGristWrite.ts";
 import { PORTAGE_PORTEUR_MALT } from "../../utils/portageProjet.ts";
 import {
   PORTAGE_STATUT_SUGGESTIONS,
@@ -32,7 +40,7 @@ import {
 
 const formSchema = z
   .object({
-    Nom_du_projet: z.string().trim().min(1, "Le nom du projet est obligatoire"),
+    Nom_du_projet: z.string().trim().min(1, "Le nom du portage est obligatoire"),
     Statut: z.string(),
     Porteur: z.string(),
     Financeur: z.string(),
@@ -70,8 +78,26 @@ export type PortageProjetFormDrawerProps = {
   financeurSuggestions: string[];
   equipeSuggestions: string[];
   onRecordsChanged: () => Promise<void>;
+  /** Recharge la liste des bons de commande après une création, même si le portage échoue. */
+  onBdcCreated: () => Promise<void>;
   onRequestDelete: (row: PortageProjetAdminRow) => void;
 };
+
+type BdcDraft = {
+  nom: string;
+  statut: string;
+  montant: string;
+  chorus: string;
+};
+
+function emptyBdcDraft(): BdcDraft {
+  return {
+    nom: "",
+    statut: BDC_CREATE_FROM_PORTAGE_DEFAULT_STATUT,
+    montant: "",
+    chorus: "",
+  };
+}
 
 const INVALID_HINT =
   "Valeur à corriger : elle n’est pas réécrite tant que vous n’en choisissez pas une nouvelle.";
@@ -116,6 +142,7 @@ export const PortageProjetFormDrawer = forwardRef<
     financeurSuggestions,
     equipeSuggestions,
     onRecordsChanged,
+    onBdcCreated,
     onRequestDelete,
   },
   ref,
@@ -124,42 +151,78 @@ export const PortageProjetFormDrawer = forwardRef<
   const titleId = useId();
   const financeurListId = useId();
   const equipeListId = useId();
+  const bdcHintId = useId();
+  const bdcNameRef = useRef<HTMLInputElement>(null);
 
   const [mode, setMode] = useState<"create" | "edit">("create");
   const [editing, setEditing] = useState<PortageProjetAdminRow | null>(null);
   const [submitError, setSubmitError] = useState<string>();
+  const [bdcSavedWithoutPortage, setBdcSavedWithoutPortage] = useState(false);
   const [savePending, setSavePending] = useState(false);
+  const savePendingRef = useRef(false);
+  const [creatingBdc, setCreatingBdc] = useState(false);
+  const [bdcDraft, setBdcDraft] = useState<BdcDraft>(emptyBdcDraft);
+  const [bdcErrors, setBdcErrors] = useState<
+    Partial<Record<BdcCreateFromPortageErrorField, string>>
+  >({});
 
-  const { register, handleSubmit, reset, formState } = useForm<PortageProjetFormValues>({
+  const { register, handleSubmit, reset, setValue, watch, formState } = useForm<PortageProjetFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: emptyPortageProjetForm(),
   });
 
   const invalid = editing?.invalid ?? new Set<PortageProjetFormField>();
+  const bonDeCommande = watch("Bon_de_commande");
+
+  const resetBdcDraft = useCallback(() => {
+    setCreatingBdc(false);
+    setBdcDraft(emptyBdcDraft());
+    setBdcErrors({});
+  }, []);
+
+  const clearSubmitAlert = useCallback(() => {
+    setSubmitError(undefined);
+    setBdcSavedWithoutPortage(false);
+  }, []);
+
+  const setSaveLocked = useCallback((locked: boolean) => {
+    savePendingRef.current = locked;
+    setSavePending(locked);
+  }, []);
 
   const close = useCallback(() => {
     dialogRef.current?.close();
-    setSubmitError(undefined);
-    setSavePending(false);
-  }, []);
+    clearSubmitAlert();
+    setSaveLocked(false);
+    resetBdcDraft();
+  }, [clearSubmitAlert, resetBdcDraft, setSaveLocked]);
+
+  const requestClose = useCallback(() => {
+    if (savePendingRef.current) {
+      return;
+    }
+    close();
+  }, [close]);
 
   const openCreate = useCallback(() => {
     setMode("create");
     setEditing(null);
-    setSubmitError(undefined);
+    clearSubmitAlert();
+    resetBdcDraft();
     reset(emptyPortageProjetForm());
     dialogRef.current?.showModal();
-  }, [reset]);
+  }, [clearSubmitAlert, reset, resetBdcDraft]);
 
   const openEdit = useCallback(
     (row: PortageProjetAdminRow) => {
       setMode("edit");
       setEditing(row);
-      setSubmitError(undefined);
+      clearSubmitAlert();
+      resetBdcDraft();
       reset(row.values);
       dialogRef.current?.showModal();
     },
-    [reset],
+    [clearSubmitAlert, reset, resetBdcDraft],
   );
 
   useImperativeHandle(ref, () => ({ openCreate, openEdit, close }), [
@@ -192,19 +255,58 @@ export const PortageProjetFormDrawer = forwardRef<
     return base ? `${base} ${INVALID_HINT}` : INVALID_HINT;
   };
 
+  const startBdcCreate = () => {
+    setBdcDraft(emptyBdcDraft());
+    setBdcErrors({});
+    setCreatingBdc(true);
+  };
+
+  const cancelBdcCreate = () => {
+    resetBdcDraft();
+  };
+
+  useEffect(() => {
+    if (creatingBdc) {
+      bdcNameRef.current?.focus();
+    }
+  }, [creatingBdc]);
+
   const submitForm = async (values: PortageProjetFormValues) => {
-    setSubmitError(undefined);
-    setSavePending(true);
+    clearSubmitAlert();
+    const built = creatingBdc
+      ? buildBdcCreateFromPortage({
+          nom: bdcDraft.nom,
+          statut: bdcDraft.statut,
+          montantTtc: bdcDraft.montant,
+          chorus: bdcDraft.chorus,
+          financeurPortage: values.Financeur,
+          porteurPortage: values.Porteur,
+        })
+      : null;
+    if (built && !built.ok) {
+      setBdcErrors(built.errors);
+      return;
+    }
+    setBdcErrors({});
+    setSaveLocked(true);
+    let createdBdcId: string | null = null;
     try {
+      const nextValues = { ...values };
+      if (built?.ok) {
+        const id = await createBdcFromPortageRecord(built.fields);
+        createdBdcId = String(id);
+        nextValues.Bon_de_commande = createdBdcId;
+        setValue("Bon_de_commande", createdBdcId);
+        setCreatingBdc(false);
+      }
       if (mode === "edit") {
         if (editing == null) {
-          setSubmitError("Édition incohérente : fermez le panneau et réessayez.");
-          return;
+          throw new Error("Édition incohérente : fermez le panneau et réessayez.");
         }
-        const patch = buildPortageProjetPatch(values, editing.values, editing.invalid);
+        const patch = buildPortageProjetPatch(nextValues, editing.values, editing.invalid);
         await updatePortageProjetRecord(editing.id, patch);
       } else {
-        await createPortageProjetRecord(buildPortageProjetCreateFields(values));
+        await createPortageProjetRecord(buildPortageProjetCreateFields(nextValues));
       }
       try {
         await onRecordsChanged();
@@ -213,9 +315,23 @@ export const PortageProjetFormDrawer = forwardRef<
       }
       close();
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Erreur inconnue");
+      const message = err instanceof Error ? err.message : "Erreur inconnue";
+      if (createdBdcId) {
+        try {
+          await onBdcCreated();
+        } catch {
+          // La sélection reste l’identifiant créé, même si la liste n’a pas été relue.
+        }
+        setBdcSavedWithoutPortage(true);
+        setSubmitError(
+          `Il est sélectionné : enregistrez à nouveau le portage. ${message}`,
+        );
+      } else {
+        setBdcSavedWithoutPortage(false);
+        setSubmitError(message);
+      }
     } finally {
-      setSavePending(false);
+      setSaveLocked(false);
     }
   };
 
@@ -227,13 +343,23 @@ export const PortageProjetFormDrawer = forwardRef<
       ref={dialogRef}
       className="pilotage-drawer-dialog pilotage-drawer-dialog--sm"
       aria-labelledby={titleId}
+      onCancel={(event) => {
+        if (savePendingRef.current) {
+          event.preventDefault();
+        }
+      }}
       onClose={() => {
-        setSubmitError(undefined);
-        setSavePending(false);
+        clearSubmitAlert();
+        setSaveLocked(false);
+        resetBdcDraft();
       }}
     >
       <div className="pilotage-drawer-dialog__shell">
-        <div className="pilotage-drawer-dialog__scrim" aria-hidden="true" onClick={close} />
+        <div
+          className="pilotage-drawer-dialog__scrim"
+          aria-hidden="true"
+          onClick={requestClose}
+        />
         <div className="pilotage-drawer-dialog__panel">
           <div className="pilotage-drawer-dialog__inner">
             <header className="fr-p-3w fr-pb-2w">
@@ -252,8 +378,9 @@ export const PortageProjetFormDrawer = forwardRef<
                   <button
                     type="button"
                     className="fr-btn--close fr-btn"
-                    title="Fermer"
-                    onClick={close}
+                    title={savePending ? "Enregistrement en cours" : "Fermer"}
+                    disabled={savePending}
+                    onClick={requestClose}
                   >
                     Fermer
                   </button>
@@ -264,8 +391,12 @@ export const PortageProjetFormDrawer = forwardRef<
             <div className="pilotage-drawer-dialog__body fr-px-3w fr-pb-3w fr-pt-0">
               {submitError ? (
                 <Alert
-                  severity="error"
-                  title="Enregistrement impossible"
+                  severity={bdcSavedWithoutPortage ? "warning" : "error"}
+                  title={
+                    bdcSavedWithoutPortage
+                      ? "Bon de commande créé, portage non enregistré"
+                      : "Enregistrement impossible"
+                  }
                   description={submitError}
                   className="fr-mb-2w"
                 />
@@ -281,7 +412,7 @@ export const PortageProjetFormDrawer = forwardRef<
                   <div className="fr-grid-row fr-grid-row--gutters">
                     <div className="fr-col-12">
                       <Input
-                        label="Nom du projet *"
+                        label="Nom du portage *"
                         hintText={hintFor("Nom_du_projet")}
                         nativeInputProps={register("Nom_du_projet")}
                         state={formState.errors.Nom_du_projet ? "error" : "default"}
@@ -361,13 +492,115 @@ export const PortageProjetFormDrawer = forwardRef<
                       />
                     </div>
                     <div className="fr-col-12">
-                      <PersonOrBdcSelect
-                        label="Bon de commande"
-                        hint={hintFor("Bon_de_commande")}
-                        emptyLabel="Aucun bon de commande"
-                        options={withCurrentOption(bdcOptions, editing?.values.Bon_de_commande ?? "")}
-                        nativeSelectProps={register("Bon_de_commande")}
-                      />
+                      {creatingBdc ? (
+                        <fieldset className="fr-fieldset" aria-labelledby={bdcHintId}>
+                          <legend className="fr-fieldset__legend" id={bdcHintId}>
+                            Nouveau bon de commande
+                            <span className="fr-hint-text">
+                              Il sera créé au moment d’enregistrer le portage. Le financeur du
+                              portage est recopié. Si le porteur est Malt, la plateforme est Malt.
+                            </span>
+                          </legend>
+                          <div className="fr-fieldset__element">
+                            <Input
+                              label="Nom du bon de commande *"
+                              nativeInputProps={{
+                                ref: bdcNameRef,
+                                value: bdcDraft.nom,
+                                onChange: (event) => {
+                                  setBdcDraft((draft) => ({ ...draft, nom: event.target.value }));
+                                },
+                              }}
+                              state={bdcErrors.nom ? "error" : "default"}
+                              stateRelatedMessage={bdcErrors.nom}
+                            />
+                          </div>
+                          <div className="fr-fieldset__element">
+                            <div className="fr-grid-row fr-grid-row--gutters">
+                              <div className="fr-col-12 fr-col-md-6">
+                                <Select
+                                  label="Statut *"
+                                  nativeSelectProps={{
+                                    value: bdcDraft.statut,
+                                    onChange: (event) => {
+                                      setBdcDraft((draft) => ({
+                                        ...draft,
+                                        statut: event.target.value,
+                                      }));
+                                    },
+                                  }}
+                                  state={bdcErrors.statut ? "error" : "default"}
+                                  stateRelatedMessage={bdcErrors.statut}
+                                >
+                                  {BDC_STATUT_CHOICES.map((value) => (
+                                    <option key={value} value={value}>
+                                      {value}
+                                    </option>
+                                  ))}
+                                </Select>
+                              </div>
+                              <div className="fr-col-12 fr-col-md-6">
+                                <Input
+                                  label="Montant TTC *"
+                                  hintText="Zéro est accepté."
+                                  nativeInputProps={{
+                                    inputMode: "decimal",
+                                    value: bdcDraft.montant,
+                                    onChange: (event) => {
+                                      setBdcDraft((draft) => ({
+                                        ...draft,
+                                        montant: event.target.value,
+                                      }));
+                                    },
+                                  }}
+                                  state={bdcErrors.montantTtc ? "error" : "default"}
+                                  stateRelatedMessage={bdcErrors.montantTtc}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="fr-fieldset__element">
+                            <Input
+                              label="Numéro Chorus"
+                              nativeInputProps={{
+                                value: bdcDraft.chorus,
+                                onChange: (event) => {
+                                  setBdcDraft((draft) => ({
+                                    ...draft,
+                                    chorus: event.target.value,
+                                  }));
+                                },
+                              }}
+                            />
+                          </div>
+                          <div className="fr-fieldset__element">
+                            <button
+                              type="button"
+                              className="fr-btn fr-btn--tertiary fr-btn--sm"
+                              onClick={cancelBdcCreate}
+                            >
+                              Choisir un bon de commande existant
+                            </button>
+                          </div>
+                        </fieldset>
+                      ) : (
+                        <>
+                          <PersonOrBdcSelect
+                            label="Bon de commande"
+                            hint={hintFor("Bon_de_commande")}
+                            emptyLabel="Aucun bon de commande"
+                            options={withCurrentOption(bdcOptions, bonDeCommande)}
+                            nativeSelectProps={register("Bon_de_commande")}
+                          />
+                          <button
+                            type="button"
+                            className="fr-btn fr-btn--tertiary fr-btn--sm fr-mt-1w"
+                            onClick={startBdcCreate}
+                          >
+                            Créer un bon de commande
+                          </button>
+                        </>
+                      )}
                     </div>
                     <div className="fr-col-12 fr-col-md-6">
                       <Input
@@ -410,7 +643,7 @@ export const PortageProjetFormDrawer = forwardRef<
                       <button
                         type="button"
                         className="fr-btn fr-btn--secondary"
-                        onClick={close}
+                        onClick={requestClose}
                         disabled={savePending}
                       >
                         Annuler

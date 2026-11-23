@@ -62,7 +62,7 @@ describe("previewPortageImport", () => {
     const ambiguous = previewPortageImport(csv("Autre;En cours;Malt;;; ;MARTIN Léa;;\n"), catalog);
     assert.match(ambiguous.lines[0]?.messages.join(" ") ?? "", /Plusieurs fiches/);
     const broken = previewPortageImport("Statut;Porteur\nEn cours;Malt\n", catalog);
-    assert.match(broken.fileError ?? "", /Nom du projet/);
+    assert.match(broken.fileError ?? "", /Nom du portage/);
   });
 
   it("garde le numéro de ligne du fichier, reconnaît « Chorus … » et refuse un tableau vide", () => {
@@ -76,6 +76,17 @@ describe("previewPortageImport", () => {
 
     const empty = previewPortageImport(portageImportTemplateCsv(), catalog);
     assert.match(empty.fileError ?? "", /aucune ligne/);
+  });
+
+  it("accepte l’ancien en-tête « Nom du projet » et le modèle « Nom du portage »", () => {
+    const legacy = previewPortageImport("Nom du projet;Porteur\nAncien;Malt\n", catalog);
+    assert.equal(legacy.fileError, undefined);
+    assert.equal(legacy.lines[0]?.values?.Nom_du_projet, "Ancien");
+
+    const current = previewPortageImport("Nom du portage;Porteur\nNouveau;Malt\n", catalog);
+    assert.equal(current.fileError, undefined);
+    assert.equal(current.lines[0]?.values?.Nom_du_projet, "Nouveau");
+    assert.match(portageImportTemplateCsv(), /Nom du portage/);
   });
 
   it("refuse d’importer une personne si l’annuaire n’est pas lu", () => {

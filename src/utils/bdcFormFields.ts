@@ -8,6 +8,7 @@ import {
   extractGristReferenceId,
   extractGristStringTokens,
 } from "./gristReferences.ts";
+import { PORTAGE_PORTEUR_MALT } from "./portageProjet.ts";
 
 /** Statuts métier connus sur `BDC.Statut`. */
 export const BDC_STATUT_CHOICES = [
@@ -242,4 +243,141 @@ export function buildBdcPaSelectOptions(plans: PlanActivite[]): BdcPaSelectOptio
   return plans
     .map((pa) => ({ id: pa.id, label: libellePlanActiviteLocal(pa) }))
     .sort((a, b) => a.label.localeCompare(b.label, "fr", { sensitivity: "base" }));
+}
+
+/** Colonnes autorisées pour une création courte depuis le panneau Portage. */
+export const BDC_CREATE_FROM_PORTAGE_KEYS = [
+  "Nom_BdC",
+  "Statut",
+  "Montant_TTC",
+  "BdC_Chorus",
+  "Financeur",
+  "Plateforme",
+] as const;
+
+export type BdcCreateFromPortageKey = (typeof BDC_CREATE_FROM_PORTAGE_KEYS)[number];
+
+export const BDC_CREATE_FROM_PORTAGE_DEFAULT_STATUT = "A venir" satisfies (typeof BDC_STATUT_CHOICES)[number];
+
+export type BdcCreateFromPortageFields = {
+  Nom_BdC: string;
+  Statut: string;
+  Montant_TTC: number;
+  BdC_Chorus?: string;
+  Financeur?: string;
+  Plateforme?: string;
+};
+
+export type BdcCreateFromPortageInput = {
+  nom: string;
+  statut: string;
+  montantTtc: string;
+  chorus: string;
+  financeurPortage: string;
+  porteurPortage: string;
+};
+
+export type BdcCreateFromPortageErrorField = "nom" | "statut" | "montantTtc";
+
+export type BdcCreateFromPortageResult =
+  | { ok: true; fields: BdcCreateFromPortageFields }
+  | { ok: false; errors: Partial<Record<BdcCreateFromPortageErrorField, string>> };
+
+const BDC_CREATE_STATUT_SET = new Set<string>(BDC_STATUT_CHOICES);
+
+function optionalTrimmed(value: unknown, label: string): string | undefined {
+  if (value == null) {
+    return undefined;
+  }
+  if (typeof value !== "string") {
+    throw new Error(`${label} invalide.`);
+  }
+  const text = value.trim();
+  return text || undefined;
+}
+
+/**
+ * Bon de commande court créé avec un portage.
+ * Recopie le financeur du portage. Plateforme Malt seulement si le porteur est Malt.
+ */
+export function buildBdcCreateFromPortage(
+  input: BdcCreateFromPortageInput,
+): BdcCreateFromPortageResult {
+  const errors: Partial<Record<BdcCreateFromPortageErrorField, string>> = {};
+  const nom = input.nom.trim();
+  if (!nom) {
+    errors.nom = "Le nom du bon de commande est obligatoire.";
+  }
+  const statut = input.statut.trim();
+  if (!BDC_CREATE_STATUT_SET.has(statut)) {
+    errors.statut = "Choisissez un statut.";
+  }
+  const montant = parseMontantTtc(input.montantTtc);
+  if (montant === "invalid") {
+    errors.montantTtc = "Indiquez un montant TTC positif ou zéro.";
+  }
+  if (!nom || !BDC_CREATE_STATUT_SET.has(statut) || montant === "invalid") {
+    return { ok: false, errors };
+  }
+
+  const fields: BdcCreateFromPortageFields = {
+    Nom_BdC: nom,
+    Statut: statut,
+    Montant_TTC: montant,
+  };
+  const chorus = input.chorus.trim();
+  if (chorus) {
+    fields.BdC_Chorus = chorus;
+  }
+  const financeur = input.financeurPortage.trim();
+  if (financeur) {
+    fields.Financeur = financeur;
+  }
+  if (input.porteurPortage.trim() === PORTAGE_PORTEUR_MALT) {
+    fields.Plateforme = PORTAGE_PORTEUR_MALT;
+  }
+  return { ok: true, fields };
+}
+
+/** Refuse toute colonne hors création courte, et les champs obligatoires absents. */
+export function sanitizeBdcCreateFromPortageFields(
+  fields: Record<string, unknown>,
+): BdcCreateFromPortageFields {
+  const allowed = new Set<string>(BDC_CREATE_FROM_PORTAGE_KEYS);
+  for (const key of Object.keys(fields)) {
+    if (!allowed.has(key)) {
+      throw new Error(`Colonne BDC non autorisée pour création widget : ${key}`);
+    }
+  }
+  if (typeof fields.Nom_BdC !== "string" || !fields.Nom_BdC.trim()) {
+    throw new Error("Le nom du bon de commande est obligatoire.");
+  }
+  if (typeof fields.Statut !== "string" || !BDC_CREATE_STATUT_SET.has(fields.Statut)) {
+    throw new Error("Statut de bon de commande invalide.");
+  }
+  if (
+    typeof fields.Montant_TTC !== "number" ||
+    !Number.isFinite(fields.Montant_TTC) ||
+    fields.Montant_TTC < 0
+  ) {
+    throw new Error("Montant TTC invalide.");
+  }
+  const out: BdcCreateFromPortageFields = {
+    Nom_BdC: fields.Nom_BdC.trim(),
+    Statut: fields.Statut,
+    Montant_TTC: fields.Montant_TTC,
+  };
+  const chorus = optionalTrimmed(fields.BdC_Chorus, "Numéro Chorus");
+  if (chorus) {
+    out.BdC_Chorus = chorus;
+  }
+  const financeur = optionalTrimmed(fields.Financeur, "Financeur");
+  if (financeur) {
+    out.Financeur = financeur;
+  }
+  const plateforme = optionalTrimmed(fields.Plateforme, "Plateforme");
+  if (plateforme) {
+    out.Plateforme = plateforme;
+  }
+  return out;
 }

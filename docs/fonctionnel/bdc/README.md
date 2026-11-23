@@ -9,7 +9,8 @@
 ## Objet métier
 
 Consultation des bons de commande Grist dans l’iframe : récap financier (KPI + barre % consommé), onglets Dépenses / Informations / PV (stub), rattachement PA.  
-**Édition du cadre** (Admin / Owner) : bouton **Modifier** sur la fiche → tiroir (`Nom_BdC`, `Statut`, `Montant_TTC`, `Financeur`, `BdC_Chorus`, `PA`, `Equipe2`, `Plateforme`, `SOFIANE`) — pas de create/delete BDC, pas d’édition Dépenses / devis.
+**Édition du cadre** (Admin / Owner) : bouton **Modifier** sur la fiche → tiroir (`Nom_BdC`, `Statut`, `Montant_TTC`, `Financeur`, `BdC_Chorus`, `PA`, `Equipe2`, `Plateforme`, `SOFIANE`) — pas de create ni delete depuis la fiche, pas d’édition Dépenses / devis.  
+**Création courte** (Admin) : dans **Outils → Portage**, au moment d’enregistrer un portage (`Nom_BdC`, `Statut`, `Montant_TTC`, `BdC_Chorus`, financeur recopié, plateforme Malt). Pas de suppression.
 
 | Outil | Rôle |
 |-------|------|
@@ -50,14 +51,15 @@ Consultation des bons de commande Grist dans l’iframe : récap financier (KPI 
 
 | Action | Qui | Canal |
 |--------|-----|--------|
-| Update cadre `BDC` | Admin (UX) + Owner/Admin ACL | `getTable('BDC').update` — allowlist colonnes ; pas create/delete |
+| Update cadre `BDC` | Admin (UX) + Owner/Admin ACL | `getTable('BDC').update` — allowlist colonnes ; pas de delete |
+| Create court depuis Portage | Admin (UX) + Owner/Admin ACL | `getTable('BDC').create` — `Nom_BdC`, `Statut`, `Montant_TTC`, `BdC_Chorus`, `Financeur`, `Plateforme` ; pas de devis ni de delete |
 | Lecture `BDC` | selon Access Rules | REST `getAccessToken({ readOnly: true })` |
 
 Issue : [#108](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/108) · kanban `editer-bdc`.
 
 ## Écarts vs l’app
 
-- Pas de **création** BDC ni upload devis / suivi mensuel drawers dans le widget
+- Création **courte** uniquement depuis le panneau Portage (nom, statut, montant TTC, numéro Chorus). Pas de création depuis la liste ou la fiche. Pas d’upload devis / suivi mensuel drawers dans le widget
 - Onglet PV stub (écran `/pv` pas encore livré)
 - Pas de mini-donut conso/budget ; page `/cra` transversale = lecture [#32](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/32)
 - Select Data reste `Plan_activite` (ancre) — pas de reconfig pour BDC
