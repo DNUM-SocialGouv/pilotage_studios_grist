@@ -32,12 +32,13 @@ référentiel SDPC (~37 champs sync) regroupé en page document, et missions rat
 | Zone | Contenu |
 |------|---------|
 | Titre | Libellé `Produit` + pastilles département / direction métier à droite (alignées en haut) |
-| Badges | Statut actuel · Statut cible · En production · Obsolescence (sous le titre) |
+| Sous le titre | Lien **Site** (`URLs_du_produit`, sinon Front office) — nouvelle fenêtre |
+| Badges | Statut actuel · Statut cible · En production · Obsolescence |
 | Sous-titre | `Description` si distincte du nom (nom complet) |
 | Type | `Type_de_produit` si renseigné |
-| Liens rapides | Site (`URLs_du_produit` ou FO) · espace collab. |
+| Liens rapides | **Le PARC — modifier la fiche** (édition hors missions, même URL pour tous) · espace collab. si présent |
 
-Sous le bandeau, **au-dessus des onglets** (hors encadré, visible quel que soit l’onglet) : phrase discrète « Pour modifier les informations de ce produit (hors missions), ouvrez Le PARC. » Le lien ouvre le document Grist [Le PARC](https://grist.numerique.gouv.fr/o/sdpc/vjbmAgqvttQH/Le-PARC-Portail-des-Applications-Referentiels-et-Communs-Numeriques-de-la-DNUM) dans un nouvel onglet. Même adresse pour tous les produits.
+Lien [Le PARC](https://grist.numerique.gouv.fr/o/sdpc/vjbmAgqvttQH/Le-PARC-Portail-des-Applications-Referentiels-et-Communs-Numeriques-de-la-DNUM) : document Grist source des infos produit (hors missions).
 
 ### Onglets
 
