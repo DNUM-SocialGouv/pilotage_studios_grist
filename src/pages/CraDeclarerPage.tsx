@@ -92,17 +92,15 @@ export function CraDeclarerPage() {
     [freelanceGroups],
   );
 
-  const bdcLabelMaps = useMemo(() => {
-    const bdcById = new Map<number, string>();
-    const bdcChorusById = new Map<number, string>();
+  const bdcChorusById = useMemo(() => {
+    const map = new Map<number, string>();
     for (const b of pa.bdcList) {
-      bdcById.set(b.id, b.Nom_BdC?.trim() || `BDC #${b.id}`);
       const chorus = b.BdC_Chorus?.trim();
       if (chorus) {
-        bdcChorusById.set(b.id, chorus);
+        map.set(b.id, chorus);
       }
     }
-    return { bdcById, bdcChorusById };
+    return map;
   }, [pa.bdcList]);
 
   const suiviById = useMemo(() => {
@@ -401,7 +399,7 @@ export function CraDeclarerPage() {
                             : undefined;
                         const bdcMeta =
                           existingSuivi != null
-                            ? formatCraCarnetBdcLabel(existingSuivi, bdcLabelMaps)
+                            ? formatCraCarnetBdcLabel(existingSuivi, bdcChorusById)
                             : null;
                         return (
                           <li key={presta.enfantId} className="cra-carnet__entry fr-mb-2w">
@@ -439,8 +437,8 @@ export function CraDeclarerPage() {
                                 {draft.existingRealiseId != null ? (
                                   <div className="cra-carnet__entry-meta">
                                     <span className="fr-text--xs fr-hint-text">
-                                      Déjà saisi ce mois
-                                      {bdcMeta != null ? ` · ${bdcMeta}` : null}
+                                      Bon de commande :
+                                      {bdcMeta != null ? ` ${bdcMeta}` : null}
                                     </span>
                                   </div>
                                 ) : null}
