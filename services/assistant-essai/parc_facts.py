@@ -85,8 +85,12 @@ PRODUCT_STOPWORDS = frozenset(
         "informations",
         "donnees",
         "données",
+        "donne",  # « Donne moi… » ≠ sous-chaîne de « données »
+        "moi",
+        "note",
         "champ",
         "champs",
+        "ayant",
         "taux",
         "rgaa",
         "hebergeur",
@@ -425,7 +429,8 @@ async def _ensure_cache(force: bool = False) -> None:
 
 def _tokens(question: str) -> List[str]:
     norm = _normalize(question)
-    parts = re.findall(r"[a-z0-9][a-z0-9+./_-]*", norm)
+    # Pas de « . » collé en fin de token (« honorabilite. »)
+    parts = re.findall(r"[a-z0-9][a-z0-9+/_-]*", norm)
     return [p for p in parts if p not in PRODUCT_STOPWORDS and len(p) >= 2]
 
 
@@ -435,10 +440,11 @@ def _has_phrase(haystack: str, needle: str) -> bool:
         return False
     if haystack == needle:
         return True
-    # Autoriser ponctuation après le nom (virgule, point d’interrogation, etc.)
+    # Frontière = début/fin OU caractère hors lettre/chiffre/+/_/-
+    # (le point final d’une phrase compte bien comme frontière)
     return (
         re.search(
-            r"(?:^|[^a-z0-9+./_-])" + re.escape(needle) + r"(?:[^a-z0-9+./_-]|$)",
+            r"(?:^|[^a-z0-9+/_-])" + re.escape(needle) + r"(?:[^a-z0-9+/_-]|$)",
             haystack,
         )
         is not None
@@ -465,9 +471,10 @@ def _score_product(question_norm: str, tokens: List[str], name: str, code: str) 
             score += 50.0
         elif t in name_tokens:
             score += 12.0
-        elif t in name_n and len(t) >= 4:
+        elif len(t) >= 4 and _has_phrase(name_n, t):
+            # Mot entier dans le libellé — pas de sous-chaîne (« donne » ⊂ « donnees »)
             score += 8.0
-        elif name_n.startswith(t) or t.startswith(name_n[: max(3, len(t))]):
+        elif name_n.startswith(t) and len(t) >= 4:
             score += 6.0
     return score
 
@@ -529,13 +536,14 @@ def match_product(
                 "candidates": cands,
             }
 
-    # Prefer clear winner
+    # Scores faibles = bruit de matching (ex. mots de politesse), pas de vrais candidats
     if best < 12:
-        cands = [label for _, _, label in scored[:5]]
         return {
-            "status": "ambiguous",
-            "hint": "Plusieurs produits possibles. Précisez le nom.",
-            "candidates": cands,
+            "status": "not_found",
+            "hint": (
+                "Aucun produit ne correspond clairement à ce nom. "
+                "Indiquez le libellé exact tel qu’il apparaît dans Le PARC."
+            ),
         }
 
     rec = scored[0][1]
