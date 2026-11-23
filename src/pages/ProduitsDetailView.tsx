@@ -369,12 +369,15 @@ export function ProduitsDetailView() {
   const urlFo = safeHttpUrl(produit.URL_Front_Office);
   const urlCollab = safeHttpUrl(produit.Lien_Espace_Collaboratif_Projet);
 
-  const asideLinks: { label: string; href: string }[] = [];
-  if (urlProduit) {
-    asideLinks.push({ label: "Site", href: urlProduit });
-  } else if (urlFo) {
-    asideLinks.push({ label: "Front office", href: urlFo });
-  }
+  const siteLink = urlProduit
+    ? ({ label: "Site", href: urlProduit } as const)
+    : urlFo
+      ? ({ label: "Front office", href: urlFo } as const)
+      : null;
+
+  const asideLinks: { label: string; href: string }[] = [
+    { label: "Le PARC", href: PARC_PRODUIT_URL },
+  ];
   if (urlCollab) {
     asideLinks.push({ label: "Espace collab.", href: urlCollab });
   }
@@ -420,6 +423,19 @@ export function ProduitsDetailView() {
           <div className="cra-carnet__hero-grid">
             <div className="cra-carnet__hero-identity">
               <div className="cra-carnet__hero-identity-text">
+                {siteLink ? (
+                  <p className="produit-fiche__hero-meta fr-mb-1w">
+                    <a
+                      className="fr-link fr-link--icon-right fr-icon-external-link-line produit-fiche__hero-meta-item"
+                      href={siteLink.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {siteLink.label}
+                      <span className="fr-sr-only"> (nouvelle fenêtre)</span>
+                    </a>
+                  </p>
+                ) : null}
                 {statut ||
                 produit.En_prod === true ||
                 produit.Obsolescence === true ||
@@ -464,44 +480,27 @@ export function ProduitsDetailView() {
               </div>
             </div>
 
-            {asideLinks.length > 0 ? (
-              <div className="cra-carnet__hero-aside">
-                <p className="fr-text--xs fr-mb-1v fr-hint-text">Liens rapides</p>
-                <ul className="fr-mb-0 fr-pl-0" style={{ listStyle: "none" }}>
-                  {asideLinks.map((link) => (
-                    <li key={link.href}>
-                      <a
-                        className="fr-link"
-                        href={link.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {link.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
+            <div className="cra-carnet__hero-aside">
+              <p className="fr-text--xs fr-mb-1v fr-hint-text">Liens rapides</p>
+              <ul className="fr-mb-0 fr-pl-0" style={{ listStyle: "none" }}>
+                {asideLinks.map((link) => (
+                  <li key={link.href}>
+                    <a
+                      className="fr-link fr-link--icon-right fr-icon-external-link-line"
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {link.label}
+                      <span className="fr-sr-only"> (nouvelle fenêtre)</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </CallOut>
       </header>
-
-      <p className="fr-text--sm fr-hint-text fr-mb-2w fr-px-2w fr-px-md-0">
-        Pour modifier les informations de ce produit (hors missions), ouvrez{" "}
-        <span className="produit-fiche__parc-link">
-          <a
-            className="fr-link fr-text--sm fr-icon-external-link-line fr-link--icon-right"
-            href={PARC_PRODUIT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Le PARC
-            <span className="fr-sr-only"> (nouvelle fenêtre)</span>
-          </a>
-          .
-        </span>
-      </p>
 
       <div className="fr-px-2w fr-px-md-0">
         <ProduitFicheTabs

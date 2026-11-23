@@ -2959,10 +2959,6 @@ button.fr-link:disabled {
   }
 }
 
-.produit-fiche__parc-link {
-  white-space: nowrap;
-}
-
 .produit-fiche__hero-meta {
   display: flex;
   flex-wrap: wrap;
@@ -2972,6 +2968,7 @@ button.fr-link:disabled {
 
 .produit-fiche__hero-meta-item {
   display: inline-flex;
+  white-space: nowrap;
 }
 
 /* —— Fiche mission : hero type Mon carnet / produit —— */
