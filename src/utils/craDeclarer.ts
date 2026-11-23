@@ -237,32 +237,23 @@ export function buildRealiseDeclarerFields(input: {
   };
 }
 
-/** Libellés BDC déjà chargés (boot PA) pour l’affichage lecture seule du carnet. */
-export type CraCarnetBdcLabelMaps = {
-  bdcById: Map<number, string>;
-  bdcChorusById: Map<number, string>;
-};
-
 /**
  * Libellé BDC sous une prestation déjà saisie ce mois (lecture seule).
  * « Sans BDC » si la ligne Realise n’a pas de rattachement.
- * Sinon : nom du BDC, éventuellement suivi du n° Chorus (`Nom · Chorus`).
+ * Sinon : uniquement le n° Chorus (numéro du bon de commande), jamais le nom.
+ * « Sans numéro » si le bon est rattaché mais sans Chorus.
  */
 export function formatCraCarnetBdcLabel(
   s: SuiviMensuel,
-  maps: CraCarnetBdcLabelMaps,
+  bdcChorusById: Map<number, string>,
 ): string {
   const bid = extractSuiviBdcRowRef(s as unknown as Record<string, unknown>);
   if (bid === undefined) {
     return "Sans BDC";
   }
-  const nom =
-    maps.bdcById.get(bid)?.trim() ||
-    s.Nom_BdC?.trim() ||
-    `BDC #${bid}`;
-  const chorus = maps.bdcChorusById.get(bid)?.trim();
+  const chorus = bdcChorusById.get(bid)?.trim();
   if (chorus) {
-    return `${nom} · ${chorus}`;
+    return chorus;
   }
-  return nom;
+  return "Sans numéro";
 }

@@ -268,55 +268,42 @@ describe("craDeclarerTotalHt", () => {
 });
 
 describe("formatCraCarnetBdcLabel", () => {
-  const maps = {
-    bdcById: new Map<number, string>([[10, "BDC Design"]]),
-    bdcChorusById: new Map<number, string>([[10, "CH-001"], [11, ""]]),
-  };
+  const chorusById = new Map<number, string>([
+    [10, "CH-001"],
+    [11, ""],
+  ]);
 
   it("indique Sans BDC sans rattachement", () => {
     assert.equal(
-      formatCraCarnetBdcLabel({ id: 1 } as SuiviMensuel, maps),
+      formatCraCarnetBdcLabel({ id: 1 } as SuiviMensuel, chorusById),
       "Sans BDC",
     );
   });
 
-  it("affiche nom · Chorus quand les deux existent", () => {
+  it("affiche uniquement le numéro Chorus, pas le nom", () => {
     assert.equal(
       formatCraCarnetBdcLabel(
-        { id: 2, BDC_cible: 10 } as SuiviMensuel,
-        maps,
+        { id: 2, BDC_cible: 10, Nom_BdC: "BDC Design" } as SuiviMensuel,
+        chorusById,
       ),
-      "BDC Design · CH-001",
+      "CH-001",
     );
   });
 
-  it("affiche le nom seul sans Chorus", () => {
+  it("indique Sans numéro si le bon n’a pas de Chorus", () => {
     assert.equal(
       formatCraCarnetBdcLabel(
-        { id: 3, BDC_cible: 11 } as SuiviMensuel,
-        {
-          bdcById: new Map([[11, "BDC Produit"]]),
-          bdcChorusById: new Map(),
-        },
+        { id: 3, BDC_cible: 11, Nom_BdC: "BDC Produit" } as SuiviMensuel,
+        chorusById,
       ),
-      "BDC Produit",
+      "Sans numéro",
     );
-  });
-
-  it("retombe sur Nom_BdC / BDC #id si hors map", () => {
     assert.equal(
       formatCraCarnetBdcLabel(
         { id: 4, BDC_cible: 99, Nom_BdC: "Legacy" } as SuiviMensuel,
-        maps,
+        chorusById,
       ),
-      "Legacy",
-    );
-    assert.equal(
-      formatCraCarnetBdcLabel(
-        { id: 5, BDC_cible: 98 } as SuiviMensuel,
-        maps,
-      ),
-      "BDC #98",
+      "Sans numéro",
     );
   });
 });
