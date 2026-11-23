@@ -11,6 +11,8 @@ from parc_facts import (
     _is_empty,
     _normalize,
     _resolve_value,
+    _score_product,
+    _tokens,
     build_aggregate_facts,
     build_product_facts,
     detect_aggregate_intent,
@@ -44,6 +46,34 @@ class ParcFactsTest(unittest.TestCase):
         rh = {16: "DUPONT Marie"}
         self.assertEqual(_resolve_value(["L", 16], rh), ["DUPONT Marie"])
         self.assertEqual(_resolve_value(True, rh), "oui")
+
+    def test_tokens_strip_trailing_punct(self) -> None:
+        self.assertEqual(
+            _tokens("Donne moi la note RGAA sur le produit Honorabilité."),
+            ["honorabilite"],
+        )
+
+    def test_has_phrase_with_period(self) -> None:
+        from parc_facts import _has_phrase
+
+        q = _normalize("Donne moi la note RGAA sur le produit Honorabilité.")
+        self.assertTrue(_has_phrase(q, "honorabilite"))
+
+    def test_score_donne_not_donnees(self) -> None:
+        q = _normalize("Donne moi le nombre de produits ayant le champ RGAA renseigné.")
+        toks = _tokens("Donne moi le nombre de produits ayant le champ RGAA renseigné.")
+        # « Donne » ne doit plus scorer sur « Base de données… »
+        self.assertEqual(
+            _score_product(q, toks, "Base de données publique des médicaments", ""),
+            0.0,
+        )
+        # Honorabilité avec point final doit matcher en phrase
+        q2 = _normalize("Donne moi la note RGAA sur le produit Honorabilité.")
+        toks2 = _tokens("Donne moi la note RGAA sur le produit Honorabilité.")
+        self.assertGreaterEqual(
+            _score_product(q2, toks2, "Honorabilité", ""),
+            100.0,
+        )
 
     def test_match_accolade(self) -> None:
         produits = [
