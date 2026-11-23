@@ -219,7 +219,7 @@ export function buildPortageProjetCreateFields(
 ): PortageProjetWriteFields {
   const nom = trimmed(values.Nom_du_projet);
   if (!nom) {
-    throw new Error("Le nom du projet est obligatoire.");
+    throw new Error("Le nom du portage est obligatoire.");
   }
   assertPortageDateOrder(values);
   const out: PortageProjetWriteFields = { Nom_du_projet: nom };

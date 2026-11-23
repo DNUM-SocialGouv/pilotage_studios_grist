@@ -6,12 +6,15 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import type { BDC } from "../types.ts";
 import {
+  BDC_CREATE_FROM_PORTAGE_KEYS,
   BDC_UPDATE_FIELD_KEYS,
   bdcToEditFormValues,
+  buildBdcCreateFromPortage,
   buildBdcUpdateFields,
   buildEquipe2ChoiceList,
   emptyBdcEditForm,
   parseMontantTtc,
+  sanitizeBdcCreateFromPortageFields,
   sanitizeBdcUpdateFields,
 } from "./bdcFormFields.ts";
 
@@ -111,6 +114,91 @@ describe("bdcFormFields", () => {
           SOFIANE: "",
           Total_TTC_CRA: 99,
         }),
+      /non autorisée/,
+    );
+  });
+
+  it("buildBdcCreateFromPortage recopie le financeur et Malt, et omet le reste", () => {
+    const built = buildBdcCreateFromPortage({
+      nom: "  Studio  ",
+      statut: "A venir",
+      montantTtc: "0",
+      chorus: " 1407 ",
+      financeurPortage: " DNUM ",
+      porteurPortage: "Malt",
+    });
+    assert.equal(built.ok, true);
+    if (!built.ok) {
+      return;
+    }
+    assert.deepEqual(built.fields, {
+      Nom_BdC: "Studio",
+      Statut: "A venir",
+      Montant_TTC: 0,
+      BdC_Chorus: "1407",
+      Financeur: "DNUM",
+      Plateforme: "Malt",
+    });
+    assert.equal("PA" in built.fields, false);
+    assert.equal("SOFIANE" in built.fields, false);
+  });
+
+  it("buildBdcCreateFromPortage n’ajoute pas la plateforme si le porteur n’est pas Malt", () => {
+    const built = buildBdcCreateFromPortage({
+      nom: "Autre",
+      statut: "En cours",
+      montantTtc: "10",
+      chorus: "",
+      financeurPortage: "",
+      porteurPortage: "Octo",
+    });
+    assert.equal(built.ok, true);
+    if (!built.ok) {
+      return;
+    }
+    assert.equal("Plateforme" in built.fields, false);
+    assert.equal("Financeur" in built.fields, false);
+    assert.equal("BdC_Chorus" in built.fields, false);
+  });
+
+  it("buildBdcCreateFromPortage signale les champs obligatoires", () => {
+    const built = buildBdcCreateFromPortage({
+      nom: " ",
+      statut: "Inconnu",
+      montantTtc: "",
+      chorus: "",
+      financeurPortage: "",
+      porteurPortage: "",
+    });
+    assert.equal(built.ok, false);
+    if (built.ok) {
+      return;
+    }
+    assert.match(built.errors.nom ?? "", /obligatoire/);
+    assert.match(built.errors.statut ?? "", /statut/);
+    assert.match(built.errors.montantTtc ?? "", /montant/i);
+  });
+
+  it("sanitizeBdcCreateFromPortageFields refuse une colonne hors création courte", () => {
+    const built = buildBdcCreateFromPortage({
+      nom: "Studio",
+      statut: "A venir",
+      montantTtc: "12",
+      chorus: "",
+      financeurPortage: "DNUM",
+      porteurPortage: "Malt",
+    });
+    assert.equal(built.ok, true);
+    if (!built.ok) {
+      return;
+    }
+    assert.deepEqual(
+      Object.keys(sanitizeBdcCreateFromPortageFields(built.fields)).sort(),
+      Object.keys(built.fields).sort(),
+    );
+    assert.ok(BDC_CREATE_FROM_PORTAGE_KEYS.includes("Nom_BdC"));
+    assert.throws(
+      () => sanitizeBdcCreateFromPortageFields({ ...built.fields, Devis: "secret", PA: 3 }),
       /non autorisée/,
     );
   });

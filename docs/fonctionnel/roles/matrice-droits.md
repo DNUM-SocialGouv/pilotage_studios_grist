@@ -63,7 +63,7 @@ Légende cellules : **oui** = accessible · **non** = masqué / refusé · **?**
 | Éditer fiche Équipe | `/equipe/:id` (drawer) | **oui** | **non** | **non** | **non** | **Appliqué** UX + ACL | Bouton Modifier Admin ; `Equipe` update allowlisté ([#63](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/63)) |
 | Droits des pages | `/outils/droits-pages` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Garde rôle Admin (pas de `Page_*`) ; édite `Droits_pages` ; rappel lecture seule dans section « Fixés par rôle » |
 | **Générer un devis** | `/outils/generer-devis` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Admin-only (`adminOnly` + `AdminRoleGuard`), hors `Page_*` ; rappel « Fixés par rôle » ; formulaire + aperçu live (split LG+) ; lecture choix BDC + copie locale (pas d’écriture) |
-| **Portage** | `/outils/portage-projet` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Admin-only (`adminOnly` + `AdminRoleGuard`), hors `Page_*` ; rappel « Fixés par rôle » ; create + update + delete une ligne (refus si une prestation est liée) ; import CSV après vérification, sans écraser un portage existant |
+| **Portage** | `/outils/portage-projet` | **oui** | **non** | **non** | **non** | **Appliqué** UX | Admin-only (`adminOnly` + `AdminRoleGuard`), hors `Page_*` ; rappel « Fixés par rôle » ; create + update + delete une ligne (refus si une prestation est liée) ; import CSV après vérification, sans écraser un portage existant ; création courte d’un bon de commande dans le panneau (nom, statut, montant TTC, Chorus), écrite seulement à l’enregistrement |
 | **Assistant** (essai) | `/` embarqué + FAB ailleurs | oui* | oui* | oui* | oui* | **Essai** UX | *Si URL service renseignée en session ; **N/A `Page_*`** (comme feedback) ; outil mission (#140) faits CRA dans le widget ; lecture seule via Onyxia — pas de clé LLM dans le bundle ; restreindre plus tard (#145) |
 | Produits | `/produits`, `/produits/:id` | oui | oui | oui | oui | **Appliqué** UX (liste + fiche lecture) | Flag `Page_produits` ; section Admin « Produits » (plus « À venir ») |
 
@@ -82,8 +82,8 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 | `Equipe_TJM` | CRUD | — | R soi | — | **Appliqué** (ACL) + widget | Resource 46 : Owner/Admin `+CRUD` ; `user.Equipe.id == rec.Personne` → `+R` ; `True` → `-CRUD` ; widget create+update grille Admin ([#86](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/86)) ; pas de delete |
 | `Equipe.E_mail` | RU | — | — | — | **Appliqué** | `-RU` si non-(Owner\|Admin) ; saisie création / édition Admin (pas d’affichage liste/fiche) |
 | `Plan_activite` | CRUD | R ? | R / — | R / — | Non (rôle) | Ancre widget |
-| `BDC` métadonnées | CRUD | R ? | R limité | R / — | **Partiel (widget)** | Widget : **update cadre** Admin UX (#108) — create/delete hors scope ; ACL métadonnées encore « Non (rôle) » côté couche 6 |
-| `BDC` montants / Devis / Sofiane… | RU | — | — | — | **Appliqué (Owner ou Admin)** | `== OWNER or Role_ACL == Admin` → `+RU` ; hors → `-RU` ; widget écrit `Montant_TTC` / `Plateforme` / `SOFIANE` (pas `Devis`) via drawer Admin (#108) |
+| `BDC` métadonnées | CRUD | R ? | R limité | R / — | **Partiel (widget)** | Widget : **update cadre** Admin UX (#108) + **create court** depuis le panneau Portage (nom, statut, montant, Chorus, financeur recopié, plateforme Malt) — pas de delete ni de create depuis la fiche ; ACL métadonnées encore « Non (rôle) » côté couche 6 |
+| `BDC` montants / Devis / Sofiane… | RU | — | — | — | **Appliqué (Owner ou Admin)** | `== OWNER or Role_ACL == Admin` → `+RU` ; hors → `-RU` ; widget écrit `Montant_TTC` / `Plateforme` / `SOFIANE` (pas `Devis`) via drawer Admin (#108) et, à la création courte depuis Portage, `Montant_TTC` / `Plateforme` Malt |
 | `Constatations` | CRUD | — | — | — | **Appliqué (Owner)** | encore `== "OWNER"` (Const) — **à corriger** en `== OWNER` |
 | `Commandes_Sofiane` | CRUD | R | — | — | Non (rôle) | |
 | `Realise` (CRA) hors montants | CRUD | R/U département | **R/U + C** ses lignes | — | **Appliqué** (ACL) + widget | Déclaration `#33` ; revue `#70` ; mur `#47` HITL 2026-09-21 ; fiche mission Modifier/Dupliquer Admin (`cra-fiche-mission`) |
@@ -115,6 +115,7 @@ Cellules = **propositions** sauf mention « appliqué » / « partiel (Owner) »
 
 | Date | Changement | Couches | PR / contexte |
 |------|------------|---------|---------------|
+| 2026-11-23 | **Portage** : le champ s’appelle « Nom du portage ». Un admin peut créer un bon de commande court dans le panneau (nom, statut, montant TTC, numéro Chorus), écrit seulement à l’enregistrement du portage. **N/A `Page_*`** (même écran Admin). | 5 | kanban `portage-creer-bdc` |
 | 2026-11-20 | **Portage** : l’écran Outils s’appelle « Portage » (menu, titre, recherche). Les boutons **Nouveau** et **Import** affichent leur libellé. **N/A `Page_*`**. | 5 | même écran `/outils/portage-projet` |
 | 2026-11-20 | **Import projets de portage** : bouton Importer sur l’écran Admin existant. Vérification du CSV avant création ; pas d’écrasement. **N/A `Page_*`** (même écran). | 5 | kanban HITL `portage-projet-import` |
 | 2026-11-20 | **Projets de portage** (`/outils/portage-projet`) : écran Outils Admin-only, hors `Page_*`. Libellé sans le mot « mission » (réservé aux lots d’accompagnement). Sur une prestation, le choix s’appelle **Projet Malt**. | 5 | kanban HITL `portage-projet-admin` |

@@ -260,7 +260,7 @@ export const PortageProjetImportDrawer = forwardRef<
                     <thead>
                       <tr>
                         <th scope="col">Ligne</th>
-                        <th scope="col">Nom du projet</th>
+                        <th scope="col">Nom du portage</th>
                         <th scope="col">Contrôle</th>
                       </tr>
                     </thead>

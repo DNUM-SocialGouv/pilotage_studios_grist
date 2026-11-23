@@ -24,7 +24,9 @@
  *   détache `Weekly_action.Sujet` avant destroy si besoin).
  * - `Weekly_action` : create + update + **delete** (actions Ops —
  *   `getTable().destroy` ; confirmation UI obligatoire ; pas de masse).
- * - `BDC` : update only (drawer cadre fiche — pas de create/delete).
+ * - `BDC` : update cadre fiche + create court depuis le panneau Portage
+ *   (`Nom_BdC`, `Statut`, `Montant_TTC`, `BdC_Chorus`, `Financeur`, `Plateforme`)
+ *   — pas de delete, pas de create depuis la fiche.
  * - `Portage_Projet` : create + update + **delete** (écran Admin Outils —
  *   une ligne après confirm UI ; refus si une prestation est encore liée).
  */
@@ -46,7 +48,7 @@ export const WEEKLY_AGENDA_TABLE_ID = "Weekly_agenda";
 export const WEEKLY_ACTION_TABLE_ID = "Weekly_action";
 /** Allowlist e-mails coachs Weekly — lecture seule widget (pas d’écriture). */
 export const WEEKLY_COACHS_TABLE_ID = "Weekly_coachs";
-/** Bons de commande — update cadre fiche uniquement (pas create/delete). */
+/** Bons de commande — update cadre fiche + create court depuis Portage (pas de delete). */
 export const BDC_TABLE_ID = "BDC";
 /** Portage — create + update + delete (écran Admin, une ligne). */
 export const PORTAGE_PROJET_TABLE_ID = "Portage_Projet";
@@ -64,6 +66,7 @@ export const WRITE_TABLE_ALLOWLIST = [
   WEEKLY_AGENDA_TABLE_ID,
   WEEKLY_ACTION_TABLE_ID,
   PORTAGE_PROJET_TABLE_ID,
+  BDC_TABLE_ID,
 ] as const;
 
 export type WritableTableId = (typeof WRITE_TABLE_ALLOWLIST)[number];

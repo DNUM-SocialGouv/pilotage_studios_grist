@@ -38,7 +38,7 @@ export async function createPortageProjetRecord(
 ): Promise<number> {
   assertWritableTableId(PORTAGE_PROJET_TABLE_ID);
   if (!fields.Nom_du_projet?.trim()) {
-    throw new Error("Le nom du projet est obligatoire.");
+    throw new Error("Le nom du portage est obligatoire.");
   }
   const result = await getWritableTable(PORTAGE_PROJET_TABLE_ID).create({ fields });
   return parseCreateId(result);
