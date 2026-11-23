@@ -376,7 +376,7 @@ export function ProduitsDetailView() {
       : null;
 
   const asideLinks: { label: string; href: string }[] = [
-    { label: "Le PARC", href: PARC_PRODUIT_URL },
+    { label: "Le PARC — modifier la fiche", href: PARC_PRODUIT_URL },
   ];
   if (urlCollab) {
     asideLinks.push({ label: "Espace collab.", href: urlCollab });
