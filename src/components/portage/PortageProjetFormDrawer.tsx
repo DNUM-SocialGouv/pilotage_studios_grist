@@ -157,7 +157,9 @@ export const PortageProjetFormDrawer = forwardRef<
   const [mode, setMode] = useState<"create" | "edit">("create");
   const [editing, setEditing] = useState<PortageProjetAdminRow | null>(null);
   const [submitError, setSubmitError] = useState<string>();
+  const [bdcSavedWithoutPortage, setBdcSavedWithoutPortage] = useState(false);
   const [savePending, setSavePending] = useState(false);
+  const savePendingRef = useRef(false);
   const [creatingBdc, setCreatingBdc] = useState(false);
   const [bdcDraft, setBdcDraft] = useState<BdcDraft>(emptyBdcDraft);
   const [bdcErrors, setBdcErrors] = useState<
@@ -178,32 +180,49 @@ export const PortageProjetFormDrawer = forwardRef<
     setBdcErrors({});
   }, []);
 
+  const clearSubmitAlert = useCallback(() => {
+    setSubmitError(undefined);
+    setBdcSavedWithoutPortage(false);
+  }, []);
+
+  const setSaveLocked = useCallback((locked: boolean) => {
+    savePendingRef.current = locked;
+    setSavePending(locked);
+  }, []);
+
   const close = useCallback(() => {
     dialogRef.current?.close();
-    setSubmitError(undefined);
-    setSavePending(false);
+    clearSubmitAlert();
+    setSaveLocked(false);
     resetBdcDraft();
-  }, [resetBdcDraft]);
+  }, [clearSubmitAlert, resetBdcDraft, setSaveLocked]);
+
+  const requestClose = useCallback(() => {
+    if (savePendingRef.current) {
+      return;
+    }
+    close();
+  }, [close]);
 
   const openCreate = useCallback(() => {
     setMode("create");
     setEditing(null);
-    setSubmitError(undefined);
+    clearSubmitAlert();
     resetBdcDraft();
     reset(emptyPortageProjetForm());
     dialogRef.current?.showModal();
-  }, [reset, resetBdcDraft]);
+  }, [clearSubmitAlert, reset, resetBdcDraft]);
 
   const openEdit = useCallback(
     (row: PortageProjetAdminRow) => {
       setMode("edit");
       setEditing(row);
-      setSubmitError(undefined);
+      clearSubmitAlert();
       resetBdcDraft();
       reset(row.values);
       dialogRef.current?.showModal();
     },
-    [reset, resetBdcDraft],
+    [clearSubmitAlert, reset, resetBdcDraft],
   );
 
   useImperativeHandle(ref, () => ({ openCreate, openEdit, close }), [
@@ -253,7 +272,7 @@ export const PortageProjetFormDrawer = forwardRef<
   }, [creatingBdc]);
 
   const submitForm = async (values: PortageProjetFormValues) => {
-    setSubmitError(undefined);
+    clearSubmitAlert();
     const built = creatingBdc
       ? buildBdcCreateFromPortage({
           nom: bdcDraft.nom,
@@ -269,7 +288,7 @@ export const PortageProjetFormDrawer = forwardRef<
       return;
     }
     setBdcErrors({});
-    setSavePending(true);
+    setSaveLocked(true);
     let createdBdcId: string | null = null;
     try {
       const nextValues = { ...values };
@@ -303,14 +322,16 @@ export const PortageProjetFormDrawer = forwardRef<
         } catch {
           // La sélection reste l’identifiant créé, même si la liste n’a pas été relue.
         }
+        setBdcSavedWithoutPortage(true);
         setSubmitError(
-          `Le bon de commande a été créé. Il est sélectionné : enregistrez à nouveau le portage. ${message}`,
+          `Il est sélectionné : enregistrez à nouveau le portage. ${message}`,
         );
       } else {
+        setBdcSavedWithoutPortage(false);
         setSubmitError(message);
       }
     } finally {
-      setSavePending(false);
+      setSaveLocked(false);
     }
   };
 
@@ -322,14 +343,23 @@ export const PortageProjetFormDrawer = forwardRef<
       ref={dialogRef}
       className="pilotage-drawer-dialog pilotage-drawer-dialog--sm"
       aria-labelledby={titleId}
+      onCancel={(event) => {
+        if (savePendingRef.current) {
+          event.preventDefault();
+        }
+      }}
       onClose={() => {
-        setSubmitError(undefined);
-        setSavePending(false);
+        clearSubmitAlert();
+        setSaveLocked(false);
         resetBdcDraft();
       }}
     >
       <div className="pilotage-drawer-dialog__shell">
-        <div className="pilotage-drawer-dialog__scrim" aria-hidden="true" onClick={close} />
+        <div
+          className="pilotage-drawer-dialog__scrim"
+          aria-hidden="true"
+          onClick={requestClose}
+        />
         <div className="pilotage-drawer-dialog__panel">
           <div className="pilotage-drawer-dialog__inner">
             <header className="fr-p-3w fr-pb-2w">
@@ -348,8 +378,9 @@ export const PortageProjetFormDrawer = forwardRef<
                   <button
                     type="button"
                     className="fr-btn--close fr-btn"
-                    title="Fermer"
-                    onClick={close}
+                    title={savePending ? "Enregistrement en cours" : "Fermer"}
+                    disabled={savePending}
+                    onClick={requestClose}
                   >
                     Fermer
                   </button>
@@ -360,8 +391,12 @@ export const PortageProjetFormDrawer = forwardRef<
             <div className="pilotage-drawer-dialog__body fr-px-3w fr-pb-3w fr-pt-0">
               {submitError ? (
                 <Alert
-                  severity="error"
-                  title="Enregistrement impossible"
+                  severity={bdcSavedWithoutPortage ? "warning" : "error"}
+                  title={
+                    bdcSavedWithoutPortage
+                      ? "Bon de commande créé, portage non enregistré"
+                      : "Enregistrement impossible"
+                  }
                   description={submitError}
                   className="fr-mb-2w"
                 />
@@ -608,7 +643,7 @@ export const PortageProjetFormDrawer = forwardRef<
                       <button
                         type="button"
                         className="fr-btn fr-btn--secondary"
-                        onClick={close}
+                        onClick={requestClose}
                         disabled={savePending}
                       >
                         Annuler
