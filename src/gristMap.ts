@@ -174,6 +174,7 @@ export function toMission(record: GristRecord): Mission {
     ),
     Derniere_mise_a_jour: asNumber(record.Derniere_mise_a_jour),
     Meteo: asGristChoice(record.Meteo) ?? asString(record.Meteo),
+    Financeur: asGristChoice(record.Financeur) ?? asString(record.Financeur),
   };
 }
 
@@ -191,6 +192,9 @@ export function toMissionEnfant(record: GristRecord): MissionEnfant {
     Statut: asGristChoice(record.Statut) ?? asString(record.Statut),
     Date_de_debut: asNumber(record.Date_de_debut),
     Portage_Projet: record.Portage_Projet,
+    Financeur:
+      asGristChoice(record.Mission_parent_Financeur) ??
+      asString(record.Mission_parent_Financeur),
   };
 }
 

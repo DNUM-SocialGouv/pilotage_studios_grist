@@ -35,4 +35,4 @@ Options statut / financeur / équipe dérivées des valeurs présentes dans les 
 
 ## Colonnes
 
-Nom (lien `/bdc/:id`), PA (lien `/pa/:id` ou `—`), plateforme, statut, équipe (badges couleur via `EquipeBadges` / `equipeBadgeClass`), financeur, budget TTC, consommé CRA, solde CRA (`montantReste`).
+Nom (lien `/bdc/:id`), PA (lien `/pa/:id` ou `—`), plateforme, statut, équipe (badges couleur via `EquipeBadges` / `equipeBadgeClass`), financeur (badges couleur via `FinanceurBadges` / `financeurBadgeClass`), budget TTC, consommé CRA, solde CRA (`montantReste`).

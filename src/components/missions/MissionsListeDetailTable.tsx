@@ -1,6 +1,7 @@
 import { Fragment, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { StatutBadge } from "../StatutBadge";
+import { FinanceurBadges } from "../FinanceurBadges";
 import { tdEquipeTag } from "../EquipeTags";
 import {
   ExpandToggle,
@@ -79,6 +80,7 @@ function EnfantRowsDetail({
         const showIntervenant = Boolean(
           ivLabel && !samePersonLabel(ivLabel, primary),
         );
+        const financeur = e.Financeur?.trim() || "";
         return (
           <Fragment key={`enfant-${e.id}`}>
             <ExpandableChildRow
@@ -134,6 +136,9 @@ function EnfantRowsDetail({
               <ExpandableChildCell>
                 <StatutBadge statut={e.Statut} />
               </ExpandableChildCell>
+              <ExpandableChildCell>
+                {financeur ? <FinanceurBadges value={financeur} /> : "—"}
+              </ExpandableChildCell>
               <ExpandableChildCell>—</ExpandableChildCell>
               <ExpandableChildCell className="fr-cell--right">
                 {formatCraJours(craByEnfantId?.get(e.id), craState)}
@@ -185,6 +190,7 @@ export function MissionsListeDetailTable({
             </th>
             <th scope="col">Produit</th>
             <th scope="col">Statut</th>
+            <th scope="col">Financeur</th>
             <th scope="col">Début</th>
             <th scope="col" className="fr-cell--right">
               Jours
@@ -249,6 +255,13 @@ export function MissionsListeDetailTable({
                   <td>{produitCell(m, produitsById)}</td>
                   <td>
                     <StatutBadge statut={m.Statut} />
+                  </td>
+                  <td>
+                    {m.Financeur?.trim() ? (
+                      <FinanceurBadges value={m.Financeur} />
+                    ) : (
+                      "—"
+                    )}
                   </td>
                   <td>{formatGristMonthYear(m.Date_de_debut)}</td>
                   <td className="fr-cell--right">

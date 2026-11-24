@@ -3,6 +3,7 @@ import { Select } from "@codegouvfr/react-dsfr/Select";
 import { CraTtcStackBar, type CraTtcStackBarSlice } from "../CraTtcStackBar";
 import { ExpandToggle, useExpandableRowIds } from "../expandable";
 import { tdEquipeTag } from "../EquipeTags";
+import { FinanceurBadges } from "../FinanceurBadges";
 import { TableShell } from "../FinanceRecap";
 import { StatutBadge } from "../StatutBadge";
 import type { BDC, MissionEnfant, PortageProjet, SuiviMensuel } from "../../types";
@@ -509,6 +510,7 @@ export function MissionEquipePrestationsPanel({
                     ? (intervenantsById.get(intervenantId) ?? `#${intervenantId}`)
                     : undefined;
                 const equipe = equipeLabelForEnfant(e, equipesByIntervenantId);
+                const financeur = e.Financeur?.trim() || "";
                 const ttc = ttcByEnfantId.get(e.id) ?? 0;
                 const nbCra = craCountByEnfantId.get(e.id) ?? 0;
                 const joursRealises = joursByEnfantId.get(e.id) ?? 0;
@@ -576,7 +578,14 @@ export function MissionEquipePrestationsPanel({
                       </td>
                       <td>{intervenantLabel ?? "—"}</td>
                       <td className="pilotage-col-equipe-nowrap">
-                        {equipe ? tdEquipeTag(equipe) : "—"}
+                        {!equipe && !financeur ? (
+                          "—"
+                        ) : (
+                          <div className="missions-liste-prestation-meta">
+                            {equipe ? tdEquipeTag(equipe) : null}
+                            {financeur ? <FinanceurBadges value={financeur} /> : null}
+                          </div>
+                        )}
                       </td>
                       {showPlanifie ? (
                         <>

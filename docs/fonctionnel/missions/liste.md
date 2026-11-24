@@ -58,6 +58,7 @@ Jours / Montant TTC d’un **lot** = somme des CRA de ses **prestations** unique
 | Mission | Lien `/missions/:id` + badge nb prestations | Libellé + badge CRA ; meta équipe + intervenant | Période mois/année + tâches |
 | Produit | Lien `/produits/:id` | — | — |
 | Statut | Badge `noIcon` | Badge propre | — |
+| Financeur | Badge `FinanceurBadges` (ou `—`) | Badge hérité `Mission_parent_Financeur` (ou `—`) | — |
 | Début | `formatGristMonthYear` | — | — |
 | Jours / TTC | Σ CRA prestations | CRA prestation | ligne CRA |
 | Actions | **Ouvrir** + **Modifier** (drawer) | — | — |
@@ -74,7 +75,7 @@ Shell commun avec Weekly Ops (`KanbanBoard` / `KanbanCardShell`) — **sans** sy
 | Colonne En cours | Cumule `En cours` + `Récurrent` + `Suivi et amélioration continue` ; drop → écrit `En cours` |
 | Terminé / Annulé / [Archivée] | Masqués par défaut ; toggle « Afficher terminées / annulées / archivées » **ou** filtre statut |
 | Autres | Colonne dédiée si présents dans le filtre ; **Autre** si statut vide |
-| Carte | Titre · produit · jours · montant · tags équipes |
+| Carte | Titre · produit · badge financeur (si renseigné) · jours · montant · tags équipes |
 | Clic | → `/missions/:id` |
 | Drag / menu | Change `Missions.Statut` (même droit que Modifier) + menu clavier « Déplacer vers… » |
 | Pagination | **Off** |
