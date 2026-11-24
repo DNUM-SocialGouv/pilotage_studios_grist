@@ -11,7 +11,9 @@ const PROD_CSP = [
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self'",
   "img-src 'self' data: https://api.dicebear.com",
-  "connect-src 'self' https://grist.numerique.gouv.fr",
+  // Essai Assistant : port personnalisé Onyxia (https://….user.lab.sspcloud.fr).
+  // Le * couvre le sous-domaine personnel ; pas le reste du datalab.
+  "connect-src 'self' https://grist.numerique.gouv.fr https://*.user.lab.sspcloud.fr",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'none'",
