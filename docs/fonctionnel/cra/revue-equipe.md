@@ -26,7 +26,7 @@ Pas de drapeau `Page_*` dédié : accès par rôle (comme la déclaration).
 
 1. Choisir le **mois**.
 2. Lire les KPI d’équipe (freelances avec saisie, jours, CRA sans BDC, HT indicatif).
-3. Deux groupes d’**accordéons** : **Avec saisie ce mois** puis **Sans saisie ce mois** (un seul accordéon ouvert à la fois). Pour chaque ligne CRA — jours, description, **bon de commande**. Le libellé fermé montre le nombre de lignes, le TJM s’il est connu, et un badge si des CRA sont sans BDC.
+3. Deux groupes d’**accordéons** : **Avec saisie ce mois** puis **Sans saisie ce mois** (un seul accordéon ouvert à la fois ; on ne peut pas tout refermer, pour ne pas perdre une saisie en cours). Pour chaque ligne CRA — jours, description, **bon de commande**. Le libellé fermé montre le nombre de lignes, le TJM s’il est connu, et un badge si des CRA sont sans BDC.
 4. **Enregistrer les rattachements** → update `Realise` (`Nb_jours`, `Taches_realisees`, `BDC_cible`).
 
 Si le freelance n’a pas encore saisi : message d’info (la déclaration reste sur `/cra/declarer`).

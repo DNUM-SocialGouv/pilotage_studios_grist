@@ -44,6 +44,10 @@ function memberDisplayName(m: EquipeMember): string {
   return m.Prenom_Nom?.trim() || `Intervenant #${m.id}`;
 }
 
+function collegueCountLabel(n: number): string {
+  return n === 1 ? "1 collègue" : `${n} collègues`;
+}
+
 /** Résumé compact pour le label d’accordéon (lisible à l’état fermé). */
 function memberAccordionResume(
   rowCount: number,
@@ -349,12 +353,10 @@ export function CraRevueEquipePage() {
         titleAs="h4"
         expanded={isOpen}
         onExpandedChange={(expanded) => {
+          // Un seul ouvert à la fois : on n’accepte que l’ouverture
+          // (refermer effacerait les brouillons non enregistrés).
           if (expanded) {
             setSelectedMemberId(m.id);
-            return;
-          }
-          if (selectedMemberId === m.id) {
-            setSelectedMemberId(null);
           }
         }}
         label={memberAccordionLabel(m, rows.length, sans)}
@@ -363,17 +365,6 @@ export function CraRevueEquipePage() {
           {isOpen && selectedMember ? (
             <>
               <div className="fr-mb-2w">
-                <p className="fr-text--sm fr-mb-1v">
-                  <strong>{memberDisplayName(selectedMember)}</strong>
-                  {typeof selectedMember.TJM === "number" ? (
-                    <> · TJM {formatMontantEur(selectedMember.TJM)}</>
-                  ) : null}
-                  <>
-                    {" "}
-                    · {selectedRows.length} ligne
-                    {selectedRows.length > 1 ? "s" : ""}
-                  </>
-                </p>
                 <Link
                   className="fr-link fr-text--sm"
                   to={`/equipe/${selectedMember.id}`}
@@ -384,8 +375,7 @@ export function CraRevueEquipePage() {
 
               {selectedRows.length === 0 ? (
                 <p className="fr-text--sm fr-text-mention--grey fr-mb-0">
-                  Aucune saisie ce mois — la déclaration se fait via « Mon carnet »
-                  (côté freelance).
+                  Aucune saisie ce mois — à déclarer par le freelance.
                 </p>
               ) : (
                 <ul className="fr-raw-list cra-carnet__entries">
@@ -633,8 +623,7 @@ export function CraRevueEquipePage() {
                 Avec saisie ce mois
               </h3>
               <span className="fr-text--sm fr-text-mention--grey cra-carnet__chapter-summary">
-                {membersWithSaisie.length} collègue
-                {membersWithSaisie.length > 1 ? "s" : ""}
+                {collegueCountLabel(membersWithSaisie.length)}
               </span>
             </div>
             {membersWithSaisie.length === 0 ? (
@@ -660,8 +649,7 @@ export function CraRevueEquipePage() {
                 Sans saisie ce mois
               </h3>
               <span className="fr-text--sm fr-text-mention--grey cra-carnet__chapter-summary">
-                {membersWithoutSaisie.length} collègue
-                {membersWithoutSaisie.length > 1 ? "s" : ""}
+                {collegueCountLabel(membersWithoutSaisie.length)}
               </span>
             </div>
             {membersWithoutSaisie.length === 0 ? (
