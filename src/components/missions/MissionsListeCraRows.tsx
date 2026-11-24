@@ -11,7 +11,8 @@ export type MissionsListeCraRowsLayout = "liste" | "fiche";
 
 /**
  * Sous-lignes CRA sous une prestation.
- * - `liste` : colonnes liste missions (libellé, —, —, —, jours, TTC, actions).
+ * - `liste` : colonnes liste missions
+ *   (libellé, —, —, —, —, jours, TTC, actions — 5ᵉ tiret = Financeur).
  * - `fiche` : colonnes fiche Équipe & prestations
  *   (période colspan 4 = titre+statut+intervenant+équipe, [date], jours, —, TTC, [actions]).
  */
@@ -139,6 +140,7 @@ export function MissionsListeCraRows({
             >
               {periodeEtTaches}
             </ExpandableChildCell>
+            <ExpandableChildCell>—</ExpandableChildCell>
             <ExpandableChildCell>—</ExpandableChildCell>
             <ExpandableChildCell>—</ExpandableChildCell>
             <ExpandableChildCell>—</ExpandableChildCell>

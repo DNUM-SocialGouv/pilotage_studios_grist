@@ -97,6 +97,8 @@ export interface Mission {
   Derniere_mise_a_jour?: number;
   /** Météo d’accompagnement (lecture Weekly) — colonne Grist `Meteo`. */
   Meteo?: string;
+  /** Financeur (lecture) — colonne Grist `Financeur`. */
+  Financeur?: string;
 }
 
 /** Phase kanban Weekly (table satellite `Weekly_phase`). */
@@ -183,6 +185,11 @@ export interface MissionEnfant {
   Date_de_debut?: number;
   /** Ref → `Portage_Projet` (projet Malt + BDC dérivé). */
   Portage_Projet?: unknown;
+  /**
+   * Financeur hérité de la mission parent (lecture).
+   * Colonne Grist `Mission_parent_Financeur`.
+   */
+  Financeur?: string;
 }
 
 /** Projet chez un porteur (table Grist `Portage_Projet`). */

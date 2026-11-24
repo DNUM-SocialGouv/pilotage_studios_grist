@@ -5,6 +5,7 @@ import { CallOut } from "@codegouvfr/react-dsfr/CallOut";
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
 import { useAclProfil } from "../AclProfilContext";
 import { tdEquipeTag } from "../components/EquipeTags";
+import { FinanceurBadges } from "../components/FinanceurBadges";
 import { useMissionCraDrawerRef } from "../components/missions/MissionCraDrawerContext";
 import { useMissionEnfantDrawerRef } from "../components/missions/MissionEnfantDrawerContext";
 import { useMissionFormDrawerRef } from "../components/missions/MissionFormDrawerContext";
@@ -251,9 +252,14 @@ export function MissionsDetailView() {
     typeof majRaw === "number" && Number.isFinite(majRaw) && majRaw !== 0
       ? formatGristDateTime(majRaw)
       : null;
-  const metaColCount = derniereMajLabel != null ? 3 : 2;
+  // Produit · Département · Financeur (+ Dernière mise à jour optionnelle).
+  const metaColCount = 3 + (derniereMajLabel != null ? 1 : 0);
   const metaColClass =
-    metaColCount === 3 ? "fr-col-12 fr-col-md-4" : "fr-col-12 fr-col-md-6";
+    metaColCount === 4
+      ? "fr-col-12 fr-col-md-3"
+      : metaColCount === 3
+        ? "fr-col-12 fr-col-md-4"
+        : "fr-col-12 fr-col-md-6";
 
   function selectMissionTab(nextId: string) {
     if (nextId === "contexte" || nextId === "equipe" || nextId === "notes") {
@@ -373,6 +379,14 @@ export function MissionsDetailView() {
                       {departementHasValue
                         ? tdEquipeTag(departementRaw, { small: true })
                         : "—"}
+                    </div>
+                  </div>
+                  <div className={`${metaColClass} mission-fiche__hero-meta-item`}>
+                    <div className="fr-text--xs fr-mb-1v mission-fiche__hero-meta-label">
+                      Financeur
+                    </div>
+                    <div className="fr-text--sm fr-mb-0">
+                      <FinanceurBadges value={mission.Financeur} />
                     </div>
                   </div>
                   {derniereMajLabel != null ? (

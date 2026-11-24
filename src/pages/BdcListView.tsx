@@ -4,6 +4,7 @@ import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { Pagination } from "@codegouvfr/react-dsfr/Pagination";
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { EquipeBadges } from "../components/EquipeBadges";
+import { FinanceurBadges } from "../components/FinanceurBadges";
 import { TableShell } from "../components/FinanceRecap";
 import { useGristPa } from "../GristPaContext";
 import { NothingHerePage } from "../security/NothingHerePage";
@@ -333,7 +334,9 @@ export function BdcListView() {
                     <td>
                       <EquipeBadges value={bdc.Equipe2} />
                     </td>
-                    <td>{bdc.Financeur?.trim() || "—"}</td>
+                    <td>
+                      <FinanceurBadges value={bdc.Financeur} />
+                    </td>
                     <td className="fr-cell--right">{formatMontantEur(bdc.Montant_TTC)}</td>
                     <td className="fr-cell--right">{formatMontantEur(bdc.Total_TTC_CRA)}</td>
                     <td className="fr-cell--right">{montantReste(bdc.Solde_TTC_CRA)}</td>

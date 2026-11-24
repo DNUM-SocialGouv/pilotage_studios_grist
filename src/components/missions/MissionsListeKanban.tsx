@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
 import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch";
 import { tdEquipeTag } from "../EquipeTags";
+import { FinanceurBadges } from "../FinanceurBadges";
 import { KanbanBoard } from "../kanban/KanbanBoard";
 import { KanbanCardShell } from "../kanban/KanbanCardShell";
 import type { Mission, MissionEnfant } from "../../types.ts";
@@ -101,6 +102,7 @@ function MissionKanbanCard({
     shares.length > 0
       ? shares.map((s) => `${s.equipe} (${s.count})`).join(", ")
       : "aucune équipe";
+  const financeur = mission.Financeur?.trim() || "";
   const ficheTo = `/missions/${mission.id}`;
 
   const moveTargets = canWrite
@@ -112,11 +114,14 @@ function MissionKanbanCard({
   const ariaLabel = [
     name,
     produit,
+    financeur ? `Financeur : ${financeur}` : null,
     `Jours : ${jours}`,
     `Montant : ${montant}`,
     `Équipes : ${equipesLabel}`,
     "ouvrir la fiche",
-  ].join(" — ");
+  ]
+    .filter(Boolean)
+    .join(" — ");
 
   return (
     <KanbanCardShell
@@ -151,6 +156,11 @@ function MissionKanbanCard({
     >
       <h4 className="pilotage-kanban-card__title">{name}</h4>
       <p className="pilotage-kanban-card__meta">{produit}</p>
+      {financeur ? (
+        <div className="fr-mb-1w">
+          <FinanceurBadges value={financeur} />
+        </div>
+      ) : null}
       <p className="pilotage-kanban-card__kpi">
         <span>
           <span className="fr-hint-text">Jours </span>

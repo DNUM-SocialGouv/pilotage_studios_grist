@@ -3,6 +3,7 @@ import { Select } from "@codegouvfr/react-dsfr/Select";
 import { CraTtcStackBar, type CraTtcStackBarSlice } from "../CraTtcStackBar";
 import { ExpandToggle, useExpandableRowIds } from "../expandable";
 import { tdEquipeTag } from "../EquipeTags";
+import { FinanceurBadges } from "../FinanceurBadges";
 import { TableShell } from "../FinanceRecap";
 import { StatutBadge } from "../StatutBadge";
 import type { BDC, MissionEnfant, PortageProjet, SuiviMensuel } from "../../types";
@@ -576,7 +577,12 @@ export function MissionEquipePrestationsPanel({
                       </td>
                       <td>{intervenantLabel ?? "—"}</td>
                       <td className="pilotage-col-equipe-nowrap">
-                        {equipe ? tdEquipeTag(equipe) : "—"}
+                        <div className="missions-liste-prestation-meta">
+                          {equipe ? tdEquipeTag(equipe) : "—"}
+                          {e.Financeur?.trim() ? (
+                            <FinanceurBadges value={e.Financeur} />
+                          ) : null}
+                        </div>
                       </td>
                       {showPlanifie ? (
                         <>
