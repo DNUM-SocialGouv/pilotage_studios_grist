@@ -171,6 +171,8 @@ CORS_ORIGINS=http://localhost:5175,https://dnum-socialgouv.github.io
 
 Sans cela, le navigateur bloque les appels depuis le widget vers l’URL `…-user…`.
 
+Le widget **publié** n’autorise, de son côté, que les adresses `https://….user.lab.sspcloud.fr` (port personnalisé). Une autre forme d’URL est refusée avant l’appel.
+
 ## Suite produit
 
 - Tiroir widget → [tiroir.md](tiroir.md) · [#139](https://github.com/DNUM-SocialGouv/pilotage_studios_grist/issues/139)  

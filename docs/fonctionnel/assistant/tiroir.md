@@ -27,6 +27,10 @@ CORS_ORIGINS=http://localhost:5175,https://dnum-socialgouv.github.io
 
 Puis **relancer** uvicorn. Si vous servez le widget depuis une autre URL Pages / preview, ajoutez-la.
 
+## Adresses autorisées dans le widget publié
+
+Le widget dans Grist n’appelle que Grist et les adresses Onyxia du **port personnalisé** (`https://….user.lab.sspcloud.fr`). Une autre adresse est bloquée par le navigateur : le test affiche « Impossible de joindre le service », même si le serveur tourne.
+
 ## Outil mission (#140)
 
 Si la question parle de jours / CRA / TTC / budget d’une **mission**, le widget charge Missions · Prestations · Realise, calcule les faits (`assistantMissionFacts`) et les envoie dans `context.facts` — le modèle ne recalcule pas. Contrat : [contrat-chiffres.md](contrat-chiffres.md).
