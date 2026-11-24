@@ -20,13 +20,13 @@ En fin de mois, le **manager d’un département** (Design, Product, Tech…) ou
 
 Pas de drapeau `Page_*` dédié : accès par rôle (comme la déclaration).
 
-**Périmètre** : collègues **actifs** (`Equipe.Statut` = Actif, ou vide = Actif par défaut) dont `Equipe.Equipe` = même valeur que le manager (hors soi). Les fiches **Inactif** (et autres statuts) n’apparaissent pas dans les onglets ni dans les indicateurs d’équipe.
+**Périmètre** : collègues **actifs** (`Equipe.Statut` = Actif, ou vide = Actif par défaut) dont `Equipe.Equipe` = même valeur que le manager (hors soi). Les fiches **Inactif** (et autres statuts) n’apparaissent pas dans les accordéons ni dans les indicateurs d’équipe.
 
 ## Parcours
 
 1. Choisir le **mois**.
 2. Lire les KPI d’équipe (freelances avec saisie, jours, CRA sans BDC, HT indicatif).
-3. Onglet par **freelance** : pour chaque ligne CRA du mois — jours, description, **bon de commande**.
+3. Deux groupes d’**accordéons** : **Avec saisie ce mois** puis **Sans saisie ce mois** (un seul accordéon ouvert à la fois). Pour chaque ligne CRA — jours, description, **bon de commande**. Le libellé fermé montre le nombre de lignes, le TJM s’il est connu, et un badge si des CRA sont sans BDC.
 4. **Enregistrer les rattachements** → update `Realise` (`Nb_jours`, `Taches_realisees`, `BDC_cible`).
 
 Si le freelance n’a pas encore saisi : message d’info (la déclaration reste sur `/cra/declarer`).

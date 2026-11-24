@@ -2749,6 +2749,29 @@ button.fr-link:disabled {
   margin-top: 0.25rem;
 }
 
+.cra-carnet__member-accordion-label {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.75rem;
+  text-align: left;
+}
+
+.cra-carnet__member-accordion-title {
+  font-weight: 700;
+}
+
+.cra-carnet__member-accordion-resume {
+  flex-basis: 100%;
+}
+
+@media (min-width: 48em) {
+  .cra-carnet__member-accordion-resume {
+    flex-basis: auto;
+    margin-left: 0.25rem;
+  }
+}
+
 .cra-carnet__footer {
   display: flex;
   flex-direction: column;
