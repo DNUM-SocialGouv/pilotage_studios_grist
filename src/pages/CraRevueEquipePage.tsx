@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { Accordion } from "@codegouvfr/react-dsfr/Accordion";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
+import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { CallOut } from "@codegouvfr/react-dsfr/CallOut";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { Select } from "@codegouvfr/react-dsfr/Select";
-import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
 import { Tag } from "@codegouvfr/react-dsfr/Tag";
 import { EquipeAvatar } from "../components/equipe/EquipeAvatar";
 import { tdEquipeTag } from "../components/EquipeTags";
@@ -39,9 +40,51 @@ function formatJoursAffichage(n: number): string {
   return String(Math.round(n * 10) / 10).replace(".", ",");
 }
 
-function memberTabLabel(m: EquipeMember, sansBdc: number): string {
-  const name = m.Prenom_Nom?.trim() || `Intervenant #${m.id}`;
-  return sansBdc > 0 ? `${name} (${sansBdc})` : name;
+function memberDisplayName(m: EquipeMember): string {
+  return m.Prenom_Nom?.trim() || `Intervenant #${m.id}`;
+}
+
+function collegueCountLabel(n: number): string {
+  return n === 1 ? "1 collègue" : `${n} collègues`;
+}
+
+/** Résumé compact pour le label d’accordéon (lisible à l’état fermé). */
+function memberAccordionResume(
+  rowCount: number,
+  tjm: number | null | undefined,
+): string {
+  const lines =
+    rowCount === 0
+      ? "0 ligne"
+      : rowCount === 1
+        ? "1 ligne"
+        : `${rowCount} lignes`;
+  if (typeof tjm === "number" && Number.isFinite(tjm)) {
+    return `${lines} · TJM ${formatMontantEur(tjm)}`;
+  }
+  return lines;
+}
+
+function memberAccordionLabel(
+  m: EquipeMember,
+  rowCount: number,
+  sansBdc: number,
+): ReactNode {
+  return (
+    <span className="cra-carnet__member-accordion-label">
+      <span className="cra-carnet__member-accordion-title">
+        {memberDisplayName(m)}
+      </span>
+      {sansBdc > 0 ? (
+        <Badge severity="warning" small as="span" noIcon>
+          {sansBdc} sans BDC
+        </Badge>
+      ) : null}
+      <span className="fr-text--sm fr-text-mention--grey cra-carnet__member-accordion-resume">
+        {memberAccordionResume(rowCount, m.TJM)}
+      </span>
+    </span>
+  );
 }
 
 export function CraRevueEquipePage() {
@@ -56,6 +99,7 @@ export function CraRevueEquipePage() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveOk, setSaveOk] = useState<string | null>(null);
+  const initializedSelectionRef = useRef(false);
 
   const monthOptions = useMemo(() => craDeclarerMonthOptions(), []);
 
@@ -75,8 +119,27 @@ export function CraRevueEquipePage() {
     [teamMembers, data.suivi, monthKey],
   );
 
+  const { membersWithSaisie, membersWithoutSaisie } = useMemo(() => {
+    const withSaisie: EquipeMember[] = [];
+    const withoutSaisie: EquipeMember[] = [];
+    for (const m of teamMembers) {
+      const rows = filterSuiviForIntervenantMonth(data.suivi, m.id, monthKey);
+      if (rows.length > 0) {
+        withSaisie.push(m);
+      } else {
+        withoutSaisie.push(m);
+      }
+    }
+    return { membersWithSaisie: withSaisie, membersWithoutSaisie: withoutSaisie };
+  }, [teamMembers, data.suivi, monthKey]);
+
+  const preferredFirstMemberId =
+    membersWithSaisie[0]?.id ?? membersWithoutSaisie[0]?.id ?? null;
+
   const selectedMember =
-    teamMembers.find((m) => m.id === selectedMemberId) ?? teamMembers[0] ?? null;
+    selectedMemberId == null
+      ? null
+      : (teamMembers.find((m) => m.id === selectedMemberId) ?? null);
 
   const selectedRows = useMemo(() => {
     if (!selectedMember) {
@@ -129,17 +192,23 @@ export function CraRevueEquipePage() {
   }, [pa.bdcList]);
 
   useEffect(() => {
-    if (teamMembers.length === 0) {
+    if (teamMembers.length === 0 || preferredFirstMemberId == null) {
       setSelectedMemberId(null);
+      initializedSelectionRef.current = false;
       return;
     }
     if (
-      selectedMemberId == null ||
+      selectedMemberId != null &&
       !teamMembers.some((m) => m.id === selectedMemberId)
     ) {
-      setSelectedMemberId(teamMembers[0]!.id);
+      setSelectedMemberId(preferredFirstMemberId);
+      return;
     }
-  }, [teamMembers, selectedMemberId]);
+    if (!initializedSelectionRef.current) {
+      initializedSelectionRef.current = true;
+      setSelectedMemberId(preferredFirstMemberId);
+    }
+  }, [teamMembers, selectedMemberId, preferredFirstMemberId]);
 
   useEffect(() => {
     setDrafts(initCraRevueEquipeDrafts(selectedRows));
@@ -272,143 +341,42 @@ export function CraRevueEquipePage() {
     );
   }
 
-  const tabs = teamMembers.map((m) => {
+  const renderMemberAccordion = (m: EquipeMember) => {
     const rows = filterSuiviForIntervenantMonth(data.suivi, m.id, monthKey);
     const sans = rows.filter(suiviSansBdc).length;
-    return {
-      tabId: String(m.id),
-      label: memberTabLabel(m, sans),
-    };
-  });
+    const isOpen = selectedMemberId === m.id;
 
-  return (
-    <div className="fr-container fr-container--fluid fr-px-0 cra-carnet">
-      <header className="cra-carnet__hero fr-mb-3w">
-        <CallOut
-          className="cra-carnet__callout"
-          colorVariant="blue-cumulus"
-          titleAs="h2"
-          title="Mon carnet"
-          bodyAs="div"
-        >
-          <div className="cra-carnet__hero-grid">
-            <div className="cra-carnet__hero-identity">
-              <EquipeAvatar
-                avatar={data.manager.avatar}
-                memberId={data.manager.id}
-                size="lg"
-              />
-              <div className="cra-carnet__hero-identity-text">
-                <p className="fr-h4 fr-mb-1v cra-carnet__hero-name">
-                  {data.manager.prenomNom}
-                </p>
-                {data.manager.equipeLabel ? (
-                  <div className="cra-carnet__hero-equipe">
-                    {tdEquipeTag(data.manager.equipeLabel, { small: true })}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="cra-carnet__hero-aside">
-              <Select
-                label="Mois du carnet"
-                nativeSelectProps={{
-                  value: monthKey,
-                  onChange: (e) => setMonthKey(e.target.value),
-                }}
-              >
-                {monthOptions.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </Select>
-            </div>
-          </div>
-        </CallOut>
-      </header>
-
-      {data.refsError ? (
-        <Alert
-          className="fr-mb-2w"
-          severity="warning"
-          title="Référentiels partiels"
-          description={data.refsError}
-          small
-        />
-      ) : null}
-
-      <Alert
-        className="fr-mb-2w"
-        severity="info"
-        title="Périmètre département"
-        description="Seuls les collègues actifs de votre département apparaissent ici (statut « Actif » dans l’annuaire Équipe). Les droits Grist limitent déjà qui peut lire ou modifier les lignes CRA."
-        small
-      />
-
-      <div
-        className="fr-grid-row equipe-fiche-meta-bandeau cra-carnet__meta fr-mb-3w"
-        role="group"
-        aria-label="Indicateurs de l’équipe"
-        aria-live="polite"
+    return (
+      <Accordion
+        key={m.id}
+        id={`cra-revue-member-${m.id}`}
+        titleAs="h4"
+        expanded={isOpen}
+        onExpandedChange={(expanded) => {
+          // Un seul ouvert à la fois : on n’accepte que l’ouverture
+          // (refermer effacerait les brouillons non enregistrés).
+          if (expanded) {
+            setSelectedMemberId(m.id);
+          }
+        }}
+        label={memberAccordionLabel(m, rows.length, sans)}
       >
-        {metaCells.map((cell) => (
-          <div
-            key={cell.label}
-            className="fr-col-12 fr-col-md-3 equipe-fiche-meta-bandeau__cell"
-          >
-            <div className="fr-text--xs fr-mb-1v equipe-fiche-meta-bandeau__label">
-              {cell.label}
-            </div>
-            <div className="fr-text--sm fr-mb-0 fr-text--bold">{cell.value}</div>
-          </div>
-        ))}
-      </div>
-
-      {teamMembers.length === 0 ? (
-        <Alert
-          severity="info"
-          title="Aucun collègue dans votre département"
-          description={`Personne d’autre n’a le département « ${data.manager.equipeLabel} » dans Équipe. Vérifiez les fiches ou le staffing.`}
-        />
-      ) : (
-        <Tabs
-          label="Freelances du département"
-          className="fr-mb-2w"
-          selectedTabId={String(selectedMember?.id ?? teamMembers[0]!.id)}
-          onTabChange={(id: string) => {
-            const n = Number.parseInt(String(id), 10);
-            if (Number.isFinite(n)) {
-              setSelectedMemberId(n);
-            }
-          }}
-          tabs={tabs}
-        >
-          {selectedMember ? (
+        <div className="fr-pt-1w">
+          {isOpen && selectedMember ? (
             <>
               <div className="fr-mb-2w">
-                <p className="fr-text--sm fr-mb-1v">
-                  <strong>
-                    {selectedMember.Prenom_Nom?.trim() ||
-                      `Intervenant #${selectedMember.id}`}
-                  </strong>
-                  {typeof selectedMember.TJM === "number" ? (
-                    <> · TJM {formatMontantEur(selectedMember.TJM)}</>
-                  ) : null}
-                  <> · {selectedRows.length} ligne{selectedRows.length > 1 ? "s" : ""}</>
-                </p>
-                <Link className="fr-link fr-text--sm" to={`/equipe/${selectedMember.id}`}>
+                <Link
+                  className="fr-link fr-text--sm"
+                  to={`/equipe/${selectedMember.id}`}
+                >
                   Voir la fiche Équipe
                 </Link>
               </div>
 
               {selectedRows.length === 0 ? (
-                <Alert
-                  severity="info"
-                  title="Aucune saisie ce mois"
-                  description="Ce collègue n’a pas encore de ligne CRA pour ce mois. La déclaration se fait via « Mon carnet »."
-                />
+                <p className="fr-text--sm fr-text-mention--grey fr-mb-0">
+                  Aucune saisie ce mois — à déclarer par le freelance.
+                </p>
               ) : (
                 <ul className="fr-raw-list cra-carnet__entries">
                   {drafts.map((draft) => {
@@ -429,7 +397,10 @@ export function CraRevueEquipePage() {
                     const missingBdc = !draft.bdcId.trim();
 
                     return (
-                      <li key={draft.realiseId} className="cra-carnet__entry fr-mb-2w">
+                      <li
+                        key={draft.realiseId}
+                        className="cra-carnet__entry fr-mb-2w"
+                      >
                         <div className="cra-carnet__entry-jours">
                           <Input
                             label="Jours"
@@ -539,13 +510,159 @@ export function CraRevueEquipePage() {
                     onClick={() => void onSave()}
                     disabled={saving || data.isReloading}
                   >
-                    {saving ? "Enregistrement…" : "Enregistrer les rattachements"}
+                    {saving
+                      ? "Enregistrement…"
+                      : "Enregistrer les rattachements"}
                   </Button>
                 </div>
               ) : null}
             </>
-          ) : null}
-        </Tabs>
+          ) : (
+            <p className="fr-sr-only">Panneau fermé</p>
+          )}
+        </div>
+      </Accordion>
+    );
+  };
+
+  return (
+    <div className="fr-container fr-container--fluid fr-px-0 cra-carnet">
+      <header className="cra-carnet__hero fr-mb-3w">
+        <CallOut
+          className="cra-carnet__callout"
+          colorVariant="blue-cumulus"
+          titleAs="h2"
+          title="Mon carnet"
+          bodyAs="div"
+        >
+          <div className="cra-carnet__hero-grid">
+            <div className="cra-carnet__hero-identity">
+              <EquipeAvatar
+                avatar={data.manager.avatar}
+                memberId={data.manager.id}
+                size="lg"
+              />
+              <div className="cra-carnet__hero-identity-text">
+                <p className="fr-h4 fr-mb-1v cra-carnet__hero-name">
+                  {data.manager.prenomNom}
+                </p>
+                {data.manager.equipeLabel ? (
+                  <div className="cra-carnet__hero-equipe">
+                    {tdEquipeTag(data.manager.equipeLabel, { small: true })}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="cra-carnet__hero-aside">
+              <Select
+                label="Mois du carnet"
+                nativeSelectProps={{
+                  value: monthKey,
+                  onChange: (e) => setMonthKey(e.target.value),
+                }}
+              >
+                {monthOptions.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          </div>
+        </CallOut>
+      </header>
+
+      {data.refsError ? (
+        <Alert
+          className="fr-mb-2w"
+          severity="warning"
+          title="Référentiels partiels"
+          description={data.refsError}
+          small
+        />
+      ) : null}
+
+      <div
+        className="fr-grid-row equipe-fiche-meta-bandeau cra-carnet__meta fr-mb-3w"
+        role="group"
+        aria-label="Indicateurs de l’équipe"
+        aria-live="polite"
+      >
+        {metaCells.map((cell) => (
+          <div
+            key={cell.label}
+            className="fr-col-12 fr-col-md-3 equipe-fiche-meta-bandeau__cell"
+          >
+            <div className="fr-text--xs fr-mb-1v equipe-fiche-meta-bandeau__label">
+              {cell.label}
+            </div>
+            <div className="fr-text--sm fr-mb-0 fr-text--bold">{cell.value}</div>
+          </div>
+        ))}
+      </div>
+
+      {teamMembers.length === 0 ? (
+        <Alert
+          severity="info"
+          title="Aucun collègue dans votre département"
+          description={`Personne d’autre n’a le département « ${data.manager.equipeLabel} » dans Équipe. Vérifiez les fiches ou le staffing.`}
+        />
+      ) : (
+        <div
+          className="cra-carnet__member-groups"
+          role="region"
+          aria-label="Collègues du département"
+        >
+          <section
+            className="cra-carnet__chapter fr-mb-4w"
+            aria-labelledby="cra-revue-avec-saisie"
+          >
+            <div className="cra-carnet__chapter-title fr-mb-2w">
+              <h3 id="cra-revue-avec-saisie" className="fr-h5 fr-mb-0">
+                Avec saisie ce mois
+              </h3>
+              <span className="fr-text--sm fr-text-mention--grey cra-carnet__chapter-summary">
+                {collegueCountLabel(membersWithSaisie.length)}
+              </span>
+            </div>
+            {membersWithSaisie.length === 0 ? (
+              <Alert
+                severity="info"
+                title="Aucune saisie pour l’instant"
+                description="Aucun collègue du département n’a encore déclaré de CRA pour ce mois."
+                small
+              />
+            ) : (
+              <div className="fr-accordions-group">
+                {membersWithSaisie.map(renderMemberAccordion)}
+              </div>
+            )}
+          </section>
+
+          <section
+            className="cra-carnet__chapter fr-mb-2w"
+            aria-labelledby="cra-revue-sans-saisie"
+          >
+            <div className="cra-carnet__chapter-title fr-mb-2w">
+              <h3 id="cra-revue-sans-saisie" className="fr-h5 fr-mb-0">
+                Sans saisie ce mois
+              </h3>
+              <span className="fr-text--sm fr-text-mention--grey cra-carnet__chapter-summary">
+                {collegueCountLabel(membersWithoutSaisie.length)}
+              </span>
+            </div>
+            {membersWithoutSaisie.length === 0 ? (
+              <p className="fr-text--sm fr-mb-0">
+                Tous les collègues actifs ont au moins une ligne CRA ce mois.
+              </p>
+            ) : (
+              <div className="fr-accordions-group">
+                {membersWithoutSaisie.map(renderMemberAccordion)}
+              </div>
+            )}
+          </section>
+        </div>
       )}
     </div>
   );
