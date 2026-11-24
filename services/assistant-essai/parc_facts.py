@@ -331,6 +331,39 @@ def format_aggregate_table_message(facts: Dict[str, Any]) -> Optional[str]:
     return intro + "\n\n" + "\n".join([header, sep, *lines])
 
 
+def format_rgaa_threshold_message(facts: Dict[str, Any]) -> Optional[str]:
+    """Phrase chiffrée pour un seuil RGAA, sans passer par le modèle."""
+    if not isinstance(facts, dict) or facts.get("metric") != "rgaa_threshold":
+        return None
+    n = facts.get("n_oui")
+    filled = facts.get("n_renseignes")
+    total = facts.get("total_produits")
+    if not isinstance(n, int) or not isinstance(filled, int) or not isinstance(total, int):
+        return None
+    produit = "produit a" if n == 1 else "produits ont"
+    fiche = "fiche" if filled == 1 else "fiches"
+    return (
+        "{0} {1} un taux de conformité RGAA {2} {3}, "
+        "sur {4} {5} où le taux est renseigné ({6} fiches au total)."
+    ).format(
+        n,
+        produit,
+        _RGAA_OP_LABEL.get(str(facts.get("comparaison") or ""), "supérieur ou égal à"),
+        facts.get("seuil_pourcent") or "",
+        filled,
+        fiche,
+        total,
+    )
+
+
+def format_aggregate_direct_message(facts: Dict[str, Any]) -> Optional[str]:
+    """Réponse prête à afficher (tableau ou chiffre filtré), sinon None."""
+    sentence = format_rgaa_threshold_message(facts)
+    if sentence:
+        return sentence
+    return format_aggregate_table_message(facts)
+
+
 def _format_rgaa_ratio(value: Any) -> Any:
     """Affiche 0.81 → « 81 % (ratio 0.81) » pour des réponses homogènes."""
     if isinstance(value, bool) or not isinstance(value, (int, float)):
@@ -843,6 +876,72 @@ def _as_rgaa_ratio(value: Any) -> Optional[float]:
     return None
 
 
+_RGAA_THRESHOLD_OPS: List[Tuple[str, str]] = [
+    (r">=|superieure? ou egal(?:e)?(?:\s+a)?|au moins|a partir de", "gte"),
+    (r"<=|inferieure? ou egal(?:e)?(?:\s+a)?|au plus", "lte"),
+    (r">|superieure?(?:\s+a)?|plus de|au dessus de", "gt"),
+    (r"<|inferieure?(?:\s+a)?|moins de|en dessous de|au dessous de", "lt"),
+    (r"egal(?:e)? a", "eq"),
+]
+
+_RGAA_OP_LABEL = {
+    "gte": "supérieur ou égal à",
+    "gt": "supérieur à",
+    "lte": "inférieur ou égal à",
+    "lt": "inférieur à",
+    "eq": "égal à",
+}
+
+
+def parse_rgaa_threshold(question: str) -> Optional[Tuple[str, float]]:
+    """
+    Seuil sur le taux de conformité RGAA.
+    « supérieur ou égal à 80 % » → ("gte", 0.8). None si pas de comparaison chiffrée.
+    """
+    q = _normalize(question)
+    if "rgaa" not in q and "conformite" not in q:
+        return None
+    for pattern, op in _RGAA_THRESHOLD_OPS:
+        match = re.search(
+            r"(?:" + pattern + r")\s+(\d+(?:[.,]\d+)?)\s*(%|pour cent)?",
+            q,
+        )
+        if not match:
+            continue
+        raw = float(match.group(1).replace(",", "."))
+        has_percent = bool(match.group(2))
+        if has_percent or raw > 1.0:
+            if raw < 0 or raw > 100:
+                return None
+            return op, raw / 100.0
+        if raw < 0:
+            return None
+        return op, raw
+    return None
+
+
+def _ratio_meets(ratio: float, op: str, seuil: float) -> bool:
+    left = round(ratio * 100, 2)
+    right = round(seuil * 100, 2)
+    if op == "gte":
+        return left >= right
+    if op == "gt":
+        return left > right
+    if op == "lte":
+        return left <= right
+    if op == "lt":
+        return left < right
+    if op == "eq":
+        return left == right
+    return False
+
+
+def _format_percent_ratio(ratio: float) -> str:
+    pct = round(ratio * 100, 2)
+    pct_s = str(int(pct)) if pct == int(pct) else str(pct)
+    return "{0} %".format(pct_s)
+
+
 # Alias normalisés → valeur exacte Departement_SDPC
 _DEPARTMENT_ALIASES: List[Tuple[str, str]] = [
     ("sdcid/dia", "SDCID/DIA"),
@@ -1058,6 +1157,24 @@ def detect_aggregate_intent(question: str) -> Optional[str]:
     ):
         return "jdma_rgaa_list"
 
+    threshold = parse_rgaa_threshold(question)
+    if threshold and not (jdma and "rgaa" in q):
+        asks_rows = any(
+            h in q
+            for h in (
+                "liste",
+                "lister",
+                "tableau",
+                "quels sont",
+                "quels produits",
+                "lesquels",
+                "lesquelles",
+            )
+        )
+        if "tableau de bord" in q:
+            asks_rows = False
+        return "rgaa_threshold_list" if asks_rows else "rgaa_threshold"
+
     if "rgaa" in q and ("moyenne" in q or "moyen" in q or "average" in q):
         return "rgaa_mean"
     # « liste / tableau / lesquels » prime sur « renseigné », sinon on ne renvoie qu’un décompte.
@@ -1147,6 +1264,8 @@ def build_aggregate_facts(
     *,
     department: Optional[str] = None,
     departments: Optional[List[str]] = None,
+    rgaa_op: Optional[str] = None,
+    rgaa_threshold: Optional[float] = None,
 ) -> Dict[str, Any]:
     total = len(produits)
     fields_list = [(rec.get("fields") or {}) for rec in produits]
@@ -1249,6 +1368,67 @@ def build_aggregate_facts(
             ),
             "source": "Le PARC — agrégat RGAA (lecture)",
         }
+
+    if metric in ("rgaa_threshold", "rgaa_threshold_list"):
+        op = rgaa_op or "gte"
+        seuil = 0.8 if rgaa_threshold is None else rgaa_threshold
+        op_label = _RGAA_OP_LABEL.get(op, "supérieur ou égal à")
+        seuil_label = _format_percent_ratio(seuil)
+        rows = []
+        n_filled = 0
+        for fields in fields_list:
+            ratio = _as_rgaa_ratio(fields.get("RGAA_Taux_de_conformite"))
+            if ratio is None:
+                continue
+            n_filled += 1
+            if not _ratio_meets(ratio, op, seuil):
+                continue
+            name = _product_name(fields)
+            if not name:
+                continue
+            rows.append(
+                {
+                    "produit": name,
+                    "rgaa_pourcent": _format_percent_ratio(ratio),
+                }
+            )
+        rows.sort(key=lambda r: _normalize(str(r["produit"])))
+        n = len(rows)
+        label = "Produits avec un taux de conformité RGAA {0} {1}".format(
+            op_label, seuil_label
+        )
+        base: Dict[str, Any] = {
+            "tool": "parc_agregat",
+            "metric": metric,
+            "label": label,
+            "comparaison": op,
+            "seuil_ratio": round(seuil, 4),
+            "seuil_pourcent": seuil_label,
+            "total_produits": total,
+            "n_oui": n,
+            "n_renseignes": n_filled,
+            "n_non_renseignes": total - n_filled,
+            "part_pourcent": _pct(n, n_filled),
+            "rule": (
+                "Annonce n_oui : produits dont le taux RGAA renseigné respecte le seuil. "
+                "Rappelle n_renseignes et total_produits. "
+                "Les fiches sans taux ne comptent pas dans n_oui. Ne liste pas les produits."
+            ),
+            "source": "Le PARC — agrégat RGAA filtré (lecture)",
+        }
+        if metric == "rgaa_threshold_list":
+            truncated = n > AGGREGATE_TABLE_CAP
+            shown = rows[:AGGREGATE_TABLE_CAP] if truncated else rows
+            base["produits_detail"] = shown
+            base["produits"] = [r["produit"] for r in shown]
+            base["rule"] = (
+                "Le tableau est ajouté par le service. "
+                "Ne recopie pas les lignes et n’invente aucun taux."
+            )
+            if truncated:
+                base["liste_tronquee"] = True
+                base["n_affiches"] = AGGREGATE_TABLE_CAP
+        return base
 
     if metric == "rgaa_list":
         rows = []
@@ -1721,8 +1901,17 @@ async def resolve_parc_facts(question: str) -> Dict[str, Any]:
             )
             return facts
         pool = _filter_produits_by_department(_cache["produits"], department)
+        parsed_threshold = (
+            parse_rgaa_threshold(question)
+            if aggregate in ("rgaa_threshold", "rgaa_threshold_list")
+            else None
+        )
         facts = build_aggregate_facts(
-            aggregate, pool, department=department
+            aggregate,
+            pool,
+            department=department,
+            rgaa_op=parsed_threshold[0] if parsed_threshold else None,
+            rgaa_threshold=parsed_threshold[1] if parsed_threshold else None,
         )
         if department:
             facts["departement"] = department

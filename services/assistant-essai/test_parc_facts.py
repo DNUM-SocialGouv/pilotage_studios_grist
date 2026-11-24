@@ -19,8 +19,10 @@ from parc_facts import (
     detect_department,
     facts_for_llm,
     find_explicit_product_records,
+    format_aggregate_direct_message,
     format_aggregate_table_message,
     match_product,
+    parse_rgaa_threshold,
 )
 
 
@@ -402,6 +404,36 @@ class ParcFactsTest(unittest.TestCase):
                 {"tool": "parc_agregat", "metric": "rgaa_count", "n_renseignes": 1}
             )
         )
+
+    def test_rgaa_threshold_at_least_80(self) -> None:
+        question = (
+            "nombre de produits ayant un taux de conformité "
+            "supérieure ou egal à 80%"
+        )
+        self.assertEqual(detect_aggregate_intent(question), "rgaa_threshold")
+        self.assertEqual(parse_rgaa_threshold(question), ("gte", 0.8))
+        produits = [
+            {"fields": {"Produit": "C2S", "RGAA_Taux_de_conformite": 0.81}},
+            {"fields": {"Produit": "Pile", "RGAA_Taux_de_conformite": 0.8}},
+            {"fields": {"Produit": "Bas", "RGAA_Taux_de_conformite": 0.79}},
+            {"fields": {"Produit": "Vide", "RGAA_Taux_de_conformite": None}},
+        ]
+        facts = build_aggregate_facts(
+            "rgaa_threshold",
+            produits,
+            rgaa_op="gte",
+            rgaa_threshold=0.8,
+        )
+        self.assertEqual(facts["n_oui"], 2)
+        self.assertEqual(facts["n_renseignes"], 3)
+        self.assertEqual(facts["total_produits"], 4)
+        message = format_aggregate_direct_message(facts)
+        self.assertIsNotNone(message)
+        assert message is not None
+        self.assertIn("2 produits ont un taux de conformité RGAA supérieur ou égal à 80 %", message)
+        self.assertIn("3 fiches où le taux est renseigné", message)
+        self.assertIn("4 fiches au total", message)
+        self.assertIsNone(detect_aggregate_intent("Quel est le taux RGAA de C2S ?"))
 
 
 if __name__ == "__main__":
