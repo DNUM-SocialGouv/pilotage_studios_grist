@@ -85,7 +85,8 @@ Script local : [`services/assistant-essai/run_parc_eval.py`](../../../services/a
 8. Besoins **DAT** (= **DICT** : disponibilité, intégrité, confidentialité, traçabilité)  
 9. Produits **DATIA** (ex. DATIA TBD, TDB IA DAT'IA)  
 10. Taux RGAA renseigné → affichage en **pourcentage** dans les faits (`81 %`)  
-11. Questions sur **l’ensemble du parc** (moyenne RGAA, comptages) → agrégat serveur, pas « produit ambigu » 
+11. Questions sur **l’ensemble du parc** (moyenne RGAA, comptages) → agrégat serveur, pas « produit ambigu »
+12. **Liste** demandée (liste, tableau, lesquels) → tableau Markdown construit par le service (ex. produit + taux RGAA renseigné), pas un simple décompte
 
 ---
 

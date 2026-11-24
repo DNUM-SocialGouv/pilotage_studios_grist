@@ -19,6 +19,7 @@ from parc_facts import (
     detect_department,
     facts_for_llm,
     find_explicit_product_records,
+    format_aggregate_table_message,
     match_product,
 )
 
@@ -338,6 +339,69 @@ class ParcFactsTest(unittest.TestCase):
         self.assertNotIn("source", cleaned)
         self.assertEqual(cleaned["n_oui"], 2)
         self.assertNotIn("source", cleaned["products"][0])
+
+    def test_detect_rgaa_list_not_count(self) -> None:
+        self.assertEqual(
+            detect_aggregate_intent(
+                "J'ai besoin de la liste des produits avec leur taux de conformité "
+                "RGAA associé quand il a été renseigné"
+            ),
+            "rgaa_list",
+        )
+        self.assertEqual(
+            detect_aggregate_intent(
+                "Combien de produits ont un taux RGAA renseigné ?"
+            ),
+            "rgaa_count",
+        )
+        self.assertEqual(
+            detect_aggregate_intent(
+                "Donne moi le nombre de produits ayant le champ RGAA renseigné."
+            ),
+            "rgaa_count",
+        )
+
+    def test_build_and_format_rgaa_list_table(self) -> None:
+        produits = [
+            {"fields": {"Produit": "C2S", "RGAA_Taux_de_conformite": 0.81}},
+            {"fields": {"Produit": "Accolade", "RGAA_Taux_de_conformite": None}},
+            {"fields": {"Produit": "MANDOLINE", "RGAA_Taux_de_conformite": 0.0083}},
+        ]
+        facts = build_aggregate_facts("rgaa_list", produits)
+        self.assertEqual(facts["n_renseignes"], 2)
+        self.assertEqual(facts["n_non_renseignes"], 1)
+        self.assertEqual(
+            [row["produit"] for row in facts["produits_detail"]],
+            ["C2S", "MANDOLINE"],
+        )
+        self.assertEqual(facts["produits_detail"][0]["rgaa_pourcent"], "81 %")
+        message = format_aggregate_table_message(facts)
+        self.assertIsNotNone(message)
+        assert message is not None
+        self.assertIn("2 produits sur 3 fiches", message)
+        self.assertIn("1 fiche n’a pas de taux renseigné", message)
+        self.assertIn("| Produit | Taux de conformité RGAA |", message)
+        self.assertIn("| C2S | 81 % |", message)
+        self.assertNotIn("Accolade", message)
+
+    def test_format_name_list_as_table(self) -> None:
+        facts = build_aggregate_facts(
+            "hds_list",
+            [
+                {"fields": {"Produit": "A|B", "HDS": True}},
+                {"fields": {"Produit": "C2S", "HDS": False}},
+            ],
+        )
+        message = format_aggregate_table_message(facts)
+        self.assertIsNotNone(message)
+        assert message is not None
+        self.assertIn("| Produit |", message)
+        self.assertIn("| A\\|B |", message)
+        self.assertIsNone(
+            format_aggregate_table_message(
+                {"tool": "parc_agregat", "metric": "rgaa_count", "n_renseignes": 1}
+            )
+        )
 
 
 if __name__ == "__main__":

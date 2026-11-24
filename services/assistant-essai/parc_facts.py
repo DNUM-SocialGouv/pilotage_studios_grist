@@ -17,6 +17,8 @@ CACHE_TTL_SEC = 600
 TEXT_MAX_CHARS = 4000
 # Plafond des listes de noms produits injectées dans le prompt LiteLLM
 AGGREGATE_LIST_CAP = 40
+# Tableau affiché tel quel (sans passer par le modèle) : le parc tient largement dessous.
+AGGREGATE_TABLE_CAP = 250
 
 # Glossaire → colonne réelle Produits_DNUM
 COLUMN_ALIASES: Dict[str, str] = {
@@ -254,6 +256,79 @@ def _list_rule(intro: str) -> str:
         "et précise que la liste est tronquée (total = n_oui). "
         "N’ajoute aucun autre produit."
     ).format(intro)
+
+
+def _md_cell(value: str) -> str:
+    return str(value or "").replace("|", "\\|").replace("\n", " ").strip()
+
+
+def format_aggregate_table_message(facts: Dict[str, Any]) -> Optional[str]:
+    """
+    Réponse tableau pour une liste demandée.
+    Construit le Markdown à partir des faits : le modèle ne recopie pas les lignes.
+    """
+    if not isinstance(facts, dict) or facts.get("tool") != "parc_agregat":
+        return None
+    metric = str(facts.get("metric") or "")
+    if not metric.endswith("_list"):
+        return None
+
+    detail = facts.get("produits_detail")
+    lines: List[str] = []
+    headers: List[str]
+    if (
+        isinstance(detail, list)
+        and detail
+        and isinstance(detail[0], dict)
+        and "rgaa_pourcent" in detail[0]
+    ):
+        headers = ["Produit", "Taux de conformité RGAA"]
+        for row in detail:
+            if not isinstance(row, dict):
+                continue
+            name = _md_cell(str(row.get("produit") or ""))
+            rate = _md_cell(str(row.get("rgaa_pourcent") or ""))
+            if name:
+                lines.append("| {0} | {1} |".format(name, rate))
+    else:
+        headers = ["Produit"]
+        names = facts.get("produits") or []
+        if isinstance(names, list):
+            for name in names:
+                cell = _md_cell(str(name))
+                if cell:
+                    lines.append("| {0} |".format(cell))
+
+    label = str(facts.get("label") or "Liste")
+    dept = str(facts.get("departement") or "").strip()
+    scope = " — département {0}".format(dept) if dept else ""
+    n = facts.get("n_oui")
+    if n is None:
+        n = facts.get("n_renseignes")
+    total = facts.get("total_produits")
+
+    if not lines:
+        return "{0}{1} : aucun produit ne correspond.".format(label, scope)
+
+    if isinstance(n, int) and isinstance(total, int):
+        produit = "produit" if n == 1 else "produits"
+        intro = "{0}{1} : {2} {3} sur {4} fiches.".format(
+            label, scope, n, produit, total
+        )
+    else:
+        intro = "{0}{1}.".format(label, scope)
+    if facts.get("liste_tronquee"):
+        intro += " Le tableau en montre {0}.".format(facts.get("n_affiches"))
+    if metric == "rgaa_list" and isinstance(facts.get("n_non_renseignes"), int):
+        missing = facts["n_non_renseignes"]
+        if missing == 1:
+            intro += " 1 fiche n’a pas de taux renseigné."
+        else:
+            intro += " {0} fiches n’ont pas de taux renseigné.".format(missing)
+
+    header = "| " + " | ".join(headers) + " |"
+    sep = "| " + " | ".join("---" for _ in headers) + " |"
+    return intro + "\n\n" + "\n".join([header, sep, *lines])
 
 
 def _format_rgaa_ratio(value: Any) -> Any:
@@ -985,6 +1060,25 @@ def detect_aggregate_intent(question: str) -> Optional[str]:
 
     if "rgaa" in q and ("moyenne" in q or "moyen" in q or "average" in q):
         return "rgaa_mean"
+    # « liste / tableau / lesquels » prime sur « renseigné », sinon on ne renvoie qu’un décompte.
+    explicit_enum = any(
+        h in q
+        for h in (
+            "liste",
+            "lister",
+            "tableau",
+            "quels sont",
+            "quels produits",
+            "quelles applications",
+            "lesquels",
+            "lesquelles",
+            "enumer",
+        )
+    )
+    if "tableau de bord" in q:
+        explicit_enum = False
+    if "rgaa" in q and explicit_enum:
+        return "rgaa_list"
     if "rgaa" in q and any(
         h in q for h in ("combien", "nombre", "part", "pourcentage", "renseign")
     ):
@@ -1155,6 +1249,48 @@ def build_aggregate_facts(
             ),
             "source": "Le PARC — agrégat RGAA (lecture)",
         }
+
+    if metric == "rgaa_list":
+        rows = []
+        for fields in fields_list:
+            ratio = _as_rgaa_ratio(fields.get("RGAA_Taux_de_conformite"))
+            if ratio is None:
+                continue
+            name = _product_name(fields)
+            if not name:
+                continue
+            pct = round(ratio * 100, 2)
+            pct_s = str(int(pct)) if pct == int(pct) else str(pct)
+            rows.append(
+                {
+                    "produit": name,
+                    "rgaa_pourcent": "{0} %".format(pct_s),
+                }
+            )
+        rows.sort(key=lambda r: _normalize(str(r["produit"])))
+        n = len(rows)
+        truncated = n > AGGREGATE_TABLE_CAP
+        shown = rows[:AGGREGATE_TABLE_CAP] if truncated else rows
+        out: Dict[str, Any] = {
+            "tool": "parc_agregat",
+            "metric": "rgaa_list",
+            "label": "Produits avec un taux de conformité RGAA renseigné",
+            "total_produits": total,
+            "n_oui": n,
+            "n_renseignes": n,
+            "n_non_renseignes": total - n,
+            "produits_detail": shown,
+            "produits": [r["produit"] for r in shown],
+            "rule": (
+                "Le tableau est ajouté par le service. "
+                "Ne recopie pas les lignes et n’invente aucun taux."
+            ),
+            "source": "Le PARC — liste RGAA_Taux_de_conformite (lecture)",
+        }
+        if truncated:
+            out["liste_tronquee"] = True
+            out["n_affiches"] = AGGREGATE_TABLE_CAP
+        return out
 
     if metric == "jdma_count":
         n = sum(1 for fields in fields_list if fields.get("Je_Donne_Mon_Avis") is True)

@@ -22,6 +22,7 @@ from pydantic import BaseModel, Field
 from parc_facts import (
     PARC_SYSTEM_PROMPT,
     facts_for_llm,
+    format_aggregate_table_message,
     parc_configured,
     resolve_parc_facts,
 )
@@ -297,6 +298,10 @@ async def ask(
             facts=parc_facts,
         )
         context = merged
+
+        table_message = format_aggregate_table_message(parc_facts)
+        if table_message:
+            return AskResponse(message=table_message, data={"parc": parc_facts})
 
     message = await _call_litellm(question, context, system_prompt=system_prompt)
     return AskResponse(message=message, data=None)
