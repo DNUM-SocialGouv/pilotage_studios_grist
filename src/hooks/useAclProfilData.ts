@@ -10,10 +10,7 @@ import {
   type PageAccessFlags,
 } from "../security/pageAccess";
 import { createOwnAclProfilRecord } from "../utils/aclProfilGristWrite";
-import {
-  emailFromAclProfilFields,
-  pickAclProfilRow,
-} from "../utils/aclProfilPick";
+import { emailFromAclProfilFields, pickAclProfilRow } from "../utils/aclProfilPick";
 import { resolveGristUserEmail } from "../utils/gristUserEmail";
 import { findSelfEquipeFromTable } from "../utils/resolveSelfEquipeId";
 
@@ -208,6 +205,8 @@ export function useAclProfilData(): AclProfilData {
             return;
           }
           const rows = recordsFromFetchTable(raw);
+          // Hors propriétaire, une seule fiche est visible (« Voir en tant que » inclus).
+          // Le propriétaire voit toutes les fiches : le jeton choisit la sienne.
           const row = pickAclProfilRow(rows, sessionEmail);
 
           if (!row) {

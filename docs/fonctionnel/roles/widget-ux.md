@@ -33,6 +33,7 @@ Suivi des cellules : [`matrice-droits.md`](matrice-droits.md) tableau **A**.
 - Si aucune ligne visible : **création auto** (`createOwnAclProfilRecord` — `E_mail` = compte connecté via jeton session) puis relecture ; ACL serveur `+CR` soi obligatoire
 - Si plusieurs lignes pour le même e-mail : le widget garde la **plus ancienne** (id minimal) ; nettoyer les doublons à la main dans Grist
 - **Limite test** : « Voir comme » en **lecture seule** bloque la création auto (écritures interdites). Pour valider le create : vrai compte utilisateur, ou provisionner la fiche en Owner puis « Voir comme » pour la lecture / menus
+- **Prénom / « Vos retours » en « Voir en tant que »** : la règle `Acl_profil` (2026-11-23) ne laisse à chacun que sa fiche, admin compris. Le widget prend cette fiche. Le propriétaire du document voit encore toutes les fiches ; son jeton désigne alors la sienne. Une colonne formule `user.Email` ne fournit pas la personne.
 - Pendant `loading` profil : **nav complète hors liens Admin** (pas de flash fail-closed ni flash lien Droits) ; gardes affichent « Vérification… »
 - Si profil `empty` / `error` (create ou lecture en échec) : alerte sous la nav + fail-closed budget
 - Filtre `WIDGET_NAV_ITEMS` : `filterNavItemsByPageAccess` + `canAccessHref` + options `isAdmin` / `canDeclareCra` / `canWeekly` (Mon carnet / revue hors nav → menu compte)

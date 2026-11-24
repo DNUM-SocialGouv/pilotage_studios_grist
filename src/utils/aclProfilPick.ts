@@ -1,13 +1,15 @@
 /**
  * Sélection de la fiche `Acl_profil` de session.
- * Quand un Admin/Owner voit plusieurs lignes (ACL large ou « Voir comme »),
- * on privilégie l’e-mail de session plutôt que le plus petit id.
+ * Quand plusieurs lignes sont visibles, on privilégie l’e-mail du jeton
+ * plutôt que le plus petit id.
+ *
+ * « Voir en tant que » ne change pas le jeton : il reste le compte qui a
+ * ouvert le navigateur. Chacun, hors propriétaire du document, ne voit que
+ * sa fiche : le widget la prend. Le propriétaire voit toutes les fiches ;
+ * le jeton désigne alors la sienne.
  */
 
-export function emailFromAclProfilFields(
-  fields: Record<string, unknown>,
-): string | null {
-  const raw = fields.E_mail;
+function normalizeSessionEmail(raw: unknown): string | null {
   if (typeof raw !== "string") {
     return null;
   }
@@ -16,6 +18,12 @@ export function emailFromAclProfilFields(
     return null;
   }
   return t;
+}
+
+export function emailFromAclProfilFields(
+  fields: Record<string, unknown>,
+): string | null {
+  return normalizeSessionEmail(fields.E_mail);
 }
 
 /**

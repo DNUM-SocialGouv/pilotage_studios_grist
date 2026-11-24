@@ -103,7 +103,7 @@ Colonnes **laissées visibles** aux Freelances : `Prenom_Nom`, `Equipe`, `Specia
 
 | Condition | Droits | Mémo (texte d’aide UI) |
 |-----------|--------|------------------------|
-| `user.Access == "OWNER" or user.Equipe.Role_ACL == "Admin"` | `+CRUD` | Owner du document ou Admin (rôle Équipe) : peuvent créer, lire, modifier et supprimer toutes les fiches — utile pour le ménage (doublons) et le dépannage. |
+| `user.Access == "OWNER"` | `+CRUD` | Propriétaire du document : voit et modifie toutes les fiches (ménage, doublons). Un admin ne voit que la sienne (bonjour « Voir en tant que », 2026-11-23). |
 | `user.Email == rec.E_mail` | `+CR` | Chaque personne peut créer et lire uniquement sa propre fiche (e-mail = compte connecté). Le widget s’en sert pour afficher les bons menus. Pas de modification ni de suppression par soi-même. |
 | `True` | `-CRUD` | Par défaut, personne d’autre ne voit ni n’écrit dans cette table. Sans cette règle de refus, les droits seraient trop ouverts. |
 
@@ -128,7 +128,7 @@ Ressource : `Devis`, `Montant_TTC`, `Nombre_de_CRA`, `Plateforme`, `SOFIANE`, `S
 | `Previsionnel` / summaries / Malt… | (sensibles) | encore `!= "OWNER"` (Const) | `-RU` — **à corriger** → `!= OWNER` |
 | `Realise.Calcul_TTC` | `Calcul_TTC` | encore `!= "OWNER"` (Const) | `+R -U` — **à corriger** |
 | `Constatations` | `*` | encore `== "OWNER"` (Const) | `+CRUD` — **à corriger** → `== OWNER` |
-| `Acl_profil` | `*` | Owner **ou** Admin → `+CRUD` ; `user.Email == rec.E_mail` → `+CR` ; `True` → `-CRUD` | Ménage Owner/Admin ; create/read soi ; reste interdit |
+| `Acl_profil` | `*` | Owner → `+CRUD` ; `user.Email == rec.E_mail` → `+CR` ; `True` → `-CRUD` | Ménage Owner seul ; chacun lit sa fiche (2026-11-23) |
 | `Droits_pages` | `*` | Owner **ou** Admin → `+CRUD` ; `True` → `-CRUD` | |
 
 ## Widget

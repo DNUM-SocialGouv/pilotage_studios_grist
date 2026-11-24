@@ -46,6 +46,7 @@ Première page affichée à l’ouverture du Custom Widget dans Grist : un **acc
 
 - Profil session : `Acl_profil` (rôle + `Page_*`) via `useAclProfil` — déjà chargé pour la nav.
 - Prénom accueil Freelance / Admin / Resp. : `Equipe.Prenom_Nom` résolu avec l’e-mail de session (`displayName` dans `useAclProfil`, déjà utilisé pour le menu compte) — **pas** de clé API ni d’appel REST dédié.
+- **« Voir en tant que »** : chacun ne lit que sa fiche `Acl_profil` (règle Owner UI 2026-11-23 : seul le propriétaire du document voit toutes les fiches). Le widget prend cette fiche pour le prénom et « Vos retours ». Une formule `user.Email` dans une colonne ne fournit pas la personne.
 - Recherche d’accueil (lazy, lecture) : `Tableau_de_pilotage_SDPC_Produits_SDPC`, `Missions`, `Equipe` via `fetchAllowlistedTable` — tables déjà allowlistées ; **pas** de nouvelle table ni d’écriture.
 - Vos retours (lazy, lecture) : `Kanban` + `Kanban_commentaires` via `fetchAllowlistedTable` — déjà allowlistées ; filtre UX par e-mail session ; **pas** d’écriture pour le marqueur « lu » (localStorage).
 - Kanban complet / commentaires drawer : aussi sur `/feuille-de-route`.
