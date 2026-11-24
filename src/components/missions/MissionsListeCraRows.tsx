@@ -12,7 +12,8 @@ export type MissionsListeCraRowsLayout = "liste" | "fiche";
 /**
  * Sous-lignes CRA sous une prestation.
  * - `liste` : colonnes liste missions
- *   (libellé, —, —, —, —, jours, TTC, actions — 5ᵉ tiret = Financeur).
+ *   (libellé + `listeEmptyMiddleCount` tirets + jours + TTC + actions).
+ *   Défaut 4 tirets (Produit · Statut · Financeur · Début).
  * - `fiche` : colonnes fiche Équipe & prestations
  *   (période colspan 4 = titre+statut+intervenant+équipe, [date], jours, —, TTC, [actions]).
  */
@@ -21,6 +22,7 @@ export function MissionsListeCraRows({
   firstRowId,
   indentLevel,
   layout = "liste",
+  listeEmptyMiddleCount = 4,
   showDateColumn = false,
   showActions = true,
   onEditCra,
@@ -30,6 +32,11 @@ export function MissionsListeCraRows({
   firstRowId: string;
   indentLevel: 1 | 2;
   layout?: MissionsListeCraRowsLayout;
+  /**
+   * Nombre de cellules `—` entre libellé et jours (layout `liste` seulement).
+   * Liste détaillée = 4 ; vue Par lot legacy = 3.
+   */
+  listeEmptyMiddleCount?: number;
   /** Colonne « Date de début » (mode planifié fiche mission). */
   showDateColumn?: boolean;
   /** Colonne actions (édition prestation et/ou CRA). */
@@ -40,6 +47,7 @@ export function MissionsListeCraRows({
   onDuplicateCra?: (suivi: SuiviMensuel) => void;
 }) {
   const canEditCra = Boolean(onEditCra || onDuplicateCra);
+  const middlePlaceholders = Math.max(0, Math.floor(listeEmptyMiddleCount));
 
   return (
     <>
@@ -140,10 +148,9 @@ export function MissionsListeCraRows({
             >
               {periodeEtTaches}
             </ExpandableChildCell>
-            <ExpandableChildCell>—</ExpandableChildCell>
-            <ExpandableChildCell>—</ExpandableChildCell>
-            <ExpandableChildCell>—</ExpandableChildCell>
-            <ExpandableChildCell>—</ExpandableChildCell>
+            {Array.from({ length: middlePlaceholders }, (_, i) => (
+              <ExpandableChildCell key={`liste-empty-${i}`}>—</ExpandableChildCell>
+            ))}
             {joursCell}
             {ttcCell}
             <td className="pilotage-col-actions pilotage-expandable-child-cell" />

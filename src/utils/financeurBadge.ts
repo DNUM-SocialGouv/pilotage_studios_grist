@@ -40,12 +40,12 @@ const FINANCEUR_ACCENT_BY_KEY: Record<string, FinanceurBadgeAccent> = {
   "dac - dns": "brown-caramel",
   "dgefp - misi": "yellow-moutarde",
   "dnum - ars": "blue-ecume",
-  "dnum - contractuel": "blue-cumulus",
+  "dnum - contractuel": "green-menthe",
   "dnum - dd": "purple-glycine",
   "dnum - gps": "pink-tuile",
   "dnum - simars": "orange-terre-battue",
-  "dnum - spc": "blue-ecume",
-  "dnum - spot": "blue-cumulus",
+  "dnum - spc": "blue-cumulus",
+  "dnum - spot": "green-archipel",
 };
 
 function normalizeFinanceurKey(label: string): string {

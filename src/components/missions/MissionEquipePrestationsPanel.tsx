@@ -510,6 +510,7 @@ export function MissionEquipePrestationsPanel({
                     ? (intervenantsById.get(intervenantId) ?? `#${intervenantId}`)
                     : undefined;
                 const equipe = equipeLabelForEnfant(e, equipesByIntervenantId);
+                const financeur = e.Financeur?.trim() || "";
                 const ttc = ttcByEnfantId.get(e.id) ?? 0;
                 const nbCra = craCountByEnfantId.get(e.id) ?? 0;
                 const joursRealises = joursByEnfantId.get(e.id) ?? 0;
@@ -577,12 +578,14 @@ export function MissionEquipePrestationsPanel({
                       </td>
                       <td>{intervenantLabel ?? "—"}</td>
                       <td className="pilotage-col-equipe-nowrap">
-                        <div className="missions-liste-prestation-meta">
-                          {equipe ? tdEquipeTag(equipe) : "—"}
-                          {e.Financeur?.trim() ? (
-                            <FinanceurBadges value={e.Financeur} />
-                          ) : null}
-                        </div>
+                        {!equipe && !financeur ? (
+                          "—"
+                        ) : (
+                          <div className="missions-liste-prestation-meta">
+                            {equipe ? tdEquipeTag(equipe) : null}
+                            {financeur ? <FinanceurBadges value={financeur} /> : null}
+                          </div>
+                        )}
                       </td>
                       {showPlanifie ? (
                         <>

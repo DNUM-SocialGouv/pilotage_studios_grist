@@ -255,11 +255,7 @@ export function MissionsDetailView() {
   // Produit · Département · Financeur (+ Dernière mise à jour optionnelle).
   const metaColCount = 3 + (derniereMajLabel != null ? 1 : 0);
   const metaColClass =
-    metaColCount === 4
-      ? "fr-col-12 fr-col-md-3"
-      : metaColCount === 3
-        ? "fr-col-12 fr-col-md-4"
-        : "fr-col-12 fr-col-md-6";
+    metaColCount === 4 ? "fr-col-12 fr-col-md-3" : "fr-col-12 fr-col-md-4";
 
   function selectMissionTab(nextId: string) {
     if (nextId === "contexte" || nextId === "equipe" || nextId === "notes") {

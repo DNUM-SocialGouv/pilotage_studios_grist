@@ -346,6 +346,7 @@ function LotPrestationRows({
           rows={craRows}
           firstRowId={enfantControlsId}
           indentLevel={1}
+          listeEmptyMiddleCount={3}
         />
       ) : null}
     </Fragment>
