@@ -84,6 +84,7 @@ class AskContext(BaseModel):
     entityId: Optional[Union[int, str]] = None
     entityLabel: Optional[str] = None
     facts: Optional[Dict[str, Any]] = None
+    previousQuestion: Optional[str] = None
 
 
 class AskRequest(BaseModel):
@@ -262,7 +263,10 @@ async def ask(
     system_prompt = SYSTEM_PROMPT
     if _is_parc_context(context):
         system_prompt = PARC_SYSTEM_PROMPT
-        parc_facts = await resolve_parc_facts(question)
+        previous = (context.previousQuestion or "").strip() if context else ""
+        parc_facts = await resolve_parc_facts(
+            question, previous_question=previous or None
+        )
         # Message direct si le serveur n’a pas les clés Grist PARC / lecture impossible
         # (évite le blabla « tarif / jours » du prompt Pilotage générique).
         if parc_facts.get("unresolved") and parc_facts.get("reason") in (

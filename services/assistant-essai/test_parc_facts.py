@@ -21,6 +21,7 @@ from parc_facts import (
     find_explicit_product_records,
     format_aggregate_direct_message,
     format_aggregate_table_message,
+    followup_list_metric,
     match_product,
     parse_rgaa_threshold,
 )
@@ -434,6 +435,21 @@ class ParcFactsTest(unittest.TestCase):
         self.assertIn("3 fiches où le taux est renseigné", message)
         self.assertIn("4 fiches au total", message)
         self.assertIsNone(detect_aggregate_intent("Quel est le taux RGAA de C2S ?"))
+
+    def test_followup_lists_previous_threshold(self) -> None:
+        previous = (
+            "Tu peux me sortir le nombre de produits ayant un taux de conformité "
+            "supérieure ou egal à 80% ?"
+        )
+        follow = "Tu peux me lister ces 40 produits"
+        metric, source = followup_list_metric(follow, previous)
+        self.assertEqual(metric, "rgaa_threshold_list")
+        self.assertEqual(source, previous)
+        self.assertEqual(parse_rgaa_threshold(source), ("gte", 0.8))
+        self.assertEqual(
+            followup_list_metric("Quel est le taux RGAA de C2S ?", previous)[0],
+            None,
+        )
 
 
 if __name__ == "__main__":

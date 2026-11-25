@@ -88,6 +88,7 @@ Script local : [`services/assistant-essai/run_parc_eval.py`](../../../services/a
 11. Questions sur **l’ensemble du parc** (moyenne RGAA, comptages) → agrégat serveur, pas « produit ambigu »
 12. **Liste** demandée (liste, tableau, lesquels) → tableau Markdown construit par le service (ex. produit + taux RGAA renseigné), pas un simple décompte
 13. **Seuil** sur le taux de conformité (« supérieur ou égal à 80 % ») → nombre de produits qui l’atteignent, parmi les fiches où le taux est renseigné
+14. **Relance** « liste ces produits » → le même critère, en tableau (la question précédente est renvoyée par le widget)
 
 ---
 

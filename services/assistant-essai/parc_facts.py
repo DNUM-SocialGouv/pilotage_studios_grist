@@ -1245,6 +1245,69 @@ def detect_aggregate_intent(question: str) -> Optional[str]:
     return None
 
 
+def _is_list_followup(question: str) -> bool:
+    """Relance du type « liste ces produits », sans nouveau critère."""
+    q = _normalize(question)
+    return any(
+        h in q
+        for h in (
+            "liste",
+            "lister",
+            "lesquel",
+            "montre",
+            "detaille",
+            "enumer",
+            "cite les",
+            "cite moi",
+            "ces produit",
+            "leur nom",
+            "leurs nom",
+            "noms des",
+            "affiche",
+        )
+    )
+
+
+_LIST_FROM_COUNT = {
+    "rgaa_threshold": "rgaa_threshold_list",
+    "rgaa_count": "rgaa_list",
+    "rgaa_mean": "rgaa_list",
+    "jdma_count": "jdma_list",
+    "hds_count": "hds_list",
+    "pca_count": "pca_list",
+    "obsolescence_count": "obsolescence_list",
+    "criticite1_count": "criticite1_list",
+    "hds_obsolete_count": "hds_obsolete_list",
+    "hds_criticite1_count": "hds_criticite1_list",
+    "count_products": "department_list",
+}
+
+
+def _as_list_metric(metric: Optional[str]) -> Optional[str]:
+    if not metric:
+        return None
+    if metric.endswith("_list"):
+        return metric
+    return _LIST_FROM_COUNT.get(metric)
+
+
+def followup_list_metric(
+    question: str, previous: Optional[str]
+) -> Tuple[Optional[str], str]:
+    """
+    (métrique, question qui porte le critère).
+    « Liste ces 40 produits » reprend le seuil de la question précédente.
+    """
+    own = detect_aggregate_intent(question)
+    if own:
+        return own, question
+    if previous and _is_list_followup(question):
+        inherited = _as_list_metric(detect_aggregate_intent(previous))
+        if inherited:
+            return inherited, previous
+    return None, question
+
+
 def _filter_produits_by_department(
     produits: List[Dict[str, Any]], department: Optional[str]
 ) -> List[Dict[str, Any]]:
@@ -1865,7 +1928,9 @@ def build_aggregate_facts(
     }
 
 
-async def resolve_parc_facts(question: str) -> Dict[str, Any]:
+async def resolve_parc_facts(
+    question: str, previous_question: Optional[str] = None
+) -> Dict[str, Any]:
     if not parc_configured():
         return {
             "tool": "parc_produit",
@@ -1887,8 +1952,14 @@ async def resolve_parc_facts(question: str) -> Dict[str, Any]:
         }
 
     # Agrégats « ensemble du parc » / département avant le matching produit.
-    explicit = find_explicit_product_records(question, _cache["produits"])
-    aggregate = detect_aggregate_intent(question)
+    # Une relance « liste ces produits » reprend le critère de la question d’avant.
+    aggregate, criterion_question = followup_list_metric(question, previous_question)
+    inherited = bool(aggregate) and criterion_question != question
+    explicit = (
+        []
+        if inherited
+        else find_explicit_product_records(question, _cache["produits"])
+    )
     if aggregate and len(explicit) == 0:
         departments = detect_departments(question)
         department = departments[0] if len(departments) == 1 else None
@@ -1902,7 +1973,7 @@ async def resolve_parc_facts(question: str) -> Dict[str, Any]:
             return facts
         pool = _filter_produits_by_department(_cache["produits"], department)
         parsed_threshold = (
-            parse_rgaa_threshold(question)
+            parse_rgaa_threshold(criterion_question)
             if aggregate in ("rgaa_threshold", "rgaa_threshold_list")
             else None
         )

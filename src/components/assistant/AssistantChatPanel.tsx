@@ -160,6 +160,14 @@ export function AssistantChatPanel({
       const context: AssistantAskContext = {
         screen: location.pathname,
       };
+      if (isParc) {
+        const previousQuestion = [...thread]
+          .reverse()
+          .find((item) => item.role === "user")?.text;
+        if (previousQuestion) {
+          context.previousQuestion = previousQuestion;
+        }
+      }
 
       if (isParc) {
         context.entityType = "parc_produit";
