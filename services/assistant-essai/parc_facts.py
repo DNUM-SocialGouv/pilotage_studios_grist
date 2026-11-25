@@ -290,6 +290,20 @@ def format_aggregate_table_message(facts: Dict[str, Any]) -> Optional[str]:
             rate = _md_cell(str(row.get("rgaa_pourcent") or ""))
             if name:
                 lines.append("| {0} | {1} |".format(name, rate))
+    elif (
+        isinstance(detail, list)
+        and detail
+        and isinstance(detail[0], dict)
+        and "fin_validite" in detail[0]
+    ):
+        headers = ["Produit", "Fin de validité"]
+        for row in detail:
+            if not isinstance(row, dict):
+                continue
+            name = _md_cell(str(row.get("produit") or ""))
+            fin = _md_cell(str(row.get("fin_validite") or ""))
+            if name:
+                lines.append("| {0} | {1} |".format(name, fin))
     else:
         headers = ["Produit"]
         names = facts.get("produits") or []
@@ -481,12 +495,30 @@ _MATURITY_LABELS = {
 }
 
 
+def format_homologation_year_message(facts: Dict[str, Any]) -> Optional[str]:
+    """Phrase pour une échéance d’homologation sur une année civile."""
+    if not isinstance(facts, dict) or facts.get("metric") != "homologation_annee_count":
+        return None
+    n = facts.get("n_oui")
+    total = facts.get("total_produits")
+    year = facts.get("annee")
+    if not isinstance(n, int) or not isinstance(total, int) or not isinstance(year, int):
+        return None
+    produit = "produit a" if n == 1 else "produits ont"
+    return (
+        "{0} {1} une fin de validité d’homologation en {2}, sur {3} fiches."
+    ).format(n, produit, year, total)
+
+
 def format_aggregate_direct_message(facts: Dict[str, Any]) -> Optional[str]:
     """Réponse prête à afficher (tableau ou chiffre filtré), sinon None."""
     sentence = format_rgaa_threshold_message(facts)
     if sentence:
         return sentence
     sentence = format_dashboard_tile_message(facts)
+    if sentence:
+        return sentence
+    sentence = format_homologation_year_message(facts)
     if sentence:
         return sentence
     return format_aggregate_table_message(facts)
@@ -1340,6 +1372,8 @@ def _detect_homologation_metric(question: str, list_ask: bool) -> Optional[str]:
         return pack("homologation_critiques")
     if "non homolog" in q:
         return pack("homologation_non_homologue")
+    if parse_homologation_year(question) is not None and not _named_product_question(q):
+        return pack("homologation_annee")
     if "expir" in q:
         return pack("homologation_expiree")
     if "6 mois" in q or "180 jour" in q:
@@ -1349,6 +1383,20 @@ def _detect_homologation_metric(question: str, list_ask: bool) -> Optional[str]:
     if "homologu" in q and "non homolog" not in q:
         return pack("homologues")
     return None
+
+
+def parse_homologation_year(question: str) -> Optional[int]:
+    """Année calendaire d’une fin d’homologation. « échéance en 2027 » → 2027."""
+    q = _normalize(question)
+    if not any(h in q for h in ("homolog", "echeance", "expir")):
+        return None
+    years = [int(y) for y in re.findall(r"\b(?:19|20)\d{2}\b", q)]
+    if len(years) != 1:
+        return None
+    year = years[0]
+    if year < 1990 or year > 2100:
+        return None
+    return year
 
 
 def _named_product_question(question: str) -> bool:
@@ -1728,6 +1776,7 @@ _LIST_FROM_COUNT = {
     "homologation_non_renseigne_count": "homologation_non_renseigne_list",
     "homologation_critiques_count": "homologation_critiques_list",
     "homologation_non_homologue_count": "homologation_non_homologue_list",
+    "homologation_annee_count": "homologation_annee_list",
     "maturite_vision_count": "maturite_vision_list",
     "maturite_design_count": "maturite_design_list",
     "maturite_impact_count": "maturite_impact_list",
@@ -1797,6 +1846,7 @@ def build_aggregate_facts(
     departments: Optional[List[str]] = None,
     rgaa_op: Optional[str] = None,
     rgaa_threshold: Optional[float] = None,
+    homologation_year: Optional[int] = None,
     today: Optional[date] = None,
 ) -> Dict[str, Any]:
     total = len(produits)
@@ -2227,6 +2277,56 @@ def build_aggregate_facts(
             )
         return base
 
+    if metric in ("homologation_annee_count", "homologation_annee_list"):
+        rows = []
+        for fields in fields_list:
+            fin = _as_widget_date(fields.get("Fin_de_validite_d_homologation"))
+            if fin is None or homologation_year is None or fin.year != homologation_year:
+                continue
+            name = _product_name(fields)
+            if not name:
+                continue
+            rows.append(
+                {
+                    "produit": name,
+                    "fin_validite": fin.strftime("%d/%m/%Y"),
+                    "_fin": fin,
+                }
+            )
+        rows.sort(key=lambda r: (r["_fin"], _normalize(str(r["produit"]))))
+        for row in rows:
+            del row["_fin"]
+        n = len(rows)
+        year_label = homologation_year if homologation_year is not None else "—"
+        base = {
+            "tool": "parc_agregat",
+            "metric": metric,
+            "label": "Produits dont l’homologation arrive à échéance en {0}".format(year_label),
+            "annee": homologation_year,
+            "total_produits": total,
+            "n_oui": n,
+            "part_pourcent": _pct(n, total),
+            "rule": (
+                "Compte les fiches dont la fin de validité d’homologation tombe "
+                "sur l’année demandée. Annonce n_oui / total. "
+                "Ne liste pas les produits, sauf si la métrique est une liste."
+            ),
+            "source": "Le PARC — agrégat fin de validité d’homologation (lecture)",
+        }
+        if metric.endswith("_list"):
+            truncated = n > AGGREGATE_TABLE_CAP
+            shown = rows[:AGGREGATE_TABLE_CAP] if truncated else rows
+            base["produits_detail"] = shown
+            base["produits"] = [r["produit"] for r in shown]
+            base["rule"] = (
+                "Le tableau est ajouté par le service. "
+                "Ne recopie pas les lignes et n’invente aucune date."
+            )
+            if truncated:
+                base["liste_tronquee"] = True
+                base["n_affiches"] = AGGREGATE_TABLE_CAP
+        return base
+
     homologation_key = metric[: -len("_list")] if metric.endswith("_list") else (
         metric[: -len("_count")] if metric.endswith("_count") else ""
     )
@@ -2591,12 +2691,18 @@ async def resolve_parc_facts(
             if aggregate in ("rgaa_threshold", "rgaa_threshold_list")
             else None
         )
+        parsed_year = (
+            parse_homologation_year(criterion_question)
+            if aggregate in ("homologation_annee_count", "homologation_annee_list")
+            else None
+        )
         facts = build_aggregate_facts(
             aggregate,
             pool,
             department=department,
             rgaa_op=parsed_threshold[0] if parsed_threshold else None,
             rgaa_threshold=parsed_threshold[1] if parsed_threshold else None,
+            homologation_year=parsed_year,
         )
         if department:
             facts["departement"] = department
