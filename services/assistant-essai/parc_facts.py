@@ -8,7 +8,7 @@ from __future__ import annotations
 import re
 import time
 import unicodedata
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 import httpx
@@ -356,9 +356,130 @@ def format_rgaa_threshold_message(facts: Dict[str, Any]) -> Optional[str]:
     )
 
 
+def format_dashboard_tile_message(facts: Dict[str, Any]) -> Optional[str]:
+    """Phrase des tuiles du tableau de bord, sans le modèle."""
+    if not isinstance(facts, dict):
+        return None
+    if facts.get("metric") == "completion_mean":
+        percent = facts.get("moyenne_pourcent")
+        total = facts.get("total_produits")
+        filled = facts.get("n_renseignes")
+        if not percent or not isinstance(total, int) or not isinstance(filled, int):
+            return None
+        return (
+            "La complétion moyenne est de {0}, sur {1} fiches "
+            "({2} taux renseignés)."
+        ).format(percent, total, filled)
+    n = facts.get("n_oui")
+    total = facts.get("total_produits")
+    if not isinstance(n, int) or not isinstance(total, int):
+        return None
+    dept = str(facts.get("departement") or "").strip()
+    scope = " dans le département {0}".format(dept) if dept else ""
+    metric = facts.get("metric")
+    if metric == "strategique_count":
+        verbe = "a" if n == 1 else "ont"
+        return (
+            "{0} produit{1} {2} le caractère stratégique renseigné{3}, "
+            "sur {4} fiches. Une fiche compte dès qu’un choix est saisi, "
+            "y compris « Non stratégique ». Le vide et le choix « N/A » ne comptent pas."
+        ).format(n, "" if n == 1 else "s", verbe, scope, total)
+    if metric == "a_completer_count":
+        verbe = "a" if n == 1 else "ont"
+        return (
+            "{0} produit{1} {2} au moins une information critique manquante{3}, "
+            "sur {4} fiches. C’est le décompte « produits à compléter » du tableau de bord."
+        ).format(n, "" if n == 1 else "s", verbe, scope, total)
+    phrase = _HOMOLOGATION_COUNT_PHRASES.get(str(metric or ""))
+    if phrase is None:
+        phrase = _MATURITY_COUNT_PHRASES.get(str(metric or ""))
+    if phrase:
+        produit = "produit" if n == 1 else "produits"
+        return phrase.format(n=n, produit=produit, scope=scope, total=total)
+    return None
+
+
+# Phrases des tuiles Homologations. {n} {produit} … {scope}, sur {total} fiches.
+_HOMOLOGATION_COUNT_PHRASES = {
+    "homologues_count": (
+        "Le tableau compte {n} {produit} homologués{scope}, sur {total} fiches. "
+        "Il retient les statuts qui parlent d’homologation, sauf « en cours ». "
+        "« Homologation non engagée » est incluse."
+    ),
+    "homologation_en_cours_count": (
+        "Le tableau compte {n} {produit} avec une homologation en cours{scope}, sur {total} fiches."
+    ),
+    "homologation_expiree_count": (
+        "Le tableau compte {n} {produit} dont la fin de validité d’homologation est dépassée{scope}, "
+        "sur {total} fiches."
+    ),
+    "homologation_3m_count": (
+        "Le tableau compte {n} {produit} dont la fin de validité tombe dans les 90 prochains jours{scope}, "
+        "sur {total} fiches. Les fins déjà dépassées ne sont pas comptées."
+    ),
+    "homologation_6m_count": (
+        "Le tableau compte {n} {produit} dont la fin de validité tombe dans les 180 prochains jours{scope}, "
+        "sur {total} fiches. Les fins déjà dépassées ne sont pas comptées."
+    ),
+    "homologation_sans_fin_count": (
+        "Le tableau compte {n} {produit} sans date de fin d’homologation{scope}, sur {total} fiches."
+    ),
+    "homologation_non_renseigne_count": (
+        "Le tableau compte {n} {produit} sans statut d’homologation{scope}, sur {total} fiches."
+    ),
+    "homologation_critiques_count": (
+        "Le tableau compte {n} {produit} critiques ou essentiels non homologués "
+        "ou à l’homologation dépassée{scope}, sur {total} fiches."
+    ),
+}
+
+_HOMOLOGATION_LABELS = {
+    "homologues": "Produits homologués",
+    "homologation_en_cours": "Homologations en cours",
+    "homologation_expiree": "Homologations expirées",
+    "homologation_3m": "Échéance sous 3 mois",
+    "homologation_6m": "Échéance sous 6 mois",
+    "homologation_sans_fin": "Sans date de fin d’homologation",
+    "homologation_non_renseigne": "Statut d’homologation non renseigné",
+    "homologation_critiques": "Critiques non homologués ou expirés",
+}
+
+_MATURITY_COUNT_PHRASES = {
+    "maturite_vision_count": (
+        "Le tableau compte {n} {produit} sans vision et stratégie{scope}, sur {total} fiches."
+    ),
+    "maturite_design_count": (
+        "Le tableau compte {n} {produit} sans connaissance utilisateurs et design{scope}, "
+        "sur {total} fiches."
+    ),
+    "maturite_impact_count": (
+        "Le tableau compte {n} {produit} sans mesure d’impact{scope}, sur {total} fiches."
+    ),
+    "maturite_delivery_count": (
+        "Le tableau compte {n} {produit} sans delivery et itération{scope}, sur {total} fiches."
+    ),
+    "maturite_incomplete_count": (
+        "Le tableau compte {n} {produit} à la maturité incomplète{scope}, sur {total} fiches. "
+        "Il manque au moins une des quatre informations : vision et stratégie, "
+        "connaissance utilisateurs, mesure d’impact, delivery et itération."
+    ),
+}
+
+_MATURITY_LABELS = {
+    "maturite_vision": "Sans vision et stratégie",
+    "maturite_design": "Sans connaissance utilisateurs et design",
+    "maturite_impact": "Sans mesure d’impact",
+    "maturite_delivery": "Sans delivery et itération",
+    "maturite_incomplete": "Maturité incomplète",
+}
+
+
 def format_aggregate_direct_message(facts: Dict[str, Any]) -> Optional[str]:
     """Réponse prête à afficher (tableau ou chiffre filtré), sinon None."""
     sentence = format_rgaa_threshold_message(facts)
+    if sentence:
+        return sentence
+    sentence = format_dashboard_tile_message(facts)
     if sentence:
         return sentence
     return format_aggregate_table_message(facts)
@@ -381,6 +502,175 @@ def _format_rgaa_ratio(value: Any) -> Any:
 
 def _label_from_key(key: str) -> str:
     return key.replace("_", " ").strip()
+
+
+def _choice_tags(value: Any) -> List[str]:
+    """Valeurs d’un choix Grist, sans le marqueur de liste « L »."""
+    if isinstance(value, str):
+        raw: List[Any] = [value]
+    elif isinstance(value, (list, tuple)):
+        raw = list(value)
+    else:
+        return []
+    tags: List[str] = []
+    for item in raw:
+        text = str(item).strip()
+        if text and text != "L":
+            tags.append(text)
+    return tags
+
+
+def _is_strategique_renseigne(fields: Dict[str, Any]) -> bool:
+    """Colonne Produit stratégique saisie, hors vide et hors N/A.
+
+    « Non stratégique » compte : le tableau de bord mesure la colonne remplie.
+    """
+    return any(_normalize(tag) != "n/a" for tag in _choice_tags(fields.get("Produit_strategique")))
+
+
+def _critical_empty_count(fields: Dict[str, Any]) -> Optional[int]:
+    raw = fields.get("Nombre_de_champs_critiques_vides")
+    if isinstance(raw, (list, tuple)) and raw:
+        raw = raw[0]
+    if isinstance(raw, bool) or not isinstance(raw, (int, float)):
+        return None
+    return int(raw)
+
+
+def _is_a_completer(fields: Dict[str, Any]) -> bool:
+    """Au moins un champ critique vide (tuile « produits à compléter »)."""
+    count = _critical_empty_count(fields)
+    return count is not None and count > 0
+
+
+def _first_choice(value: Any) -> str:
+    tags = _choice_tags(value)
+    return tags[0] if tags else ""
+
+
+def _as_widget_date(value: Any) -> Optional[date]:
+    """Date lue comme le tableau de bord (jour calendaire)."""
+    if value is None or value == "":
+        return None
+    if isinstance(value, (list, tuple)):
+        tags = _choice_tags(value)
+        if not tags:
+            return None
+        value = tags[0]
+    if isinstance(value, str):
+        text = value.strip()
+        if text in ("0", "0.0"):
+            return date(2000, 1, 1)
+        try:
+            return date.fromisoformat(text[:10])
+        except ValueError:
+            return None
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    n = float(value)
+    if abs(n) >= 1e11:
+        n = n / 1000.0
+    try:
+        return datetime.fromtimestamp(n, tz=timezone.utc).date()
+    except (OverflowError, OSError, ValueError):
+        return None
+
+
+def _jours_restants(value: Any, today: date) -> Optional[int]:
+    fin = _as_widget_date(value)
+    if fin is None:
+        return None
+    return (fin - today).days
+
+
+def _homologation_ok(fields: Dict[str, Any]) -> bool:
+    """Tuile « produits homologués » : mot homologation, hors « en cours ».
+
+    « Homologation non engagée » est incluse : la phrase ne commence pas par « non ».
+    """
+    status = _normalize(_first_choice(fields.get("Statut_d_homologation_de_securite")))
+    return "homolog" in status and "en cours" not in status and not status.startswith("non")
+
+
+def _homologation_en_cours(fields: Dict[str, Any]) -> bool:
+    status = _normalize(_first_choice(fields.get("Statut_d_homologation_de_securite")))
+    return "en cours" in status
+
+
+def _critique_ou_essentiel(fields: Dict[str, Any]) -> bool:
+    status = _normalize(_first_choice(fields.get("Criticite")))
+    if status.startswith("non"):
+        return False
+    return "critique" in status or "essentiel" in status
+
+
+def _homologation_matches(metric: str, fields: Dict[str, Any], today: date) -> bool:
+    """Filtre d’une tuile Homologations. metric sans le suffixe _count / _list."""
+    jours = _jours_restants(fields.get("Fin_de_validite_d_homologation"), today)
+    if metric == "homologues":
+        return _homologation_ok(fields)
+    if metric == "homologation_en_cours":
+        return _homologation_en_cours(fields)
+    if metric == "homologation_expiree":
+        return jours is not None and jours < 0
+    if metric == "homologation_3m":
+        return jours is not None and 0 <= jours <= 90
+    if metric == "homologation_6m":
+        return jours is not None and 0 <= jours <= 180
+    if metric == "homologation_sans_fin":
+        return jours is None
+    if metric == "homologation_non_renseigne":
+        return _first_choice(fields.get("Statut_d_homologation_de_securite")) == ""
+    if metric == "homologation_critiques":
+        return _critique_ou_essentiel(fields) and (
+            not _homologation_ok(fields) or (jours is not None and jours < 0)
+        )
+    return False
+
+
+_MATURITY_COLUMNS = {
+    "maturite_vision": "Vision_strategie",
+    "maturite_design": "Connaissance_utilisateurs_design",
+    "maturite_impact": "Mesure_d_impact",
+    "maturite_delivery": "Delivery_iteration",
+}
+
+
+def _js_round(value: float) -> int:
+    """Arrondi du tableau de bord : 0,5 part vers le haut."""
+    if value >= 0:
+        return int(value + 0.5)
+    return int(value - 0.5)
+
+
+def _maturity_column_empty(fields: Dict[str, Any], column: str) -> bool:
+    return not _choice_tags(fields.get(column))
+
+
+def _maturity_incomplete(fields: Dict[str, Any]) -> bool:
+    return any(_maturity_column_empty(fields, column) for column in _MATURITY_COLUMNS.values())
+
+
+def _maturity_matches(metric: str, fields: Dict[str, Any]) -> bool:
+    if metric == "maturite_incomplete":
+        return _maturity_incomplete(fields)
+    column = _MATURITY_COLUMNS.get(metric)
+    return bool(column) and _maturity_column_empty(fields, column)
+
+
+def _completion_mean_percent(fields_list: List[Dict[str, Any]]) -> Tuple[Optional[int], int]:
+    """Moyenne du taux de complétion, arrondie comme le tableau (73 %)."""
+    values: List[float] = []
+    for fields in fields_list:
+        raw = fields.get("Taux_de_completion")
+        if isinstance(raw, bool) or not isinstance(raw, (int, float)):
+            continue
+        values.append(float(raw))
+    if not values:
+        return None, 0
+    scale = 100.0 if 0 < max(values) <= 1 else 1.0
+    rounded = [_js_round(value * scale) for value in values]
+    return _js_round(sum(rounded) / len(rounded)), len(rounded)
 
 
 def _is_empty(value: Any) -> bool:
@@ -985,6 +1275,100 @@ def detect_department(question: str) -> Optional[str]:
     return found[0] if found else None
 
 
+def _detect_homologation_metric(question: str, list_ask: bool) -> Optional[str]:
+    """Tuiles de l’onglet Homologations. None si la question vise une fiche."""
+    q = _normalize(question)
+    homolog = "homolog" in q
+    if not homolog and "echeance" not in q and "expir" not in q:
+        return None
+    counting = list_ask or any(h in q for h in ("combien", "nombre", "quels", "lesquel"))
+    tile = any(
+        h in q
+        for h in (
+            "produits homolog",
+            "homologations en cours",
+            "homologations expir",
+            "echeance sous",
+            "sans date de fin",
+            "non renseign",
+            "non homolog",
+        )
+    )
+    if not counting and not tile:
+        return None
+    want_list = list_ask or "quels" in q or "lesquel" in q
+
+    def pack(name: str) -> str:
+        return "{0}_{1}".format(name, "list" if want_list else "count")
+
+    if homolog and "en cours" in q:
+        return pack("homologation_en_cours")
+    if homolog and ("sans date" in q or ("date de fin" in q and "sans" in q)):
+        return pack("homologation_sans_fin")
+    if homolog and "non renseign" in q:
+        return pack("homologation_non_renseigne")
+    if ("critique" in q or "essentiel" in q) and ("non homolog" in q or "expir" in q):
+        return pack("homologation_critiques")
+    if "expir" in q:
+        return pack("homologation_expiree")
+    if "6 mois" in q or "180 jour" in q:
+        return pack("homologation_6m")
+    if "3 mois" in q or "90 jour" in q:
+        return pack("homologation_3m")
+    if "homologu" in q and "non homolog" not in q:
+        return pack("homologues")
+    return None
+
+
+def _named_product_question(question: str) -> bool:
+    """« de C2S » vise une fiche. « des produits » vise le parc."""
+    q = _normalize(question)
+    if any(h in q for h in (" du parc", " des produit", " de produit", " les produit")):
+        return False
+    stops = {
+        "la", "le", "les", "l", "fin", "validite", "bord", "conformite",
+        "completion", "maturite", "vision", "strategie", "impact", "design",
+    }
+    tokens = re.findall(r"\bde ([a-z0-9][a-z0-9+/_-]*)", q)
+    return any(token not in stops for token in tokens)
+
+
+def _detect_maturity_metric(question: str, list_ask: bool) -> Optional[str]:
+    """Tuiles Maturité et qualité. None si la question vise une fiche."""
+    q = _normalize(question)
+    if _named_product_question(q):
+        return None
+    incomplete = "maturite incomplete" in q or "donnees de maturite" in q
+    mean = ("completion" in q or "completude" in q) and ("moyenne" in q or "moyen" in q)
+    vision = "vision" in q and "strateg" in q
+    design = "connaissance" in q and ("utilisateur" in q or "design" in q)
+    impact = "mesure d impact" in q or ("impact" in q and "mesure" in q)
+    delivery = "delivery" in q or ("iteration" in q and "delivery" in q)
+    if not any((incomplete, mean, vision, design, impact, delivery)):
+        return None
+    counting = list_ask or any(h in q for h in ("combien", "nombre", "quels", "lesquel", "sans ", "pas de", "non renseign"))
+    if not counting and not incomplete and not mean:
+        return None
+    want_list = list_ask or "quels" in q or "lesquel" in q
+
+    def pack(name: str) -> str:
+        return "{0}_{1}".format(name, "list" if want_list else "count")
+
+    if incomplete:
+        return pack("maturite_incomplete")
+    if mean:
+        return "completion_mean"
+    if vision:
+        return pack("maturite_vision")
+    if design:
+        return pack("maturite_design")
+    if impact:
+        return pack("maturite_impact")
+    if delivery:
+        return pack("maturite_delivery")
+    return None
+
+
 def detect_aggregate_intent(question: str) -> Optional[str]:
     """
     Questions sur l’ensemble du parc (moyenne, comptages) — pas une fiche produit.
@@ -1058,7 +1442,13 @@ def detect_aggregate_intent(question: str) -> Optional[str]:
             "aussi marqués",
         )
     )
-    if not (wide or statistical or list_ask):
+    if not (
+        wide
+        or statistical
+        or list_ask
+        or _detect_homologation_metric(question, list_ask)
+        or _detect_maturity_metric(question, list_ask)
+    ):
         return None
 
     jdma = any(h in q for h in ("jdma", "je donne mon avis", "jedonnemonavis"))
@@ -1221,10 +1611,29 @@ def detect_aggregate_intent(question: str) -> Optional[str]:
         if list_ask:
             return "obsolescence_list"
         return "obsolescence_count"
+    homologation = _detect_homologation_metric(question, list_ask)
+    if homologation:
+        return homologation
+    maturity = _detect_maturity_metric(question, list_ask)
+    if maturity:
+        return maturity
     if crit1 or ("critiques" in q and ("combien" in q or list_ask or "quels" in q)):
         if list_ask or "quels" in q:
             return "criticite1_list"
         return "criticite1_count"
+    # Tuiles du tableau de bord. « à compléter » n’est pas le taux de complétion.
+    a_completer = "a completer" in q
+    strategic = "strategique" in q
+    if a_completer and not strategic:
+        if list_ask or "quels" in q:
+            return "a_completer_list"
+        return "a_completer_count"
+    if strategic and not a_completer and (
+        list_ask or "quels" in q or "combien" in q or "nombre" in q or wide
+    ):
+        if list_ask or "quels" in q:
+            return "strategique_list"
+        return "strategique_count"
     if any(
         h in q
         for h in (
@@ -1277,6 +1686,21 @@ _LIST_FROM_COUNT = {
     "pca_count": "pca_list",
     "obsolescence_count": "obsolescence_list",
     "criticite1_count": "criticite1_list",
+    "strategique_count": "strategique_list",
+    "a_completer_count": "a_completer_list",
+    "homologues_count": "homologues_list",
+    "homologation_en_cours_count": "homologation_en_cours_list",
+    "homologation_expiree_count": "homologation_expiree_list",
+    "homologation_3m_count": "homologation_3m_list",
+    "homologation_6m_count": "homologation_6m_list",
+    "homologation_sans_fin_count": "homologation_sans_fin_list",
+    "homologation_non_renseigne_count": "homologation_non_renseigne_list",
+    "homologation_critiques_count": "homologation_critiques_list",
+    "maturite_vision_count": "maturite_vision_list",
+    "maturite_design_count": "maturite_design_list",
+    "maturite_impact_count": "maturite_impact_list",
+    "maturite_delivery_count": "maturite_delivery_list",
+    "maturite_incomplete_count": "maturite_incomplete_list",
     "hds_obsolete_count": "hds_obsolete_list",
     "hds_criticite1_count": "hds_criticite1_list",
     "count_products": "department_list",
@@ -1329,6 +1753,7 @@ def build_aggregate_facts(
     departments: Optional[List[str]] = None,
     rgaa_op: Optional[str] = None,
     rgaa_threshold: Optional[float] = None,
+    today: Optional[date] = None,
 ) -> Dict[str, Any]:
     total = len(produits)
     fields_list = [(rec.get("fields") or {}) for rec in produits]
@@ -1696,6 +2121,149 @@ def build_aggregate_facts(
             "rule": _list_rule("Liste les noms fournis (criticité 1)."),
             "source": "Le PARC — liste Criticite 1 (lecture)",
         }
+
+    if metric in ("strategique_count", "strategique_list"):
+        names = sorted(
+            (
+                _product_name(f)
+                for f in fields_list
+                if _is_strategique_renseigne(f) and _product_name(f)
+            ),
+            key=lambda s: _normalize(s),
+        )
+        base = {
+            "tool": "parc_agregat",
+            "metric": metric,
+            "label": "Produits dont le caractère stratégique est renseigné",
+            "total_produits": total,
+            "n_oui": len(names),
+            "part_pourcent": _pct(len(names), total),
+            "rule": (
+                "Compte les fiches dont Produit stratégique a un choix autre que vide ou N/A. "
+                "« Non stratégique » compte. Annonce n_oui / total. "
+                "Ne liste pas les produits, sauf si la métrique est une liste."
+            ),
+            "source": "Le PARC — agrégat Produit stratégique (lecture)",
+        }
+        if metric.endswith("_list"):
+            base.update(_capped_names(names))
+            base["rule"] = _list_rule(
+                "Liste les noms fournis (caractère stratégique renseigné, hors N/A)."
+            )
+        return base
+
+    if metric in ("a_completer_count", "a_completer_list"):
+        names = sorted(
+            (
+                _product_name(f)
+                for f in fields_list
+                if _is_a_completer(f) and _product_name(f)
+            ),
+            key=lambda s: _normalize(s),
+        )
+        base = {
+            "tool": "parc_agregat",
+            "metric": metric,
+            "label": "Produits à compléter",
+            "total_produits": total,
+            "n_oui": len(names),
+            "part_pourcent": _pct(len(names), total),
+            "rule": (
+                "Compte les fiches dont le nombre de champs critiques vides est supérieur à 0. "
+                "Ce n’est pas le taux de complétion. Annonce n_oui / total. "
+                "Ne liste pas les produits, sauf si la métrique est une liste."
+            ),
+            "source": "Le PARC — agrégat champs critiques vides (lecture)",
+        }
+        if metric.endswith("_list"):
+            base.update(_capped_names(names))
+            base["rule"] = _list_rule(
+                "Liste les noms fournis (au moins une information critique manquante)."
+            )
+        return base
+
+    homologation_key = metric[: -len("_list")] if metric.endswith("_list") else (
+        metric[: -len("_count")] if metric.endswith("_count") else ""
+    )
+    if homologation_key in (
+        "homologues",
+        "homologation_en_cours",
+        "homologation_expiree",
+        "homologation_3m",
+        "homologation_6m",
+        "homologation_sans_fin",
+        "homologation_non_renseigne",
+        "homologation_critiques",
+    ):
+        as_of = today or date.today()
+        names = sorted(
+            (
+                _product_name(f)
+                for f in fields_list
+                if _homologation_matches(homologation_key, f, as_of) and _product_name(f)
+            ),
+            key=lambda s: _normalize(s),
+        )
+        base = {
+            "tool": "parc_agregat",
+            "metric": metric,
+            "label": _HOMOLOGATION_LABELS[homologation_key],
+            "total_produits": total,
+            "n_oui": len(names),
+            "part_pourcent": _pct(len(names), total),
+            "rule": (
+                "Annonce n_oui / total. Ce décompte reprend la tuile du tableau de bord. "
+                "Ne liste pas les produits, sauf si la métrique est une liste."
+            ),
+            "source": "Le PARC — agrégat homologation (lecture)",
+        }
+        if metric.endswith("_list"):
+            base.update(_capped_names(names))
+            base["rule"] = _list_rule("Liste les noms fournis pour cette tuile d’homologation.")
+        return base
+
+    if metric == "completion_mean":
+        mean, filled = _completion_mean_percent(fields_list)
+        return {
+            "tool": "parc_agregat",
+            "metric": "completion_mean",
+            "label": "Complétion moyenne",
+            "total_produits": total,
+            "n_renseignes": filled,
+            "moyenne_pourcent": None if mean is None else "{0} %".format(mean),
+            "rule": "Annonce la moyenne arrondie du taux de complétion. Ne liste pas les produits.",
+            "source": "Le PARC — agrégat complétion moyenne (lecture)",
+        }
+
+    maturity_key = metric[: -len("_list")] if metric.endswith("_list") else (
+        metric[: -len("_count")] if metric.endswith("_count") else ""
+    )
+    if maturity_key in _MATURITY_LABELS:
+        names = sorted(
+            (
+                _product_name(f)
+                for f in fields_list
+                if _maturity_matches(maturity_key, f) and _product_name(f)
+            ),
+            key=lambda s: _normalize(s),
+        )
+        base = {
+            "tool": "parc_agregat",
+            "metric": metric,
+            "label": _MATURITY_LABELS[maturity_key],
+            "total_produits": total,
+            "n_oui": len(names),
+            "part_pourcent": _pct(len(names), total),
+            "rule": (
+                "Annonce n_oui / total. Ce décompte reprend la tuile Maturité et qualité. "
+                "Ne liste pas les produits, sauf si la métrique est une liste."
+            ),
+            "source": "Le PARC — agrégat maturité (lecture)",
+        }
+        if metric.endswith("_list"):
+            base.update(_capped_names(names))
+            base["rule"] = _list_rule("Liste les noms fournis pour cette tuile de maturité.")
+        return base
 
     if metric == "department_list":
         names = []
