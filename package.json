@@ -13,7 +13,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --port 5175 --strictPort",
     "lint": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test src/**/*.test.ts"
+    "test": "node --experimental-strip-types --test src/**/*.test.ts",
+    "sync:parc-uuid-map": "python3 scripts/sync-parc-uuid-map.py"
   },
   "dependencies": {
     "@codegouvfr/react-dsfr": "^1.32.0",

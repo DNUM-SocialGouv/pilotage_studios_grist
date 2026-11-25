@@ -36,9 +36,9 @@ référentiel SDPC (~37 champs sync) regroupé en page document, et missions rat
 | Badges | Statut actuel · Statut cible · En production · Obsolescence |
 | Sous-titre | `Description` si distincte du nom (nom complet) |
 | Type | `Type_de_produit` si renseigné |
-| Liens rapides | **Le PARC — modifier la fiche** (ouvre **la ligne** du produit dans Le PARC) · espace collab. si présent |
+| Liens rapides | **Le PARC — modifier la fiche** si la ligne est résolue · sinon **Ouvrir Le PARC** (page sans ligne) · espace collab. si présent |
 
-Lien [Le PARC](https://grist.numerique.gouv.fr/o/sdpc/vjbmAgqvttQH/Le-PARC-Portail-des-Applications-Referentiels-et-Communs-Numeriques-de-la-DNUM) : document Grist source des infos produit (hors missions). L’URL précise utilise l’**UUID** sync (pas l’`id` Pilotage — les numéros de ligne divergent) : map `src/data/parcUuidToRowId.ts` → `…/p/92#a1.s34.r{idParC}.c138`. Régénérer la map : `python3 scripts/sync-parc-uuid-map.py`. Sans UUID connu → page fiche sans ligne (évite l’erreur « ligne indisponible »).
+Lien [Le PARC](https://grist.numerique.gouv.fr/o/sdpc/vjbmAgqvttQH/Le-PARC-Portail-des-Applications-Referentiels-et-Communs-Numeriques-de-la-DNUM) : document Grist source des infos produit (hors missions). L’URL précise utilise l’**UUID** sync (pas l’`id` Pilotage — les numéros de ligne divergent) : map `src/data/parcUuidToRowId.ts` → `…/p/92#a1.s34.r{idParC}.c138`. Régénérer la map après sync PARC : `npm run sync:parc-uuid-map` (nécessite `services/assistant-essai/.env`). Sans UUID connu → libellé « Ouvrir Le PARC » + page fiche sans ligne (évite « ligne indisponible »).
 
 ### Onglets
 

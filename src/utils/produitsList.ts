@@ -217,6 +217,13 @@ export function parcProduitFicheUrl(uuid: string | undefined): string {
   return `${page}${PARC_FICHE_HASH_PREFIX}${rowId}${PARC_FICHE_HASH_SUFFIX}`;
 }
 
+/** Libellé du lien : précis seulement si la ligne PARC est résolue. */
+export function parcProduitFicheLinkLabel(uuid: string | undefined): string {
+  return parcRowIdFromUuid(uuid) != null
+    ? "Le PARC — modifier la fiche"
+    : "Ouvrir Le PARC";
+}
+
 /** URL http(s) sûre pour liens externes fiche ; sinon `undefined`.
  * Accepte une URL seule ou extrait la première `http(s)://…` d’un texte multi-valeurs.
  */

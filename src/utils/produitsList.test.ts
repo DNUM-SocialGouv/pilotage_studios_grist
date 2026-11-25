@@ -6,6 +6,7 @@ import {
   filterProduits,
   missionsLieesAuProduit,
   PARC_DOC_BASE_URL,
+  parcProduitFicheLinkLabel,
   parcProduitFicheUrl,
   produitDepartement,
   produitDisplayName,
@@ -301,6 +302,16 @@ describe("parcProduitFicheUrl", () => {
     assert.equal(
       parcProduitFicheUrl("00000000-0000-0000-0000-000000000000"),
       `${PARC_DOC_BASE_URL}/p/92`,
+    );
+  });
+
+  it("adapte le libellé selon résolution de la ligne", () => {
+    const accoladeUuid = "5b3d856d-4cfb-464a-8729-29cb9c15bfd2";
+    assert.equal(parcProduitFicheLinkLabel(accoladeUuid), "Le PARC — modifier la fiche");
+    assert.equal(parcProduitFicheLinkLabel(undefined), "Ouvrir Le PARC");
+    assert.equal(
+      parcProduitFicheLinkLabel("00000000-0000-0000-0000-000000000000"),
+      "Ouvrir Le PARC",
     );
   });
 });

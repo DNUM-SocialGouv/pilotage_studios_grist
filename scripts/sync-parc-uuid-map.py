@@ -49,15 +49,25 @@ def main() -> int:
     with urllib.request.urlopen(req, timeout=90) as resp:
         recs = json.load(resp).get("records") or []
     mapping: dict[str, int] = {}
+    duplicates = 0
     for rec in recs:
         fields = rec.get("fields") or {}
         uuid = fields.get("UUID")
         rid = rec.get("id")
         if isinstance(uuid, str) and uuid.strip() and isinstance(rid, int):
-            mapping[uuid.strip()] = rid
+            key = uuid.strip()
+            if key in mapping and mapping[key] != rid:
+                duplicates += 1
+                print(
+                    f"Attention : UUID {key} déjà vu (id {mapping[key]} → {rid}), dernier gardé.",
+                    file=sys.stderr,
+                )
+            mapping[key] = rid
     if not mapping:
         print("Aucune entrée UUID → id.", file=sys.stderr)
         return 1
+    if duplicates:
+        print(f"{duplicates} UUID en double (dernier id conservé).", file=sys.stderr)
     lines = [
         "/**",
         " * UUID Produits_DNUM (Le PARC) → id de ligne Grist.",

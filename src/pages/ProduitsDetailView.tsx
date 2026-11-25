@@ -26,6 +26,7 @@ import { produitNomComplet } from "../utils/produitReferentiel";
 import {
   isMissionEnCours,
   missionsLieesAuProduit,
+  parcProduitFicheLinkLabel,
   parcProduitFicheUrl,
   produitDepartement,
   produitDisplayName,
@@ -374,7 +375,7 @@ export function ProduitsDetailView() {
 
   const asideLinks: { label: string; href: string }[] = [
     {
-      label: "Le PARC — modifier la fiche",
+      label: parcProduitFicheLinkLabel(produit.UUID),
       href: parcProduitFicheUrl(produit.UUID),
     },
   ];
