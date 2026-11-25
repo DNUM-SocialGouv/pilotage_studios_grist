@@ -190,7 +190,12 @@ function looksLikeTableRow(line: string): boolean {
   if (!t.includes("|")) {
     return false;
   }
-  return splitMarkdownTableCells(t).length >= 2;
+  const cells = splitMarkdownTableCells(t);
+  if (cells.length >= 2) {
+    return true;
+  }
+  // Une liste « un nom par ligne » n’a qu’une colonne : `| Produit |`.
+  return cells.length === 1 && t.startsWith("|") && t.endsWith("|");
 }
 
 /** Aligne une ligne sur le nombre de colonnes de l’en-tête (pad / tronque). */

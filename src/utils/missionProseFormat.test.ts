@@ -207,6 +207,21 @@ describe("parseMissionProse", () => {
     }
   });
 
+  it("parse un tableau GFM à une colonne", () => {
+    const blocks = parseMissionProse(
+      "Produits stratégiques — GPS : 2 produits sur 24 fiches.\n\n| Produit |\n| --- |\n| ACCOLADE |\n| C2S |",
+    );
+    assert.equal(blocks.length, 2);
+    assert.equal(blocks[0]!.type, "paragraph");
+    assert.equal(blocks[1]!.type, "table");
+    if (blocks[1]!.type === "table") {
+      assert.equal(blocks[1].headers.length, 1);
+      assert.equal(blocks[1].rows.length, 2);
+      assert.deepEqual(blocks[1].rows[0]![0], [{ type: "text", value: "ACCOLADE" }]);
+      assert.deepEqual(blocks[1].rows[1]![0], [{ type: "text", value: "C2S" }]);
+    }
+  });
+
   it("parse un tableau GFM", () => {
     const blocks = parseMissionProse(
       "| Personne | Métier |\n|----------|--------|\n| Alex | **RU** |\n| Sam | Design |",

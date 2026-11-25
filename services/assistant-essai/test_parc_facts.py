@@ -731,6 +731,74 @@ class ParcFactsTest(unittest.TestCase):
             1,
         )
 
+    def test_homologation_echeance_annee(self) -> None:
+        question = (
+            "Donne moi la liste des produits dont l'homologation arrive à échéance en 2027"
+        )
+        self.assertEqual(detect_aggregate_intent(question), "homologation_annee_list")
+        self.assertIsNone(
+            detect_aggregate_intent("Quel est le statut d'homologation de C2S ?")
+        )
+        produits = [
+            {
+                "fields": {
+                    "Produit": "SITE-LISTE-NOIRE",
+                    "Fin_de_validite_d_homologation": "2026-04-01",
+                }
+            },
+            {
+                "fields": {
+                    "Produit": "ACCOLADE",
+                    "Fin_de_validite_d_homologation": "2027-03-15",
+                }
+            },
+            {
+                "fields": {
+                    "Produit": "C2S",
+                    "Fin_de_validite_d_homologation": "2027-11-02",
+                }
+            },
+            {"fields": {"Produit": "SANS", "Fin_de_validite_d_homologation": None}},
+        ]
+        facts = build_aggregate_facts(
+            "homologation_annee_list",
+            produits,
+            homologation_year=2027,
+        )
+        self.assertEqual(facts["n_oui"], 2)
+        self.assertEqual(facts["produits"], ["ACCOLADE", "C2S"])
+        message = format_aggregate_direct_message(facts)
+        self.assertIsNotNone(message)
+        assert message is not None
+        self.assertIn("| Produit | Fin de validité |", message)
+        self.assertIn("| ACCOLADE | 15/03/2027 |", message)
+        self.assertNotIn("SITE-LISTE-NOIRE", message)
+        count = build_aggregate_facts(
+            "homologation_annee_count",
+            produits,
+            homologation_year=2027,
+        )
+        count_message = format_aggregate_direct_message(count)
+        self.assertIsNotNone(count_message)
+        assert count_message is not None
+        self.assertIn("2 produits ont une fin de validité d’homologation en 2027", count_message)
+        self.assertEqual(
+            detect_aggregate_intent("Combien de produits non homologués en 2027 ?"),
+            "homologation_annee_count",
+        )
+        self.assertEqual(
+            detect_aggregate_intent("Combien d'homologations en cours en 2027 ?"),
+            "homologation_annee_count",
+        )
+        self.assertEqual(
+            detect_aggregate_intent("Combien d'homologations en cours ?"),
+            "homologation_en_cours_count",
+        )
+        previous = "Combien de produits ont une homologation à échéance en 2027 ?"
+        metric, source = followup_list_metric("Tu peux me lister ces produits", previous)
+        self.assertEqual(metric, "homologation_annee_list")
+        self.assertEqual(source, previous)
+
 
 if __name__ == "__main__":
     unittest.main()

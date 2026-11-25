@@ -91,7 +91,7 @@ Script local : [`services/assistant-essai/run_parc_eval.py`](../../../services/a
 14. **Relance** « liste ces produits » → le même critère, en tableau (la question précédente est renvoyée par le widget), y compris le département s’il était dans cette question
 15. **Produits stratégiques** → fiches dont la colonne « Produit stratégique » est renseignée, hors vide et hors « N/A ». « Non stratégique » compte (c’est la tuile du tableau de bord)
 16. **Produits à compléter** → au moins une information critique manquante, ou un taux de complétion sous 50 %
-17. **Onglet Homologations** du tableau de bord → mêmes tuiles : produits homologués (y compris « Homologation non engagée », hors « en cours »), homologations en cours, fin de validité dépassée, échéance dans 90 jours, échéance dans 180 jours, sans date de fin, statut d’homologation vide, critiques ou essentiels non homologués ou expirés
+17. **Onglet Homologations** du tableau de bord → mêmes tuiles : produits homologués (y compris « Homologation non engagée », hors « en cours »), homologations en cours, fin de validité dépassée, échéance dans 90 jours, échéance dans 180 jours, sans date de fin, statut d’homologation vide, critiques ou essentiels non homologués ou expirés. « Échéance en 2027 » → fiches dont la fin de validité tombe cette année-là
 18. **Onglet Maturité et qualité** → fiches sans vision et stratégie, sans connaissance utilisateurs, sans mesure d’impact, sans delivery et itération ; maturité incomplète dès qu’une de ces quatre informations manque ; complétion moyenne arrondie
 
 ---
