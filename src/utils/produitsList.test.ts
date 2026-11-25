@@ -5,6 +5,8 @@ import {
   canApplyInvestissementFilter,
   filterProduits,
   missionsLieesAuProduit,
+  PARC_DOC_BASE_URL,
+  parcProduitFicheUrl,
   produitDepartement,
   produitDisplayName,
   produitEnProdLabel,
@@ -280,5 +282,25 @@ describe("safeHttpUrl", () => {
       "https://example.gouv.fr/",
     );
     assert.equal(safeHttpUrl("lien: https://example.gouv.fr/."), "https://example.gouv.fr/");
+  });
+});
+
+describe("parcProduitFicheUrl", () => {
+  it("pointe la ligne PARC via UUID (pas l’id Pilotage)", () => {
+    // ACCOLADE : Pilotage id=7, PARC id=2 — même UUID.
+    const accoladeUuid = "5b3d856d-4cfb-464a-8729-29cb9c15bfd2";
+    assert.equal(
+      parcProduitFicheUrl(accoladeUuid),
+      `${PARC_DOC_BASE_URL}/p/92#a1.s34.r2.c138`,
+    );
+  });
+
+  it("retombe sur la page fiche sans hash si UUID inconnu ou vide", () => {
+    assert.equal(parcProduitFicheUrl(undefined), `${PARC_DOC_BASE_URL}/p/92`);
+    assert.equal(parcProduitFicheUrl(""), `${PARC_DOC_BASE_URL}/p/92`);
+    assert.equal(
+      parcProduitFicheUrl("00000000-0000-0000-0000-000000000000"),
+      `${PARC_DOC_BASE_URL}/p/92`,
+    );
   });
 });

@@ -1,3 +1,4 @@
+import { PARC_UUID_TO_ROW_ID } from "../data/parcUuidToRowId.ts";
 import type { Mission, MissionEnfant, ProduitSdpc, SuiviMensuel } from "../types.ts";
 import { isPrestationEnCours } from "./equipeMemberPrestations.ts";
 import { extractGristReferenceId } from "./gristReferences.ts";
@@ -176,6 +177,44 @@ export function missionsLieesAuProduit(
         sensitivity: "base",
       });
     });
+}
+
+/**
+ * Document Le PARC (référentiel produits DNUM).
+ * Lien profond : l’`id` de ligne **diffère** entre Pilotage et Le PARC ;
+ * on résout via l’`UUID` sync → map `PARC_UUID_TO_ROW_ID` → hash `#a1.s34.r{id}.c138`.
+ */
+export const PARC_DOC_BASE_URL =
+  "https://grist.numerique.gouv.fr/o/sdpc/vjbmAgqvttQH/Le-PARC-Portail-des-Applications-Referentiels-et-Communs-Numeriques-de-la-DNUM";
+
+/** Page Grist « fiche produit » stable dans Le PARC (p/92 et p/139 ouvrent la même ligne). */
+const PARC_FICHE_PAGE_PATH = "/p/92";
+
+/** Section / colonne de la vue fiche (hash Grist) — figés tant que la page PARC n’est pas reconstruite. */
+const PARC_FICHE_HASH_PREFIX = "#a1.s34.r";
+const PARC_FICHE_HASH_SUFFIX = ".c138";
+
+/** Id de ligne Le PARC pour un UUID sync ; `undefined` si inconnu / absent. */
+export function parcRowIdFromUuid(uuid: string | undefined): number | undefined {
+  const key = uuid?.trim();
+  if (!key) {
+    return undefined;
+  }
+  const rowId = PARC_UUID_TO_ROW_ID[key];
+  return Number.isInteger(rowId) && rowId >= 1 ? rowId : undefined;
+}
+
+/**
+ * URL précise vers la ligne produit dans Le PARC (via UUID sync).
+ * Sans UUID connu dans la map → page fiche sans ligne (évite « ligne indisponible »).
+ */
+export function parcProduitFicheUrl(uuid: string | undefined): string {
+  const page = `${PARC_DOC_BASE_URL}${PARC_FICHE_PAGE_PATH}`;
+  const rowId = parcRowIdFromUuid(uuid);
+  if (rowId == null) {
+    return page;
+  }
+  return `${page}${PARC_FICHE_HASH_PREFIX}${rowId}${PARC_FICHE_HASH_SUFFIX}`;
 }
 
 /** URL http(s) sûre pour liens externes fiche ; sinon `undefined`.
