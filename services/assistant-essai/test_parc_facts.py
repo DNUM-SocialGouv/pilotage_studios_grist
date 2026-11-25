@@ -23,6 +23,7 @@ from parc_facts import (
     format_aggregate_direct_message,
     format_aggregate_table_message,
     followup_list_metric,
+    _single_department,
     match_product,
     parse_rgaa_threshold,
 )
@@ -669,6 +670,66 @@ class ParcFactsTest(unittest.TestCase):
         self.assertIsNotNone(message)
         assert message is not None
         self.assertIn("65 %", message)
+
+    def test_followup_keeps_previous_department(self) -> None:
+        previous = "Combien de produits stratégiques dans le département GPS ?"
+        follow = "Tu peux me lister ces produits"
+        self.assertEqual(_single_department(follow, previous, True), "GPS")
+        self.assertIsNone(_single_department(follow, previous, False))
+
+    def test_a_completer_includes_low_completion(self) -> None:
+        produits = [
+            {
+                "fields": {
+                    "Produit": "Trou",
+                    "Nombre_de_champs_critiques_vides": 2,
+                    "Taux_de_completion": 80,
+                }
+            },
+            {
+                "fields": {
+                    "Produit": "Bas",
+                    "Nombre_de_champs_critiques_vides": 0,
+                    "Taux_de_completion": 40,
+                }
+            },
+            {
+                "fields": {
+                    "Produit": "Plein",
+                    "Nombre_de_champs_critiques_vides": 0,
+                    "Taux_de_completion": 80,
+                }
+            },
+        ]
+        self.assertEqual(build_aggregate_facts("a_completer_count", produits)["n_oui"], 2)
+
+    def test_singular_and_non_homologue(self) -> None:
+        self.assertEqual(
+            detect_aggregate_intent("Combien de produits non homologués ?"),
+            "homologation_non_homologue_count",
+        )
+        produits = [
+            {"fields": {"Produit": "Oui", "Statut_d_homologation_de_securite": "Homologuée"}},
+            {"fields": {"Produit": "Vide", "Statut_d_homologation_de_securite": None}},
+        ]
+        facts = build_aggregate_facts(
+            "homologues_count",
+            [produits[0]],
+            today=date(2026, 11, 25),
+        )
+        message = format_aggregate_direct_message(facts)
+        self.assertIsNotNone(message)
+        assert message is not None
+        self.assertIn("1 produit homologué", message)
+        self.assertNotIn("homologués", message)
+        self.assertEqual(
+            build_aggregate_facts(
+                "homologation_non_homologue_count",
+                produits,
+                today=date(2026, 11, 25),
+            )["n_oui"],
+            1,
+        )
 
 
 if __name__ == "__main__":

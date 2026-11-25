@@ -387,7 +387,8 @@ def format_dashboard_tile_message(facts: Dict[str, Any]) -> Optional[str]:
     if metric == "a_completer_count":
         verbe = "a" if n == 1 else "ont"
         return (
-            "{0} produit{1} {2} au moins une information critique manquante{3}, "
+            "{0} produit{1} {2} au moins une information critique manquante, "
+            "ou un taux de complétion sous 50 %{3}, "
             "sur {4} fiches. C’est le décompte « produits à compléter » du tableau de bord."
         ).format(n, "" if n == 1 else "s", verbe, scope, total)
     phrase = _HOMOLOGATION_COUNT_PHRASES.get(str(metric or ""))
@@ -395,14 +396,15 @@ def format_dashboard_tile_message(facts: Dict[str, Any]) -> Optional[str]:
         phrase = _MATURITY_COUNT_PHRASES.get(str(metric or ""))
     if phrase:
         produit = "produit" if n == 1 else "produits"
-        return phrase.format(n=n, produit=produit, scope=scope, total=total)
+        accord = "" if n == 1 else "s"
+        return phrase.format(n=n, produit=produit, scope=scope, total=total, s=accord)
     return None
 
 
 # Phrases des tuiles Homologations. {n} {produit} … {scope}, sur {total} fiches.
 _HOMOLOGATION_COUNT_PHRASES = {
     "homologues_count": (
-        "Le tableau compte {n} {produit} homologués{scope}, sur {total} fiches. "
+        "Le tableau compte {n} {produit} homologué{s}{scope}, sur {total} fiches. "
         "Il retient les statuts qui parlent d’homologation, sauf « en cours ». "
         "« Homologation non engagée » est incluse."
     ),
@@ -428,8 +430,12 @@ _HOMOLOGATION_COUNT_PHRASES = {
         "Le tableau compte {n} {produit} sans statut d’homologation{scope}, sur {total} fiches."
     ),
     "homologation_critiques_count": (
-        "Le tableau compte {n} {produit} critiques ou essentiels non homologués "
+        "Le tableau compte {n} {produit} critique{s} ou essentiel{s} non homologué{s} "
         "ou à l’homologation dépassée{scope}, sur {total} fiches."
+    ),
+    "homologation_non_homologue_count": (
+        "Le tableau compte {n} {produit} non homologué{s}{scope}, sur {total} fiches. "
+        "« Homologation non engagée » reste du côté des homologués."
     ),
 }
 
@@ -442,6 +448,7 @@ _HOMOLOGATION_LABELS = {
     "homologation_sans_fin": "Sans date de fin d’homologation",
     "homologation_non_renseigne": "Statut d’homologation non renseigné",
     "homologation_critiques": "Critiques non homologués ou expirés",
+    "homologation_non_homologue": "Produits non homologués",
 }
 
 _MATURITY_COUNT_PHRASES = {
@@ -537,10 +544,30 @@ def _critical_empty_count(fields: Dict[str, Any]) -> Optional[int]:
     return int(raw)
 
 
-def _is_a_completer(fields: Dict[str, Any]) -> bool:
-    """Au moins un champ critique vide (tuile « produits à compléter »)."""
+def _completion_scale(fields_list: List[Dict[str, Any]]) -> float:
+    """1 si le taux est déjà en points (73), 100 s’il est un ratio (0,73)."""
+    peak = 0.0
+    for fields in fields_list:
+        raw = fields.get("Taux_de_completion")
+        if isinstance(raw, bool) or not isinstance(raw, (int, float)):
+            continue
+        peak = max(peak, float(raw))
+    return 100.0 if 0 < peak <= 1 else 1.0
+
+
+def _completion_points(raw: Any, scale: float) -> Optional[int]:
+    if isinstance(raw, bool) or not isinstance(raw, (int, float)):
+        return None
+    return _js_round(float(raw) * scale)
+
+
+def _is_a_completer(fields: Dict[str, Any], scale: float = 1.0) -> bool:
+    """Tuile « produits à compléter » : trou critique ou taux sous 50 %."""
     count = _critical_empty_count(fields)
-    return count is not None and count > 0
+    if count is not None and count > 0:
+        return True
+    points = _completion_points(fields.get("Taux_de_completion"), scale)
+    return points is not None and points < 50
 
 
 def _first_choice(value: Any) -> str:
@@ -625,6 +652,8 @@ def _homologation_matches(metric: str, fields: Dict[str, Any], today: date) -> b
         return _critique_ou_essentiel(fields) and (
             not _homologation_ok(fields) or (jours is not None and jours < 0)
         )
+    if metric == "homologation_non_homologue":
+        return not _homologation_ok(fields)
     return False
 
 
@@ -668,7 +697,7 @@ def _completion_mean_percent(fields_list: List[Dict[str, Any]]) -> Tuple[Optiona
         values.append(float(raw))
     if not values:
         return None, 0
-    scale = 100.0 if 0 < max(values) <= 1 else 1.0
+    scale = _completion_scale(fields_list)
     rounded = [_js_round(value * scale) for value in values]
     return _js_round(sum(rounded) / len(rounded)), len(rounded)
 
@@ -1309,6 +1338,8 @@ def _detect_homologation_metric(question: str, list_ask: bool) -> Optional[str]:
         return pack("homologation_non_renseigne")
     if ("critique" in q or "essentiel" in q) and ("non homolog" in q or "expir" in q):
         return pack("homologation_critiques")
+    if "non homolog" in q:
+        return pack("homologation_non_homologue")
     if "expir" in q:
         return pack("homologation_expiree")
     if "6 mois" in q or "180 jour" in q:
@@ -1696,6 +1727,7 @@ _LIST_FROM_COUNT = {
     "homologation_sans_fin_count": "homologation_sans_fin_list",
     "homologation_non_renseigne_count": "homologation_non_renseigne_list",
     "homologation_critiques_count": "homologation_critiques_list",
+    "homologation_non_homologue_count": "homologation_non_homologue_list",
     "maturite_vision_count": "maturite_vision_list",
     "maturite_design_count": "maturite_design_list",
     "maturite_impact_count": "maturite_impact_list",
@@ -1713,6 +1745,18 @@ def _as_list_metric(metric: Optional[str]) -> Optional[str]:
     if metric.endswith("_list"):
         return metric
     return _LIST_FROM_COUNT.get(metric)
+
+
+def _single_department(
+    question: str, criterion_question: str, inherited: bool
+) -> Optional[str]:
+    """Département du calcul. Une relance garde celui de la question d’avant."""
+    departments = detect_departments(question)
+    if inherited and not departments:
+        departments = detect_departments(criterion_question)
+    if len(departments) == 1:
+        return departments[0]
+    return None
 
 
 def followup_list_metric(
@@ -2157,7 +2201,7 @@ def build_aggregate_facts(
             (
                 _product_name(f)
                 for f in fields_list
-                if _is_a_completer(f) and _product_name(f)
+                if _is_a_completer(f, _completion_scale(fields_list)) and _product_name(f)
             ),
             key=lambda s: _normalize(s),
         )
@@ -2169,8 +2213,9 @@ def build_aggregate_facts(
             "n_oui": len(names),
             "part_pourcent": _pct(len(names), total),
             "rule": (
-                "Compte les fiches dont le nombre de champs critiques vides est supérieur à 0. "
-                "Ce n’est pas le taux de complétion. Annonce n_oui / total. "
+                "Compte les fiches avec au moins un champ critique vide, "
+                "ou un taux de complétion sous 50 %. "
+                "Annonce n_oui / total. "
                 "Ne liste pas les produits, sauf si la métrique est une liste."
             ),
             "source": "Le PARC — agrégat champs critiques vides (lecture)",
@@ -2178,7 +2223,7 @@ def build_aggregate_facts(
         if metric.endswith("_list"):
             base.update(_capped_names(names))
             base["rule"] = _list_rule(
-                "Liste les noms fournis (au moins une information critique manquante)."
+                "Liste les noms fournis (information critique manquante, ou taux sous 50 %)."
             )
         return base
 
@@ -2194,6 +2239,7 @@ def build_aggregate_facts(
         "homologation_sans_fin",
         "homologation_non_renseigne",
         "homologation_critiques",
+        "homologation_non_homologue",
     ):
         as_of = today or date.today()
         names = sorted(
@@ -2530,7 +2576,7 @@ async def resolve_parc_facts(
     )
     if aggregate and len(explicit) == 0:
         departments = detect_departments(question)
-        department = departments[0] if len(departments) == 1 else None
+        department = _single_department(question, criterion_question, inherited)
         if aggregate == "departments_compare":
             pool = _cache["produits"]
             facts = build_aggregate_facts(
