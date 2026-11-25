@@ -782,6 +782,22 @@ class ParcFactsTest(unittest.TestCase):
         self.assertIsNotNone(count_message)
         assert count_message is not None
         self.assertIn("2 produits ont une fin de validité d’homologation en 2027", count_message)
+        self.assertEqual(
+            detect_aggregate_intent("Combien de produits non homologués en 2027 ?"),
+            "homologation_annee_count",
+        )
+        self.assertEqual(
+            detect_aggregate_intent("Combien d'homologations en cours en 2027 ?"),
+            "homologation_annee_count",
+        )
+        self.assertEqual(
+            detect_aggregate_intent("Combien d'homologations en cours ?"),
+            "homologation_en_cours_count",
+        )
+        previous = "Combien de produits ont une homologation à échéance en 2027 ?"
+        metric, source = followup_list_metric("Tu peux me lister ces produits", previous)
+        self.assertEqual(metric, "homologation_annee_list")
+        self.assertEqual(source, previous)
 
 
 if __name__ == "__main__":

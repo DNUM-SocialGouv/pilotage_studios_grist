@@ -1362,6 +1362,9 @@ def _detect_homologation_metric(question: str, list_ask: bool) -> Optional[str]:
     def pack(name: str) -> str:
         return "{0}_{1}".format(name, "list" if want_list else "count")
 
+    # L’année prime sur « en cours » ou « non homologués » : « en 2027 » est le filtre.
+    if parse_homologation_year(question) is not None and not _named_product_question(q):
+        return pack("homologation_annee")
     if homolog and "en cours" in q:
         return pack("homologation_en_cours")
     if homolog and ("sans date" in q or ("date de fin" in q and "sans" in q)):
@@ -1372,8 +1375,6 @@ def _detect_homologation_metric(question: str, list_ask: bool) -> Optional[str]:
         return pack("homologation_critiques")
     if "non homolog" in q:
         return pack("homologation_non_homologue")
-    if parse_homologation_year(question) is not None and not _named_product_question(q):
-        return pack("homologation_annee")
     if "expir" in q:
         return pack("homologation_expiree")
     if "6 mois" in q or "180 jour" in q:
