@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import unittest
+from datetime import date
 
 from parc_facts import (
     AGGREGATE_LIST_CAP,
@@ -19,7 +20,12 @@ from parc_facts import (
     detect_department,
     facts_for_llm,
     find_explicit_product_records,
+    format_aggregate_direct_message,
+    format_aggregate_table_message,
+    followup_list_metric,
+    _single_department,
     match_product,
+    parse_rgaa_threshold,
 )
 
 
@@ -338,6 +344,392 @@ class ParcFactsTest(unittest.TestCase):
         self.assertNotIn("source", cleaned)
         self.assertEqual(cleaned["n_oui"], 2)
         self.assertNotIn("source", cleaned["products"][0])
+
+    def test_detect_rgaa_list_not_count(self) -> None:
+        self.assertEqual(
+            detect_aggregate_intent(
+                "J'ai besoin de la liste des produits avec leur taux de conformité "
+                "RGAA associé quand il a été renseigné"
+            ),
+            "rgaa_list",
+        )
+        self.assertEqual(
+            detect_aggregate_intent(
+                "Combien de produits ont un taux RGAA renseigné ?"
+            ),
+            "rgaa_count",
+        )
+        self.assertEqual(
+            detect_aggregate_intent(
+                "Donne moi le nombre de produits ayant le champ RGAA renseigné."
+            ),
+            "rgaa_count",
+        )
+
+    def test_build_and_format_rgaa_list_table(self) -> None:
+        produits = [
+            {"fields": {"Produit": "C2S", "RGAA_Taux_de_conformite": 0.81}},
+            {"fields": {"Produit": "Accolade", "RGAA_Taux_de_conformite": None}},
+            {"fields": {"Produit": "MANDOLINE", "RGAA_Taux_de_conformite": 0.0083}},
+        ]
+        facts = build_aggregate_facts("rgaa_list", produits)
+        self.assertEqual(facts["n_renseignes"], 2)
+        self.assertEqual(facts["n_non_renseignes"], 1)
+        self.assertEqual(
+            [row["produit"] for row in facts["produits_detail"]],
+            ["C2S", "MANDOLINE"],
+        )
+        self.assertEqual(facts["produits_detail"][0]["rgaa_pourcent"], "81 %")
+        message = format_aggregate_table_message(facts)
+        self.assertIsNotNone(message)
+        assert message is not None
+        self.assertIn("2 produits sur 3 fiches", message)
+        self.assertIn("1 fiche n’a pas de taux renseigné", message)
+        self.assertIn("| Produit | Taux de conformité RGAA |", message)
+        self.assertIn("| C2S | 81 % |", message)
+        self.assertNotIn("Accolade", message)
+
+    def test_format_name_list_as_table(self) -> None:
+        facts = build_aggregate_facts(
+            "hds_list",
+            [
+                {"fields": {"Produit": "A|B", "HDS": True}},
+                {"fields": {"Produit": "C2S", "HDS": False}},
+            ],
+        )
+        message = format_aggregate_table_message(facts)
+        self.assertIsNotNone(message)
+        assert message is not None
+        self.assertIn("| Produit |", message)
+        self.assertIn("| A\\|B |", message)
+        self.assertIsNone(
+            format_aggregate_table_message(
+                {"tool": "parc_agregat", "metric": "rgaa_count", "n_renseignes": 1}
+            )
+        )
+
+    def test_rgaa_threshold_at_least_80(self) -> None:
+        question = (
+            "nombre de produits ayant un taux de conformité "
+            "supérieure ou egal à 80%"
+        )
+        self.assertEqual(detect_aggregate_intent(question), "rgaa_threshold")
+        self.assertEqual(parse_rgaa_threshold(question), ("gte", 0.8))
+        produits = [
+            {"fields": {"Produit": "C2S", "RGAA_Taux_de_conformite": 0.81}},
+            {"fields": {"Produit": "Pile", "RGAA_Taux_de_conformite": 0.8}},
+            {"fields": {"Produit": "Bas", "RGAA_Taux_de_conformite": 0.79}},
+            {"fields": {"Produit": "Vide", "RGAA_Taux_de_conformite": None}},
+        ]
+        facts = build_aggregate_facts(
+            "rgaa_threshold",
+            produits,
+            rgaa_op="gte",
+            rgaa_threshold=0.8,
+        )
+        self.assertEqual(facts["n_oui"], 2)
+        self.assertEqual(facts["n_renseignes"], 3)
+        self.assertEqual(facts["total_produits"], 4)
+        message = format_aggregate_direct_message(facts)
+        self.assertIsNotNone(message)
+        assert message is not None
+        self.assertIn("2 produits ont un taux de conformité RGAA supérieur ou égal à 80 %", message)
+        self.assertIn("3 fiches où le taux est renseigné", message)
+        self.assertIn("4 fiches au total", message)
+        self.assertIsNone(detect_aggregate_intent("Quel est le taux RGAA de C2S ?"))
+
+    def test_followup_lists_previous_threshold(self) -> None:
+        previous = (
+            "Tu peux me sortir le nombre de produits ayant un taux de conformité "
+            "supérieure ou egal à 80% ?"
+        )
+        follow = "Tu peux me lister ces 40 produits"
+        metric, source = followup_list_metric(follow, previous)
+        self.assertEqual(metric, "rgaa_threshold_list")
+        self.assertEqual(source, previous)
+        self.assertEqual(parse_rgaa_threshold(source), ("gte", 0.8))
+        self.assertEqual(
+            followup_list_metric("Quel est le taux RGAA de C2S ?", previous)[0],
+            None,
+        )
+
+    def test_dashboard_strategique_et_a_completer(self) -> None:
+        self.assertEqual(
+            detect_aggregate_intent("Combien de produits stratégiques ?"),
+            "strategique_count",
+        )
+        self.assertEqual(
+            detect_aggregate_intent("Combien de produits à compléter ?"),
+            "a_completer_count",
+        )
+        self.assertEqual(
+            detect_aggregate_intent("Liste les produits à compléter"),
+            "a_completer_list",
+        )
+        self.assertIsNone(
+            detect_aggregate_intent("Quel est le caractère stratégique de C2S ?")
+        )
+        self.assertEqual(
+            detect_aggregate_intent("Quelle est la complétion moyenne ?"),
+            "completion_mean",
+        )
+        produits = [
+            {"fields": {"Produit": "Vide", "Produit_strategique": None, "Nombre_de_champs_critiques_vides": 0}},
+            {"fields": {"Produit": "NA", "Produit_strategique": ["L", "N/A"], "Nombre_de_champs_critiques_vides": 0}},
+            {"fields": {"Produit": "Non", "Produit_strategique": ["L", "Non stratégique"], "Nombre_de_champs_critiques_vides": 2}},
+            {"fields": {"Produit": "Top", "Produit_strategique": ["L", "Top 20"], "Nombre_de_champs_critiques_vides": 0}},
+        ]
+        strategic = build_aggregate_facts("strategique_count", produits)
+        self.assertEqual(strategic["n_oui"], 2)
+        message = format_aggregate_direct_message(strategic)
+        self.assertIsNotNone(message)
+        assert message is not None
+        self.assertIn("2 produits ont le caractère stratégique renseigné", message)
+        self.assertIn("Non stratégique", message)
+        incomplete = build_aggregate_facts("a_completer_count", produits)
+        self.assertEqual(incomplete["n_oui"], 1)
+        incomplete_message = format_aggregate_direct_message(incomplete)
+        self.assertIsNotNone(incomplete_message)
+        assert incomplete_message is not None
+        self.assertIn("1 produit a au moins une information critique manquante", incomplete_message)
+        self.assertIn("produits à compléter", incomplete_message)
+        doubles = [
+            {"fields": {"Produit": "Même", "Nombre_de_champs_critiques_vides": 1}},
+            {"fields": {"Produit": "Même", "Nombre_de_champs_critiques_vides": 4}},
+        ]
+        self.assertEqual(build_aggregate_facts("a_completer_count", doubles)["n_oui"], 2)
+        metric, source = followup_list_metric(
+            "Tu peux me lister ces produits",
+            "Combien de produits stratégiques ?",
+        )
+        self.assertEqual(metric, "strategique_list")
+        self.assertEqual(source, "Combien de produits stratégiques ?")
+
+    def test_dashboard_homologation_tiles(self) -> None:
+        today = date(2026, 11, 25)
+        self.assertEqual(
+            detect_aggregate_intent("Combien de produits homologués ?"),
+            "homologues_count",
+        )
+        self.assertEqual(
+            detect_aggregate_intent("Homologations en cours"),
+            "homologation_en_cours_count",
+        )
+        self.assertEqual(
+            detect_aggregate_intent("Échéance sous 3 mois"),
+            "homologation_3m_count",
+        )
+        self.assertEqual(
+            detect_aggregate_intent("Échéance sous 6 mois"),
+            "homologation_6m_count",
+        )
+        self.assertEqual(
+            detect_aggregate_intent("Combien de critiques non homologués ou expirés ?"),
+            "homologation_critiques_count",
+        )
+        self.assertIsNone(
+            detect_aggregate_intent("Quel est le statut d'homologation de C2S ?")
+        )
+        produits = [
+            {
+                "fields": {
+                    "Produit": "Oui",
+                    "Statut_d_homologation_de_securite": "Homologuée",
+                    "Fin_de_validite_d_homologation": "2027-06-01",
+                    "Criticite": "3 : Service courant",
+                }
+            },
+            {
+                "fields": {
+                    "Produit": "NonEng",
+                    "Statut_d_homologation_de_securite": "Homologation non engagée",
+                    "Fin_de_validite_d_homologation": "2020-01-01",
+                    "Criticite": "1 : Service critique",
+                }
+            },
+            {
+                "fields": {
+                    "Produit": "Cours",
+                    "Statut_d_homologation_de_securite": "Homologation en cours",
+                    "Fin_de_validite_d_homologation": "2027-01-15",
+                    "Criticite": "2 : Service essentiel",
+                }
+            },
+            {
+                "fields": {
+                    "Produit": "Vide",
+                    "Statut_d_homologation_de_securite": None,
+                    "Fin_de_validite_d_homologation": None,
+                    "Criticite": "1 : Service critique",
+                }
+            },
+        ]
+        facts = build_aggregate_facts("homologues_count", produits, today=today)
+        self.assertEqual(facts["n_oui"], 2)
+        message = format_aggregate_direct_message(facts)
+        self.assertIsNotNone(message)
+        assert message is not None
+        self.assertIn("2 produits homologués", message)
+        self.assertIn("non engagée", message)
+        self.assertEqual(
+            build_aggregate_facts("homologation_en_cours_count", produits, today=today)["n_oui"],
+            1,
+        )
+        self.assertEqual(
+            build_aggregate_facts("homologation_expiree_count", produits, today=today)["n_oui"],
+            1,
+        )
+        self.assertEqual(
+            build_aggregate_facts("homologation_3m_count", produits, today=today)["n_oui"],
+            1,
+        )
+        self.assertEqual(
+            build_aggregate_facts("homologation_6m_count", produits, today=today)["n_oui"],
+            1,
+        )
+        self.assertEqual(
+            build_aggregate_facts("homologation_sans_fin_count", produits, today=today)["n_oui"],
+            1,
+        )
+        self.assertEqual(
+            build_aggregate_facts("homologation_non_renseigne_count", produits, today=today)["n_oui"],
+            1,
+        )
+        # Non engagée expirée + en cours essentiel + critique sans statut
+        self.assertEqual(
+            build_aggregate_facts("homologation_critiques_count", produits, today=today)["n_oui"],
+            3,
+        )
+
+    def test_dashboard_maturite(self) -> None:
+        self.assertEqual(
+            detect_aggregate_intent("Sans vision et stratégie"),
+            "maturite_vision_count",
+        )
+        self.assertEqual(
+            detect_aggregate_intent("Combien de produits sans connaissance utilisateurs et design ?"),
+            "maturite_design_count",
+        )
+        self.assertEqual(
+            detect_aggregate_intent("Sans mesure d'impact"),
+            "maturite_impact_count",
+        )
+        self.assertEqual(
+            detect_aggregate_intent("Sans delivery et itération"),
+            "maturite_delivery_count",
+        )
+        self.assertEqual(
+            detect_aggregate_intent("Maturité incomplète"),
+            "maturite_incomplete_count",
+        )
+        self.assertEqual(
+            detect_aggregate_intent("Quelle est la complétion moyenne ?"),
+            "completion_mean",
+        )
+        self.assertIsNone(
+            detect_aggregate_intent("Quel est le niveau de vision et stratégie de C2S ?")
+        )
+        produits = [
+            {
+                "fields": {
+                    "Produit": "Plein",
+                    "Vision_strategie": "Niveau 2 - maîtrisé",
+                    "Connaissance_utilisateurs_design": "Niveau 1 - en cours",
+                    "Mesure_d_impact": "Niveau 0 - non adressé",
+                    "Delivery_iteration": "Niveau 2 - maîtrisé",
+                    "Taux_de_completion": 100,
+                }
+            },
+            {
+                "fields": {
+                    "Produit": "Trou",
+                    "Vision_strategie": None,
+                    "Connaissance_utilisateurs_design": "Niveau 2 - maîtrisé",
+                    "Mesure_d_impact": None,
+                    "Delivery_iteration": None,
+                    "Taux_de_completion": 50,
+                }
+            },
+            {
+                "fields": {
+                    "Produit": "Vide",
+                    "Vision_strategie": ["L"],
+                    "Taux_de_completion": 46,
+                }
+            },
+        ]
+        self.assertEqual(build_aggregate_facts("maturite_vision_count", produits)["n_oui"], 2)
+        self.assertEqual(build_aggregate_facts("maturite_design_count", produits)["n_oui"], 1)
+        self.assertEqual(build_aggregate_facts("maturite_impact_count", produits)["n_oui"], 2)
+        self.assertEqual(build_aggregate_facts("maturite_delivery_count", produits)["n_oui"], 2)
+        self.assertEqual(build_aggregate_facts("maturite_incomplete_count", produits)["n_oui"], 2)
+        mean = build_aggregate_facts("completion_mean", produits)
+        self.assertEqual(mean["moyenne_pourcent"], "65 %")
+        self.assertEqual(mean["n_renseignes"], 3)
+        message = format_aggregate_direct_message(mean)
+        self.assertIsNotNone(message)
+        assert message is not None
+        self.assertIn("65 %", message)
+
+    def test_followup_keeps_previous_department(self) -> None:
+        previous = "Combien de produits stratégiques dans le département GPS ?"
+        follow = "Tu peux me lister ces produits"
+        self.assertEqual(_single_department(follow, previous, True), "GPS")
+        self.assertIsNone(_single_department(follow, previous, False))
+
+    def test_a_completer_includes_low_completion(self) -> None:
+        produits = [
+            {
+                "fields": {
+                    "Produit": "Trou",
+                    "Nombre_de_champs_critiques_vides": 2,
+                    "Taux_de_completion": 80,
+                }
+            },
+            {
+                "fields": {
+                    "Produit": "Bas",
+                    "Nombre_de_champs_critiques_vides": 0,
+                    "Taux_de_completion": 40,
+                }
+            },
+            {
+                "fields": {
+                    "Produit": "Plein",
+                    "Nombre_de_champs_critiques_vides": 0,
+                    "Taux_de_completion": 80,
+                }
+            },
+        ]
+        self.assertEqual(build_aggregate_facts("a_completer_count", produits)["n_oui"], 2)
+
+    def test_singular_and_non_homologue(self) -> None:
+        self.assertEqual(
+            detect_aggregate_intent("Combien de produits non homologués ?"),
+            "homologation_non_homologue_count",
+        )
+        produits = [
+            {"fields": {"Produit": "Oui", "Statut_d_homologation_de_securite": "Homologuée"}},
+            {"fields": {"Produit": "Vide", "Statut_d_homologation_de_securite": None}},
+        ]
+        facts = build_aggregate_facts(
+            "homologues_count",
+            [produits[0]],
+            today=date(2026, 11, 25),
+        )
+        message = format_aggregate_direct_message(facts)
+        self.assertIsNotNone(message)
+        assert message is not None
+        self.assertIn("1 produit homologué", message)
+        self.assertNotIn("homologués", message)
+        self.assertEqual(
+            build_aggregate_facts(
+                "homologation_non_homologue_count",
+                produits,
+                today=date(2026, 11, 25),
+            )["n_oui"],
+            1,
+        )
 
 
 if __name__ == "__main__":

@@ -14,6 +14,8 @@ export type AssistantAskContext = {
   entityId?: number | string;
   entityLabel?: string;
   facts?: Record<string, unknown>;
+  /** Question précédente, pour « liste ces produits ». */
+  previousQuestion?: string;
 };
 
 export type AssistantAskResult = {

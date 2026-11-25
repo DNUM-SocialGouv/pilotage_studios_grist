@@ -22,6 +22,7 @@ from pydantic import BaseModel, Field
 from parc_facts import (
     PARC_SYSTEM_PROMPT,
     facts_for_llm,
+    format_aggregate_direct_message,
     parc_configured,
     resolve_parc_facts,
 )
@@ -83,6 +84,7 @@ class AskContext(BaseModel):
     entityId: Optional[Union[int, str]] = None
     entityLabel: Optional[str] = None
     facts: Optional[Dict[str, Any]] = None
+    previousQuestion: Optional[str] = None
 
 
 class AskRequest(BaseModel):
@@ -261,7 +263,10 @@ async def ask(
     system_prompt = SYSTEM_PROMPT
     if _is_parc_context(context):
         system_prompt = PARC_SYSTEM_PROMPT
-        parc_facts = await resolve_parc_facts(question)
+        previous = (context.previousQuestion or "").strip() if context else ""
+        parc_facts = await resolve_parc_facts(
+            question, previous_question=previous or None
+        )
         # Message direct si le serveur n’a pas les clés Grist PARC / lecture impossible
         # (évite le blabla « tarif / jours » du prompt Pilotage générique).
         if parc_facts.get("unresolved") and parc_facts.get("reason") in (
@@ -297,6 +302,10 @@ async def ask(
             facts=parc_facts,
         )
         context = merged
+
+        direct_message = format_aggregate_direct_message(parc_facts)
+        if direct_message:
+            return AskResponse(message=direct_message, data={"parc": parc_facts})
 
     message = await _call_litellm(question, context, system_prompt=system_prompt)
     return AskResponse(message=message, data=None)
