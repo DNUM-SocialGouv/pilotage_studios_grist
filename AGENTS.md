@@ -216,7 +216,7 @@ MCP : [`.cursor/mcp.json.example`](.cursor/mcp.json.example) (serveurs Grist + D
 | BDC | `docs/fonctionnel/bdc/`, `BdcListView` / `BdcDetailView` |
 | Missions | `docs/fonctionnel/missions/`, `useMissionsData`, `MissionsListView` / `MissionsDetailView` |
 | Équipe | `docs/fonctionnel/equipe/`, `useEquipeData`, `useEquipeMemberMissionsData`, `EquipeLayout` / `EquipeListView` / `EquipeDetailView`, `EquipeAvatar` (seed `Equipe.Avatar` → DiceBear Glyphs) |
-| Produits | `docs/fonctionnel/produits/`, `useProduitsData`, `useProduitMissionsData`, `ProduitsLayout` / `ProduitsListView` / `ProduitsDetailView`, `produitsList` |
+| Produits | `docs/fonctionnel/produits/`, `useProduitsData`, `useProduitMissionsData`, `ProduitsLayout` / `ProduitsListView` / `ProduitsDetailView`, `produitsList` ; lien Le PARC = map UUID→id (`src/data/parcUuidToRowId.ts`, régénérer `npm run sync:parc-uuid-map`) |
 | Feedback | `docs/fonctionnel/feedback/` (+ [`alertes.md`](docs/fonctionnel/feedback/alertes.md)), `FeedbackWidget`, `writeTableAllowlist` |
 | Assistant essai | `docs/fonctionnel/assistant/` (service-essai + tiroir + parc-essai) ; `AssistantWidget` ; `/assistant-parc` ; pas de clé LLM / Grist PARC dans le bundle |
 | Guide règles métier | `docs/fonctionnel/regles-metier/`, `src/pages/regles-metier/`, `Page_regles_metier` (+ Owner UI [`page-regles-metier-owner.md`](docs/fonctionnel/roles/page-regles-metier-owner.md)) |

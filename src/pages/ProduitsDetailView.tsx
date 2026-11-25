@@ -26,6 +26,8 @@ import { produitNomComplet } from "../utils/produitReferentiel";
 import {
   isMissionEnCours,
   missionsLieesAuProduit,
+  parcProduitFicheLinkLabel,
+  parcProduitFicheUrl,
   produitDepartement,
   produitDisplayName,
   safeHttpUrl,
@@ -36,10 +38,6 @@ import { useProduitsOutlet } from "./ProduitsLayout";
 const PRODUITS_CRUMB = [{ label: "Produits", to: "/produits" }] as const;
 
 const TTC_BAR_TITLE_PRODUIT = "Répartition du TTC par équipe";
-
-/** Document source des informations produit (hors missions). Même lien pour toutes les fiches. */
-const PARC_PRODUIT_URL =
-  "https://grist.numerique.gouv.fr/o/sdpc/vjbmAgqvttQH/Le-PARC-Portail-des-Applications-Referentiels-et-Communs-Numeriques-de-la-DNUM";
 
 type ProduitFicheTabId = "missions" | "informations";
 
@@ -376,7 +374,10 @@ export function ProduitsDetailView() {
       : null;
 
   const asideLinks: { label: string; href: string }[] = [
-    { label: "Le PARC — modifier la fiche", href: PARC_PRODUIT_URL },
+    {
+      label: parcProduitFicheLinkLabel(produit.UUID),
+      href: parcProduitFicheUrl(produit.UUID),
+    },
   ];
   if (urlCollab) {
     asideLinks.push({ label: "Espace collab.", href: urlCollab });

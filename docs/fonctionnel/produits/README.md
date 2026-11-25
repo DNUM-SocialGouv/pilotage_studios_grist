@@ -7,7 +7,7 @@
 
 ## Objet métier
 
-Le **catalogue Produits** reprend le référentiel SDPC (table Grist `Tableau_de_pilotage_SDPC_Produits_SDPC`). Le widget affiche une **liste** et une **fiche** en consultation. Pas d’édition depuis le widget : pour modifier les informations d’un produit (hors missions), la fiche renvoie vers le document Grist [Le PARC](https://grist.numerique.gouv.fr/o/sdpc/vjbmAgqvttQH/Le-PARC-Portail-des-Applications-Referentiels-et-Communs-Numeriques-de-la-DNUM).
+Le **catalogue Produits** reprend le référentiel SDPC (table Grist `Tableau_de_pilotage_SDPC_Produits_SDPC`). Le widget affiche une **liste** et une **fiche** en consultation. Pas d’édition depuis le widget : pour modifier les informations d’un produit (hors missions), la fiche ouvre **la ligne correspondante** dans [Le PARC](https://grist.numerique.gouv.fr/o/sdpc/vjbmAgqvttQH/Le-PARC-Portail-des-Applications-Referentiels-et-Communs-Numeriques-de-la-DNUM) (lien profond résolu via l’**UUID** sync, car les numéros de ligne Pilotage ≠ Le PARC ; régénérer la map avec `npm run sync:parc-uuid-map`).
 
 Les missions pointent vers un produit (`Missions.Produit_SDPC`) : depuis la fiche produit,
 l’onglet Missions reprend le bloc « Équipe & prestations » de chaque mission (lecture seule).
